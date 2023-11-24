@@ -8,14 +8,15 @@ import type {
   InterpolationNode,
   TransformOptions,
   DirectiveNode,
+  ExpressionNode,
 } from '@vue/compiler-dom'
 import {
   type DynamicChildren,
-  type EffectNode,
-  type OprationNode,
+  type OperationNode,
   type RootIRNode,
   IRNodeTypes,
 } from './ir'
+import { isVoidTag } from '@vue/shared'
 
 export interface TransformContext<T extends Node = Node> {
   node: T
@@ -28,11 +29,12 @@ export interface TransformContext<T extends Node = Node> {
   children: DynamicChildren
   store: boolean
   ghost: boolean
+  once: boolean
 
   getElementId(): number
   registerTemplate(): number
-  registerEffect(expr: string, effectNode: EffectNode): void
-  registerOpration(...oprations: OprationNode[]): void
+  registerEffect(expr: string, operation: OperationNode): void
+  registerOpration(...oprations: OperationNode[]): void
   helper(name: string): string
 }
 
@@ -42,7 +44,7 @@ function createRootContext(
   options: TransformOptions,
 ): TransformContext<RootNode> {
   let i = 0
-  const { effect, opration, helpers, vaporHelpers } = ir
+  const { effect, operation: operation, helpers, vaporHelpers } = ir
 
   const ctx: TransformContext<RootNode> = {
     node,
@@ -53,11 +55,12 @@ function createRootContext(
     children: {},
     store: false,
     ghost: false,
+    once: false,
 
     getElementId: () => i++,
-    registerEffect(expr, effectNode) {
+    registerEffect(expr, operation) {
       if (!effect[expr]) effect[expr] = []
-      effect[expr].push(effectNode)
+      effect[expr].push(operation)
     },
 
     template: '',
@@ -75,7 +78,7 @@ function createRootContext(
       return ir.template.length - 1
     },
     registerOpration(...node) {
-      opration.push(...node)
+      operation.push(...node)
     },
     // TODO not used yet
     helper(name, vapor = true) {
@@ -114,6 +117,12 @@ function createContext<T extends TemplateChildNode>(
 
     children,
     store: false,
+    registerEffect(expr, operation) {
+      if (ctx.once) {
+        return ctx.registerOpration(operation)
+      }
+      parent.registerEffect(expr, operation)
+    },
   }
   return ctx
 }
@@ -129,13 +138,14 @@ export function transform(
     template: [],
     children: {},
     effect: Object.create(null),
-    opration: [],
+    operation: [],
     helpers: new Set([]),
     vaporHelpers: new Set([]),
   }
   const ctx = createRootContext(ir, root, options)
+
+  // TODO: transform presets, see packages/compiler-core/src/transforms
   transformChildren(ctx, true)
-  ctx.registerTemplate()
   ir.children = ctx.children
 
   return ir
@@ -150,6 +160,8 @@ function transformChildren(
   } = ctx
   let index = 0
   children.forEach((child, i) => walkNode(child, i))
+
+  if (root) ctx.registerTemplate()
 
   function walkNode(node: TemplateChildNode, i: number) {
     const child = createContext(node, ctx, index)
@@ -177,7 +189,15 @@ function transformChildren(
         )
         break
       }
+      case 12 satisfies NodeTypes.TEXT_CALL:
+        // never?
+        break
       default: {
+        // TODO handle other types
+        // CompoundExpressionNode
+        // IfNode
+        // IfBranchNode
+        // ForNode
         ctx.template += `[type: ${node.type}]`
       }
     }
@@ -200,12 +220,14 @@ function transformElement(ctx: TransformContext<ElementNode>) {
   ctx.template += `<${tag}`
 
   props.forEach((prop) => transformProp(prop, ctx))
-  ctx.template += node.isSelfClosing ? '/>' : `>`
+  ctx.template += `>`
 
-  if (children.length > 0) {
-    transformChildren(ctx)
+  if (children.length) transformChildren(ctx)
+
+  // TODO remove unnecessary close tag, e.g. if it's the last element of the template
+  if (!node.isSelfClosing || !isVoidTag(tag)) {
+    ctx.template += `</${tag}>`
   }
-  if (!node.isSelfClosing) ctx.template += `</${tag}>`
 }
 
 function transformInterpolation(
@@ -216,7 +238,7 @@ function transformInterpolation(
   const { node } = ctx
 
   if (node.content.type === (4 satisfies NodeTypes.SIMPLE_EXPRESSION)) {
-    const expr = processExpression(ctx, node.content.content)
+    const expr = processExpression(ctx, node.content)!
 
     const parent = ctx.parent!
     const parentId = parent.getElementId()
@@ -227,8 +249,11 @@ function transformInterpolation(
         type: IRNodeTypes.SET_TEXT,
         loc: node.loc,
         element: parentId,
+        value: expr,
         // e.g <template> <div> {{count}} </div> </template>
-        isRoot: isRootNode(ctx) || isRootNode(ctx.parent as TransformContext<ElementNode>)
+        isRoot:
+          isRootNode(ctx) ||
+          isRootNode(ctx.parent as TransformContext<ElementNode>),
       })
     } else {
       let id: number
@@ -250,7 +275,7 @@ function transformInterpolation(
           type: IRNodeTypes.TEXT_NODE,
           loc: node.loc,
           id,
-          content: expr,
+          value: expr,
         },
         {
           type: IRNodeTypes.INSERT_NODE,
@@ -258,7 +283,9 @@ function transformInterpolation(
           element: id,
           parent: parentId,
           anchor,
-          isRoot: isRootNode(ctx) || isRootNode(ctx.parent as TransformContext<ElementNode>)
+          isRoot:
+            isRootNode(ctx) ||
+            isRootNode(ctx.parent as TransformContext<ElementNode>),
         },
       )
 
@@ -266,16 +293,17 @@ function transformInterpolation(
         type: IRNodeTypes.SET_TEXT,
         loc: node.loc,
         element: id,
+        value: expr,
         // e.g <template> <div> {{count}} foo</div> </template>
         // e.g <template> <div>foo {{count}} foo</div> </template>
         // e.g <template> <div>foo {{count}} </div> </template>
-        isRoot: false
+        isRoot: false,
       })
     }
-  } else {
-    // TODO
+    return
   }
-  // TODO
+
+  // TODO: CompoundExpressionNode: {{ count + 1 }}
 }
 
 function transformProp(
@@ -293,49 +321,108 @@ function transformProp(
     return
   }
 
-  if (!node.exp) {
-    // TODO
-    return
-  } else if (node.exp.type === (8 satisfies NodeTypes.COMPOUND_EXPRESSION)) {
-    // TODO
-    return
-  } else if (
-    !node.arg ||
-    node.arg.type === (8 satisfies NodeTypes.COMPOUND_EXPRESSION)
-  ) {
-    // TODO
-    return
-  }
-
-  const expr = processExpression(ctx, node.exp.content)
   ctx.store = true
-  if (name === 'bind') {
-    ctx.registerEffect(expr, {
-      type: IRNodeTypes.SET_PROP,
-      loc: node.loc,
-      element: ctx.getElementId(),
-      name: node.arg.content,
-      isRoot: isRootNode(ctx)
-    })
-  } else if (name === 'on') {
-    ctx.registerEffect(expr, {
-      type: IRNodeTypes.SET_EVENT,
-      loc: node.loc,
-      element: ctx.getElementId(),
-      name: node.arg.content,
-      isRoot: isRootNode(ctx)
-    })
+  const expr = processExpression(ctx, node.exp)
+  switch (name) {
+    case 'bind': {
+      if (expr === null) {
+        // TODO: Vue 3.4 supported shorthand syntax
+        // https://github.com/vuejs/core/pull/9451
+        return
+      } else if (!node.arg) {
+        // TODO support v-bind="{}"
+        return
+      } else if (
+        node.arg.type === (8 satisfies NodeTypes.COMPOUND_EXPRESSION)
+      ) {
+        // TODO support :[foo]="bar"
+        return
+      }
+
+      ctx.registerEffect(expr, {
+        type: IRNodeTypes.SET_PROP,
+        loc: node.loc,
+        element: ctx.getElementId(),
+        name: node.arg.content,
+        value: expr,
+        isRoot: isRootNode(ctx),
+      })
+      break
+    }
+    case 'on': {
+      if (!node.arg) {
+        // TODO support v-on="{}"
+        return
+      } else if (
+        node.arg.type === (8 satisfies NodeTypes.COMPOUND_EXPRESSION)
+      ) {
+        // TODO support @[foo]="bar"
+        return
+      } else if (expr === null) {
+        // TODO: support @foo
+        // https://github.com/vuejs/core/pull/9451
+        return
+      }
+
+      ctx.registerEffect(expr, {
+        type: IRNodeTypes.SET_EVENT,
+        loc: node.loc,
+        element: ctx.getElementId(),
+        name: node.arg.content,
+        value: expr,
+        isRoot: isRootNode(ctx),
+      })
+      break
+    }
+    case 'html': {
+      const value = expr || '""'
+      ctx.registerEffect(value, {
+        type: IRNodeTypes.SET_HTML,
+        loc: node.loc,
+        element: ctx.getElementId(),
+        value,
+      })
+      break
+    }
+    case 'text': {
+      const value = expr || '""'
+      ctx.registerEffect(value, {
+        type: IRNodeTypes.SET_TEXT,
+        loc: node.loc,
+        element: ctx.getElementId(),
+        value,
+        isRoot: isRootNode(ctx),
+      })
+      break
+    }
+    case 'once': {
+      ctx.once = true
+      break
+    }
+    case 'cloak': {
+      // do nothing
+      break
+    }
   }
 }
 
-// TODO: reference packages/compiler-core/src/transforms/transformExpression.ts
-function processExpression(ctx: TransformContext, expr: string) {
-  if (ctx.options.bindingMetadata?.[expr] === 'setup-ref') {
-    expr += '.value'
+// TODO: reuse packages/compiler-core/src/transforms/transformExpression.ts
+function processExpression(
+  ctx: TransformContext,
+  expr: ExpressionNode | undefined,
+): string | null {
+  if (!expr) return null
+  if (expr.type === (8 satisfies NodeTypes.COMPOUND_EXPRESSION)) {
+    // TODO
+    return ''
   }
-  return expr
+  const { content } = expr
+  if (ctx.options.bindingMetadata?.[content] === 'setup-ref') {
+    return content + '.value'
+  }
+  return content
 }
 
-function isRootNode(ctx: TransformContext<ElementNode | InterpolationNode>){
+function isRootNode(ctx: TransformContext<ElementNode | InterpolationNode>) {
   return !!(ctx && ctx.parent && ctx.root === ctx.parent)
 }

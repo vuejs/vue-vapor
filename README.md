@@ -6,25 +6,40 @@ This repository is a fork of [vuejs/core](https://github.com/vuejs/core) and is 
 
 PR are welcome! Please create a issue before you start to work on it.
 
+See the To-do list below or `// TODO` comments in code (`compiler-vapor` and `runtime-vapor` packages).
+
 - [x] counter
   - [x] simple bindings
   - [x] simple events
 - [ ] TODO-MVC
 - [ ] directives
-  - [ ] `v-on`
-  - [ ] `v-bind`
+  - [x] `v-once`
+  - [x] `v-html`
+  - [x] `v-text`
+  - [x] `v-pre`
+  - [x] `v-cloak`
+  - [ ] `v-on` / `v-bind`
+    - [x] simple expression
+    - [ ] compound expression
+    - [ ] modifiers
+  - [ ] `v-memo`
   - [ ] `v-model`
   - [ ] `v-if` / `v-else` / `v-else-if`
   - [ ] `v-for`
-  - [ ] `v-once`
-  - [ ] `v-html`
-  - [ ] `v-text`
   - [ ] `v-show`
-  - [ ] `v-pre`
-  - [ ] `v-cloak`
-  - [ ] `v-memo`
-- [ ] Fragment
+    - [ ] runtime directive
+    - [ ] compiler
 - [ ] Remove DOM API in codegen
+- [ ] Fragment
+- [ ] Built-in Components
+  - [ ] Transition
+  - [ ] TransitionGroup
+  - [ ] KeepAlive
+  - [ ] Teleport
+  - [ ] Suspense
+- [ ] Component
+  - [ ] runtime
+  - [ ] compiler
 - ...
 - [ ] SSR
 - [ ] Performance & Optimization

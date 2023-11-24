@@ -1,5 +1,13 @@
 import type { CodegenOptions, CodegenResult } from '@vue/compiler-dom'
-import { type DynamicChildren, type RootIRNode, IRNodeTypes } from './ir'
+import {
+  type DynamicChildren,
+  type RootIRNode,
+  IRNodeTypes,
+  OperationNode,
+} from './ir'
+
+// remove when stable
+function checkNever(x: never): void {}
 
 // IR -> JS codegen
 export function generate(
@@ -26,56 +34,16 @@ export function generate(
     vaporHelpers.add('children')
   }
 
-  for (const opration of ir.opration) {
-    switch (opration.type) {
-      case IRNodeTypes.TEXT_NODE: {
-        // TODO handle by runtime: document.createTextNode
-        code += `const n${opration.id} = document.createTextNode(${opration.content})\n`
-        break
-      }
-
-      case IRNodeTypes.INSERT_NODE:
-        {
-          let anchor = ''
-          const parentNode = opration.isRoot ? `root` : `n${opration.parent}`
-          if (typeof opration.anchor === 'number') {
-            anchor = `, n${opration.anchor}`
-          } else if (opration.anchor === 'first') {
-            anchor = `, 0 /* InsertPosition.FIRST */`
-          }
-          code += `insert(n${opration.element}, ${parentNode}${anchor})\n`
-          vaporHelpers.add('insert')
-        }
-        break
-    }
+  for (const operation of ir.operation) {
+    code += genOperation(operation)
   }
 
-  for (const [expr, effects] of Object.entries(ir.effect)) {
+  for (const [_expr, operations] of Object.entries(ir.effect)) {
+    // TODO don't use watchEffect from vue/core, implement `effect` function in runtime-vapor package
     let scope = `watchEffect(() => {\n`
     helpers.add('watchEffect')
-    for (const effect of effects) {
-      const variableName = effect.isRoot ? 'root' : `n${effect.element}`
-      switch (effect.type) {
-        case IRNodeTypes.SET_PROP: {
-          scope += `setAttr(${variableName}, ${JSON.stringify(
-            effect.name,
-          )}, undefined, ${expr})\n`
-          vaporHelpers.add('setAttr')
-          break
-        }
-        case IRNodeTypes.SET_TEXT: {
-          scope += `setText(${variableName}, undefined, ${expr})\n`
-          vaporHelpers.add('setText')
-          break
-        }
-        case IRNodeTypes.SET_EVENT: {
-          scope += `on(${variableName}, ${JSON.stringify(
-            effect.name,
-          )}, ${expr})\n`
-          vaporHelpers.add('on')
-          break
-        }
-      }
+    for (const operation of operations) {
+      scope += genOperation(operation)
     }
     scope += '})\n'
     code += scope
@@ -101,6 +69,64 @@ export function generate(
     code,
     ast: ir as any,
     preamble,
+  }
+
+  function genOperation(operation: OperationNode) {
+    let code = ''
+    const variableName = operation.isRoot ? 'root' : `n${operation.element}`
+    switch (operation.type) {
+      case IRNodeTypes.SET_PROP: {
+        code = `setAttr(${variableName}, ${JSON.stringify(
+          operation.name,
+        )}, undefined, ${operation.value})\n`
+        vaporHelpers.add('setAttr')
+        break
+      }
+
+      case IRNodeTypes.SET_TEXT: {
+        code = `setText(${variableName}, undefined, ${operation.value})\n`
+        vaporHelpers.add('setText')
+        break
+      }
+
+      case IRNodeTypes.SET_EVENT: {
+        code = `on(${variableName}, ${JSON.stringify(operation.name)}, ${
+          operation.value
+        })\n`
+        vaporHelpers.add('on')
+        break
+      }
+
+      case IRNodeTypes.SET_HTML: {
+        code = `setHtml(n${operation.element}, undefined, ${operation.value})\n`
+        vaporHelpers.add('setHtml')
+        break
+      }
+
+      case IRNodeTypes.TEXT_NODE: {
+        // TODO handle by runtime: document.createTextNode
+        code = `const n${operation.id} = document.createTextNode(${operation.value})\n`
+        break
+      }
+
+      case IRNodeTypes.INSERT_NODE: {
+        const parentNode = operation.isRoot ? `root` : `n${operation.parent}`
+        let anchor = ''
+        if (typeof operation.anchor === 'number') {
+          anchor = `, n${operation.anchor}`
+        } else if (operation.anchor === 'first') {
+          anchor = `, 0 /* InsertPosition.FIRST */`
+        }
+        code = `insert(n${operation.element}, ${parentNode}${anchor})\n`
+        vaporHelpers.add('insert')
+        break
+      }
+
+      default:
+        checkNever(operation)
+    }
+
+    return code
   }
 }
 

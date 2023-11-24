@@ -129,10 +129,11 @@ return root
 exports[`basic 1`] = `
 "import { defineComponent as _defineComponent } from 'vue'
 import { watchEffect } from 'vue'
-import { template, insert, setText, on } from 'vue/vapor'
-const t0 = template(\`<h1 id=\\"title\\">Counter</h1><p>Count: </p><p>Double: </p><button>Increment</button>\`)
+import { template, insert, setText, on, setHtml } from 'vue/vapor'
+const t0 = template(\`<h1 id=\\"title\\">Counter</h1><p>Count: </p><p>Double: </p><button>Increment</button><div></div><input type=\\"text\\"><p>once: </p><p>{{ count }}</p>\`)
 import { ref, computed } from 'vue'
 
+const html = '<b>HTML</b>'
 
 export default /*#__PURE__*/_defineComponent({
   setup(__props) {
@@ -142,12 +143,17 @@ const double = computed(() => count.value * 2)
 
 const increment = () => count.value++
 
+
 return (() => {
 const root = t0()
 const n1 = document.createTextNode(count.value)
 insert(n1, root)
 const n3 = document.createTextNode(double.value)
 insert(n3, root)
+insert(n3, n2)
+const n7 = document.createTextNode(count.value)
+insert(n7, n6)
+setText(n7, undefined, count.value)
 watchEffect(() => {
 setText(n1, undefined, count.value)
 })
@@ -156,6 +162,9 @@ setText(n3, undefined, double.value)
 })
 watchEffect(() => {
 on(root, \\"click\\", increment)
+})
+watchEffect(() => {
+setHtml(n5, undefined, html)
 })
 return root
 })();

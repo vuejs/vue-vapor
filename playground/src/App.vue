@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 
-const count = ref(0)
+const count = ref(1)
 const double = computed(() => count.value * 2)
+const html = computed(() => `<button>HTML! ${count.value}</button>`)
 
 const inc = () => count.value++
 const dec = () => count.value--
@@ -15,6 +16,8 @@ globalThis.double = double
 globalThis.inc = inc
 // @ts-expect-error
 globalThis.dec = dec
+// @ts-expect-error
+globalThis.html = html
 </script>
 
 <template>
@@ -26,6 +29,11 @@ globalThis.dec = dec
       <button @click="inc">inc</button>
       <button @click="dec">dec</button>
     </div>
+    <div v-html="html" />
+    <div v-text="html" />
+    <div v-once>once: {{ count }}</div>
+    <div v-pre>{{ count }}</div>
+    <div v-cloak>{{ count }}</div>
   </div>
 </template>
 

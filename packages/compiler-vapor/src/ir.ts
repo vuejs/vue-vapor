@@ -6,6 +6,7 @@ export const enum IRNodeTypes {
   SET_PROP,
   SET_TEXT,
   SET_EVENT,
+  SET_HTML,
 
   INSERT_NODE,
   TEXT_NODE,
@@ -20,8 +21,9 @@ export interface RootIRNode extends IRNode {
   type: IRNodeTypes.ROOT
   template: Array<TemplateGeneratorIRNode>
   children: DynamicChildren
-  effect: Record<string, EffectNode[]>
-  opration: OprationNode[]
+  // TODO multi-expression effect
+  effect: Record<string /* expr */, OperationNode[]>
+  operation: OperationNode[]
   helpers: Set<string>
   vaporHelpers: Set<string>
 }
@@ -35,12 +37,14 @@ export interface SetPropIRNode extends IRNode {
   type: IRNodeTypes.SET_PROP
   element: number
   name: string
+  value: string
   isRoot: boolean
 }
 
 export interface SetTextIRNode extends IRNode {
   type: IRNodeTypes.SET_TEXT
   element: number
+  value: string
   isRoot: boolean
 }
 
@@ -48,13 +52,20 @@ export interface SetEventIRNode extends IRNode {
   type: IRNodeTypes.SET_EVENT
   element: number
   name: string
+  value: string
   isRoot: boolean
+}
+
+export interface SetHtmlIRNode extends IRNode {
+  type: IRNodeTypes.SET_HTML
+  element: number
+  value: string
 }
 
 export interface TextNodeIRNode extends IRNode {
   type: IRNodeTypes.TEXT_NODE
   id: number
-  content: string
+  value: string
 }
 
 export interface InsertNodeIRNode extends IRNode {
@@ -65,8 +76,13 @@ export interface InsertNodeIRNode extends IRNode {
   isRoot: boolean
 }
 
-export type EffectNode = SetPropIRNode | SetTextIRNode | SetEventIRNode
-export type OprationNode = TextNodeIRNode | InsertNodeIRNode
+export type OperationNode =
+  | SetPropIRNode
+  | SetTextIRNode
+  | SetEventIRNode
+  | SetHtmlIRNode
+  | TextNodeIRNode
+  | InsertNodeIRNode
 
 export interface DynamicChild {
   id: number | null
