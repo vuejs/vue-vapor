@@ -38,14 +38,14 @@ export interface SetPropIRNode extends IRNode {
   element: number
   name: string
   value: string
-  isRoot: boolean
+  isRoot?: boolean
 }
 
 export interface SetTextIRNode extends IRNode {
   type: IRNodeTypes.SET_TEXT
   element: number
   value: string
-  isRoot: boolean
+  isRoot?: boolean
 }
 
 export interface SetEventIRNode extends IRNode {
@@ -53,19 +53,21 @@ export interface SetEventIRNode extends IRNode {
   element: number
   name: string
   value: string
-  isRoot: boolean
+  isRoot?: boolean
 }
 
 export interface SetHtmlIRNode extends IRNode {
   type: IRNodeTypes.SET_HTML
   element: number
   value: string
+  isRoot?: boolean
 }
 
 export interface TextNodeIRNode extends IRNode {
   type: IRNodeTypes.TEXT_NODE
   id: number
   value: string
+  isRoot?: boolean
 }
 
 export interface InsertNodeIRNode extends IRNode {
@@ -73,7 +75,7 @@ export interface InsertNodeIRNode extends IRNode {
   element: number
   parent: number
   anchor: number | 'first' | 'last'
-  isRoot: boolean
+  isRoot?: boolean
 }
 
 export type OperationNode =
