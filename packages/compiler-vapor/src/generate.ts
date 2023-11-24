@@ -37,12 +37,13 @@ export function generate(
       case IRNodeTypes.INSERT_NODE:
         {
           let anchor = ''
+          const parentNode = opration.isRoot ? `root` : `n${opration.parent}`
           if (typeof opration.anchor === 'number') {
             anchor = `, n${opration.anchor}`
           } else if (opration.anchor === 'first') {
             anchor = `, 0 /* InsertPosition.FIRST */`
           }
-          code += `insert(n${opration.element}, n${opration.parent}${anchor})\n`
+          code += `insert(n${opration.element}, ${parentNode}${anchor})\n`
           vaporHelpers.add('insert')
         }
         break

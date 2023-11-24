@@ -227,6 +227,7 @@ function transformInterpolation(
         type: IRNodeTypes.SET_TEXT,
         loc: node.loc,
         element: parentId,
+        // e.g <template> <div> {{count}} </div> </template>
         isRoot: isRootNode(ctx) || isRootNode(ctx.parent as TransformContext<ElementNode>)
       })
     } else {
@@ -265,7 +266,10 @@ function transformInterpolation(
         type: IRNodeTypes.SET_TEXT,
         loc: node.loc,
         element: id,
-        isRoot: isRootNode(ctx) || isRootNode(ctx.parent as TransformContext<ElementNode>)
+        // e.g <template> <div> {{count}} foo</div> </template>
+        // e.g <template> <div>foo {{count}} foo</div> </template>
+        // e.g <template> <div>foo {{count}} </div> </template>
+        isRoot: false
       })
     }
   } else {
@@ -311,7 +315,7 @@ function transformProp(
       loc: node.loc,
       element: ctx.getElementId(),
       name: node.arg.content,
-      isRoot: !!isRootNode(ctx)
+      isRoot: isRootNode(ctx)
     })
   } else if (name === 'on') {
     ctx.registerEffect(expr, {
@@ -319,7 +323,7 @@ function transformProp(
       loc: node.loc,
       element: ctx.getElementId(),
       name: node.arg.content,
-      isRoot: !!isRootNode(ctx)
+      isRoot: isRootNode(ctx)
     })
   }
 }
