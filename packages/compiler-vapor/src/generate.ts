@@ -53,21 +53,22 @@ export function generate(
     let scope = `watchEffect(() => {\n`
     helpers.add('watchEffect')
     for (const effect of effects) {
+      const variableName = effect.isRoot ? 'root' : `n${effect.element}`
       switch (effect.type) {
         case IRNodeTypes.SET_PROP: {
-          scope += `setAttr(n${effect.element}, ${JSON.stringify(
+          scope += `setAttr(${variableName}, ${JSON.stringify(
             effect.name,
           )}, undefined, ${expr})\n`
           vaporHelpers.add('setAttr')
           break
         }
         case IRNodeTypes.SET_TEXT: {
-          scope += `setText(n${effect.element}, undefined, ${expr})\n`
+          scope += `setText(${variableName}, undefined, ${expr})\n`
           vaporHelpers.add('setText')
           break
         }
         case IRNodeTypes.SET_EVENT: {
-          scope += `on(n${effect.element}, ${JSON.stringify(
+          scope += `on(${variableName}, ${JSON.stringify(
             effect.name,
           )}, ${expr})\n`
           vaporHelpers.add('on')

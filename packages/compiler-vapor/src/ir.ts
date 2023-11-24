@@ -35,17 +35,20 @@ export interface SetPropIRNode extends IRNode {
   type: IRNodeTypes.SET_PROP
   element: number
   name: string
+  isRoot: boolean
 }
 
 export interface SetTextIRNode extends IRNode {
   type: IRNodeTypes.SET_TEXT
   element: number
+  isRoot: boolean
 }
 
 export interface SetEventIRNode extends IRNode {
   type: IRNodeTypes.SET_EVENT
   element: number
   name: string
+  isRoot: boolean
 }
 
 export interface TextNodeIRNode extends IRNode {
@@ -59,6 +62,7 @@ export interface InsertNodeIRNode extends IRNode {
   element: number
   parent: number
   anchor: number | 'first' | 'last'
+  isRoot: boolean
 }
 
 export type EffectNode = SetPropIRNode | SetTextIRNode | SetEventIRNode

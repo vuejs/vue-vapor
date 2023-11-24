@@ -227,6 +227,7 @@ function transformInterpolation(
         type: IRNodeTypes.SET_TEXT,
         loc: node.loc,
         element: parentId,
+        isRoot: isRootNode(ctx) || isRootNode(ctx.parent as TransformContext<ElementNode>)
       })
     } else {
       let id: number
@@ -256,6 +257,7 @@ function transformInterpolation(
           element: id,
           parent: parentId,
           anchor,
+          isRoot: isRootNode(ctx) || isRootNode(ctx.parent as TransformContext<ElementNode>)
         },
       )
 
@@ -263,6 +265,7 @@ function transformInterpolation(
         type: IRNodeTypes.SET_TEXT,
         loc: node.loc,
         element: id,
+        isRoot: isRootNode(ctx) || isRootNode(ctx.parent as TransformContext<ElementNode>)
       })
     }
   } else {
@@ -308,6 +311,7 @@ function transformProp(
       loc: node.loc,
       element: ctx.getElementId(),
       name: node.arg.content,
+      isRoot: !!isRootNode(ctx)
     })
   } else if (name === 'on') {
     ctx.registerEffect(expr, {
@@ -315,6 +319,7 @@ function transformProp(
       loc: node.loc,
       element: ctx.getElementId(),
       name: node.arg.content,
+      isRoot: !!isRootNode(ctx)
     })
   }
 }
@@ -325,4 +330,8 @@ function processExpression(ctx: TransformContext, expr: string) {
     expr += '.value'
   }
   return expr
+}
+
+function isRootNode(ctx: TransformContext<ElementNode | InterpolationNode>){
+  return !!(ctx && ctx.parent && ctx.root === ctx.parent)
 }
