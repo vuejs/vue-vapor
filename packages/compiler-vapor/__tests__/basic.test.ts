@@ -27,7 +27,9 @@ test('A single node containing dynamic content', async () => {
 })
 
 test('A single node containing dynamic content & text', async () => {
-  const { descriptor } = parse(singleRootSourceText, { compiler: CompilerVapor })
+  const { descriptor } = parse(singleRootSourceText, {
+    compiler: CompilerVapor,
+  })
   const script = compileScript(descriptor, {
     id: 'singleRootText.vue',
     inlineTemplate: true,
@@ -37,7 +39,9 @@ test('A single node containing dynamic content & text', async () => {
 })
 
 test('A single node containing dynamic content & first', async () => {
-  const { descriptor } = parse(singleRootSourceFirst, { compiler: CompilerVapor })
+  const { descriptor } = parse(singleRootSourceFirst, {
+    compiler: CompilerVapor,
+  })
   const script = compileScript(descriptor, {
     id: 'singleRootFirst.vue',
     inlineTemplate: true,
@@ -47,7 +51,9 @@ test('A single node containing dynamic content & first', async () => {
 })
 
 test('A single node containing dynamic content & last', async () => {
-  const { descriptor } = parse(singleRootSourceLast, { compiler: CompilerVapor })
+  const { descriptor } = parse(singleRootSourceLast, {
+    compiler: CompilerVapor,
+  })
   const script = compileScript(descriptor, {
     id: 'singleRootLast.vue',
     inlineTemplate: true,
