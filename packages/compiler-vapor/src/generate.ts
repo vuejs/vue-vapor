@@ -73,9 +73,9 @@ export function generate(
 
   function genOperation(operation: OperationNode) {
     let code = ''
-    const variableName = operation.isRoot ? 'root' : `n${operation.element}`
     switch (operation.type) {
       case IRNodeTypes.SET_PROP: {
+        const variableName = operation.isRoot ? 'root' : `n${operation.element}`
         code = `setAttr(${variableName}, ${JSON.stringify(
           operation.name,
         )}, undefined, ${operation.value})\n`
@@ -84,12 +84,14 @@ export function generate(
       }
 
       case IRNodeTypes.SET_TEXT: {
+        const variableName = operation.isRoot ? 'root' : `n${operation.element}`
         code = `setText(${variableName}, undefined, ${operation.value})\n`
         vaporHelpers.add('setText')
         break
       }
 
       case IRNodeTypes.SET_EVENT: {
+        const variableName = operation.isRoot ? 'root' : `n${operation.element}`
         code = `on(${variableName}, ${JSON.stringify(operation.name)}, ${
           operation.value
         })\n`
