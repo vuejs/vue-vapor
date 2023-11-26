@@ -2,6 +2,7 @@ import { BindingTypes, CompilerOptions, RootNode } from '@vue/compiler-dom'
 // TODO remove it
 import { format } from 'prettier'
 import { compile as _compile } from '../src'
+import { ErrorCodes } from '../src/errors'
 
 async function compile(
   template: string | RootNode,
@@ -61,6 +62,35 @@ describe('comile', () => {
           },
         })
         expect(code).matchSnapshot()
+      })
+
+      test('should error if no expression', async () => {
+        const onError = vi.fn()
+        const code = compile(`<div v-bind:arg />`, { onError })
+        // const props = (node.codegenNode as VNodeCall).props as ObjectExpression
+        expect(onError.mock.calls[0][0]).toMatchObject({
+          code: ErrorCodes.X_V_BIND_NO_EXPRESSION,
+          loc: {
+            start: {
+              line: 1,
+              column: 6,
+            },
+            end: {
+              line: 1,
+              column: 16,
+            },
+          },
+        })
+        // expect(props.properties[0]).toMatchObject({
+        //   key: {
+        //     content: `arg`,
+        //     isStatic: true,
+        //   },
+        //   value: {
+        //     content: ``,
+        //     isStatic: true,
+        //   },
+        // })
       })
     })
 

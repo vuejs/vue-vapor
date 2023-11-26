@@ -1,4 +1,4 @@
-import type {
+import {
   NodeTypes,
   RootNode,
   Node,
@@ -17,6 +17,12 @@ import {
   IRNodeTypes,
 } from './ir'
 import { isVoidTag } from '@vue/shared'
+import {
+  ErrorCodes,
+  createCompilerError,
+  defaultOnError,
+  defaultOnWarn,
+} from './errors'
 
 export interface TransformContext<T extends Node = Node> {
   node: T
@@ -136,6 +142,9 @@ export function transform(
   root: RootNode,
   options: TransformOptions = {},
 ): RootIRNode {
+  options.onError ??= defaultOnError
+  options.onWarn ??= defaultOnWarn
+
   const ir: RootIRNode = {
     type: IRNodeTypes.ROOT,
     loc: root.loc,
@@ -146,6 +155,7 @@ export function transform(
     helpers: new Set([]),
     vaporHelpers: new Set([]),
   }
+
   const ctx = createRootContext(ir, root, options)
   const rootId = ctx.getId()
 
@@ -327,8 +337,20 @@ function transformProp(
     return
   }
 
+  const { exp, loc } = node
+
+  if (
+    !exp ||
+    (exp.type === NodeTypes.SIMPLE_EXPRESSION! && !exp.content.trim())
+  ) {
+    ctx.options.onError?.(
+      createCompilerError(ErrorCodes.X_V_BIND_NO_EXPRESSION, loc),
+    )
+    return
+  }
+
   ctx.store = true
-  const expr = processExpression(ctx, node.exp)
+  const expr = processExpression(ctx, exp)
   switch (name) {
     case 'bind': {
       if (expr === null) {
