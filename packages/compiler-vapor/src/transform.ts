@@ -339,20 +339,20 @@ function transformProp(
 
   const { exp, loc } = node
 
-  if (
-    !exp ||
-    (exp.type === NodeTypes.SIMPLE_EXPRESSION! && !exp.content.trim())
-  ) {
-    ctx.options.onError?.(
-      createCompilerError(ErrorCodes.X_V_BIND_NO_EXPRESSION, loc),
-    )
-    return
-  }
-
   ctx.store = true
   const expr = processExpression(ctx, exp)
   switch (name) {
     case 'bind': {
+      if (
+        !exp ||
+        (exp.type === NodeTypes.SIMPLE_EXPRESSION! && !exp.content.trim())
+      ) {
+        ctx.options.onError?.(
+          createCompilerError(ErrorCodes.X_V_BIND_NO_EXPRESSION, loc),
+        )
+        return
+      }
+
       if (expr === null) {
         // TODO: Vue 3.4 supported shorthand syntax
         // https://github.com/vuejs/core/pull/9451
