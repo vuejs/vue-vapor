@@ -69,7 +69,7 @@ describe('comile', () => {
         await compile(`<div v-bind:arg />`, { onError })
 
         expect(onError.mock.calls[0][0]).toMatchObject({
-          code: ErrorCodes.X_V_BIND_NO_EXPRESSION,
+          code: ErrorCodes.X_V_VAPOR_BIND_NO_EXPRESSION,
           loc: {
             start: {
               line: 1,
@@ -98,7 +98,7 @@ describe('comile', () => {
         const onError = vi.fn()
         await compile(`<div v-on:click />`, { onError })
         expect(onError.mock.calls[0][0]).toMatchObject({
-          code: ErrorCodes.X_V_ON_NO_EXPRESSION,
+          code: ErrorCodes.X_V_VAPOR_ON_NO_EXPRESSION,
           loc: {
             start: {
               line: 1,
