@@ -93,6 +93,24 @@ describe('comile', () => {
         })
         expect(code).matchSnapshot()
       })
+
+      test('should error if no expression AND no modifier', async () => {
+        const onError = vi.fn()
+        await compile(`<div v-on:click />`, { onError })
+        expect(onError.mock.calls[0][0]).toMatchObject({
+          code: ErrorCodes.X_V_ON_NO_EXPRESSION,
+          loc: {
+            start: {
+              line: 1,
+              column: 6,
+            },
+            end: {
+              line: 1,
+              column: 16,
+            },
+          },
+        })
+      })
     })
 
     describe('v-html', () => {

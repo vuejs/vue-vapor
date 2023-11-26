@@ -40,9 +40,11 @@ export function createCompilerError<T extends number>(
 export const enum ErrorCodes {
   // transform errors
   X_V_BIND_NO_EXPRESSION,
+  X_V_ON_NO_EXPRESSION,
 }
 
 export const errorMessages: Record<ErrorCodes, string> = {
   // transform errors
   [ErrorCodes.X_V_BIND_NO_EXPRESSION]: `v-bind is missing expression.`,
+  [ErrorCodes.X_V_ON_NO_EXPRESSION]: `v-on is missing expression.`,
 }

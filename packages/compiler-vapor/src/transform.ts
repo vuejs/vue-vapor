@@ -337,7 +337,7 @@ function transformProp(
     return
   }
 
-  const { exp, loc } = node
+  const { exp, loc, modifiers } = node
 
   ctx.store = true
   const expr = processExpression(ctx, exp)
@@ -347,7 +347,7 @@ function transformProp(
         !exp ||
         (exp.type === NodeTypes.SIMPLE_EXPRESSION! && !exp.content.trim())
       ) {
-        ctx.options.onError?.(
+        ctx.options.onError!(
           createCompilerError(ErrorCodes.X_V_BIND_NO_EXPRESSION, loc),
         )
         return
@@ -377,6 +377,12 @@ function transformProp(
       break
     }
     case 'on': {
+      if (!exp && !modifiers.length) {
+        ctx.options.onError!(
+          createCompilerError(ErrorCodes.X_V_ON_NO_EXPRESSION, loc),
+        )
+      }
+
       if (!node.arg) {
         // TODO support v-on="{}"
         return
