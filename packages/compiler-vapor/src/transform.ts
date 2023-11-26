@@ -381,6 +381,7 @@ function transformProp(
         ctx.options.onError!(
           createCompilerError(ErrorCodes.X_V_ON_NO_EXPRESSION, loc),
         )
+        return
       }
 
       if (!node.arg) {
