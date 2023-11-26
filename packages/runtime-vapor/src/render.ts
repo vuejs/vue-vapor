@@ -1,10 +1,11 @@
 import {
-  effectScope,
+  isArray,
   normalizeClass,
   normalizeStyle,
   toDisplayString
-} from 'vue'
-import { isArray } from '@vue/shared'
+} from '@vue/shared'
+
+import { ComponentInternalInstance, createComponentInstance } from './component'
 
 export type Block = Node | Fragment | Block[]
 export type Fragment = { nodes: Block; anchor: Node }
@@ -13,20 +14,41 @@ export type BlockFn = (props?: any) => Block
 export function render(
   comp: BlockFn,
   container: string | ParentNode
-): () => void {
-  const scope = effectScope()
-  const block = scope.run(() => comp())!
-  insert(block, (container = normalizeContainer(container)))
-  return () => {
-    scope.stop()
-    remove(block, container as ParentNode)
-  }
+): ComponentInternalInstance {
+  const instance = createComponentInstance(comp)
+  mountComponent(instance, (container = normalizeContainer(container)))
+  return instance
 }
 
 export function normalizeContainer(container: string | ParentNode): ParentNode {
   return typeof container === 'string'
     ? (document.querySelector(container) as ParentNode)
     : container
+}
+
+export const mountComponent = (
+  instance: ComponentInternalInstance,
+  container: ParentNode
+) => {
+  instance.container = container
+  const block = instance.scope.run(
+    () => (instance.block = instance.component())
+  )!
+  insert(block, instance.container)
+  instance.isMounted = true
+  // TODO: lifecycle hooks (mounted, ...)
+  // const { m } = instance
+  // m && invoke(m)
+}
+
+export const unmountComponent = (instance: ComponentInternalInstance) => {
+  const { container, block, scope } = instance
+  scope.stop()
+  remove(block, container)
+  instance.isMounted = false
+  // TODO: lifecycle hooks (unmounted, ...)
+  // const { um } = instance
+  // um && invoke(um)
 }
 
 export const enum InsertPosition {
