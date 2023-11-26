@@ -66,8 +66,8 @@ describe('comile', () => {
 
       test('should error if no expression', async () => {
         const onError = vi.fn()
-        const code = compile(`<div v-bind:arg />`, { onError })
-        // const props = (node.codegenNode as VNodeCall).props as ObjectExpression
+        await compile(`<div v-bind:arg />`, { onError })
+
         expect(onError.mock.calls[0][0]).toMatchObject({
           code: ErrorCodes.X_V_BIND_NO_EXPRESSION,
           loc: {
@@ -81,16 +81,6 @@ describe('comile', () => {
             },
           },
         })
-        // expect(props.properties[0]).toMatchObject({
-        //   key: {
-        //     content: `arg`,
-        //     isStatic: true,
-        //   },
-        //   value: {
-        //     content: ``,
-        //     isStatic: true,
-        //   },
-        // })
       })
     })
 
