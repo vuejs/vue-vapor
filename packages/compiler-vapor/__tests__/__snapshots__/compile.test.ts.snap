@@ -1,0 +1,257 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`comile > bindings 1`] = `
+"import { watchEffect } from 'vue';
+import { template, children, createTextNode, insert, setText } from 'vue/vapor';
+const t0 = template('<div>count is <!>.</div>');
+export function render() {
+  const n0 = t0();
+  const {
+    0: [
+      n3,
+      {
+        1: [n2],
+      },
+    ],
+  } = children(n0);
+  const n1 = createTextNode(count.value);
+  insert(n1, n3, n2);
+  watchEffect(() => {
+    setText(n1, undefined, count.value);
+  });
+  return n0;
+}
+"
+`;
+
+exports[`comile > directives > v-bind > simple expression 1`] = `
+"import { watchEffect } from 'vue';
+import { template, children, setAttr } from 'vue/vapor';
+const t0 = template('<div></div>');
+export function render() {
+  const n0 = t0();
+  const {
+    0: [n1],
+  } = children(n0);
+  watchEffect(() => {
+    setAttr(n1, 'id', undefined, id.value);
+  });
+  return n0;
+}
+"
+`;
+
+exports[`comile > directives > v-html > no expression 1`] = `
+"import { watchEffect } from 'vue';
+import { template, children, setHtml } from 'vue/vapor';
+const t0 = template('<div></div>');
+export function render() {
+  const n0 = t0();
+  const {
+    0: [n1],
+  } = children(n0);
+  watchEffect(() => {
+    setHtml(n1, undefined, '');
+  });
+  return n0;
+}
+"
+`;
+
+exports[`comile > directives > v-html > simple expression 1`] = `
+"import { watchEffect } from 'vue';
+import { template, children, setHtml } from 'vue/vapor';
+const t0 = template('<div></div>');
+export function render() {
+  const n0 = t0();
+  const {
+    0: [n1],
+  } = children(n0);
+  watchEffect(() => {
+    setHtml(n1, undefined, code.value);
+  });
+  return n0;
+}
+"
+`;
+
+exports[`comile > directives > v-on > simple expression 1`] = `
+"import { watchEffect } from 'vue';
+import { template, children, on } from 'vue/vapor';
+const t0 = template('<div></div>');
+export function render() {
+  const n0 = t0();
+  const {
+    0: [n1],
+  } = children(n0);
+  watchEffect(() => {
+    on(n1, 'click', handleClick);
+  });
+  return n0;
+}
+"
+`;
+
+exports[`comile > directives > v-once > as root node 1`] = `
+"import { watchEffect } from 'vue';
+import { template, children, setAttr } from 'vue/vapor';
+const t0 = template('<div></div>');
+export function render() {
+  const n0 = t0();
+  const {
+    0: [n1],
+  } = children(n0);
+  watchEffect(() => {
+    setAttr(n1, 'id', undefined, foo);
+  });
+  return n0;
+}
+"
+`;
+
+exports[`comile > directives > v-once > basic 1`] = `
+"import { template, children, createTextNode, setText, setAttr, prepend } from 'vue/vapor';
+const t0 = template('<div> <span></span></div>');
+export function render() {
+  const n0 = t0();
+  const {
+    0: [
+      n3,
+      {
+        1: [n2],
+      },
+    ],
+  } = children(n0);
+  const n1 = createTextNode(msg.value);
+  setText(n1, undefined, msg.value);
+  setAttr(n2, 'class', undefined, clz.value);
+  prepend(n3, n1);
+  return n0;
+}
+"
+`;
+
+exports[`comile > directives > v-text > no expression 1`] = `
+"import { watchEffect } from 'vue';
+import { template, children, setText } from 'vue/vapor';
+const t0 = template('<div></div>');
+export function render() {
+  const n0 = t0();
+  const {
+    0: [n1],
+  } = children(n0);
+  watchEffect(() => {
+    setText(n1, undefined, '');
+  });
+  return n0;
+}
+"
+`;
+
+exports[`comile > directives > v-text > simple expression 1`] = `
+"import { watchEffect } from 'vue';
+import { template, children, setText } from 'vue/vapor';
+const t0 = template('<div></div>');
+export function render() {
+  const n0 = t0();
+  const {
+    0: [n1],
+  } = children(n0);
+  watchEffect(() => {
+    setText(n1, undefined, str.value);
+  });
+  return n0;
+}
+"
+`;
+
+exports[`comile > dynamic root 1`] = `
+"import { watchEffect } from 'vue';
+import { fragment, createTextNode, append, setText } from 'vue/vapor';
+export function render() {
+  const t0 = fragment();
+  const n0 = t0();
+  const n1 = createTextNode(1);
+  const n2 = createTextNode(2);
+  append(n0, n1, n2);
+  watchEffect(() => {
+    setText(n1, undefined, 1);
+  });
+  watchEffect(() => {
+    setText(n2, undefined, 2);
+  });
+  return n0;
+}
+"
+`;
+
+exports[`comile > fragment 1`] = `
+"import { template } from 'vue/vapor';
+const t0 = template('<p></p><span></span><div></div>');
+export function render() {
+  const n0 = t0();
+  return n0;
+}
+"
+`;
+
+exports[`comile > static + dynamic root 1`] = `
+"import { watchEffect } from 'vue';
+import { template, children, createTextNode, prepend, insert, append, setText } from 'vue/vapor';
+const t0 = template('3<!>6<!>9');
+export function render() {
+  const n0 = t0();
+  const {
+    1: [n9],
+    3: [n10],
+  } = children(n0);
+  const n1 = createTextNode(1);
+  const n2 = createTextNode(2);
+  const n3 = createTextNode(4);
+  const n4 = createTextNode(5);
+  const n5 = createTextNode(7);
+  const n6 = createTextNode(8);
+  const n7 = createTextNode('A');
+  const n8 = createTextNode('B');
+  prepend(n0, n1, n2);
+  insert([n3, n4], n0, n9);
+  insert([n5, n6], n0, n10);
+  append(n0, n7, n8);
+  watchEffect(() => {
+    setText(n1, undefined, 1);
+  });
+  watchEffect(() => {
+    setText(n2, undefined, 2);
+  });
+  watchEffect(() => {
+    setText(n3, undefined, 4);
+  });
+  watchEffect(() => {
+    setText(n4, undefined, 5);
+  });
+  watchEffect(() => {
+    setText(n5, undefined, 7);
+  });
+  watchEffect(() => {
+    setText(n6, undefined, 8);
+  });
+  watchEffect(() => {
+    setText(n7, undefined, 'A');
+  });
+  watchEffect(() => {
+    setText(n8, undefined, 'B');
+  });
+  return n0;
+}
+"
+`;
+
+exports[`comile > static template 1`] = `
+"import { template } from 'vue/vapor';
+const t0 = template('<div><p>hello</p><input><span></span></div>');
+export function render() {
+  const n0 = t0();
+  return n0;
+}
+"
+`;

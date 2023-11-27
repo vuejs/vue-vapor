@@ -11,10 +11,10 @@ import type {
   ExpressionNode,
 } from '@vue/compiler-dom'
 import {
-  type DynamicChildren,
   type OperationNode,
   type RootIRNode,
   IRNodeTypes,
+  DynamicInfo,
 } from './ir'
 import { isVoidTag } from '@vue/shared'
 
@@ -24,14 +24,14 @@ export interface TransformContext<T extends Node = Node> {
   root: TransformContext<RootNode>
   index: number
   options: TransformOptions
-  // ir: RootIRNode
+
   template: string
-  children: DynamicChildren
-  store: boolean
-  ghost: boolean
+  dynamic: DynamicInfo
+
   once: boolean
 
-  getElementId(): number
+  reference(): number
+  incraseId(): number
   registerTemplate(): number
   registerEffect(expr: string, operation: OperationNode): void
   registerOpration(...oprations: OperationNode[]): void
@@ -43,22 +43,28 @@ function createRootContext(
   node: RootNode,
   options: TransformOptions,
 ): TransformContext<RootNode> {
-  let i = 0
+  let globalId = 0
   const { effect, operation: operation, helpers, vaporHelpers } = ir
 
   const ctx: TransformContext<RootNode> = {
     node,
     parent: null,
     index: 0,
-    root: undefined as any, // set later
+    root: null!, // set later
     options,
-    children: {},
-    store: false,
-    ghost: false,
+    dynamic: ir.dynamic,
     once: false,
 
-    getElementId: () => i++,
+    incraseId: () => globalId++,
+    reference() {
+      if (this.dynamic.id !== null) return this.dynamic.id
+      this.dynamic.referenced = true
+      return (this.dynamic.id = this.incraseId())
+    },
     registerEffect(expr, operation) {
+      if (this.once) {
+        return this.registerOpration(operation)
+      }
       if (!effect[expr]) effect[expr] = []
       effect[expr].push(operation)
     },
@@ -67,11 +73,15 @@ function createRootContext(
     registerTemplate() {
       if (!ctx.template) return -1
 
-      const idx = ir.template.findIndex((t) => t.template === ctx.template)
+      const idx = ir.template.findIndex(
+        (t) =>
+          t.type === IRNodeTypes.TEMPLATE_FACTORY &&
+          t.template === ctx.template,
+      )
       if (idx !== -1) return idx
 
       ir.template.push({
-        type: IRNodeTypes.TEMPLATE_GENERATOR,
+        type: IRNodeTypes.TEMPLATE_FACTORY,
         template: ctx.template,
         loc: node.loc,
       })
@@ -87,6 +97,7 @@ function createRootContext(
     },
   }
   ctx.root = ctx
+  ctx.reference()
   return ctx
 }
 
@@ -95,33 +106,19 @@ function createContext<T extends TemplateChildNode>(
   parent: TransformContext,
   index: number,
 ): TransformContext<T> {
-  let id: number | undefined
-  const getElementId = () => {
-    if (id !== undefined) return id
-    return (id = parent.root.getElementId())
-  }
-  const children = {}
-
   const ctx: TransformContext<T> = {
     ...parent,
     node,
     parent,
     index,
-    get template() {
-      return parent.template
-    },
-    set template(t) {
-      parent.template = t
-    },
-    getElementId,
 
-    children,
-    store: false,
-    registerEffect(expr, operation) {
-      if (ctx.once) {
-        return ctx.registerOpration(operation)
-      }
-      parent.registerEffect(expr, operation)
+    template: '',
+    dynamic: {
+      id: null,
+      referenced: false,
+      ghost: false,
+      placeholder: null,
+      children: {},
     },
   }
   return ctx
@@ -136,7 +133,13 @@ export function transform(
     type: IRNodeTypes.ROOT,
     loc: root.loc,
     template: [],
-    children: {},
+    dynamic: {
+      id: null,
+      referenced: true,
+      ghost: true,
+      placeholder: null,
+      children: {},
+    },
     effect: Object.create(null),
     operation: [],
     helpers: new Set([]),
@@ -146,7 +149,12 @@ export function transform(
 
   // TODO: transform presets, see packages/compiler-core/src/transforms
   transformChildren(ctx, true)
-  ir.children = ctx.children
+  if (ir.template.length === 0) {
+    ir.template.push({
+      type: IRNodeTypes.FRAGMENT_FACTORY,
+      loc: root.loc,
+    })
+  }
 
   return ir
 }
@@ -158,15 +166,62 @@ function transformChildren(
   const {
     node: { children },
   } = ctx
-  let index = 0
+  const childrenTemplate: string[] = []
   children.forEach((child, i) => walkNode(child, i))
 
+  let prevChildren: DynamicInfo[] = []
+  let hasStatic = false
+
+  for (let index = 0; index < children.length; index++) {
+    const child = ctx.dynamic.children[index]
+
+    if (!child || !child.ghost) {
+      if (prevChildren.length)
+        if (hasStatic) {
+          childrenTemplate[index - prevChildren.length] = `<!>`
+          const anchor = (prevChildren[0].placeholder = ctx.incraseId())
+
+          ctx.registerOpration({
+            type: IRNodeTypes.INSERT_NODE,
+            loc: ctx.node.loc,
+            element: prevChildren.map((child) => child.id!),
+            parent: ctx.reference(),
+            anchor,
+          })
+        } else {
+          ctx.registerOpration({
+            type: IRNodeTypes.PREPEND_NODE,
+            loc: ctx.node.loc,
+            elements: prevChildren.map((child) => child.id!),
+            parent: ctx.reference(),
+          })
+        }
+      hasStatic = true
+      prevChildren = []
+      continue
+    }
+
+    prevChildren.push(child)
+
+    if (index === children.length - 1) {
+      ctx.registerOpration({
+        type: IRNodeTypes.APPEND_NODE,
+        loc: ctx.node.loc,
+        elements: prevChildren.map((child) => child.id!),
+        parent: ctx.reference(),
+      })
+    }
+  }
+
+  ctx.template += childrenTemplate.join('')
+
+  // finalize template
   if (root) ctx.registerTemplate()
 
-  function walkNode(node: TemplateChildNode, i: number) {
+  function walkNode(node: TemplateChildNode, index: number) {
     const child = createContext(node, ctx, index)
-    const isFirst = i === 0
-    const isLast = i === children.length - 1
+    const isFirst = index === 0
+    const isLast = index === children.length - 1
 
     switch (node.type) {
       case 1 satisfies NodeTypes.ELEMENT: {
@@ -174,11 +229,11 @@ function transformChildren(
         break
       }
       case 2 satisfies NodeTypes.TEXT: {
-        ctx.template += node.content
+        child.template += node.content
         break
       }
       case 3 satisfies NodeTypes.COMMENT: {
-        ctx.template += `<!--${node.content}-->`
+        child.template += `<!--${node.content}-->`
         break
       }
       case 5 satisfies NodeTypes.INTERPOLATION: {
@@ -198,18 +253,20 @@ function transformChildren(
         // IfNode
         // IfBranchNode
         // ForNode
-        ctx.template += `[type: ${node.type}]`
+        child.template += `[type: ${node.type}]`
       }
     }
 
-    if (Object.keys(child.children).length > 0 || child.store)
-      ctx.children[index] = {
-        id: child.store ? child.getElementId() : null,
-        store: child.store,
-        children: child.children,
-      }
+    childrenTemplate.push(child.template)
 
-    if (!child.ghost) index++
+    if (
+      child.dynamic.ghost ||
+      child.dynamic.referenced ||
+      child.dynamic.placeholder ||
+      Object.keys(child.dynamic.children).length
+    ) {
+      ctx.dynamic.children[index] = child.dynamic
+    }
   }
 }
 
@@ -237,73 +294,38 @@ function transformInterpolation(
 ) {
   const { node } = ctx
 
-  if (node.content.type === (4 satisfies NodeTypes.SIMPLE_EXPRESSION)) {
-    const expr = processExpression(ctx, node.content)!
-
-    const parent = ctx.parent!
-    const parentId = parent.getElementId()
-    parent.store = true
-
-    if (isFirst && isLast) {
-      ctx.registerEffect(expr, {
-        type: IRNodeTypes.SET_TEXT,
-        loc: node.loc,
-        element: parentId,
-        value: expr,
-        // e.g <template> <div> {{count}} </div> </template>
-        isRoot:
-          isRootNode(ctx) ||
-          isRootNode(ctx.parent as TransformContext<ElementNode>),
-      })
-    } else {
-      let id: number
-      let anchor: number | 'first' | 'last'
-
-      if (!isFirst && !isLast) {
-        id = ctx.root.getElementId()
-        anchor = ctx.getElementId()
-        ctx.template += '<!>'
-        ctx.store = true
-      } else {
-        id = ctx.getElementId()
-        ctx.ghost = true
-        anchor = isFirst ? 'first' : 'last'
-      }
-
-      ctx.registerOpration(
-        {
-          type: IRNodeTypes.TEXT_NODE,
-          loc: node.loc,
-          id,
-          value: expr,
-        },
-        {
-          type: IRNodeTypes.INSERT_NODE,
-          loc: node.loc,
-          element: id,
-          parent: parentId,
-          anchor,
-          isRoot:
-            isRootNode(ctx) ||
-            isRootNode(ctx.parent as TransformContext<ElementNode>),
-        },
-      )
-
-      ctx.registerEffect(expr, {
-        type: IRNodeTypes.SET_TEXT,
-        loc: node.loc,
-        element: id,
-        value: expr,
-        // e.g <template> <div> {{count}} foo</div> </template>
-        // e.g <template> <div>foo {{count}} foo</div> </template>
-        // e.g <template> <div>foo {{count}} </div> </template>
-        isRoot: false,
-      })
-    }
+  if (node.content.type === (8 satisfies NodeTypes.COMPOUND_EXPRESSION)) {
+    // TODO: CompoundExpressionNode: {{ count + 1 }}
     return
   }
 
-  // TODO: CompoundExpressionNode: {{ count + 1 }}
+  const expr = processExpression(ctx, node.content)!
+
+  if (isFirst && isLast) {
+    const parent = ctx.parent!
+    const parentId = parent.reference()
+    ctx.registerEffect(expr, {
+      type: IRNodeTypes.SET_TEXT,
+      loc: node.loc,
+      element: parentId,
+      value: expr,
+    })
+  } else {
+    const id = ctx.reference()
+    ctx.dynamic.ghost = true
+    ctx.registerOpration({
+      type: IRNodeTypes.CREATE_TEXT_NODE,
+      loc: node.loc,
+      id,
+      value: expr,
+    })
+    ctx.registerEffect(expr, {
+      type: IRNodeTypes.SET_TEXT,
+      loc: node.loc,
+      element: id,
+      value: expr,
+    })
+  }
 }
 
 function transformProp(
@@ -321,7 +343,6 @@ function transformProp(
     return
   }
 
-  ctx.store = true
   const expr = processExpression(ctx, node.exp)
   switch (name) {
     case 'bind': {
@@ -342,10 +363,9 @@ function transformProp(
       ctx.registerEffect(expr, {
         type: IRNodeTypes.SET_PROP,
         loc: node.loc,
-        element: ctx.getElementId(),
+        element: ctx.reference(),
         name: node.arg.content,
         value: expr,
-        isRoot: isRootNode(ctx),
       })
       break
     }
@@ -367,10 +387,9 @@ function transformProp(
       ctx.registerEffect(expr, {
         type: IRNodeTypes.SET_EVENT,
         loc: node.loc,
-        element: ctx.getElementId(),
+        element: ctx.reference(),
         name: node.arg.content,
         value: expr,
-        isRoot: isRootNode(ctx),
       })
       break
     }
@@ -379,7 +398,7 @@ function transformProp(
       ctx.registerEffect(value, {
         type: IRNodeTypes.SET_HTML,
         loc: node.loc,
-        element: ctx.getElementId(),
+        element: ctx.reference(),
         value,
       })
       break
@@ -389,9 +408,8 @@ function transformProp(
       ctx.registerEffect(value, {
         type: IRNodeTypes.SET_TEXT,
         loc: node.loc,
-        element: ctx.getElementId(),
+        element: ctx.reference(),
         value,
-        isRoot: isRootNode(ctx),
       })
       break
     }
@@ -421,8 +439,4 @@ function processExpression(
     return content + '.value'
   }
   return content
-}
-
-function isRootNode(ctx: TransformContext<ElementNode | InterpolationNode>) {
-  return !!(ctx && ctx.parent && ctx.root === ctx.parent)
 }
