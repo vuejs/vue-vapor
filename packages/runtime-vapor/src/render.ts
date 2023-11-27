@@ -7,6 +7,7 @@ import {
 import { isArray } from '@vue/shared'
 
 export type Block = Node | Fragment | Block[]
+export type ParentBlock = ParentNode | Node[]
 export type Fragment = { nodes: Block; anchor: Node }
 export type BlockFn = (props?: any) => Block
 
@@ -55,6 +56,24 @@ export function insert(
     parent.insertBefore(block.anchor, anchor)
   }
   // }
+}
+
+export function prepend(parent: ParentBlock, ...nodes: Node[]) {
+  if (parent instanceof Node) {
+    // TODO use insertBefore for better performance https://jsbench.me/rolpg250hh/1
+    parent.prepend(...nodes)
+  } else if (isArray(parent)) {
+    parent.unshift(...nodes)
+  }
+}
+
+export function append(parent: ParentBlock, ...nodes: Node[]) {
+  if (parent instanceof Node) {
+    // TODO use insertBefore for better performance
+    parent.append(...nodes)
+  } else if (isArray(parent)) {
+    parent.push(...nodes)
+  }
 }
 
 export function remove(block: Block, parent: ParentNode) {
@@ -124,6 +143,6 @@ export function children(n: ChildNode): Children {
   return { ...Array.from(n.childNodes).map(n => [n, children(n)]) }
 }
 
-export function createTextNode(data: string): Text {
-  return document.createTextNode(data)
+export function createTextNode(val: unknown): Text {
+  return document.createTextNode(toDisplayString(val))
 }

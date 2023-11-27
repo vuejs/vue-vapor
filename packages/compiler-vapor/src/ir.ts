@@ -11,6 +11,8 @@ export const enum IRNodeTypes {
   SET_HTML,
 
   INSERT_NODE,
+  PREPEND_NODE,
+  APPEND_NODE,
   CREATE_TEXT_NODE,
 }
 
@@ -22,7 +24,7 @@ export interface IRNode {
 export interface RootIRNode extends IRNode {
   type: IRNodeTypes.ROOT
   template: Array<TemplateFactoryIRNode | FragmentFactoryIRNode>
-  children: DynamicChild
+  dynamic: DynamicInfo
   // TODO multi-expression effect
   effect: Record<string /* expr */, OperationNode[]>
   operation: OperationNode[]
@@ -73,9 +75,21 @@ export interface CreateTextNodeIRNode extends IRNode {
 
 export interface InsertNodeIRNode extends IRNode {
   type: IRNodeTypes.INSERT_NODE
-  element: number
+  element: number | number[]
   parent: number
-  anchor: number | 'first' | 'last'
+  anchor: number
+}
+
+export interface PrependNodeIRNode extends IRNode {
+  type: IRNodeTypes.PREPEND_NODE
+  elements: number[]
+  parent: number
+}
+
+export interface AppendNodeIRNode extends IRNode {
+  type: IRNodeTypes.APPEND_NODE
+  elements: number[]
+  parent: number
 }
 
 export type OperationNode =
@@ -85,11 +99,15 @@ export type OperationNode =
   | SetHtmlIRNode
   | CreateTextNodeIRNode
   | InsertNodeIRNode
+  | PrependNodeIRNode
+  | AppendNodeIRNode
 
-export interface DynamicChild {
+export interface DynamicInfo {
   id: number | null
-  store: boolean
+  referenced: boolean
+  /** created by DOM API */
   ghost: boolean
+  placeholder: number | null
   children: DynamicChildren
 }
-export type DynamicChildren = Record<number, DynamicChild>
+export type DynamicChildren = Record<number, DynamicInfo>
