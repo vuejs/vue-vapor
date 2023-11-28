@@ -29,6 +29,7 @@ export interface TransformContext<T extends Node = Node> {
   dynamic: DynamicInfo
 
   once: boolean
+  memo?: string
 
   reference(): number
   incraseId(): number
@@ -66,7 +67,10 @@ function createRootContext(
         return this.registerOpration(operation)
       }
       if (!effect[expr]) effect[expr] = []
-      effect[expr].push(operation)
+      effect[expr].push({
+        ...operation,
+        memo: this.memo,
+      })
     },
 
     template: '',
@@ -418,6 +422,10 @@ function transformProp(
       ctx.once = true
       break
     }
+    case 'memo': {
+      expr && (ctx.memo = expr)
+      break
+    }
     case 'cloak': {
       // do nothing
       break
@@ -438,6 +446,17 @@ function processExpression(
   const { content } = expr
   if (ctx.options.bindingMetadata?.[content] === 'setup-ref') {
     return content + '.value'
+  }
+  // TODO maybe can reuse the methods in transformExpression
+  const pattern = /\[([^\]]*)\]/
+  const matches = content.match(pattern)
+  if (matches) {
+    const vars = matches[1].split(',').map((item) => {
+      if (ctx.options.bindingMetadata?.[item.trim()] === 'setup-ref') {
+        return item.trim() + '.value'
+      }
+    })
+    return '[' + vars.join(',') + ']'
   }
   return content
 }

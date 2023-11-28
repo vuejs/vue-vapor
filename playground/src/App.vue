@@ -3,7 +3,7 @@ import { ref, computed } from 'vue'
 
 const count = ref(1)
 const double = computed(() => count.value * 2)
-const html = computed(() => `<button>HTML! ${count.value}</button>`)
+const html = computed(() => `<button>HTML!</button>`)
 
 const inc = () => count.value++
 const dec = () => count.value--
@@ -21,7 +21,7 @@ globalThis.html = html
 </script>
 
 <template>
-  <div v-memo="[html, double, count]">
+  <div v-memo="[html]">
     <h1 class="red">Counter</h1>
     <div>The number is {{ count }}.</div>
     <div>{{ count }} * 2 = {{ double }}</div>

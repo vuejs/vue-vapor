@@ -44,15 +44,49 @@ export function generate(
     for (const operation of ir.operation) {
       code += genOperation(operation)
     }
+
+    let memoIndex = -1
     for (const [_expr, operations] of Object.entries(ir.effect)) {
       let scope = `effect(() => {\n`
       vaporHelpers.add('effect')
+      let currentMemo = ''
       for (const operation of operations) {
-        scope += genOperation(operation)
+        if (operation.memo && !currentMemo) {
+          vaporHelpers.add('withMemo')
+          currentMemo = operation.memo
+          scope = `${scope}withMemo(${currentMemo}, () => {\n`
+        } else if (
+          operation.memo &&
+          currentMemo &&
+          operation.memo !== currentMemo
+        ) {
+          scope += `}, _memoCache, ${memoIndex} )\n`
+          memoIndex++
+          currentMemo = operation.memo
+          scope = `${scope}withMemo(${currentMemo}, () => {\n`
+        } else if (!operation.memo && currentMemo) {
+          scope += `}, _memoCache, ${memoIndex} )\n`
+          memoIndex++
+          currentMemo = ''
+        }
+
+        scope = `${scope}${genOperation(operation)}`
       }
+
+      if (currentMemo) {
+        scope += `}, _memoCache, ${memoIndex} )\n`
+        currentMemo = ''
+        memoIndex++
+      }
+
       scope += '})\n'
       code += scope
     }
+
+    if (memoIndex > -1) {
+      code = `const _memoCache = [];\n${code}`
+    }
+
     // TODO multiple-template
     // TODO return statement in IR
     code += `return n${ir.dynamic.id}\n`

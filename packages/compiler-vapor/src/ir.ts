@@ -19,6 +19,7 @@ export const enum IRNodeTypes {
 export interface IRNode {
   type: IRNodeTypes
   loc: SourceLocation
+  memo?: string
 }
 
 export interface RootIRNode extends IRNode {
