@@ -5,7 +5,7 @@ import { Block, BlockFn } from './render'
 export interface ComponentInternalInstance {
   uid: number
   container: ParentNode
-  block: Block
+  block: Block | null
   scope: EffectScope
 
   component: BlockFn
@@ -20,7 +20,7 @@ export const createComponentInstance = (
 ): ComponentInternalInstance => {
   const instance: ComponentInternalInstance = {
     uid: uid++,
-    block: null!, // set on mount
+    block: null,
     container: null!, // set on mount
     scope: new EffectScope(true /* detached */)!,
 
