@@ -135,7 +135,7 @@ export function transform(
   root: RootNode,
   options: TransformOptions = {},
 ): RootIRNode {
-  options.onError ??= defaultOnError
+  options.onError ||= defaultOnError
   options.onWarn ??= defaultOnWarn
 
   const ir: RootIRNode = {
