@@ -420,6 +420,7 @@ function transformProp(
         element: ctx.reference(),
         name: node.arg.content,
         value: expr,
+        modifiers,
       })
       break
     }
