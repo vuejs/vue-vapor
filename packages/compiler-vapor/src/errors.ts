@@ -40,7 +40,7 @@ export function createCompilerError<T extends number>(
 export const enum ErrorCodes {
   // transform errors
   X_V_VAPOR_BIND_NO_EXPRESSION,
-  X_V_VAPOR_ON_NO_EXPRESSION,
+  VAPOR_ON_NO_EXPRESSION,
 }
 
 export const errorMessages: Record<ErrorCodes, string> = {
