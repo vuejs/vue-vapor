@@ -1,42 +1,7 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`compile > Dynamic root nodes and interpolation 1`] = `
-"import { watchEffect } from 'vue';
-import { template, children, createTextNode, prepend, insert, append, on, setAttr, setText } from 'vue/vapor';
-const t0 = template('<button>foo<!>foo</button>');
-export function render() {
-  const n0 = t0();
-  const {
-    0: [
-      n1,
-      {
-        1: [n5],
-      },
-    ],
-  } = children(n0);
-  const n2 = createTextNode(count);
-  const n3 = createTextNode(count);
-  const n4 = createTextNode(count);
-  prepend(n1, n2);
-  insert(n3, n1, n5);
-  append(n1, n4);
-  watchEffect(() => {
-    on(n1, 'click', handleClick);
-  });
-  watchEffect(() => {
-    setAttr(n1, 'id', undefined, count);
-    setText(n2, undefined, count);
-    setText(n3, undefined, count);
-    setText(n4, undefined, count);
-  });
-  return n0;
-}
-"
-`;
-
 exports[`compile > bindings 1`] = `
-"import { watchEffect } from 'vue';
-import { template, children, createTextNode, insert, setText } from 'vue/vapor';
+"import { template, children, createTextNode, insert, effect, setText } from 'vue/vapor';
 const t0 = template('<div>count is <!>.</div>');
 export function render() {
   const n0 = t0();
@@ -50,7 +15,7 @@ export function render() {
   } = children(n0);
   const n1 = createTextNode(count.value);
   insert(n1, n3, n2);
-  watchEffect(() => {
+  effect(() => {
     setText(n1, undefined, count.value);
   });
   return n0;
@@ -59,15 +24,14 @@ export function render() {
 `;
 
 exports[`compile > directives > v-bind > simple expression 1`] = `
-"import { watchEffect } from 'vue';
-import { template, children, setAttr } from 'vue/vapor';
+"import { template, children, effect, setAttr } from 'vue/vapor';
 const t0 = template('<div></div>');
 export function render() {
   const n0 = t0();
   const {
     0: [n1],
   } = children(n0);
-  watchEffect(() => {
+  effect(() => {
     setAttr(n1, 'id', undefined, id.value);
   });
   return n0;
@@ -76,15 +40,14 @@ export function render() {
 `;
 
 exports[`compile > directives > v-html > no expression 1`] = `
-"import { watchEffect } from 'vue';
-import { template, children, setHtml } from 'vue/vapor';
+"import { template, children, effect, setHtml } from 'vue/vapor';
 const t0 = template('<div></div>');
 export function render() {
   const n0 = t0();
   const {
     0: [n1],
   } = children(n0);
-  watchEffect(() => {
+  effect(() => {
     setHtml(n1, undefined, '');
   });
   return n0;
@@ -93,15 +56,14 @@ export function render() {
 `;
 
 exports[`compile > directives > v-html > simple expression 1`] = `
-"import { watchEffect } from 'vue';
-import { template, children, setHtml } from 'vue/vapor';
+"import { template, children, effect, setHtml } from 'vue/vapor';
 const t0 = template('<div></div>');
 export function render() {
   const n0 = t0();
   const {
     0: [n1],
   } = children(n0);
-  watchEffect(() => {
+  effect(() => {
     setHtml(n1, undefined, code.value);
   });
   return n0;
@@ -110,15 +72,14 @@ export function render() {
 `;
 
 exports[`compile > directives > v-on > simple expression 1`] = `
-"import { watchEffect } from 'vue';
-import { template, children, on } from 'vue/vapor';
+"import { template, children, effect, on } from 'vue/vapor';
 const t0 = template('<div></div>');
 export function render() {
   const n0 = t0();
   const {
     0: [n1],
   } = children(n0);
-  watchEffect(() => {
+  effect(() => {
     on(n1, 'click', handleClick);
   });
   return n0;
@@ -127,15 +88,14 @@ export function render() {
 `;
 
 exports[`compile > directives > v-once > as root node 1`] = `
-"import { watchEffect } from 'vue';
-import { template, children, setAttr } from 'vue/vapor';
+"import { template, children, effect, setAttr } from 'vue/vapor';
 const t0 = template('<div></div>');
 export function render() {
   const n0 = t0();
   const {
     0: [n1],
   } = children(n0);
-  watchEffect(() => {
+  effect(() => {
     setAttr(n1, 'id', undefined, foo);
   });
   return n0;
@@ -166,15 +126,14 @@ export function render() {
 `;
 
 exports[`compile > directives > v-text > no expression 1`] = `
-"import { watchEffect } from 'vue';
-import { template, children, setText } from 'vue/vapor';
+"import { template, children, effect, setText } from 'vue/vapor';
 const t0 = template('<div></div>');
 export function render() {
   const n0 = t0();
   const {
     0: [n1],
   } = children(n0);
-  watchEffect(() => {
+  effect(() => {
     setText(n1, undefined, '');
   });
   return n0;
@@ -183,15 +142,14 @@ export function render() {
 `;
 
 exports[`compile > directives > v-text > simple expression 1`] = `
-"import { watchEffect } from 'vue';
-import { template, children, setText } from 'vue/vapor';
+"import { template, children, effect, setText } from 'vue/vapor';
 const t0 = template('<div></div>');
 export function render() {
   const n0 = t0();
   const {
     0: [n1],
   } = children(n0);
-  watchEffect(() => {
+  effect(() => {
     setText(n1, undefined, str.value);
   });
   return n0;
@@ -200,19 +158,51 @@ export function render() {
 `;
 
 exports[`compile > dynamic root 1`] = `
-"import { watchEffect } from 'vue';
-import { fragment, createTextNode, append, setText } from 'vue/vapor';
+"import { fragment, createTextNode, append, effect, setText } from 'vue/vapor';
 export function render() {
   const t0 = fragment();
   const n0 = t0();
   const n1 = createTextNode(1);
   const n2 = createTextNode(2);
   append(n0, n1, n2);
-  watchEffect(() => {
+  effect(() => {
     setText(n1, undefined, 1);
   });
-  watchEffect(() => {
+  effect(() => {
     setText(n2, undefined, 2);
+  });
+  return n0;
+}
+"
+`;
+
+exports[`compile > dynamic root nodes and interpolation 1`] = `
+"import { template, children, createTextNode, prepend, insert, append, effect, on, setAttr, setText } from 'vue/vapor';
+const t0 = template('<button>foo<!>foo</button>');
+export function render() {
+  const n0 = t0();
+  const {
+    0: [
+      n1,
+      {
+        1: [n5],
+      },
+    ],
+  } = children(n0);
+  const n2 = createTextNode(count);
+  const n3 = createTextNode(count);
+  const n4 = createTextNode(count);
+  prepend(n1, n2);
+  insert(n3, n1, n5);
+  append(n1, n4);
+  effect(() => {
+    on(n1, 'click', handleClick);
+  });
+  effect(() => {
+    setAttr(n1, 'id', undefined, count);
+    setText(n2, undefined, count);
+    setText(n3, undefined, count);
+    setText(n4, undefined, count);
   });
   return n0;
 }
@@ -230,8 +220,7 @@ export function render() {
 `;
 
 exports[`compile > static + dynamic root 1`] = `
-"import { watchEffect } from 'vue';
-import { template, children, createTextNode, prepend, insert, append, setText } from 'vue/vapor';
+"import { template, children, createTextNode, prepend, insert, append, effect, setText } from 'vue/vapor';
 const t0 = template('3<!>6<!>9');
 export function render() {
   const n0 = t0();
@@ -251,28 +240,28 @@ export function render() {
   insert([n3, n4], n0, n9);
   insert([n5, n6], n0, n10);
   append(n0, n7, n8);
-  watchEffect(() => {
+  effect(() => {
     setText(n1, undefined, 1);
   });
-  watchEffect(() => {
+  effect(() => {
     setText(n2, undefined, 2);
   });
-  watchEffect(() => {
+  effect(() => {
     setText(n3, undefined, 4);
   });
-  watchEffect(() => {
+  effect(() => {
     setText(n4, undefined, 5);
   });
-  watchEffect(() => {
+  effect(() => {
     setText(n5, undefined, 7);
   });
-  watchEffect(() => {
+  effect(() => {
     setText(n6, undefined, 8);
   });
-  watchEffect(() => {
+  effect(() => {
     setText(n7, undefined, 'A');
   });
-  watchEffect(() => {
+  effect(() => {
     setText(n8, undefined, 'B');
   });
   return n0;
