@@ -17,7 +17,7 @@ export function defaultOnWarn(msg: CompilerError) {
   __DEV__ && console.warn(`[Vue warn] ${msg.message}`)
 }
 
-type InferCompilerError<T> = T extends ErrorCodes
+export type InferCompilerError<T> = T extends ErrorCodes
   ? CoreCompilerError
   : CompilerError
 

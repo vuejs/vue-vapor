@@ -1,14 +1,14 @@
 import {
   NodeTypes,
-  RootNode,
-  Node,
-  TemplateChildNode,
-  ElementNode,
-  AttributeNode,
-  InterpolationNode,
-  TransformOptions,
-  DirectiveNode,
-  ExpressionNode,
+  type RootNode,
+  type Node,
+  type TemplateChildNode,
+  type ElementNode,
+  type AttributeNode,
+  type InterpolationNode,
+  type TransformOptions,
+  type DirectiveNode,
+  type ExpressionNode,
 } from '@vue/compiler-dom'
 import {
   type OperationNode,
@@ -136,7 +136,7 @@ export function transform(
   options: TransformOptions = {},
 ): RootIRNode {
   options.onError ||= defaultOnError
-  options.onWarn ??= defaultOnWarn
+  options.onWarn ||= defaultOnWarn
 
   const ir: RootIRNode = {
     type: IRNodeTypes.ROOT,
@@ -363,7 +363,7 @@ function transformProp(
         (exp.type === NodeTypes.SIMPLE_EXPRESSION! && !exp.content.trim())
       ) {
         ctx.options.onError!(
-          createCompilerError(ErrorCodes.X_V_VAPOR_BIND_NO_EXPRESSION, loc),
+          createCompilerError(ErrorCodes.VAPOR_BIND_NO_EXPRESSION, loc),
         )
         return
       }
@@ -394,7 +394,7 @@ function transformProp(
     case 'on': {
       if (!exp && !modifiers.length) {
         ctx.options.onError!(
-          createCompilerError(ErrorCodes.X_V_VAPOR_ON_NO_EXPRESSION, loc),
+          createCompilerError(ErrorCodes.VAPOR_ON_NO_EXPRESSION, loc),
         )
         return
       }
