@@ -21,7 +21,7 @@ globalThis.html = html
 </script>
 
 <template>
-  <div>
+  <div v-memo="[html, double, count]">
     <h1 class="red">Counter</h1>
     <div>The number is {{ count }}.</div>
     <div>{{ count }} * 2 = {{ double }}</div>
