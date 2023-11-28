@@ -34,7 +34,7 @@ export interface TransformContext<T extends Node = Node> {
   reference(): number
   incraseId(): number
   registerTemplate(): number
-  registerEffect(expr: string, operation: OperationNode): void
+  registerEffect(expr: string, operation: OperationNode, memo?: string): void
   registerOpration(...oprations: OperationNode[]): void
   helper(name: string): string
 }
@@ -62,14 +62,14 @@ function createRootContext(
       this.dynamic.referenced = true
       return (this.dynamic.id = this.incraseId())
     },
-    registerEffect(expr, operation) {
+    registerEffect(expr, operation, memo = '') {
       if (this.once) {
         return this.registerOpration(operation)
       }
       if (!effect[expr]) effect[expr] = []
       effect[expr].push({
         ...operation,
-        memo: this.memo,
+        memo,
       })
     },
 
@@ -309,12 +309,16 @@ function transformInterpolation(
   if (isFirst && isLast) {
     const parent = ctx.parent!
     const parentId = parent.reference()
-    ctx.registerEffect(expr, {
-      type: IRNodeTypes.SET_TEXT,
-      loc: node.loc,
-      element: parentId,
-      value: expr,
-    })
+    ctx.registerEffect(
+      expr,
+      {
+        type: IRNodeTypes.SET_TEXT,
+        loc: node.loc,
+        element: parentId,
+        value: expr,
+      },
+      ctx.memo,
+    )
   } else {
     const id = ctx.reference()
     ctx.dynamic.ghost = true
@@ -324,12 +328,16 @@ function transformInterpolation(
       id,
       value: expr,
     })
-    ctx.registerEffect(expr, {
-      type: IRNodeTypes.SET_TEXT,
-      loc: node.loc,
-      element: id,
-      value: expr,
-    })
+    ctx.registerEffect(
+      expr,
+      {
+        type: IRNodeTypes.SET_TEXT,
+        loc: node.loc,
+        element: id,
+        value: expr,
+      },
+      ctx.memo,
+    )
   }
 }
 
@@ -365,13 +373,17 @@ function transformProp(
         return
       }
 
-      ctx.registerEffect(expr, {
-        type: IRNodeTypes.SET_PROP,
-        loc: node.loc,
-        element: ctx.reference(),
-        name: node.arg.content,
-        value: expr,
-      })
+      ctx.registerEffect(
+        expr,
+        {
+          type: IRNodeTypes.SET_PROP,
+          loc: node.loc,
+          element: ctx.reference(),
+          name: node.arg.content,
+          value: expr,
+        },
+        ctx.memo,
+      )
       break
     }
     case 'on': {
@@ -400,22 +412,30 @@ function transformProp(
     }
     case 'html': {
       const value = expr || '""'
-      ctx.registerEffect(value, {
-        type: IRNodeTypes.SET_HTML,
-        loc: node.loc,
-        element: ctx.reference(),
+      ctx.registerEffect(
         value,
-      })
+        {
+          type: IRNodeTypes.SET_HTML,
+          loc: node.loc,
+          element: ctx.reference(),
+          value,
+        },
+        ctx.memo,
+      )
       break
     }
     case 'text': {
       const value = expr || '""'
-      ctx.registerEffect(value, {
-        type: IRNodeTypes.SET_TEXT,
-        loc: node.loc,
-        element: ctx.reference(),
+      ctx.registerEffect(
         value,
-      })
+        {
+          type: IRNodeTypes.SET_TEXT,
+          loc: node.loc,
+          element: ctx.reference(),
+          value,
+        },
+        ctx.memo,
+      )
       break
     }
     case 'once': {

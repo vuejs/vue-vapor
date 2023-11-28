@@ -3,8 +3,8 @@ import { ref, computed } from 'vue'
 
 const count = ref(1)
 const double = computed(() => count.value * 2)
-const html = computed(() => `<button>HTML!</button>`)
-
+const html = computed(() => `<button>HTML! ${count.value}</button>`)
+const memoValue = ref('memo')
 const inc = () => count.value++
 const dec = () => count.value--
 
@@ -18,10 +18,12 @@ globalThis.inc = inc
 globalThis.dec = dec
 // @ts-expect-error
 globalThis.html = html
+// @ts-expect-error
+globalThis.memoValue = memoValue
 </script>
 
 <template>
-  <div v-memo="[html]">
+  <div>
     <h1 class="red">Counter</h1>
     <div>The number is {{ count }}.</div>
     <div>{{ count }} * 2 = {{ double }}</div>
@@ -34,6 +36,9 @@ globalThis.html = html
     <div v-once>once: {{ count }}</div>
     <div v-pre>{{ count }}</div>
     <div v-cloak>{{ count }}</div>
+    <button @click="inc" v-memo="[memoValue]">
+      v-memo {{ count }}
+    </button>
   </div>
 </template>
 
