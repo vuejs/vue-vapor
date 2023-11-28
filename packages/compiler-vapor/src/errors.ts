@@ -4,7 +4,6 @@ export {
   defaultOnWarn,
   type CoreCompilerError,
   type CompilerError,
-  type InferCompilerError,
 } from '@vue/compiler-dom'
 
 export const enum ErrorCodes {

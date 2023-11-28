@@ -28,8 +28,7 @@ export {
   defaultOnError,
   defaultOnWarn,
   type CoreCompilerError,
-  type CompilerError,
-  type InferCompilerError
+  type CompilerError
 } from './errors'
 
 export * from './ast'
