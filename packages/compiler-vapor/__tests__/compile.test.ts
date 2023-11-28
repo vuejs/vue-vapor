@@ -33,7 +33,7 @@ describe('compile', () => {
     expect(code).matchSnapshot()
   })
 
-  test('Dynamic root nodes and interpolation', async () => {
+  test('dynamic root nodes and interpolation', async () => {
     const code = await compile(
       `<button @click="handleClick" :id="count">{{count}}foo{{count}}foo{{count}} </button>`,
     )
