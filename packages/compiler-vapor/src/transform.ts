@@ -38,10 +38,10 @@ export interface TransformContext<T extends Node = Node> {
   memo?: string
 
   reference(): number
-  incraseId(): number
+  increaseId(): number
   registerTemplate(): number
   registerEffect(expr: string, operation: OperationNode, memo?: string): void
-  registerOpration(...oprations: OperationNode[]): void
+  registerOperation(...operations: OperationNode[]): void
   helper(name: string): string
 }
 
@@ -62,15 +62,15 @@ function createRootContext(
     dynamic: ir.dynamic,
     once: false,
 
-    incraseId: () => globalId++,
+    increaseId: () => globalId++,
     reference() {
       if (this.dynamic.id !== null) return this.dynamic.id
       this.dynamic.referenced = true
-      return (this.dynamic.id = this.incraseId())
+      return (this.dynamic.id = this.increaseId())
     },
     registerEffect(expr, operation, memo = '') {
       if (this.once) {
-        return this.registerOpration(operation)
+        return this.registerOperation(operation)
       }
       if (!effect[expr]) effect[expr] = []
       effect[expr].push({
@@ -97,7 +97,7 @@ function createRootContext(
       })
       return ir.template.length - 1
     },
-    registerOpration(...node) {
+    registerOperation(...node) {
       operation.push(...node)
     },
     // TODO not used yet
@@ -198,9 +198,9 @@ function transformChildren(
         if (prevChildren.length)
           if (hasStatic) {
             childrenTemplate[index - prevChildren.length] = `<!>`
-            const anchor = (prevChildren[0].placeholder = ctx.incraseId())
+            const anchor = (prevChildren[0].placeholder = ctx.increaseId())
 
-            ctx.registerOpration({
+            ctx.registerOperation({
               type: IRNodeTypes.INSERT_NODE,
               loc: ctx.node.loc,
               element: prevChildren.map((child) => child.id!),
@@ -208,7 +208,7 @@ function transformChildren(
               anchor,
             })
           } else {
-            ctx.registerOpration({
+            ctx.registerOperation({
               type: IRNodeTypes.PREPEND_NODE,
               loc: ctx.node.loc,
               elements: prevChildren.map((child) => child.id!),
@@ -223,7 +223,7 @@ function transformChildren(
       prevChildren.push(child)
 
       if (index === children.length - 1) {
-        ctx.registerOpration({
+        ctx.registerOperation({
           type: IRNodeTypes.APPEND_NODE,
           loc: ctx.node.loc,
           elements: prevChildren.map((child) => child.id!),
@@ -332,7 +332,7 @@ function transformInterpolation(
   } else {
     const id = ctx.reference()
     ctx.dynamic.ghost = true
-    ctx.registerOpration({
+    ctx.registerOperation({
       type: IRNodeTypes.CREATE_TEXT_NODE,
       loc: node.loc,
       id,
