@@ -468,9 +468,15 @@ function processExpression(
 }
 
 function hasVOnceNode(
-  node: Array<DirectiveNode | AttributeNode>,
-  ctx: TransformContext<ElementNode>){
-  ctx.once =  node.some(prop => {
+  nodes: Array<DirectiveNode | AttributeNode>,
+  ctx: TransformContext<ElementNode>,
+) {
+  let onceIndex = -1
+  ctx.once = nodes.some((prop, index) => {
+    onceIndex = index
     return prop.name === 'once'
   })
+  if (ctx.once && onceIndex !== -1) {
+    nodes.splice(onceIndex, 1)
+  }
 }
