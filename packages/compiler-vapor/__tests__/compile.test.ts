@@ -171,7 +171,7 @@ describe('compile', () => {
         expect(code).matchSnapshot()
       })
 
-      test.fails('as root node', async () => {
+      test('as root node', async () => {
         const code = await compile(`<div :id="foo" v-once />`)
         expect(code).toMatchSnapshot()
         expect(code).not.contains('effect')
@@ -184,7 +184,9 @@ describe('compile', () => {
       })
 
       test('inside v-once', async () => {
-        const code = await compile(`<div v-once :id="foo"><div :id="foo" v-once/></div>`)
+        const code = await compile(
+          `<div v-once :id="foo"><div :id="foo" v-once/></div>`,
+        )
         expect(code).toMatchSnapshot()
         expect(code).not.contains('effect')
       })
