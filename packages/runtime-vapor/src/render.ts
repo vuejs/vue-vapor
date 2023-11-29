@@ -52,22 +52,11 @@ export const unmountComponent = (instance: ComponentInternalInstance) => {
   // um && invoke(um)
 }
 
-export const enum InsertPosition {
-  FIRST,
-  LAST
-}
-
 export function insert(
   block: Block,
   parent: ParentNode,
-  anchor: Node | InsertPosition | null = null
+  anchor: Node | null = null
 ) {
-  anchor =
-    typeof anchor === 'number'
-      ? anchor === InsertPosition.FIRST
-        ? parent.firstChild
-        : null
-      : anchor
   // if (!isHydrating) {
   if (block instanceof Node) {
     parent.insertBefore(block, anchor)
