@@ -1,11 +1,11 @@
-import {hasChanged} from "@vue/shared";
+import { hasChanged } from '@vue/shared'
 
 export function withMemo(
   memo: any[],
-  update: () => void ,
+  update: () => void,
   cache: any[],
   index: number
-){
+) {
   const cached = cache
   if (cached && cached[index] && isMemoSame(cached[index], memo)) {
     return cached
