@@ -9,6 +9,7 @@ export const enum IRNodeTypes {
   SET_TEXT,
   SET_EVENT,
   SET_HTML,
+  SET_SHOW,
 
   INSERT_NODE,
   PREPEND_NODE,
@@ -39,6 +40,12 @@ export interface TemplateFactoryIRNode extends IRNode {
 
 export interface FragmentFactoryIRNode extends IRNode {
   type: IRNodeTypes.FRAGMENT_FACTORY
+}
+
+export interface SetShowIRNode extends IRNode {
+  type: IRNodeTypes.SET_SHOW
+  element: number
+  value: string
 }
 
 export interface SetPropIRNode extends IRNode {
@@ -93,6 +100,7 @@ export interface AppendNodeIRNode extends IRNode {
 }
 
 export type OperationNode =
+  | SetShowIRNode
   | SetPropIRNode
   | SetTextIRNode
   | SetEventIRNode

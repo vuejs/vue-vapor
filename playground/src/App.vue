@@ -4,6 +4,7 @@ import { ref, computed } from 'vue/vapor'
 const count = ref(1)
 const double = computed(() => count.value * 2)
 const html = computed(() => `<button>HTML! ${count.value}</button>`)
+const show = computed(() => count.value > 0)
 
 const inc = () => count.value++
 const dec = () => count.value--
@@ -18,6 +19,8 @@ globalThis.inc = inc
 globalThis.dec = dec
 // @ts-expect-error
 globalThis.html = html
+// @ts-expect-error
+globalThis.show = show
 </script>
 
 <template>
@@ -25,7 +28,8 @@ globalThis.html = html
     <h1 class="red">Counter</h1>
     <div>The number is {{ count }}.</div>
     <div>{{ count }} * 2 = {{ double }}</div>
-    <div style="display: flex; gap: 8px">
+    <div v-show="show">v-show</div>
+    <div style="{display: flex; gap: 8px}">
       <button @click="inc">inc</button>
       <button @click="dec">dec</button>
     </div>

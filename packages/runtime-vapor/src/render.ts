@@ -99,6 +99,22 @@ export function setHtml(el: Element, oldVal: any, newVal: any) {
   }
 }
 
+export function setShow(el: HTMLElement, newVal: any) {
+  const isShow = !!newVal
+
+  const hasStyle = el.hasAttribute('style')
+  if (isShow) {
+    const _style = el.style.cssText.replace('display: none;', '')
+    hasStyle
+      ? setStyle(el, el.style.cssText, _style)
+      : setStyle(el, void 0, _style)
+  } else {
+    hasStyle
+      ? setStyle(el, el.style.cssText, el.style.cssText + ';display: none;')
+      : setStyle(el, void 0, ';display: none;')
+  }
+}
+
 export function setClass(el: Element, oldVal: any, newVal: any) {
   if ((newVal = normalizeClass(newVal)) !== oldVal && (newVal || oldVal)) {
     el.className = newVal

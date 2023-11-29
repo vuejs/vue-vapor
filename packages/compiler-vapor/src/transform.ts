@@ -444,6 +444,20 @@ function transformProp(
       })
       break
     }
+    case 'show': {
+      if (expr === null) {
+        // TODO: support v-show
+        return
+      }
+
+      ctx.registerEffect(expr, {
+        type: IRNodeTypes.SET_SHOW,
+        element: ctx.reference(),
+        loc: node.loc,
+        value: expr,
+      })
+      break
+    }
     case 'once': {
       ctx.once = true
       break

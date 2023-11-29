@@ -105,6 +105,12 @@ export function generate(
         break
       }
 
+      case IRNodeTypes.SET_SHOW: {
+        code = `setShow(n${oper.element}, ${oper.value})\n`
+        vaporHelpers.add('setShow')
+        break
+      }
+
       case IRNodeTypes.SET_HTML: {
         code = `setHtml(n${oper.element}, undefined, ${oper.value})\n`
         vaporHelpers.add('setHtml')
