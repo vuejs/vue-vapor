@@ -383,6 +383,7 @@ function transformProp(
         // TODO support :[foo]="bar"
         return
       }
+
       ctx.registerEffect(expr, {
         type: IRNodeTypes.SET_PROP,
         loc: node.loc,
