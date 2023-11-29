@@ -8,7 +8,7 @@
     "useDefineForClassFields": false,
     "module": "esnext",
     "moduleResolution": "bundler",
-    "allowJs": false,
+    "allowJs": true,
     "strict": true,
     "noUnusedLocals": true,
     "experimentalDecorators": true,
@@ -23,6 +23,7 @@
     "rootDir": ".",
     "paths": {
       "@vue/compat": ["packages/vue-compat/src"],
+      "@vue/vapor": ["packages/vue-vapor/src"],
       "@vue/*": ["packages/*/src"],
       "vue": ["packages/vue/src"]
     }
@@ -34,7 +35,8 @@
     "packages/*/__tests__",
     "packages/dts-test",
     "packages/vue/jsx-runtime",
-    "scripts/setupVitest.ts",
+    "rollup.*.js",
     "playground"
-  ]
+  ],
+  "exclude": ["rollup.config.js"]
 }
