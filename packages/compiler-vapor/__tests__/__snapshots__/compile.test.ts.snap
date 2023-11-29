@@ -125,6 +125,45 @@ export function render() {
 "
 `;
 
+exports[`compile > directives > v-once > inside v-once 1`] = `
+"import { template, children, setAttr } from 'vue/vapor';
+const t0 = template('<div><div></div></div>');
+export function render() {
+  const n0 = t0();
+  const {
+    0: [
+      n1,
+      {
+        0: [n2],
+      },
+    ],
+  } = children(n0);
+  setAttr(n1, 'id', undefined, foo);
+  setAttr(n2, 'id', undefined, foo);
+  return n0;
+}
+"
+`;
+
+exports[`compile > directives > v-once > on nested plain element 1`] = `
+"import { template, children, setAttr } from 'vue/vapor';
+const t0 = template('<div><div></div></div>');
+export function render() {
+  const n0 = t0();
+  const {
+    0: [
+      ,
+      {
+        0: [n1],
+      },
+    ],
+  } = children(n0);
+  setAttr(n1, 'id', undefined, foo);
+  return n0;
+}
+"
+`;
+
 exports[`compile > directives > v-text > no expression 1`] = `
 "import { template, children, effect, setText } from 'vue/vapor';
 const t0 = template('<div></div>');

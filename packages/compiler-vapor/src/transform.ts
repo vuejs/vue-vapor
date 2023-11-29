@@ -286,7 +286,7 @@ function transformElement(ctx: TransformContext<ElementNode>) {
   const { tag, props, children } = node
 
   ctx.template += `<${tag}`
-
+  hasVOnceNode(props, ctx)
   props.forEach((prop) => transformProp(prop, ctx))
   ctx.template += `>`
 
@@ -383,7 +383,6 @@ function transformProp(
         // TODO support :[foo]="bar"
         return
       }
-
       ctx.registerEffect(expr, {
         type: IRNodeTypes.SET_PROP,
         loc: node.loc,
@@ -444,10 +443,6 @@ function transformProp(
       })
       break
     }
-    case 'once': {
-      ctx.once = true
-      break
-    }
     case 'cloak': {
       // do nothing
       break
@@ -470,4 +465,12 @@ function processExpression(
     return content + '.value'
   }
   return content
+}
+
+function hasVOnceNode(
+  node: Array<DirectiveNode | AttributeNode>,
+  ctx: TransformContext<ElementNode>){
+  ctx.once =  node.some(prop => {
+    return prop.name === 'once'
+  })
 }

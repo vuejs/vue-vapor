@@ -176,6 +176,18 @@ describe('compile', () => {
         expect(code).toMatchSnapshot()
         expect(code).not.contains('effect')
       })
+
+      test('on nested plain element', async () => {
+        const code = await compile(`<div><div :id="foo" v-once /></div>`)
+        expect(code).toMatchSnapshot()
+        expect(code).not.contains('effect')
+      })
+
+      test('inside v-once', async () => {
+        const code = await compile(`<div v-once :id="foo"><div :id="foo" v-once/></div>`)
+        expect(code).toMatchSnapshot()
+        expect(code).not.contains('effect')
+      })
     })
   })
 })
