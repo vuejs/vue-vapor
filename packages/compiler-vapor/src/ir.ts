@@ -1,6 +1,6 @@
 import type { SourceLocation } from '@vue/compiler-dom'
 
-export const enum IRNodeTypes {
+export enum IRNodeTypes {
   ROOT,
   TEMPLATE_FACTORY,
   FRAGMENT_FACTORY,
@@ -27,6 +27,10 @@ export interface RootIRNode extends IRNode {
   dynamic: DynamicInfo
   // TODO multi-expression effect
   effect: Record<string /* expr */, OperationNode[]>
+  memoEffect: Record<
+    string /* expr */,
+    { deep: number; operations: OperationNode[] }
+  >
   operation: OperationNode[]
   helpers: Set<string>
   vaporHelpers: Set<string>

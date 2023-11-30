@@ -53,6 +53,21 @@ export function generate(
       scope += '})\n'
       code += scope
     }
+    // v-memo runtime code
+    for (const [_expr, memo] of Object.entries(ir.memoEffect)) {
+      let scope = `watch([${_expr}], (newValues, oldValues) => {\n`
+      if (memo.deep > 0) {
+        scope += `if(!needMemoUpdate(${memo.deep}, newValues, oldValues)){ return }\n`
+      }
+      helpers.add('watch')
+      vaporHelpers.add('needMemoUpdate')
+      for (const operation of memo.operations) {
+        scope += genOperation(operation)
+      }
+      scope += '})\n'
+      code += scope
+    }
+
     // TODO multiple-template
     // TODO return statement in IR
     code += `return n${ir.dynamic.id}\n`

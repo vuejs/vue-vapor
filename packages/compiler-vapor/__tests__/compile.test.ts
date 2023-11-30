@@ -177,5 +177,25 @@ describe('compile', () => {
         expect(code).not.contains('effect')
       })
     })
+
+    describe('v-once', () => {
+      test('on normal element', async () => {
+        const code = await compile(`<div v-memo="[foo, foo2]">{{foo}}</div>`)
+        expect(code).toMatchSnapshot()
+      })
+
+      test('nested v-memo on normal element', async () => {
+        const code = await compile(
+          `<div v-memo="[foo, foo2]">{{foo}}<div v-memo="[foo3, foo4]">{{foo3}}</div></div>`,
+        )
+        expect(code).toMatchSnapshot()
+      })
+
+      // TODO: on v-component
+      // TODO: nested v-memo on v-component
+      // TODO: on v-if
+      // TODO: on v-for
+      // TODO: on template v-for
+    })
   })
 })

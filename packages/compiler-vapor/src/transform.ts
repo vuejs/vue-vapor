@@ -35,6 +35,7 @@ export interface TransformContext<T extends Node = Node> {
   dynamic: DynamicInfo
 
   once: boolean
+  memo?: { expr: string; deep: number }
 
   reference(): number
   increaseId(): number
@@ -50,7 +51,13 @@ function createRootContext(
   options: TransformOptions,
 ): TransformContext<RootNode> {
   let globalId = 0
-  const { effect, operation: operation, helpers, vaporHelpers } = ir
+  const {
+    effect,
+    memoEffect: memoEffect,
+    operation: operation,
+    helpers,
+    vaporHelpers,
+  } = ir
 
   const ctx: TransformContext<RootNode> = {
     node,
@@ -71,6 +78,23 @@ function createRootContext(
       if (this.once) {
         return this.registerOperation(operation)
       }
+      if (
+        this.memo &&
+        (operation.type === (3 satisfies IRNodeTypes.SET_PROP) ||
+          operation.type === (6 satisfies IRNodeTypes.SET_HTML) ||
+          operation.type === (4 satisfies IRNodeTypes.SET_TEXT))
+      ) {
+        this.registerOperation(operation)
+        if (!memoEffect[this.memo.expr]) {
+          memoEffect[this.memo.expr] = {
+            operations: [],
+            deep: this.memo.deep,
+          }
+        }
+        memoEffect[this.memo.expr].operations.push(operation)
+        return
+      }
+
       if (!effect[expr]) effect[expr] = []
       effect[expr].push(operation)
     },
@@ -150,6 +174,7 @@ export function transform(
       children: {},
     },
     effect: Object.create(null),
+    memoEffect: Object.create(null),
     operation: [],
     helpers: new Set([]),
     vaporHelpers: new Set([]),
@@ -448,6 +473,12 @@ function transformProp(
       ctx.once = true
       break
     }
+    case 'memo': {
+      if (expr) {
+        transformMemoExpression(ctx, expr)
+      }
+      break
+    }
     case 'cloak': {
       // do nothing
       break
@@ -470,4 +501,20 @@ function processExpression(
     return content + '.value'
   }
   return content
+}
+
+function transformMemoExpression(ctx: TransformContext, expr: string) {
+  const regx = /^\[|\]$/g
+  const exprElm = expr.replace(regx, '')
+  if (!ctx.memo) {
+    ctx.memo = {
+      expr: exprElm,
+      deep: 0,
+    }
+  } else {
+    ctx.memo.expr = `${[
+      ...new Set([...ctx.memo.expr.split(','), ...exprElm.split(',')]),
+    ].join(',')}`
+    ctx.memo.deep++
+  }
 }

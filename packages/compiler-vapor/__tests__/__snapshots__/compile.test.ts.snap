@@ -125,6 +125,56 @@ export function render() {
 "
 `;
 
+exports[`compile > directives > v-once > nested v-memo on normal element 1`] = `
+"import { watch } from 'vue';
+import { template, children, createTextNode, setText, prepend, needMemoUpdate } from 'vue/vapor';
+const t0 = template('<div><div></div></div>');
+export function render() {
+  const n0 = t0();
+  const {
+    0: [
+      n3,
+      {
+        0: [n2],
+      },
+    ],
+  } = children(n0);
+  const n1 = createTextNode(foo);
+  setText(n1, undefined, foo);
+  setText(n2, undefined, foo3);
+  prepend(n3, n1);
+  watch([foo, foo2], (newValues, oldValues) => {
+    setText(n1, undefined, foo);
+  });
+  watch([foo, foo2, foo3, foo4], (newValues, oldValues) => {
+    if (!needMemoUpdate(1, newValues, oldValues)) {
+      return;
+    }
+    setText(n2, undefined, foo3);
+  });
+  return n0;
+}
+"
+`;
+
+exports[`compile > directives > v-once > on normal element 1`] = `
+"import { watch } from 'vue';
+import { template, children, setText, needMemoUpdate } from 'vue/vapor';
+const t0 = template('<div></div>');
+export function render() {
+  const n0 = t0();
+  const {
+    0: [n1],
+  } = children(n0);
+  setText(n1, undefined, foo);
+  watch([foo, foo2], (newValues, oldValues) => {
+    setText(n1, undefined, foo);
+  });
+  return n0;
+}
+"
+`;
+
 exports[`compile > directives > v-text > no expression 1`] = `
 "import { template, children, effect, setText } from 'vue/vapor';
 const t0 = template('<div></div>');
