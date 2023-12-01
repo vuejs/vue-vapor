@@ -4,7 +4,8 @@ import {
   ElementNode,
   ErrorCodes,
   ExpressionNode,
-  isStaticExp, SimpleExpressionNode,
+  isStaticExp,
+  SimpleExpressionNode,
 } from '@vue/compiler-core'
 import type { TransformContext } from '../transform'
 import { IRNodeTypes } from '../ir'
@@ -23,7 +24,7 @@ export function transformVOn(
   const { arg, exp, loc, modifiers } = node
   if (!exp && !modifiers.length) {
     context.options.onError(
-        createCompilerError(ErrorCodes.X_V_ON_NO_EXPRESSION, loc),
+      createCompilerError(ErrorCodes.X_V_ON_NO_EXPRESSION, loc),
     )
     return
   }
@@ -63,17 +64,22 @@ export function transformVOn(
     callHelpers.push('withKeys')
   }
 
-  context.registerEffect([exp], [{
-    type: IRNodeTypes.SET_EVENT,
-    loc: node.loc,
-    element: context.reference(),
-    name,
-    value: exp,
-    modifiers: {
-      keys: keyModifiers,
-      nonKeys: nonKeyModifiers,
-      eventOptions: eventOptionModifiers,
-      callHelpers,
-    },
-  }])
+  context.registerEffect(
+    [exp],
+    [
+      {
+        type: IRNodeTypes.SET_EVENT,
+        loc: node.loc,
+        element: context.reference(),
+        name,
+        value: exp,
+        modifiers: {
+          keys: keyModifiers,
+          nonKeys: nonKeyModifiers,
+          eventOptions: eventOptionModifiers,
+          callHelpers,
+        },
+      },
+    ],
+  )
 }
