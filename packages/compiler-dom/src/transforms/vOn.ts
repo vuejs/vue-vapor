@@ -33,10 +33,6 @@ const isKeyboardEvent = /*#__PURE__*/ makeMap(
   true
 )
 
-/**
- *
- * @internal
- */
 export const resolveModifiers = (
   key: ExpressionNode,
   modifiers: string[],

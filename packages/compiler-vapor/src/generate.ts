@@ -464,6 +464,6 @@ function genEventOperation(oper: SetEventIRNode, context: CodegenContext) {
     })
     .join(', ')
   const optionEvent = eventOptions.length ? `, {${optionEventValue} }` : ''
-  pushWithNewline(optionEvent)
+  push(optionEvent)
   push(')')
 }
