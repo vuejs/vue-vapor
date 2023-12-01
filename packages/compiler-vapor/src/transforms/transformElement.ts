@@ -112,18 +112,14 @@ function transformProp(
         return
       }
 
-      ctx.registerEffect(
-        [exp],
-        [
-          {
-            type: IRNodeTypes.SET_EVENT,
-            loc: node.loc,
-            element: ctx.reference(),
-            name: arg,
-            value: exp,
-            modifiers,
-          },
-        ],
+      ctx.registerOperation({
+          type: IRNodeTypes.SET_EVENT,
+          loc: node.loc,
+          element: ctx.reference(),
+          name: arg,
+          value: exp,
+          modifiers,
+        },
       )
       break
     }
