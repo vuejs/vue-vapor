@@ -10,7 +10,20 @@ const dec = () => count.value--
 </script>
 
 <template>
-  <h1 @keyup ="dec">{{count}}</h1>
+  <div>
+    <h1 class="red">Counter</h1>
+    <div>The number is {{ count }}.</div>
+    <div>{{ count }} * 2 = {{ double }}</div>
+    <div style="display: flex; gap: 8px">
+      <button @click="inc">inc</button>
+      <button @click="dec">dec</button>
+    </div>
+    <div v-html="html" />
+    <div v-text="html" />
+    <div v-once>once: {{ count }}</div>
+    <div v-pre>{{ count }}</div>
+    <div v-cloak>{{ count }}</div>
+  </div>
 </template>
 
 <style>

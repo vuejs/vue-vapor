@@ -14,7 +14,6 @@ import {
   defaultOnWarn,
   ErrorCodes,
   createCompilerError,
-  processExpression,
 } from '@vue/compiler-dom'
 import { EMPTY_OBJ, NOOP, isArray, isVoidTag } from '@vue/shared'
 import {

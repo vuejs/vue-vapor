@@ -435,11 +435,7 @@ function genExpression(
   push(content, NewlineType.None, exp.loc, name)
 }
 
-function genEventOperation(
-  oper: SetEventIRNode,
-  context: CodegenContext,
-) {
-
+function genEventOperation(oper: SetEventIRNode, context: CodegenContext) {
   const { vaporHelper, push, pushWithNewline } = context
 
   pushWithNewline(`${vaporHelper('on')}(n${oper.element}, `)
@@ -460,7 +456,7 @@ function genEventOperation(
   push(callExpr)
   genExpression(oper.value, context)
   push(paramsExpr.length ? ', ' : '')
-  push(paramsExpr.join( ','))
+  push(paramsExpr.join(','))
 
   const optionEventValue = eventOptions
     .map((v) => {
@@ -470,17 +466,4 @@ function genEventOperation(
   const optionEvent = eventOptions.length ? `, {${optionEventValue} }` : ''
   pushWithNewline(optionEvent)
   push(')')
-
-    // TODO: use push
-    // pushWithNewline(`${vaporHelper('on')}(n${oper.element}, `)
-    // genExpression(oper.name, context)
-    // push(', ')
-
-    // const hasModifiers = oper.modifiers.length
-    // hasModifiers && push(`${vaporHelper('withModifiers')}(`)
-    // genExpression(oper.value, context)
-    // hasModifiers && push(`, ${genArrayExpression(oper.modifiers)})`)
-
-    // push(')')
-    // return
 }
