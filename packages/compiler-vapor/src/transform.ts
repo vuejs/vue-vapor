@@ -25,6 +25,7 @@ import {
   DynamicInfo,
 } from './ir'
 import type { HackOptions } from './hack'
+import { resolveModifiers } from "./transforms/vOn";
 
 export type NodeTransform = (
   node: RootNode | TemplateChildNode,
@@ -481,14 +482,19 @@ function transformProp(
         // https://github.com/vuejs/core/pull/9451
         return
       }
-
+      // TODO: maybe it can be extracted into transformOn
+      const { keyModifiers, nonKeyModifiers, eventOptionModifiers } = resolveModifiers(node.exp as ExpressionNode,  modifiers)
       ctx.registerEffect(expr, {
         type: IRNodeTypes.SET_EVENT,
         loc: node.loc,
         element: ctx.reference(),
         name: node.arg.content,
         value: expr,
-        modifiers,
+        modifiers: {
+          keys: keyModifiers,
+          nonKeys: nonKeyModifiers,
+          eventOptions: eventOptionModifiers
+        },
       })
       break
     }

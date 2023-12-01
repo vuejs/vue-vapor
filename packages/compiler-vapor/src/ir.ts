@@ -62,7 +62,11 @@ export interface SetEventIRNode extends IRNode {
   element: number
   name: string
   value: string
-  modifiers: string[]
+  modifiers: {
+    keys: string[],
+    nonKeys: string[],
+    eventOptions: string[]
+  }
 }
 
 export interface SetHtmlIRNode extends IRNode {

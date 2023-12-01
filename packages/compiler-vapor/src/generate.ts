@@ -5,6 +5,7 @@ import {
   IRNodeTypes,
   OperationNode,
   VaporHelper,
+  SetEventIRNode,
 } from './ir'
 
 // remove when stable
@@ -126,15 +127,7 @@ function genOperation(oper: OperationNode, { vaporHelper }: CodegenContext) {
     }
 
     case IRNodeTypes.SET_EVENT: {
-      let value = oper.value
-      if (oper.modifiers.length) {
-        value = `${vaporHelper('withModifiers')}(${value}, ${genArrayExpression(
-          oper.modifiers,
-        )})`
-      }
-      return `${vaporHelper('on')}(n${oper.element}, ${JSON.stringify(
-        oper.name,
-      )}, ${value})\n`
+      return genEvent(oper, vaporHelper)
     }
 
     case IRNodeTypes.SET_HTML: {
@@ -201,4 +194,36 @@ function genChildren(children: DynamicChildren) {
 // TODO: other types (not only string)
 function genArrayExpression(elements: string[]) {
   return `[${elements.map((it) => `"${it}"`).join(', ')}]`
+}
+
+function genEvent(oper: SetEventIRNode, vaporHelper: CodegenContext['vaporHelper']) {
+  let value = oper.value
+  const { keys, nonKeys, eventOptions } = oper.modifiers
+  if(keys.length && nonKeys.length){
+    value = `${vaporHelper('withKeys')}(`
+    value += `${vaporHelper('withModifiers')}(${oper.value},`
+    value += genArrayExpression(nonKeys)
+    value += '),'
+    value += genArrayExpression(keys)
+    value += ')'
+  }
+
+  if(nonKeys.length && !keys.length){
+    value = `${vaporHelper('withModifiers')}(${oper.value},`
+    value += genArrayExpression(nonKeys)
+    value += ')'
+  }
+
+  if(!nonKeys.length && keys.length){
+    value = `${vaporHelper('withKeys')}(${oper.value},`
+    value += genArrayExpression(keys)
+    value += ')'
+  }
+
+  const optionEventValue = (eventOptions.map(v => { return `${v}: true`})).join(', ')
+  const optionEvent = eventOptions.length ? `, {${optionEventValue} }`: ''
+  debugger
+  return `${vaporHelper('on')}(n${oper.element}, ${JSON.stringify(
+    oper.name,
+  )}, ${value}${optionEvent})\n`
 }
