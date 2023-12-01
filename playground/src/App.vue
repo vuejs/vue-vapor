@@ -10,7 +10,7 @@ const dec = () => count.value--
 </script>
 
 <template>
-  <h1 @click.enter ="dec">{{count}}</h1>
+  <h1 @keyup ="dec">{{count}}</h1>
 </template>
 
 <style>

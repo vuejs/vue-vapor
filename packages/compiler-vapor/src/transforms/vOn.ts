@@ -4,8 +4,7 @@ import {
   ElementNode,
   ErrorCodes,
   ExpressionNode,
-  isStaticExp,
-  NodeTypes,
+  isStaticExp, SimpleExpressionNode,
 } from '@vue/compiler-core'
 import type { TransformContext } from '../transform'
 import { IRNodeTypes } from '../ir'
@@ -19,24 +18,20 @@ export const isKeyboardEvent = /*#__PURE__*/ makeMap(
 
 export function transformVOn(
   node: DirectiveNode,
-  expr: string | null,
   context: TransformContext<ElementNode>,
 ) {
-  const { exp, loc, modifiers } = node
+  const { arg, exp, loc, modifiers } = node
   if (!exp && !modifiers.length) {
-    context.options.onError!(
-      createCompilerError(ErrorCodes.X_V_ON_NO_EXPRESSION, loc),
+    context.options.onError(
+        createCompilerError(ErrorCodes.X_V_ON_NO_EXPRESSION, loc),
     )
     return
   }
 
-  if (!node.arg) {
+  if (!arg) {
     // TODO support v-on="{}"
     return
-  } else if (node.arg.type === NodeTypes.COMPOUND_EXPRESSION) {
-    // TODO support @[foo]="bar"
-    return
-  } else if (expr === null) {
+  } else if (exp === undefined) {
     // TODO: support @foo
     // https://github.com/vuejs/core/pull/9451
     return
@@ -45,7 +40,7 @@ export function transformVOn(
   // TODO context typo temporarily use any context as any,
   const { keyModifiers, nonKeyModifiers, eventOptionModifiers } =
     resolveModifiers(exp as ExpressionNode, modifiers, context as any, loc)
-  let name = node.arg.content
+  let name = (arg as SimpleExpressionNode).content
 
   if (nonKeyModifiers.includes('right')) {
     name = 'contextmenu'
@@ -63,22 +58,22 @@ export function transformVOn(
     // TODO: <h1 @keyup.enter.right ="dec">{{count}}</h1>
     //  vapor has not been statically optimized yet,
     //  so the behavior here is different from vue/core
-    (!isStaticExp(node.arg) || isKeyboardEvent(name))
+    (!isStaticExp(arg) || isKeyboardEvent(name))
   ) {
     callHelpers.push('withKeys')
   }
 
-  context.registerEffect(expr, {
+  context.registerEffect([exp], [{
     type: IRNodeTypes.SET_EVENT,
     loc: node.loc,
     element: context.reference(),
     name,
-    value: expr,
+    value: exp,
     modifiers: {
       keys: keyModifiers,
       nonKeys: nonKeyModifiers,
       eventOptions: eventOptionModifiers,
       callHelpers,
     },
-  })
+  }])
 }
