@@ -204,12 +204,16 @@ function genEventOperation(
   const { keys, nonKeys, eventOptions, callHelpers } = oper.modifiers
   let callExpr = ''
   let paramsExpr = []
-  for (let i = callHelpers.length - 1; i >=0; i--){
+  for (let i = callHelpers.length - 1; i >= 0; i--) {
     callExpr += `${vaporHelper(callHelpers[i])}(`
-    const arr = genArrayExpression(callHelpers[i] === 'withKeys' ? keys : nonKeys)
+    const arr = genArrayExpression(
+      callHelpers[i] === 'withKeys' ? keys : nonKeys,
+    )
     paramsExpr.push(`${arr})`)
   }
-  value = `${callExpr}${value}${paramsExpr.length ? ',': ''}${paramsExpr.join(',')}`
+  value = `${callExpr}${value}${paramsExpr.length ? ',' : ''}${paramsExpr.join(
+    ',',
+  )}`
   const optionEventValue = eventOptions
     .map((v) => {
       return `${v}: true`

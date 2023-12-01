@@ -3,17 +3,18 @@ import {
   DirectiveNode,
   ElementNode,
   ErrorCodes,
-  ExpressionNode, isStaticExp,
+  ExpressionNode,
+  isStaticExp,
   NodeTypes,
 } from '@vue/compiler-core'
 import type { TransformContext } from '../transform'
 import { IRNodeTypes } from '../ir'
 import { resolveModifiers } from '@vue/compiler-dom'
-import {makeMap} from "@vue/shared";
+import { makeMap } from '@vue/shared'
 
 export const isKeyboardEvent = /*#__PURE__*/ makeMap(
-    `keyup,keydown,keypress`,
-    true
+  `keyup,keydown,keypress`,
+  true,
 )
 
 export function transformVOn(
@@ -46,7 +47,6 @@ export function transformVOn(
     resolveModifiers(exp as ExpressionNode, modifiers, context as any, loc)
   let name = node.arg.content
 
-
   if (nonKeyModifiers.includes('right')) {
     name = 'contextmenu'
   }
@@ -59,11 +59,11 @@ export function transformVOn(
   }
 
   if (
-      keyModifiers.length &&
-      // TODO: <h1 @keyup.enter.right ="dec">{{count}}</h1>
-      //  vapor has not been statically optimized yet,
-      //  so the behavior here is different from vue/core
-      (!isStaticExp(node.arg) || isKeyboardEvent(name))
+    keyModifiers.length &&
+    // TODO: <h1 @keyup.enter.right ="dec">{{count}}</h1>
+    //  vapor has not been statically optimized yet,
+    //  so the behavior here is different from vue/core
+    (!isStaticExp(node.arg) || isKeyboardEvent(name))
   ) {
     callHelpers.push('withKeys')
   }
