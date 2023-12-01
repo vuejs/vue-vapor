@@ -127,7 +127,7 @@ function genOperation(oper: OperationNode, { vaporHelper }: CodegenContext) {
     }
 
     case IRNodeTypes.SET_EVENT: {
-      return genEvent(oper, vaporHelper)
+      return genEventOperation(oper, vaporHelper)
     }
 
     case IRNodeTypes.SET_HTML: {
@@ -196,26 +196,20 @@ function genArrayExpression(elements: string[]) {
   return `[${elements.map((it) => `"${it}"`).join(', ')}]`
 }
 
-function genEvent(
+function genEventOperation(
   oper: SetEventIRNode,
   vaporHelper: CodegenContext['vaporHelper'],
 ) {
   let value = oper.value
-  const { keys, nonKeys, eventOptions } = oper.modifiers
-  if (keys.length && nonKeys.length) {
-    value = `${vaporHelper('withKeys')}(`
-    value += `${vaporHelper('withModifiers')}(${oper.value},`
-    value += genArrayExpression(nonKeys)
-    value += '),'
-    value += genArrayExpression(keys)
-  } else if (nonKeys.length && !keys.length) {
-    value = `${vaporHelper('withModifiers')}(${oper.value},`
-    value += genArrayExpression(nonKeys)
-  } else if (!nonKeys.length && keys.length) {
-    value = `${vaporHelper('withKeys')}(${oper.value},`
-    value += genArrayExpression(keys)
+  const { keys, nonKeys, eventOptions, callHelpers } = oper.modifiers
+  let callExpr = ''
+  let paramsExpr = []
+  for (let i = callHelpers.length - 1; i >=0; i--){
+    callExpr += `${vaporHelper(callHelpers[i])}(`
+    const arr = genArrayExpression(callHelpers[i] === 'withKeys' ? keys : nonKeys)
+    paramsExpr.push(`${arr})`)
   }
-  value += ')'
+  value = `${callExpr}${value}${paramsExpr.length ? ',': ''}${paramsExpr.join(',')}`
   const optionEventValue = eventOptions
     .map((v) => {
       return `${v}: true`

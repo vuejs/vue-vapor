@@ -67,6 +67,9 @@ export const resolveModifiers = (
     } else {
       // runtimeModifiers: modifiers that needs runtime guards
       if (maybeKeyModifier(modifier)) {
+        // TODO: <h1 @keyup.enter.right ="dec">{{count}}</h1>
+        //  vapor has not been statically optimized yet,
+        //  so the behavior here is different from vue/core
         if (isStaticExp(key)) {
           if (isKeyboardEvent((key as SimpleExpressionNode).content)) {
             keyModifiers.push(modifier)
