@@ -25,7 +25,7 @@ import {
   DynamicInfo,
 } from './ir'
 import type { HackOptions } from './hack'
-import { resolveModifiers } from "./transforms/vOn";
+import { transformVOn } from './transforms/vOn'
 
 export type NodeTransform = (
   node: RootNode | TemplateChildNode,
@@ -427,7 +427,7 @@ function transformProp(
     return
   }
 
-  const { exp, loc, modifiers } = node
+  const { exp, loc } = node
 
   const expr = processExpression(ctx, exp)
   switch (name) {
@@ -464,38 +464,7 @@ function transformProp(
       break
     }
     case 'on': {
-      if (!exp && !modifiers.length) {
-        ctx.options.onError!(
-          createCompilerError(ErrorCodes.X_V_ON_NO_EXPRESSION, loc),
-        )
-        return
-      }
-
-      if (!node.arg) {
-        // TODO support v-on="{}"
-        return
-      } else if (node.arg.type === NodeTypes.COMPOUND_EXPRESSION) {
-        // TODO support @[foo]="bar"
-        return
-      } else if (expr === null) {
-        // TODO: support @foo
-        // https://github.com/vuejs/core/pull/9451
-        return
-      }
-      // TODO: maybe it can be extracted into transformOn
-      const { keyModifiers, nonKeyModifiers, eventOptionModifiers } = resolveModifiers(node.exp as ExpressionNode,  modifiers)
-      ctx.registerEffect(expr, {
-        type: IRNodeTypes.SET_EVENT,
-        loc: node.loc,
-        element: ctx.reference(),
-        name: node.arg.content,
-        value: expr,
-        modifiers: {
-          keys: keyModifiers,
-          nonKeys: nonKeyModifiers,
-          eventOptions: eventOptionModifiers
-        },
-      })
+      transformVOn(node, expr, ctx)
       break
     }
     case 'html': {

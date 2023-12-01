@@ -33,7 +33,11 @@ const isKeyboardEvent = /*#__PURE__*/ makeMap(
   true
 )
 
-const resolveModifiers = (
+/**
+ *
+ * @internal
+ */
+export const resolveModifiers = (
   key: ExpressionNode,
   modifiers: string[],
   context: TransformContext,

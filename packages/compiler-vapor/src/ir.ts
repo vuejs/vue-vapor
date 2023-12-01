@@ -63,8 +63,8 @@ export interface SetEventIRNode extends IRNode {
   name: string
   value: string
   modifiers: {
-    keys: string[],
-    nonKeys: string[],
+    keys: string[]
+    nonKeys: string[]
     eventOptions: string[]
   }
 }

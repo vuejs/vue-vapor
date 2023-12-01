@@ -1,67 +1,53 @@
 import {
+  createCompilerError,
+  DirectiveNode,
+  ElementNode,
+  ErrorCodes,
   ExpressionNode,
-  isStaticExp,
-  SimpleExpressionNode,
-} from "@vue/compiler-core";
-import {makeMap} from "@vue/shared";
-const isEventOptionModifier = /*#__PURE__*/ makeMap(`passive,once,capture`)
-const isNonKeyModifier = /*#__PURE__*/ makeMap(
-  // event propagation management
-  `stop,prevent,self,` +
-  // system modifiers + exact
-  `ctrl,shift,alt,meta,exact,` +
-  // mouse
-  `middle`
-)
-// left & right could be mouse or key modifiers based on event type
-const maybeKeyModifier = /*#__PURE__*/ makeMap('left,right')
-const isKeyboardEvent = /*#__PURE__*/ makeMap(
-  `onkeyup,onkeydown,onkeypress`,
-  true
-)
-
-// TODO: can reuse packages/compiler-dom/src/transforms/vOn.ts
-export const resolveModifiers = (
-  key: ExpressionNode,
-  modifiers: string[],
-) => {
-  const keyModifiers = []
-  const nonKeyModifiers = []
-  const eventOptionModifiers = []
-
-  for (let i = 0; i < modifiers.length; i++) {
-    const modifier = modifiers[i]
-    // TODO: compat mode ?
-    if (isEventOptionModifier(modifier)) {
-      // eventOptionModifiers: modifiers for addEventListener() options,
-      // e.g. .passive & .capture
-      eventOptionModifiers.push(modifier)
-    } else {
-      // runtimeModifiers: modifiers that needs runtime guards
-      if (maybeKeyModifier(modifier)) {
-        if (isStaticExp(key)) {
-          if (isKeyboardEvent((key as SimpleExpressionNode).content)) {
-            keyModifiers.push(modifier)
-          } else {
-            nonKeyModifiers.push(modifier)
-          }
-        } else {
-          keyModifiers.push(modifier)
-          nonKeyModifiers.push(modifier)
-        }
-      } else {
-        if (isNonKeyModifier(modifier)) {
-          nonKeyModifiers.push(modifier)
-        } else {
-          keyModifiers.push(modifier)
-        }
-      }
-    }
+  NodeTypes,
+} from '@vue/compiler-core'
+import type { TransformContext } from '../transform'
+import { IRNodeTypes } from '../ir'
+import { resolveModifiers } from '@vue/compiler-dom'
+export function transformVOn(
+  node: DirectiveNode,
+  expr: string | null,
+  context: TransformContext<ElementNode>,
+) {
+  const { exp, loc, modifiers } = node
+  if (!exp && !modifiers.length) {
+    context.options.onError!(
+      createCompilerError(ErrorCodes.X_V_ON_NO_EXPRESSION, loc),
+    )
+    return
   }
 
-  return {
-    keyModifiers,
-    nonKeyModifiers,
-    eventOptionModifiers
+  if (!node.arg) {
+    // TODO support v-on="{}"
+    return
+  } else if (node.arg.type === NodeTypes.COMPOUND_EXPRESSION) {
+    // TODO support @[foo]="bar"
+    return
+  } else if (expr === null) {
+    // TODO: support @foo
+    // https://github.com/vuejs/core/pull/9451
+    return
   }
+
+  // TODO context typo temporarily use any context as any,
+  const { keyModifiers, nonKeyModifiers, eventOptionModifiers } =
+    resolveModifiers(exp as ExpressionNode, modifiers, context as any, loc)
+
+  context.registerEffect(expr, {
+    type: IRNodeTypes.SET_EVENT,
+    loc: node.loc,
+    element: context.reference(),
+    name: node.arg.content,
+    value: expr,
+    modifiers: {
+      keys: keyModifiers,
+      nonKeys: nonKeyModifiers,
+      eventOptions: eventOptionModifiers,
+    },
+  })
 }

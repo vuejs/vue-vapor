@@ -196,33 +196,32 @@ function genArrayExpression(elements: string[]) {
   return `[${elements.map((it) => `"${it}"`).join(', ')}]`
 }
 
-function genEvent(oper: SetEventIRNode, vaporHelper: CodegenContext['vaporHelper']) {
+function genEvent(
+  oper: SetEventIRNode,
+  vaporHelper: CodegenContext['vaporHelper'],
+) {
   let value = oper.value
   const { keys, nonKeys, eventOptions } = oper.modifiers
-  if(keys.length && nonKeys.length){
+  if (keys.length && nonKeys.length) {
     value = `${vaporHelper('withKeys')}(`
     value += `${vaporHelper('withModifiers')}(${oper.value},`
     value += genArrayExpression(nonKeys)
     value += '),'
     value += genArrayExpression(keys)
-    value += ')'
-  }
-
-  if(nonKeys.length && !keys.length){
+  } else if (nonKeys.length && !keys.length) {
     value = `${vaporHelper('withModifiers')}(${oper.value},`
     value += genArrayExpression(nonKeys)
-    value += ')'
-  }
-
-  if(!nonKeys.length && keys.length){
+  } else if (!nonKeys.length && keys.length) {
     value = `${vaporHelper('withKeys')}(${oper.value},`
     value += genArrayExpression(keys)
-    value += ')'
   }
-
-  const optionEventValue = (eventOptions.map(v => { return `${v}: true`})).join(', ')
-  const optionEvent = eventOptions.length ? `, {${optionEventValue} }`: ''
-  debugger
+  value += ')'
+  const optionEventValue = eventOptions
+    .map((v) => {
+      return `${v}: true`
+    })
+    .join(', ')
+  const optionEvent = eventOptions.length ? `, {${optionEventValue} }` : ''
   return `${vaporHelper('on')}(n${oper.element}, ${JSON.stringify(
     oper.name,
   )}, ${value}${optionEvent})\n`
