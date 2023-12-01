@@ -16,6 +16,8 @@ import {
   defaultOnWarn,
   ErrorCodes,
   createCompilerError,
+  DOMErrorCodes,
+  createDOMCompilerError,
 } from '@vue/compiler-dom'
 import { EMPTY_OBJ, NOOP, isArray, isVoidTag } from '@vue/shared'
 import {
@@ -493,6 +495,18 @@ function transformProp(
       break
     }
     case 'html': {
+      if (!exp) {
+        ctx.options.onError!(
+          createDOMCompilerError(DOMErrorCodes.X_V_HTML_NO_EXPRESSION, loc),
+        )
+      }
+      if (ctx.node.children.length) {
+        ctx.options.onError!(
+          createDOMCompilerError(DOMErrorCodes.X_V_HTML_WITH_CHILDREN, loc),
+        )
+        ctx.node.children.length = 0
+      }
+
       const value = expr || '""'
       ctx.registerEffect(value, {
         type: IRNodeTypes.SET_HTML,
