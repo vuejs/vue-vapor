@@ -3,7 +3,6 @@ import {
   DirectiveNode,
   ElementNode,
   ErrorCodes,
-  ExpressionNode,
   isStaticExp,
   NodeTypes,
   SimpleExpressionNode,
@@ -35,14 +34,14 @@ export function transformVOn(
     return
   } else if (exp === undefined) {
     // TODO: support @foo
-    // https://github.com/vuejs/core/pull/9451
     return
   }
 
-  // TODO context typo temporarily use any context as any,
   const { keyModifiers, nonKeyModifiers, eventOptionModifiers } =
-    resolveModifiers(exp as ExpressionNode, modifiers, context as any, loc)
+    resolveModifiers(exp, modifiers, null, loc)
   let name = (arg as SimpleExpressionNode).content
+
+  // normalize click.right and click.middle since they don't actually fire
   if (nonKeyModifiers.includes('right')) {
     name = transformClick(arg, 'contextmenu')
   }

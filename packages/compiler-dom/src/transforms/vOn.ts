@@ -36,7 +36,7 @@ const isKeyboardEvent = /*#__PURE__*/ makeMap(
 export const resolveModifiers = (
   key: ExpressionNode,
   modifiers: string[],
-  context: TransformContext,
+  context: TransformContext | null,
   loc: SourceLocation
 ) => {
   const keyModifiers = []
@@ -49,6 +49,7 @@ export const resolveModifiers = (
     if (
       __COMPAT__ &&
       modifier === 'native' &&
+      context &&
       checkCompatEnabled(
         CompilerDeprecationTypes.COMPILER_V_ON_NATIVE,
         context,
