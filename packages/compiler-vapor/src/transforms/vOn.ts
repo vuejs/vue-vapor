@@ -5,6 +5,7 @@ import {
   ErrorCodes,
   ExpressionNode,
   isStaticExp,
+  NodeTypes,
   SimpleExpressionNode,
 } from '@vue/compiler-core'
 import type { TransformContext } from '../transform'
@@ -42,12 +43,11 @@ export function transformVOn(
   const { keyModifiers, nonKeyModifiers, eventOptionModifiers } =
     resolveModifiers(exp as ExpressionNode, modifiers, context as any, loc)
   let name = (arg as SimpleExpressionNode).content
-
   if (nonKeyModifiers.includes('right')) {
-    name = 'contextmenu'
+    transformClick(exp, 'contextmenu')
   }
   if (nonKeyModifiers.includes('middle')) {
-    name = 'mouseup'
+    transformClick(exp, 'mouseup')
   }
   let callHelpers = []
   if (nonKeyModifiers.length) {
@@ -82,4 +82,18 @@ export function transformVOn(
       },
     ],
   )
+}
+
+const transformClick = (key: ExpressionNode, event: string) => {
+  const isStaticClick =
+    isStaticExp(key) && key.content.toLowerCase() === 'click'
+
+  if (isStaticClick) {
+    return event
+  } else if (key.type !== NodeTypes.SIMPLE_EXPRESSION) {
+    // TODO: handle CompoundExpression
+    return event
+  } else {
+    return key
+  }
 }

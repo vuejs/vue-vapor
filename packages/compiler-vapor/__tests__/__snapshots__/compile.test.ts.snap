@@ -60,9 +60,9 @@ exports[`compile > directives > v-on > event modifier 1`] = `
 "import { template as _template, children as _children, effect as _effect, on as _on, withModifiers as _withModifiers, withKeys as _withKeys } from 'vue/vapor';
 
 export function render(_ctx) {
-  const t0 = _template(\\"<a></a><form></form><a></a><div></div><div></div><a></a>1 <div></div>1 <input><input><input><input><input><input><input><input><input><input>\\")
+  const t0 = _template(\\"<a></a><form></form><a></a><div></div><div></div><a></a>1 <div></div>1 <input><input><input><input><input><input><input><input><input><input><input>\\")
   const n0 = t0()
-  const { 0: [n1], 1: [n2], 2: [n3], 3: [n4], 4: [n5], 5: [n6], 7: [n7], 9: [n8], 10: [n9], 11: [n10], 12: [n11], 13: [n12], 14: [n13], 15: [n14], 16: [n15], 17: [n16], 18: [n17],} = _children(n0)
+  const { 0: [n1], 1: [n2], 2: [n3], 3: [n4], 4: [n5], 5: [n6], 7: [n7], 9: [n8], 10: [n9], 11: [n10], 12: [n11], 13: [n12], 14: [n13], 15: [n14], 16: [n15], 17: [n16], 18: [n17], 19: [n18],} = _children(n0)
   _effect(() => {
     _on(n1, \\"click\\", _withModifiers(handleEvent, [\\"stop\\"]))
   })
@@ -85,7 +85,7 @@ export function render(_ctx) {
     _on(n7, \\"scroll\\", handleEvent, {passive: true })
   })
   _effect(() => {
-    _on(n8, \\"contextmenu\\", _withModifiers(handleEvent, [\\"right\\"]))
+    _on(n8, \\"click\\", _withModifiers(handleEvent, [\\"right\\"]))
   })
   _effect(() => {
     _on(n9, \\"keyup\\", _withKeys(handleEvent, [\\"enter\\"]))
@@ -112,7 +112,10 @@ export function render(_ctx) {
     _on(n16, \\"keyup\\", _withKeys(_withModifiers(handleEvent, [\\"left\\"]),[\\"left\\"]))
   })
   _effect(() => {
-    _on(n17, \\"keyup\\", _withKeys(_withModifiers(handleEvent, [\\"enter\\"]),[\\"self\\"]))
+    _on(n17, \\"keyup\\", _withModifiers(submit, [\\"middle\\"]))
+  })
+  _effect(() => {
+    _on(n18, \\"keyup\\", _withKeys(_withModifiers(handleEvent, [\\"enter\\"]),[\\"self\\"]))
   })
   return n0
 }"

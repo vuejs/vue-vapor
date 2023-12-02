@@ -128,6 +128,7 @@ describe('compile', () => {
                     <input @keyup.up="handleEvent" />
                     <input @keyup.down="handleEvent" />
                     <input @keyup.left="handleEvent" />
+                    <input @keyup.middle="submit" />
                     <input @keyup.self.enter="handleEvent" />`,
           {
             bindingMetadata: {
