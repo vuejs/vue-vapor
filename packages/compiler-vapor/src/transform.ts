@@ -511,12 +511,12 @@ function transformProp(
     }
     case 'html': {
       if (!exp) {
-        ctx.options.onError!(
+        ctx.options.onError(
           createDOMCompilerError(DOMErrorCodes.X_V_HTML_NO_EXPRESSION, loc),
         )
       }
       if (ctx.node.children.length) {
-        ctx.options.onError!(
+        ctx.options.onError(
           createDOMCompilerError(DOMErrorCodes.X_V_HTML_WITH_CHILDREN, loc),
         )
         ctx.node.children.length = 0
