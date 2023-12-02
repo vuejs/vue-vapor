@@ -43,23 +43,19 @@ export const transformVOn: DirectiveTransform = (dir, node, context) => {
     name = transformClick(arg, 'mouseup')
   }
 
-  context.registerEffect(
-    [exp],
-    [
-      {
-        type: IRNodeTypes.SET_EVENT,
-        loc,
-        element: context.reference(),
-        name: createSimpleExpression(name, true, arg.loc),
-        value: exp,
-        modifiers: {
-          keys: keyModifiers,
-          nonKeys: nonKeyModifiers,
-          options: eventOptionModifiers,
-        },
-      },
-    ],
-  )
+  // TODO reactive
+  context.registerOperation({
+    type: IRNodeTypes.SET_EVENT,
+    loc,
+    element: context.reference(),
+    name: createSimpleExpression(name, true, arg.loc),
+    value: exp,
+    modifiers: {
+      keys: keyModifiers,
+      nonKeys: nonKeyModifiers,
+      options: eventOptionModifiers,
+    },
+  })
 }
 
 function transformClick(key: ExpressionNode, event: string) {
