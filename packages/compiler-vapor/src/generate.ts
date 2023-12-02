@@ -439,7 +439,9 @@ function genEventOperation(oper: SetEventIRNode, context: CodegenContext) {
   const { vaporHelper, push, pushWithNewline } = context
 
   pushWithNewline(`${vaporHelper('on')}(n${oper.element}, `)
-  genExpression(`"${oper.name}"`, context)
+  push('"')
+  genExpression(oper.name, context)
+  push('"')
   push(', ')
 
   const { keys, nonKeys, eventOptions, callHelpers } = oper.modifiers
