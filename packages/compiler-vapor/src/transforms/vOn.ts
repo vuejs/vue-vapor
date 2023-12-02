@@ -1,28 +1,17 @@
 import {
   createCompilerError,
-  DirectiveNode,
-  ElementNode,
+  createSimpleExpression,
   ErrorCodes,
   ExpressionNode,
   isStaticExp,
   NodeTypes,
-  SimpleExpressionNode,
 } from '@vue/compiler-core'
-import type { TransformContext } from '../transform'
+import type { DirectiveTransform } from '../transform'
 import { IRNodeTypes } from '../ir'
-import { resolveModifiers } from '@vue/compiler-dom'
-import { makeMap } from '@vue/shared'
+import { isKeyboardEvent, resolveModifiers } from '@vue/compiler-dom'
 
-export const isKeyboardEvent = /*#__PURE__*/ makeMap(
-  `keyup,keydown,keypress`,
-  true,
-)
-
-export function transformVOn(
-  node: DirectiveNode,
-  context: TransformContext<ElementNode>,
-) {
-  const { arg, exp, loc, modifiers } = node
+export const transformVOn: DirectiveTransform = (dir, node, context) => {
+  const { arg, exp, loc, modifiers } = dir
   if (!exp && !modifiers.length) {
     context.options.onError(
       createCompilerError(ErrorCodes.X_V_ON_NO_EXPRESSION, loc),
@@ -34,34 +23,27 @@ export function transformVOn(
     // TODO support v-on="{}"
     return
   } else if (exp === undefined) {
-    // TODO: support @foo
+    // TODO X_V_ON_NO_EXPRESSION error
+    return
+  } else if (arg.type === NodeTypes.COMPOUND_EXPRESSION) {
+    // TODO
     return
   }
 
+  const handlerKey = `on${arg.content}`
   const { keyModifiers, nonKeyModifiers, eventOptionModifiers } =
-    resolveModifiers(exp, modifiers, null, loc)
-  let name = (arg as SimpleExpressionNode).content
+    resolveModifiers(handlerKey, modifiers, null, loc)
 
   // normalize click.right and click.middle since they don't actually fire
+  let name = arg.content
   if (nonKeyModifiers.includes('right')) {
     name = transformClick(arg, 'contextmenu')
   }
   if (nonKeyModifiers.includes('middle')) {
     name = transformClick(arg, 'mouseup')
   }
-  let callHelpers = []
-  if (nonKeyModifiers.length) {
-    callHelpers.push('withModifiers')
-  }
-
-  if (
-    keyModifiers.length &&
-    // TODO: <h1 @keyup.enter.right ="dec">{{count}}</h1>
-    //  vapor has not been statically optimized yet,
-    //  so the behavior here is different from vue/core
-    (!isStaticExp(arg) || isKeyboardEvent(name))
-  ) {
-    callHelpers.push('withKeys')
+  if (!isKeyboardEvent(`on${arg.content}`)) {
+    keyModifiers.length = 0
   }
 
   context.registerEffect(
@@ -69,22 +51,21 @@ export function transformVOn(
     [
       {
         type: IRNodeTypes.SET_EVENT,
-        loc: node.loc,
+        loc,
         element: context.reference(),
-        name,
+        name: createSimpleExpression(name, true, arg.loc),
         value: exp,
         modifiers: {
           keys: keyModifiers,
           nonKeys: nonKeyModifiers,
-          eventOptions: eventOptionModifiers,
-          callHelpers,
+          options: eventOptionModifiers,
         },
       },
     ],
   )
 }
 
-const transformClick = (key: ExpressionNode, event: string) => {
+function transformClick(key: ExpressionNode, event: string) {
   const isStaticClick =
     isStaticExp(key) && key.content.toLowerCase() === 'click'
 
@@ -92,7 +73,7 @@ const transformClick = (key: ExpressionNode, event: string) => {
     return event
   } else if (key.type !== NodeTypes.SIMPLE_EXPRESSION) {
     // TODO: handle CompoundExpression
-    return event
+    return 'TODO'
   } else {
     return key.content.toLowerCase()
   }

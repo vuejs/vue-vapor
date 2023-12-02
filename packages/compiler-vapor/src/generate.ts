@@ -317,7 +317,7 @@ function genOperation(oper: OperationNode, context: CodegenContext) {
     }
 
     case IRNodeTypes.SET_EVENT: {
-      return genEventOperation(oper, context)
+      return genSetEvent(oper, context)
     }
 
     case IRNodeTypes.SET_HTML: {
@@ -435,37 +435,31 @@ function genExpression(
   push(content, NewlineType.None, exp.loc, name)
 }
 
-function genEventOperation(oper: SetEventIRNode, context: CodegenContext) {
+function genSetEvent(oper: SetEventIRNode, context: CodegenContext) {
   const { vaporHelper, push, pushWithNewline } = context
 
   pushWithNewline(`${vaporHelper('on')}(n${oper.element}, `)
-  push('"')
+  // second arg: event name
   genExpression(oper.name, context)
-  push('"')
   push(', ')
 
-  const { keys, nonKeys, eventOptions, callHelpers } = oper.modifiers
-  let callExpr = ''
-  let paramsExpr = []
-  for (let i = callHelpers.length - 1; i >= 0; i--) {
-    callExpr += `${vaporHelper(callHelpers[i])}(`
-    const arr = genArrayExpression(
-      callHelpers[i] === 'withKeys' ? keys : nonKeys,
-    )
-    paramsExpr.push(`${arr})`)
+  const { keys, nonKeys, options } = oper.modifiers
+  if (keys.length) {
+    push(`${vaporHelper('withKeys')}(`)
+  }
+  if (nonKeys.length) {
+    push(`${vaporHelper('withModifiers')}(`)
+  }
+  genExpression(oper.value, context)
+  if (nonKeys.length) {
+    push(`, ${genArrayExpression(nonKeys)})`)
+  }
+  if (keys.length) {
+    push(`, ${genArrayExpression(keys)})`)
+  }
+  if (options.length) {
+    push(`, { ${options.map((v) => `${v}: true`).join(', ')} }`)
   }
 
-  push(callExpr)
-  genExpression(oper.value, context)
-  push(paramsExpr.length ? ', ' : '')
-  push(paramsExpr.join(','))
-
-  const optionEventValue = eventOptions
-    .map((v) => {
-      return `${v}: true`
-    })
-    .join(', ')
-  const optionEvent = eventOptions.length ? `, {${optionEventValue} }` : ''
-  push(optionEvent)
   push(')')
 }

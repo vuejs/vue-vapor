@@ -113,7 +113,7 @@ function transformProp(
       break
     }
     case 'on': {
-      transformVOn(prop, context)
+      transformVOn(prop, node, context)
       break
     }
   }

@@ -7,7 +7,6 @@ import {
   NodeTypes,
   createCompoundExpression,
   ExpressionNode,
-  SimpleExpressionNode,
   isStaticExp,
   CompilerDeprecationTypes,
   TransformContext,
@@ -15,7 +14,7 @@ import {
   checkCompatEnabled
 } from '@vue/compiler-core'
 import { V_ON_WITH_MODIFIERS, V_ON_WITH_KEYS } from '../runtimeHelpers'
-import { makeMap, capitalize } from '@vue/shared'
+import { makeMap, capitalize, isString } from '@vue/shared'
 
 const isEventOptionModifier = /*#__PURE__*/ makeMap(`passive,once,capture`)
 const isNonKeyModifier = /*#__PURE__*/ makeMap(
@@ -28,13 +27,13 @@ const isNonKeyModifier = /*#__PURE__*/ makeMap(
 )
 // left & right could be mouse or key modifiers based on event type
 const maybeKeyModifier = /*#__PURE__*/ makeMap('left,right')
-const isKeyboardEvent = /*#__PURE__*/ makeMap(
+export const isKeyboardEvent = /*#__PURE__*/ makeMap(
   `onkeyup,onkeydown,onkeypress`,
   true
 )
 
 export const resolveModifiers = (
-  key: ExpressionNode,
+  key: ExpressionNode | string,
   modifiers: string[],
   context: TransformContext | null,
   loc: SourceLocation
@@ -64,11 +63,13 @@ export const resolveModifiers = (
     } else {
       // runtimeModifiers: modifiers that needs runtime guards
       if (maybeKeyModifier(modifier)) {
-        // TODO: <h1 @keyup.enter.right ="dec">{{count}}</h1>
-        //  vapor has not been statically optimized yet,
-        //  so the behavior here is different from vue/core
-        if (isStaticExp(key)) {
-          if (isKeyboardEvent((key as SimpleExpressionNode).content)) {
+        const keyString = isString(key)
+          ? key
+          : isStaticExp(key)
+            ? key.content
+            : null
+        if (keyString) {
+          if (isKeyboardEvent(keyString)) {
             keyModifiers.push(modifier)
           } else {
             nonKeyModifiers.push(modifier)

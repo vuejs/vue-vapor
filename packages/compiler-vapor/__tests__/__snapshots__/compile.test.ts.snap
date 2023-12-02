@@ -74,9 +74,9 @@ exports[`compile > directives > v-on > event modifier 1`] = `
 "import { template as _template, children as _children, effect as _effect, on as _on, withModifiers as _withModifiers, withKeys as _withKeys } from 'vue/vapor';
 
 export function render(_ctx) {
-  const t0 = _template(\\"<a></a><form></form><a></a><div></div><div></div><a></a>1 <div></div><input><input><input><input><input><input><input><input><input><input><input><input><input><input><input>\\")
+  const t0 = _template(\\"<a></a><form></form><a></a><div></div><div></div><a></a><div></div><input><input><input><input><input><input><input><input><input><input><input><input><input><input><input>\\")
   const n0 = t0()
-  const { 0: [n1], 1: [n2], 2: [n3], 3: [n4], 4: [n5], 5: [n6], 7: [n7], 8: [n8], 9: [n9], 10: [n10], 11: [n11], 12: [n12], 13: [n13], 14: [n14], 15: [n15], 16: [n16], 17: [n17], 18: [n18], 19: [n19], 20: [n20], 21: [n21], 22: [n22],} = _children(n0)
+  const { 0: [n1], 1: [n2], 2: [n3], 3: [n4], 4: [n5], 5: [n6], 6: [n7], 7: [n8], 8: [n9], 9: [n10], 10: [n11], 11: [n12], 12: [n13], 13: [n14], 14: [n15], 15: [n16], 16: [n17], 17: [n18], 18: [n19], 19: [n20], 20: [n21], 21: [n22],} = _children(n0)
   _effect(() => {
     _on(n1, \\"click\\", _withModifiers(handleEvent, [\\"stop\\"]))
   })
@@ -90,13 +90,13 @@ export function render(_ctx) {
     _on(n4, \\"click\\", _withModifiers(handleEvent, [\\"self\\"]))
   })
   _effect(() => {
-    _on(n5, \\"click\\", handleEvent, {capture: true })
+    _on(n5, \\"click\\", handleEvent, { capture: true })
   })
   _effect(() => {
-    _on(n6, \\"click\\", handleEvent, {once: true })
+    _on(n6, \\"click\\", handleEvent, { once: true })
   })
   _effect(() => {
-    _on(n7, \\"scroll\\", handleEvent, {passive: true })
+    _on(n7, \\"scroll\\", handleEvent, { passive: true })
   })
   _effect(() => {
     _on(n8, \\"contextmenu\\", _withModifiers(handleEvent, [\\"right\\"]))
@@ -132,7 +132,7 @@ export function render(_ctx) {
     _on(n18, \\"keyup\\", _withKeys(handleEvent, [\\"down\\"]))
   })
   _effect(() => {
-    _on(n19, \\"keyup\\", _withKeys(_withModifiers(handleEvent, [\\"left\\"]),[\\"left\\"]))
+    _on(n19, \\"keyup\\", _withKeys(handleEvent, [\\"left\\"]))
   })
   _effect(() => {
     _on(n20, \\"keyup\\", _withModifiers(submit, [\\"middle\\"]))
@@ -141,7 +141,7 @@ export function render(_ctx) {
     _on(n21, \\"keyup\\", _withModifiers(submit, [\\"middle\\", \\"self\\"]))
   })
   _effect(() => {
-    _on(n22, \\"keyup\\", _withKeys(_withModifiers(handleEvent, [\\"enter\\"]),[\\"self\\"]))
+    _on(n22, \\"keyup\\", _withKeys(_withModifiers(handleEvent, [\\"self\\"]), [\\"enter\\"]))
   })
   return n0
 }"

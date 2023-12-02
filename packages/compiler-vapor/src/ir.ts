@@ -68,10 +68,12 @@ export interface SetEventIRNode extends BaseIRNode {
   name: IRExpression
   value: IRExpression
   modifiers: {
+    // modifiers for addEventListener() options, e.g. .passive & .capture
+    options: string[]
+    // modifiers that needs runtime guards, withKeys
     keys: string[]
+    // modifiers that needs runtime guards, withModifiers
     nonKeys: string[]
-    eventOptions: string[]
-    callHelpers: string[]
   }
 }
 
