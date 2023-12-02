@@ -112,6 +112,7 @@ function transformProp(
         return
       }
 
+      // TODO reactive
       ctx.registerOperation({
         type: IRNodeTypes.SET_EVENT,
         loc: node.loc,
