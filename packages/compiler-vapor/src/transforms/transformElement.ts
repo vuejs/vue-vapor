@@ -12,7 +12,7 @@ import {
 import { isVoidTag } from '@vue/shared'
 import { NodeTransform, TransformContext } from '../transform'
 import { IRNodeTypes } from '../ir'
-import { transformVOn } from "./vOn";
+import { transformVOn } from './vOn'
 
 export const transformElement: NodeTransform = (node, ctx) => {
   return function postTransformElement() {
