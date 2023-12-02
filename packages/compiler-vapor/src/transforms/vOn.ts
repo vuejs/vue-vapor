@@ -3,6 +3,7 @@ import {
   DirectiveNode,
   ElementNode,
   ErrorCodes,
+  ExpressionNode,
   isStaticExp,
   NodeTypes,
   SimpleExpressionNode,
