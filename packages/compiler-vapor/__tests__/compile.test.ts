@@ -112,10 +112,26 @@ describe('compile', () => {
 
       test('event modifier', async () => {
         const code = await compile(
-          `<div @click.prevent.stop="handleClick"></div>`,
+          `<a @click.stop="handleEvent"></a>
+                    <form @submit.prevent="handleEvent"></form>
+                    <a @click.stop.prevent="handleEvent"></a>
+                    <div @click.self="handleEvent"></div> 
+                    <div @click.capture="handleEvent"></div> 
+                    <a @click.once="handleEvent"></a>1
+                    <div @scroll.passive="handleEvent"></div>1
+                    <input @click.enter.right="handleEvent" />
+                    <input @keyup.enter="handleEvent" />
+                    <input @keyup.tab="handleEvent" />
+                    <input @keyup.delete="handleEvent" />
+                    <input @keyup.esc="handleEvent" />
+                    <input @keyup.space="handleEvent" />
+                    <input @keyup.up="handleEvent" />
+                    <input @keyup.down="handleEvent" />
+                    <input @keyup.left="handleEvent" />
+                    <input @keyup.self.enter="handleEvent" />`,
           {
             bindingMetadata: {
-              handleClick: BindingTypes.SETUP_CONST,
+              handleEvent: BindingTypes.SETUP_CONST,
             },
           },
         )
