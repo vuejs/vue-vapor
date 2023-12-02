@@ -113,14 +113,13 @@ function transformProp(
       }
 
       ctx.registerOperation({
-          type: IRNodeTypes.SET_EVENT,
-          loc: node.loc,
-          element: ctx.reference(),
-          name: arg,
-          value: exp,
-          modifiers,
-        },
-      )
+        type: IRNodeTypes.SET_EVENT,
+        loc: node.loc,
+        element: ctx.reference(),
+        name: arg,
+        value: exp,
+        modifiers,
+      })
       break
     }
     case 'html': {
