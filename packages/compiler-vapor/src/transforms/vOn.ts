@@ -8,7 +8,7 @@ import {
 } from '@vue/compiler-core'
 import type { DirectiveTransform } from '../transform'
 import { IRNodeTypes } from '../ir'
-import { isKeyboardEvent, resolveModifiers } from '@vue/compiler-dom'
+import { resolveModifiers } from '@vue/compiler-dom'
 
 export const transformVOn: DirectiveTransform = (dir, node, context) => {
   const { arg, exp, loc, modifiers } = dir
@@ -41,9 +41,6 @@ export const transformVOn: DirectiveTransform = (dir, node, context) => {
   }
   if (nonKeyModifiers.includes('middle')) {
     name = transformClick(arg, 'mouseup')
-  }
-  if (!isKeyboardEvent(`on${arg.content}`)) {
-    keyModifiers.length = 0
   }
 
   context.registerEffect(

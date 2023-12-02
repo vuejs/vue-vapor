@@ -73,5 +73,5 @@ export {
   DOMErrorCodes,
   DOMErrorMessages
 } from './errors'
-export { isKeyboardEvent, resolveModifiers } from './transforms/vOn'
+export { resolveModifiers } from './transforms/vOn'
 export * from '@vue/compiler-core'

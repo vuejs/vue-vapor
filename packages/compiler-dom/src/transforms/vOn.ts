@@ -27,7 +27,7 @@ const isNonKeyModifier = /*#__PURE__*/ makeMap(
 )
 // left & right could be mouse or key modifiers based on event type
 const maybeKeyModifier = /*#__PURE__*/ makeMap('left,right')
-export const isKeyboardEvent = /*#__PURE__*/ makeMap(
+const isKeyboardEvent = /*#__PURE__*/ makeMap(
   `onkeyup,onkeydown,onkeypress`,
   true
 )
@@ -61,13 +61,14 @@ export const resolveModifiers = (
       // e.g. .passive & .capture
       eventOptionModifiers.push(modifier)
     } else {
+      const keyString = isString(key)
+        ? key
+        : isStaticExp(key)
+          ? key.content
+          : null
+
       // runtimeModifiers: modifiers that needs runtime guards
       if (maybeKeyModifier(modifier)) {
-        const keyString = isString(key)
-          ? key
-          : isStaticExp(key)
-            ? key.content
-            : null
         if (keyString) {
           if (isKeyboardEvent(keyString)) {
             keyModifiers.push(modifier)
@@ -81,7 +82,7 @@ export const resolveModifiers = (
       } else {
         if (isNonKeyModifier(modifier)) {
           nonKeyModifiers.push(modifier)
-        } else {
+        } else if (!keyString || isKeyboardEvent(keyString)) {
           keyModifiers.push(modifier)
         }
       }
