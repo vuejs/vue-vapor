@@ -6,19 +6,8 @@ import {
 } from '@vue/compiler-dom'
 import { type CompilerOptions, compile as _compile } from '../src'
 
-// TODO remove it
-import { format } from 'prettier'
-
-async function compile(
-  template: string | RootNode,
-  options: CompilerOptions = {},
-) {
+function compile(template: string | RootNode, options: CompilerOptions = {}) {
   let { code } = _compile(template, options)
-  code = await format(code, {
-    parser: 'babel',
-    printWidth: 999999,
-    singleQuote: true,
-  })
   return code
 }
 
@@ -225,7 +214,9 @@ describe('compile', () => {
         )
 
         expect(code).toMatchSnapshot()
-        expect(code).contains('<div :id="foo"><Comp></Comp>{{ bar }}</div>')
+        expect(code).contains(
+          JSON.stringify('<div :id="foo"><Comp></Comp>{{ bar }}</div>'),
+        )
         expect(code).not.contains('effect')
       })
 
