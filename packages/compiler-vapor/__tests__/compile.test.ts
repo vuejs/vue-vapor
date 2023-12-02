@@ -118,7 +118,10 @@ describe('compile', () => {
                     <div @click.self="handleEvent"></div> 
                     <div @click.capture="handleEvent"></div> 
                     <a @click.once="handleEvent"></a>1
-                    <div @scroll.passive="handleEvent"></div>1
+                    <div @scroll.passive="handleEvent"></div>
+                    <input @click.right="handleEvent" />
+                    <input @click.left="handleEvent" />
+                    <input @click.middle="handleEvent" />
                     <input @click.enter.right="handleEvent" />
                     <input @keyup.enter="handleEvent" />
                     <input @keyup.tab="handleEvent" />
@@ -129,6 +132,7 @@ describe('compile', () => {
                     <input @keyup.down="handleEvent" />
                     <input @keyup.left="handleEvent" />
                     <input @keyup.middle="submit" />
+                    <input @keyup.middle.self="submit" />
                     <input @keyup.self.enter="handleEvent" />`,
           {
             bindingMetadata: {

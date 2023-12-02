@@ -44,10 +44,10 @@ export function transformVOn(
     resolveModifiers(exp as ExpressionNode, modifiers, context as any, loc)
   let name = (arg as SimpleExpressionNode).content
   if (nonKeyModifiers.includes('right')) {
-    transformClick(exp, 'contextmenu')
+    name = transformClick(arg, 'contextmenu')
   }
   if (nonKeyModifiers.includes('middle')) {
-    transformClick(exp, 'mouseup')
+    name = transformClick(arg, 'mouseup')
   }
   let callHelpers = []
   if (nonKeyModifiers.length) {
@@ -94,6 +94,6 @@ const transformClick = (key: ExpressionNode, event: string) => {
     // TODO: handle CompoundExpression
     return event
   } else {
-    return key
+    return key.content.toLowerCase()
   }
 }
