@@ -6,10 +6,13 @@ import {
 } from '@vue/shared'
 
 import {
+  Component,
   ComponentInternalInstance,
   createComponentInstance,
   setCurrentInstance,
+  unsetCurrentInstance,
 } from './component'
+import { initProps } from './componentProps'
 
 export type Block = Node | Fragment | Block[]
 export type ParentBlock = ParentNode | Node[]
@@ -17,13 +20,15 @@ export type Fragment = { nodes: Block; anchor: Node }
 export type BlockFn = (props?: any) => Block
 
 export function render(
-  comp: BlockFn,
+  comp: Component,
+  props: any,
   container: string | ParentNode,
 ): ComponentInternalInstance {
-  const instance = createComponentInstance(comp)
-  setCurrentInstance(instance)
-  mountComponent(instance, (container = normalizeContainer(container)))
-  return instance
+  return mountComponent(
+    comp,
+    props,
+    (container = normalizeContainer(container)),
+  )
 }
 
 export function normalizeContainer(container: string | ParentNode): ParentNode {
@@ -33,18 +38,27 @@ export function normalizeContainer(container: string | ParentNode): ParentNode {
 }
 
 export const mountComponent = (
-  instance: ComponentInternalInstance,
+  comp: Component,
+  props: any,
   container: ParentNode,
-) => {
+): ComponentInternalInstance => {
+  const instance = createComponentInstance(comp)
+  initProps(instance, props)
+
+  setCurrentInstance(instance)
   instance.container = container
   const block = instance.scope.run(
-    () => (instance.block = instance.component()),
+    () => (instance.block = instance.blockFn(instance.props)),
   )!
   insert(block, instance.container)
   instance.isMounted = true
+  unsetCurrentInstance()
+
   // TODO: lifecycle hooks (mounted, ...)
   // const { m } = instance
   // m && invoke(m)
+
+  return instance
 }
 
 export const unmountComponent = (instance: ComponentInternalInstance) => {
