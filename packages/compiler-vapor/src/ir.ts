@@ -83,7 +83,7 @@ export interface SetEventIRNode extends BaseIRNode {
 }
 
 export interface SetShowIRNode extends BaseIRNode {
-  type: IRNodeTypes.SET_HTML
+  type: IRNodeTypes.SET_SHOW
   element: number
   value: IRExpression
 }
