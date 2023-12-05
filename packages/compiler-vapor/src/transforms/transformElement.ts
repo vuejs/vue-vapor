@@ -66,6 +66,7 @@ function transformProp(
     return
   }
 
+  const { arg, exp, loc, modifiers } = prop
   const directiveTransform = context.options.directiveTransforms[name]
   if (directiveTransform) {
     directiveTransform(prop, node, context)
@@ -75,8 +76,10 @@ function transformProp(
       type: IRNodeTypes.WITH_DIRECTIVE,
       element: context.reference(),
       name,
-      binding: prop.exp,
-      loc: prop.loc,
+      binding: exp,
+      arg,
+      modifiers,
+      loc: loc,
     })
   }
 }

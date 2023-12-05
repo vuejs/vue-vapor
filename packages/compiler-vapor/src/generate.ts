@@ -485,6 +485,19 @@ function genWithDirective(oper: WithDirectiveIRNode, context: CodegenContext) {
     push(', ')
     genExpression(oper.binding, context)
   }
+
+  // TODO dynamic arg
+  if (oper.arg) {
+    push(', ')
+    genExpression(oper.arg, context)
+  }
+
+  if (oper.modifiers) {
+    push(', ')
+    push('{ ')
+    push(genDirectiveModifiers(oper.modifiers))
+    push(' }')
+  }
   push(']])')
   return
 }
@@ -575,4 +588,8 @@ function genIdentifier(
     id = `_ctx.${id}`
   }
   push(id, NewlineType.None, loc, name)
+}
+
+function genDirectiveModifiers(modifiers: string[]) {
+  return modifiers.map((value) => `${value}: true`).join(', ')
 }
