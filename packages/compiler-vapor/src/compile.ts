@@ -19,6 +19,7 @@ import { transformElement } from './transforms/transformElement'
 import { transformVHtml } from './transforms/vHtml'
 import { transformVText } from './transforms/vText'
 import { transformVOn } from './transforms/vOn'
+import { transformMemo } from './transforms/vMemo'
 import { transformInterpolation } from './transforms/transformInterpolation'
 import type { HackOptions } from './ir'
 
@@ -93,7 +94,7 @@ export function getBaseTransformPreset(
   prefixIdentifiers?: boolean,
 ): TransformPreset {
   return [
-    [transformOnce, transformInterpolation, transformElement],
+    [transformOnce, transformMemo, transformInterpolation, transformElement],
     {
       on: transformVOn,
       html: transformVHtml,

@@ -51,6 +51,10 @@ export interface TransformContext<T extends AllNode = AllNode> {
   dynamic: IRDynamicInfo
 
   inVOnce: boolean
+  inVMemo?: {
+    exp: IRExpression[]
+    parentMemoNum: number
+  }
 
   reference(): number
   increaseId(): number
@@ -70,7 +74,7 @@ function createRootContext(
   options: TransformOptions = {},
 ): TransformContext<RootNode> {
   let globalId = 0
-  const { effect, operation: operation, helpers, vaporHelpers } = ir
+  const { memoEffect, effect, operation: operation, helpers, vaporHelpers } = ir
 
   const ctx: TransformContext<RootNode> = {
     node,
@@ -117,6 +121,19 @@ function createRootContext(
       ) {
         return this.registerOperation(...operations)
       }
+
+      if (this.inVMemo) {
+        this.registerOperation(...operations)
+
+        memoEffect.push({
+          expressions: expressions as IRExpression[],
+          operations,
+          memoExp: this.inVMemo.exp,
+          parentMemoNum: this.inVMemo.parentMemoNum,
+        })
+        return
+      }
+
       // TODO combine effects
       effect.push({
         expressions: expressions as IRExpression[],
@@ -200,6 +217,7 @@ export function transform(
       children: {},
     },
     effect: [],
+    memoEffect: [],
     operation: [],
     helpers: new Set([]),
     vaporHelpers: new Set([]),

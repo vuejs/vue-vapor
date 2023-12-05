@@ -39,6 +39,7 @@ export interface RootIRNode extends BaseIRNode {
   template: Array<TemplateFactoryIRNode | FragmentFactoryIRNode>
   dynamic: IRDynamicInfo
   effect: IREffect[]
+  memoEffect: IRMemoEffect[]
   operation: OperationNode[]
   helpers: Set<string>
   vaporHelpers: Set<VaporHelper>
@@ -150,6 +151,13 @@ export interface IREffect {
   // TODO multi-expression effect
   expressions: IRExpression[]
   operations: OperationNode[]
+}
+
+export interface IRMemoEffect {
+  expressions: IRExpression[]
+  operations: OperationNode[]
+  memoExp: IRExpression[]
+  parentMemoNum: number
 }
 
 type Overwrite<T, U> = Pick<T, Exclude<keyof T, keyof U>> &

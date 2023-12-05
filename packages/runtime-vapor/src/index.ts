@@ -35,6 +35,7 @@ export {
   getCurrentScope,
   onScopeDispose,
 } from '@vue/reactivity'
+export { watch } from '@vue/runtime-core'
 export { withModifiers, withKeys } from '@vue/runtime-dom'
 
 export * from './on'
@@ -42,3 +43,4 @@ export * from './render'
 export * from './template'
 export * from './scheduler'
 export * from './directives'
+export * from './helpers/withMemo'

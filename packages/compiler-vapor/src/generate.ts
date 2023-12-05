@@ -271,6 +271,32 @@ export function generate(
       pushWithNewline('})')
     }
 
+    for (const {
+      operations,
+      memoExp: memoExps,
+      parentMemoNum,
+    } of ir.memoEffect) {
+      pushWithNewline(`${vaporHelper('watch')}([`)
+      memoExps.forEach((memoExp, index) => {
+        genExpression(memoExp, ctx)
+        if (index < memoExps.length - 1) {
+          push(', ')
+        }
+      })
+      push('], (newValues, oldValues) => {')
+      indent()
+      if (parentMemoNum > 0) {
+        pushWithNewline(`if(!${vaporHelper('withMemo')}(`)
+        push(`${parentMemoNum}`)
+        push(`, newValues, oldValues)) return`)
+      }
+      for (const operation of operations) {
+        genOperation(operation, ctx)
+      }
+      deindent()
+      pushWithNewline('})')
+    }
+
     // TODO multiple-template
     // TODO return statement in IR
     pushWithNewline(`return n${ir.dynamic.id}`)
@@ -443,9 +469,20 @@ function genExpression(
           content = `${vaporHelper('unref')}(${content})`
           break
       }
+
+    // TODO: Maybe we can reuse transformExpression before generating the expression ?
+    const isArrayExpr = /^\[.*\]$/g.test(content)
+    isArrayExpr && (content = content.slice(1, -1))
     if (prefixIdentifiers && !inline) {
       if (isSimpleIdentifier(content)) name = content
-      content = `_ctx.${content}`
+      if (isArrayExpr) {
+        content = content
+          .split(',')
+          .map((item) => '_ctx.' + item)
+          .join(',')
+      } else {
+        content = `_ctx.${content}`
+      }
     }
   }
 
