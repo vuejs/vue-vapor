@@ -287,7 +287,9 @@ export function generate(
       indent()
       if (parentMemoNum > 0) {
         pushWithNewline(`if(!${vaporHelper('withMemo')}(`)
-        push(`${parentMemoNum}`)
+        push(`[`)
+        genExpression(memoExps[memoExps.length - 1], ctx)
+        push(`].length`)
         push(`, newValues, oldValues)) return`)
       }
       for (const operation of operations) {
