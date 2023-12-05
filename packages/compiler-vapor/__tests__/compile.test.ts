@@ -1,10 +1,10 @@
 import {
-  type RootNode,
   BindingTypes,
-  ErrorCodes,
   DOMErrorCodes,
+  ErrorCodes,
+  type RootNode,
 } from '@vue/compiler-dom'
-import { type CompilerOptions, compile as _compile } from '../src'
+import { compile as _compile, type CompilerOptions } from '../src'
 
 function compile(template: string | RootNode, options: CompilerOptions = {}) {
   let { code } = _compile(template, {
@@ -330,6 +330,54 @@ describe('compile', () => {
         const code = await compile(`<div v-cloak>test</div>`)
         expect(code).toMatchSnapshot()
         expect(code).not.contains('v-cloak')
+      })
+    })
+
+    describe('custom directive', () => {
+      test('basic', async () => {
+        const code = await compile(`<div v-example></div>`, {
+          bindingMetadata: {
+            vExample: BindingTypes.SETUP_CONST,
+          },
+        })
+        expect(code).matchSnapshot()
+      })
+
+      test('binding value', async () => {
+        const code = await compile(`<div v-example="msg"></div>`, {
+          bindingMetadata: {
+            msg: BindingTypes.SETUP_REF,
+            vExample: BindingTypes.SETUP_CONST,
+          },
+        })
+        expect(code).matchSnapshot()
+      })
+      test('static parameters ', async () => {
+        const code = await compile(`<div v-example:foo="msg"></div>`, {
+          bindingMetadata: {
+            msg: BindingTypes.SETUP_REF,
+            vExample: BindingTypes.SETUP_CONST,
+          },
+        })
+        expect(code).matchSnapshot()
+      })
+      test('modifiers', async () => {
+        const code = await compile(`<div v-example.bar="msg"></div>`, {
+          bindingMetadata: {
+            msg: BindingTypes.SETUP_REF,
+            vExample: BindingTypes.SETUP_CONST,
+          },
+        })
+        expect(code).matchSnapshot()
+      })
+      test('static parameters and modifiers', async () => {
+        const code = await compile(`<div v-example:foo.bar="msg"></div>`, {
+          bindingMetadata: {
+            msg: BindingTypes.SETUP_REF,
+            vExample: BindingTypes.SETUP_CONST,
+          },
+        })
+        expect(code).matchSnapshot()
       })
     })
   })

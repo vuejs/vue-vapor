@@ -486,13 +486,15 @@ function genWithDirective(oper: WithDirectiveIRNode, context: CodegenContext) {
     genExpression(oper.binding, context)
   }
 
-  // TODO dynamic arg
   if (oper.arg) {
     push(', ')
+    // TODO dynamic arg
     genExpression(oper.arg, context)
+  } else {
+    push(', undefined')
   }
 
-  if (oper.modifiers) {
+  if (oper.modifiers && oper.modifiers.length) {
     push(', ')
     push('{ ')
     push(genDirectiveModifiers(oper.modifiers))
