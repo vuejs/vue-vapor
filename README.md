@@ -4,39 +4,55 @@ This repository is a fork of [vuejs/core](https://github.com/vuejs/core) and is 
 
 ## TODO
 
-PR are welcome! Please create a issue before you start to work on it.
+PR are welcome! However, please create an issue before you start to work on it, and DO NOT create a PR before issue discussion.
 
-See the To-do list below or `// TODO` comments in code (`compiler-vapor` and `runtime-vapor` packages).
+- [Issues with `todo` tag](https://github.com/vuejs/core-vapor/labels/todo)
+- To-do list below (discussion before PR is required)
+- `// TODO` comments in code (`compiler-vapor` and `runtime-vapor` packages)
 
-- [x] counter
+---
+
+- [x] Counter App
   - [x] simple bindings
   - [x] simple events
-- [ ] TODO-MVC
+- [ ] TODO-MVC App
+- [x] transform
+  - [x] NodeTransform
+  - [x] DirectiveTransform
 - [ ] directives
   - [x] `v-once`
-    - [ ] unit tests
   - [x] `v-html`
   - [x] `v-text`
   - [x] `v-pre`
   - [x] `v-cloak`
-  - [ ] `v-on` / `v-bind`
+  - [ ] `v-on`
     - [x] simple expression
     - [ ] compound expression
-    - [ ] modifiers
-    - [ ] unit tests
-  - [ ] runtime
+    - [x] modifiers
+  - [ ] `v-bind`
+    - [x] simple expression
+    - [ ] compound expression
+  - [ ] runtime directives
+    - #19
   - [ ] `v-memo`
+    - #18
   - [ ] `v-model`
+    - #17
+    - needs #19 first
   - [ ] `v-if` / `v-else` / `v-else-if`
+    - #9
   - [ ] `v-for`
+    - #21
   - [ ] `v-show`
-    - [ ] runtime directive
-    - [ ] compiler
-- [ ] Remove DOM API in codegen
-- [ ] Fragment
-  - [x] multiple root nodes
-  - [x] all dynamic children
-  - [x] return `Node[]` for all dynamic children, instead of using `fragment` API
+    - #16
+    - needs #19 first
+- [x] Fragment
+- [ ] Codegen
+  - [x] CodegenContext
+  - [x] indent
+  - [x] Source map
+  - [ ] Function mode
+  - [ ] SSR
 - [ ] Built-in Components
   - [ ] Transition
   - [ ] TransitionGroup
@@ -44,7 +60,6 @@ See the To-do list below or `// TODO` comments in code (`compiler-vapor` and `ru
   - [ ] Teleport
   - [ ] Suspense
 - [ ] [Component](https://github.com/vuejs/core-vapor/issues/4)
-- [ ] SSR
 - [ ] Performance & Optimization
   - [ ] remove unnecessary close tag `</div>`
 

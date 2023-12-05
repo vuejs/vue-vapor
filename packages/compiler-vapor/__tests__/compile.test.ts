@@ -1,19 +1,13 @@
-import { BindingTypes, CompilerOptions, RootNode } from '@vue/compiler-dom'
-// TODO remove it
-import { format } from 'prettier'
-import { compile as _compile } from '../src'
-import { ErrorCodes } from '../src/errors'
+import {
+  type RootNode,
+  BindingTypes,
+  ErrorCodes,
+  DOMErrorCodes,
+} from '@vue/compiler-dom'
+import { type CompilerOptions, compile as _compile } from '../src'
 
-async function compile(
-  template: string | RootNode,
-  options: CompilerOptions = {},
-) {
+function compile(template: string | RootNode, options: CompilerOptions = {}) {
   let { code } = _compile(template, options)
-  code = await format(code, {
-    parser: 'babel',
-    printWidth: 999999,
-    singleQuote: true,
-  })
   return code
 }
 
@@ -78,7 +72,7 @@ describe('compile', () => {
         await compile(`<div v-bind:arg />`, { onError })
 
         expect(onError.mock.calls[0][0]).toMatchObject({
-          code: ErrorCodes.VAPOR_BIND_NO_EXPRESSION,
+          code: ErrorCodes.X_V_BIND_NO_EXPRESSION,
           loc: {
             start: {
               line: 1,
@@ -107,7 +101,7 @@ describe('compile', () => {
         const onError = vi.fn()
         await compile(`<div v-on:click />`, { onError })
         expect(onError.mock.calls[0][0]).toMatchObject({
-          code: ErrorCodes.VAPOR_ON_NO_EXPRESSION,
+          code: ErrorCodes.X_V_ON_NO_EXPRESSION,
           loc: {
             start: {
               line: 1,
@@ -119,6 +113,39 @@ describe('compile', () => {
             },
           },
         })
+      })
+
+      test('event modifier', async () => {
+        const code = await compile(
+          `<a @click.stop="handleEvent"></a>
+            <form @submit.prevent="handleEvent"></form>
+            <a @click.stop.prevent="handleEvent"></a>
+            <div @click.self="handleEvent"></div> 
+            <div @click.capture="handleEvent"></div> 
+            <a @click.once="handleEvent"></a>
+            <div @scroll.passive="handleEvent"></div>
+            <input @click.right="handleEvent" />
+            <input @click.left="handleEvent" />
+            <input @click.middle="handleEvent" />
+            <input @click.enter.right="handleEvent" />
+            <input @keyup.enter="handleEvent" />
+            <input @keyup.tab="handleEvent" />
+            <input @keyup.delete="handleEvent" />
+            <input @keyup.esc="handleEvent" />
+            <input @keyup.space="handleEvent" />
+            <input @keyup.up="handleEvent" />
+            <input @keyup.down="handleEvent" />
+            <input @keyup.left="handleEvent" />
+            <input @keyup.middle="submit" />
+            <input @keyup.middle.self="submit" />
+            <input @keyup.self.enter="handleEvent" />`,
+          {
+            bindingMetadata: {
+              handleEvent: BindingTypes.SETUP_CONST,
+            },
+          },
+        )
+        expect(code).matchSnapshot()
       })
     })
 
@@ -132,9 +159,26 @@ describe('compile', () => {
         expect(code).matchSnapshot()
       })
 
-      test('no expression', async () => {
-        const code = await compile(`<div v-html></div>`)
+      test('should raise error and ignore children when v-html is present', async () => {
+        const onError = vi.fn()
+        const code = await compile(`<div v-html="test">hello</div>`, {
+          onError,
+        })
         expect(code).matchSnapshot()
+        expect(onError.mock.calls).toMatchObject([
+          [{ code: DOMErrorCodes.X_V_HTML_WITH_CHILDREN }],
+        ])
+      })
+
+      test('should raise error if has no expression', async () => {
+        const onError = vi.fn()
+        const code = await compile(`<div v-html></div>`, {
+          onError,
+        })
+        expect(code).matchSnapshot()
+        expect(onError.mock.calls).toMatchObject([
+          [{ code: DOMErrorCodes.X_V_HTML_NO_EXPRESSION }],
+        ])
       })
     })
 
@@ -149,8 +193,12 @@ describe('compile', () => {
       })
 
       test('no expression', async () => {
-        const code = await compile(`<div v-text></div>`)
+        const onError = vi.fn()
+        const code = await compile(`<div v-text></div>`, { onError })
         expect(code).matchSnapshot()
+        expect(onError.mock.calls).toMatchObject([
+          [{ code: DOMErrorCodes.X_V_TEXT_NO_EXPRESSION }],
+        ])
       })
     })
 
@@ -158,9 +206,9 @@ describe('compile', () => {
       test('basic', async () => {
         const code = await compile(
           `<div v-once>
-          {{ msg }}
-          <span :class="clz" />
-        </div>`,
+            {{ msg }}
+            <span :class="clz" />
+          </div>`,
           {
             bindingMetadata: {
               msg: BindingTypes.SETUP_REF,
@@ -171,10 +219,58 @@ describe('compile', () => {
         expect(code).matchSnapshot()
       })
 
-      test.fails('as root node', async () => {
+      test('as root node', async () => {
         const code = await compile(`<div :id="foo" v-once />`)
         expect(code).toMatchSnapshot()
         expect(code).not.contains('effect')
+      })
+    })
+
+    describe('v-pre', () => {
+      test('basic', async () => {
+        const code = await compile(
+          `<div v-pre :id="foo"><Comp/>{{ bar }}</div>\n`,
+          {
+            bindingMetadata: {
+              foo: BindingTypes.SETUP_REF,
+              bar: BindingTypes.SETUP_REF,
+            },
+          },
+        )
+
+        expect(code).toMatchSnapshot()
+        expect(code).contains(
+          JSON.stringify('<div :id="foo"><Comp></Comp>{{ bar }}</div>'),
+        )
+        expect(code).not.contains('effect')
+      })
+
+      // TODO: support multiple root nodes and components
+      test('should not affect siblings after it', async () => {
+        const code = await compile(
+          `<div v-pre :id="foo"><Comp/>{{ bar }}</div>\n` +
+            `<div :id="foo"><Comp/>{{ bar }}</div>`,
+          {
+            bindingMetadata: {
+              foo: BindingTypes.SETUP_REF,
+              bar: BindingTypes.SETUP_REF,
+            },
+          },
+        )
+
+        expect(code).toMatchSnapshot()
+        // Waiting for TODO, There should be more here.
+      })
+
+      // TODO: support multiple root nodes and components
+      test('self-closing v-pre', async () => {
+        const code = await compile(
+          `<div v-pre/>\n<div :id="foo"><Comp/>{{ bar }}</div>`,
+        )
+
+        expect(code).toMatchSnapshot()
+        expect(code).contains('<div></div><div><Comp></Comp></div>')
+        // Waiting for TODO, There should be more here.
       })
     })
   })

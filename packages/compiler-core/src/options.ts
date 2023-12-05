@@ -1,5 +1,10 @@
-import { ElementNode, Namespace, TemplateChildNode, ParentNode } from './ast'
-import { TextModes } from './parse'
+import {
+  ElementNode,
+  Namespace,
+  TemplateChildNode,
+  ParentNode,
+  Namespaces
+} from './ast'
 import { CompilerError } from './errors'
 import {
   NodeTransform,
@@ -17,6 +22,24 @@ export interface ErrorHandlingOptions {
 export interface ParserOptions
   extends ErrorHandlingOptions,
     CompilerCompatOptions {
+  /**
+   * Base mode is platform agnostic and only parses HTML-like template syntax,
+   * treating all tags the same way. Specific tag parsing behavior can be
+   * configured by higher-level compilers.
+   *
+   * HTML mode adds additional logic for handling special parsing behavior in
+   * `<script>`, `<style>`,`<title>` and `<textarea>`.
+   * The logic is handled inside compiler-core for efficiency.
+   *
+   * SFC mode treats content of all root-level tags except `<template>` as plain
+   * text.
+   */
+  parseMode?: 'base' | 'html' | 'sfc'
+  /**
+   * Specify the root namespace to use when parsing a template.
+   * Defaults to `Namespaces.HTML` (0).
+   */
+  ns?: Namespaces
   /**
    * e.g. platform native elements, e.g. `<div>` for browsers
    */
@@ -40,14 +63,11 @@ export interface ParserOptions
   /**
    * Get tag namespace
    */
-  getNamespace?: (tag: string, parent: ElementNode | undefined) => Namespace
-  /**
-   * Get text parsing mode for this element
-   */
-  getTextMode?: (
-    node: ElementNode,
-    parent: ElementNode | undefined
-  ) => TextModes
+  getNamespace?: (
+    tag: string,
+    parent: ElementNode | undefined,
+    rootNamespace: Namespace
+  ) => Namespace
   /**
    * @default ['{{', '}}']
    */
@@ -57,7 +77,8 @@ export interface ParserOptions
    */
   whitespace?: 'preserve' | 'condense'
   /**
-   * Only needed for DOM compilers
+   * Only used for DOM compilers that runs in the browser.
+   * In non-browser builds, this option is ignored.
    */
   decodeEntities?: (rawText: string, asAttr: boolean) => string
   /**
@@ -65,6 +86,17 @@ export interface ParserOptions
    * This defaults to `true` in development and `false` in production builds.
    */
   comments?: boolean
+  /**
+   * Parse JavaScript expressions with Babel.
+   * @default false
+   */
+  prefixIdentifiers?: boolean
+  /**
+   * A list of parser plugins to enable for `@babel/parser`, which is used to
+   * parse expressions in bindings and interpolations.
+   * https://babeljs.io/docs/en/next/babel-parser#plugins
+   */
+  expressionPlugins?: ParserPlugin[]
 }
 
 export type HoistTransform = (
@@ -73,7 +105,7 @@ export type HoistTransform = (
   parent: ParentNode
 ) => void
 
-export const enum BindingTypes {
+export enum BindingTypes {
   /**
    * returned from data()
    */
@@ -207,15 +239,6 @@ export interface TransformOptions
    * Used by some transforms that expects only native elements
    */
   isCustomElement?: (tag: string) => boolean | void
-  /**
-   * Transform expressions like {{ foo }} to `_ctx.foo`.
-   * If this option is false, the generated code will be wrapped in a
-   * `with (this) { ... }` block.
-   * - This is force-enabled in module mode, since modules are by default strict
-   * and cannot use `with`
-   * @default mode === 'module'
-   */
-  prefixIdentifiers?: boolean
   /**
    * Hoist static VNodes and props objects to `_hoisted_x` constants
    * @default false

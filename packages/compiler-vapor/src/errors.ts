@@ -1,23 +1,32 @@
-import { CompilerError } from '@vue/compiler-dom'
+import {
+  CompilerError,
+  SourceLocation,
+  createCompilerError,
+} from '@vue/compiler-dom'
 
-export { createCompilerError } from '@vue/compiler-dom'
-
-export function defaultOnError(error: CompilerError) {
-  throw error
+export interface VaporCompilerError extends CompilerError {
+  code: VaporErrorCodes
 }
 
-export function defaultOnWarn(msg: CompilerError) {
-  __DEV__ && console.warn(`[Vue warn] ${msg.message}`)
+export function createVaporCompilerError(
+  code: VaporErrorCodes,
+  loc?: SourceLocation,
+) {
+  return createCompilerError(
+    code,
+    loc,
+    __DEV__ || !__BROWSER__ ? VaporErrorMessages : undefined,
+  ) as VaporCompilerError
 }
 
-export const enum ErrorCodes {
-  // transform errors
-  VAPOR_BIND_NO_EXPRESSION,
-  VAPOR_ON_NO_EXPRESSION,
+export enum VaporErrorCodes {
+  X_V_PLACEHOLDER = 100,
+  __EXTEND_POINT__,
 }
 
-export const errorMessages: Record<ErrorCodes, string> = {
-  // transform errors
-  [ErrorCodes.VAPOR_BIND_NO_EXPRESSION]: `v-bind is missing expression.`,
-  [ErrorCodes.VAPOR_ON_NO_EXPRESSION]: `v-on is missing expression.`,
+export const VaporErrorMessages: Record<VaporErrorCodes, string> = {
+  [VaporErrorCodes.X_V_PLACEHOLDER]: `[placeholder]`,
+
+  // just to fulfill types
+  [VaporErrorCodes.__EXTEND_POINT__]: ``,
 }

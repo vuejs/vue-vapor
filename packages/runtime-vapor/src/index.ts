@@ -33,9 +33,12 @@ export {
   effectScope,
   EffectScope,
   getCurrentScope,
-  onScopeDispose
+  onScopeDispose,
 } from '@vue/reactivity'
-export { effect } from './scheduler'
+export { withModifiers, withKeys } from '@vue/runtime-dom'
+
 export * from './on'
 export * from './render'
 export * from './template'
+export * from './scheduler'
+export * from './directives'

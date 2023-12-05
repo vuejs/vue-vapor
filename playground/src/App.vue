@@ -8,19 +8,6 @@ const show = computed(() => count.value > 0)
 
 const inc = () => count.value++
 const dec = () => count.value--
-
-// @ts-expect-error
-globalThis.count = count
-// @ts-expect-error
-globalThis.double = double
-// @ts-expect-error
-globalThis.inc = inc
-// @ts-expect-error
-globalThis.dec = dec
-// @ts-expect-error
-globalThis.html = html
-// @ts-expect-error
-globalThis.show = show
 </script>
 
 <template>

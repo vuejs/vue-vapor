@@ -10,7 +10,7 @@ export {
   type BindingMetadata,
   BindingTypes
 } from './options'
-export { baseParse, TextModes } from './parse'
+export { baseParse } from './parser'
 export {
   transform,
   type TransformContext,
@@ -21,10 +21,18 @@ export {
   type StructuralDirectiveTransform,
   type DirectiveTransform
 } from './transform'
-export { generate, type CodegenContext, type CodegenResult } from './codegen'
+export {
+  generate,
+  NewlineType,
+  type CodegenContext,
+  type CodegenResult
+} from './codegen'
 export {
   ErrorCodes,
+  errorMessages,
   createCompilerError,
+  defaultOnError,
+  defaultOnWarn,
   type CoreCompilerError,
   type CompilerError
 } from './errors'
@@ -67,5 +75,6 @@ export { generateCodeFrame } from '@vue/shared'
 export {
   checkCompatEnabled,
   warnDeprecation,
-  CompilerDeprecationTypes
+  CompilerDeprecationTypes,
+  type CompilerCompatOptions
 } from './compat/compatConfig'

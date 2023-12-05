@@ -1,6 +1,12 @@
-import type { SourceLocation } from '@vue/compiler-dom'
+import type {
+  ExpressionNode,
+  RootNode,
+  SourceLocation,
+} from '@vue/compiler-dom'
+import type { Prettify } from '@vue/shared'
+import type { DirectiveTransform, NodeTransform } from './transform'
 
-export const enum IRNodeTypes {
+export enum IRNodeTypes {
   ROOT,
   TEMPLATE_FACTORY,
   FRAGMENT_FACTORY,
@@ -15,90 +21,116 @@ export const enum IRNodeTypes {
   PREPEND_NODE,
   APPEND_NODE,
   CREATE_TEXT_NODE,
+
+  WITH_DIRECTIVE,
 }
 
-export interface IRNode {
+export interface BaseIRNode {
   type: IRNodeTypes
   loc: SourceLocation
 }
 
-export interface RootIRNode extends IRNode {
+// TODO refactor
+export type VaporHelper = keyof typeof import('../../runtime-vapor/src')
+
+export interface RootIRNode extends BaseIRNode {
   type: IRNodeTypes.ROOT
+  source: string
+  node: RootNode
   template: Array<TemplateFactoryIRNode | FragmentFactoryIRNode>
-  dynamic: DynamicInfo
-  // TODO multi-expression effect
-  effect: Record<string /* expr */, OperationNode[]>
+  dynamic: IRDynamicInfo
+  effect: IREffect[]
   operation: OperationNode[]
   helpers: Set<string>
-  vaporHelpers: Set<string>
+  vaporHelpers: Set<VaporHelper>
 }
 
-export interface TemplateFactoryIRNode extends IRNode {
+export interface TemplateFactoryIRNode extends BaseIRNode {
   type: IRNodeTypes.TEMPLATE_FACTORY
   template: string
 }
 
-export interface FragmentFactoryIRNode extends IRNode {
+export interface FragmentFactoryIRNode extends BaseIRNode {
   type: IRNodeTypes.FRAGMENT_FACTORY
 }
 
-export interface SetShowIRNode extends IRNode {
-  type: IRNodeTypes.SET_SHOW
-  element: number
-  value: string
-}
-
-export interface SetPropIRNode extends IRNode {
+export interface SetPropIRNode extends BaseIRNode {
   type: IRNodeTypes.SET_PROP
   element: number
-  name: string
-  value: string
+  name: IRExpression
+  value: IRExpression
 }
 
-export interface SetTextIRNode extends IRNode {
+export interface SetTextIRNode extends BaseIRNode {
   type: IRNodeTypes.SET_TEXT
   element: number
-  value: string
+  value: IRExpression
 }
 
-export interface SetEventIRNode extends IRNode {
+export interface SetEventIRNode extends BaseIRNode {
   type: IRNodeTypes.SET_EVENT
   element: number
-  name: string
-  value: string
+  name: IRExpression
+  value: IRExpression
+  modifiers: {
+    // modifiers for addEventListener() options, e.g. .passive & .capture
+    options: string[]
+    // modifiers that needs runtime guards, withKeys
+    keys: string[]
+    // modifiers that needs runtime guards, withModifiers
+    nonKeys: string[]
+  }
 }
 
-export interface SetHtmlIRNode extends IRNode {
+export interface SetShowIRNode extends BaseIRNode {
   type: IRNodeTypes.SET_HTML
   element: number
-  value: string
+  value: IRExpression
 }
 
-export interface CreateTextNodeIRNode extends IRNode {
+export interface SetHtmlIRNode extends BaseIRNode {
+  type: IRNodeTypes.SET_HTML
+  element: number
+  value: IRExpression
+}
+
+export interface CreateTextNodeIRNode extends BaseIRNode {
   type: IRNodeTypes.CREATE_TEXT_NODE
   id: number
-  value: string
+  value: IRExpression
 }
 
-export interface InsertNodeIRNode extends IRNode {
+export interface InsertNodeIRNode extends BaseIRNode {
   type: IRNodeTypes.INSERT_NODE
   element: number | number[]
   parent: number
   anchor: number
 }
 
-export interface PrependNodeIRNode extends IRNode {
+export interface PrependNodeIRNode extends BaseIRNode {
   type: IRNodeTypes.PREPEND_NODE
   elements: number[]
   parent: number
 }
 
-export interface AppendNodeIRNode extends IRNode {
+export interface AppendNodeIRNode extends BaseIRNode {
   type: IRNodeTypes.APPEND_NODE
   elements: number[]
   parent: number
 }
 
+export interface WithDirectiveIRNode extends BaseIRNode {
+  type: IRNodeTypes.WITH_DIRECTIVE
+  element: number
+  name: string
+  binding: IRExpression | undefined
+}
+
+export type IRNode =
+  | OperationNode
+  | RootIRNode
+  | TemplateFactoryIRNode
+  | FragmentFactoryIRNode
 export type OperationNode =
   | SetShowIRNode
   | SetPropIRNode
@@ -109,13 +141,34 @@ export type OperationNode =
   | InsertNodeIRNode
   | PrependNodeIRNode
   | AppendNodeIRNode
+  | WithDirectiveIRNode
 
-export interface DynamicInfo {
+export interface IRDynamicInfo {
   id: number | null
   referenced: boolean
   /** created by DOM API */
   ghost: boolean
   placeholder: number | null
-  children: DynamicChildren
+  children: IRDynamicChildren
 }
-export type DynamicChildren = Record<number, DynamicInfo>
+export type IRDynamicChildren = Record<number, IRDynamicInfo>
+
+export type IRExpression = ExpressionNode | string
+export interface IREffect {
+  // TODO multi-expression effect
+  expressions: IRExpression[]
+  operations: OperationNode[]
+}
+
+type Overwrite<T, U> = Pick<T, Exclude<keyof T, keyof U>> &
+  Pick<U, Extract<keyof U, keyof T>>
+
+export type HackOptions<T> = Prettify<
+  Overwrite<
+    T,
+    {
+      nodeTransforms?: NodeTransform[]
+      directiveTransforms?: Record<string, DirectiveTransform | undefined>
+    }
+  >
+>
