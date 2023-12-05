@@ -70,6 +70,43 @@ export function render(_ctx) {
 }"
 `;
 
+exports[`compile > directives > v-memo > nested v-memo on normal element 1`] = `
+"import { template as _template, children as _children, createTextNode as _createTextNode, setText as _setText, prepend as _prepend, watch as _watch, withMemo as _withMemo } from 'vue/vapor';
+
+export function render(_ctx) {
+  const t0 = _template(\\"<div><div></div></div>\\")
+  const n0 = t0()
+  const { 0: [n3, { 0: [n2],}],} = _children(n0)
+  const n1 = _createTextNode(foo)
+  _setText(n1, undefined, foo)
+  _setText(n2, undefined, foo3)
+  _prepend(n3, n1)
+  _watch([foo, foo2], (newValues, oldValues) => {
+    _setText(n1, undefined, foo)
+  })
+  _watch([foo, foo2, foo3, foo4], (newValues, oldValues) => {
+    if(!_withMemo(1, newValues, oldValues)) return
+    _setText(n2, undefined, foo3)
+  })
+  return n0
+}"
+`;
+
+exports[`compile > directives > v-memo > on normal element 1`] = `
+"import { template as _template, children as _children, setText as _setText, watch as _watch } from 'vue/vapor';
+
+export function render(_ctx) {
+  const t0 = _template(\\"<div></div>\\")
+  const n0 = t0()
+  const { 0: [n1],} = _children(n0)
+  _setText(n1, undefined, foo)
+  _watch([foo, foo2], (newValues, oldValues) => {
+    _setText(n1, undefined, foo)
+  })
+  return n0
+}"
+`;
+
 exports[`compile > directives > v-on > event modifier 1`] = `
 "import { template as _template, children as _children, on as _on, withModifiers as _withModifiers, withKeys as _withKeys } from 'vue/vapor';
 
