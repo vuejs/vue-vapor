@@ -19,6 +19,7 @@ import {
   type OperationNode,
   type VaporHelper,
   type SetEventIRNode,
+  type SetShowIRNode,
   type WithDirectiveIRNode,
   type SetTextIRNode,
   type SetHtmlIRNode,
@@ -352,6 +353,8 @@ function genOperation(oper: OperationNode, context: CodegenContext) {
       return genSetEvent(oper, context)
     case IRNodeTypes.SET_HTML:
       return genSetHtml(oper, context)
+    case IRNodeTypes.SET_SHOW:
+      return genSetShow(oper, context)
     case IRNodeTypes.CREATE_TEXT_NODE:
       return genCreateTextNode(oper, context)
     case IRNodeTypes.INSERT_NODE:
@@ -387,6 +390,13 @@ function genSetText(oper: SetTextIRNode, context: CodegenContext) {
 function genSetHtml(oper: SetHtmlIRNode, context: CodegenContext) {
   const { push, pushWithNewline, vaporHelper } = context
   pushWithNewline(`${vaporHelper('setHtml')}(n${oper.element}, undefined, `)
+  genExpression(oper.value, context)
+  push(')')
+}
+
+function genSetShow(oper: SetShowIRNode, context: CodegenContext) {
+  const { push, pushWithNewline, vaporHelper } = context
+  pushWithNewline(`${vaporHelper('setShow')}(n${oper.element}, `)
   genExpression(oper.value, context)
   push(')')
 }
