@@ -95,7 +95,7 @@ describe('compile', () => {
         expect(code).contains(JSON.stringify('<div arg="" ></div>'))
       })
 
-      // TODO: shorthand for v-bind
+      // TODO: support shorthand syntax for v-bind #9451
       test.fails('no expression', async () => {
         const code = await compile('<div v-bind:id />', {
           bindingMetadata: {
@@ -107,7 +107,7 @@ describe('compile', () => {
         expect(code).contains('_setAttr(n1, "id", undefined, _ctx.id)')
       })
 
-      // TODO: shorthand for v-bind
+      // TODO: support shorthand syntax for v-bind #9451
       test.fails('no expression (shorthand)', async () => {
         const code = await compile('<div :id />', {
           bindingMetadata: {
