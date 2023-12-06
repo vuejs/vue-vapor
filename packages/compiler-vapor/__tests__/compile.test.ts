@@ -89,6 +89,33 @@ describe('compile', () => {
           },
         })
       })
+
+      // TODO: fix this test
+      test.fails('no expression (shorthand)', async () => {
+        const code = await compile('<div :id />', {
+          bindingMetadata: {
+            id: BindingTypes.SETUP_REF,
+          },
+        })
+
+        expect(code).matchSnapshot()
+        expect(code).contains(
+          JSON.stringify('_setAttr(n1, "id", undefined, _ctx.id)'),
+        )
+      })
+
+      test.fails('dynamic arg', async () => {
+        const code = await compile('<div v-bind:[id]="id"/>', {
+          bindingMetadata: {
+            id: BindingTypes.SETUP_REF,
+          },
+        })
+
+        expect(code).matchSnapshot()
+        expect(code).contains(
+          JSON.stringify('_setAttr(n1, _ctx.id, undefined, _ctx.id)'),
+        )
+      })
     })
 
     describe('v-on', () => {
@@ -124,8 +151,8 @@ describe('compile', () => {
           `<a @click.stop="handleEvent"></a>
             <form @submit.prevent="handleEvent"></form>
             <a @click.stop.prevent="handleEvent"></a>
-            <div @click.self="handleEvent"></div> 
-            <div @click.capture="handleEvent"></div> 
+            <div @click.self="handleEvent"></div>
+            <div @click.capture="handleEvent"></div>
             <a @click.once="handleEvent"></a>
             <div @scroll.passive="handleEvent"></div>
             <input @click.right="handleEvent" />
