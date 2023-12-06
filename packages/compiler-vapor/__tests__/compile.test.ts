@@ -334,4 +334,32 @@ describe('compile', () => {
       })
     })
   })
+
+  describe('expression parsing', () => {
+    test('interpolation', async () => {
+      const code = await compile(`{{ a + b }}`, {
+        inline: true,
+        bindingMetadata: {
+          b: BindingTypes.SETUP_REF,
+        },
+      })
+      expect(code).matchSnapshot()
+      expect(code).contains('a + b.value')
+    })
+
+    test('v-bind', async () => {
+      const code = compile(`<div :[key+1]="foo[key+1]()" />`, {
+        inline: true,
+        bindingMetadata: {
+          key: BindingTypes.SETUP_REF,
+          foo: BindingTypes.SETUP_MAYBE_REF,
+        },
+      })
+      expect(code).matchSnapshot()
+      expect(code).contains('key.value+1')
+      expect(code).contains('_unref(foo)[key.value+1]()')
+    })
+
+    // TODO: add more test for expression parsing (v-on, v-slot, v-for)
+  })
 })
