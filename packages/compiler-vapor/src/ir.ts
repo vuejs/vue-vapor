@@ -117,10 +117,7 @@ export interface AppendNodeIRNode extends BaseIRNode {
 export interface WithDirectiveIRNode extends BaseIRNode {
   type: IRNodeTypes.WITH_DIRECTIVE
   element: number
-  name: string
-  arg: IRExpression | undefined
-  modifiers: string[]
-  binding: IRExpression | undefined
+  dir: VaporDirectiveNode
 }
 
 export type IRNode =

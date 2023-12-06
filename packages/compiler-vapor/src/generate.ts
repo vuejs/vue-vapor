@@ -469,34 +469,35 @@ function genSetEvent(oper: SetEventIRNode, context: CodegenContext) {
 
 function genWithDirective(oper: WithDirectiveIRNode, context: CodegenContext) {
   const { push, pushWithNewline, vaporHelper, bindingMetadata } = context
+  const { dir } = oper
 
   // TODO merge directive for the same node
   pushWithNewline(`${vaporHelper('withDirectives')}(n${oper.element}, [[`)
 
   // TODO resolve directive
-  const directiveReference = camelize(`v-${oper.name}`)
+  const directiveReference = camelize(`v-${dir.name}`)
   if (bindingMetadata[directiveReference]) {
     const directiveExpression = createSimpleExpression(directiveReference)
     directiveExpression.ast = null
     genExpression(directiveExpression, context)
   }
 
-  if (oper.binding) {
+  if (dir.exp) {
     push(', ')
-    genExpression(oper.binding, context)
+    genExpression(dir.exp, context)
   }
 
-  if (oper.arg) {
+  if (dir.arg) {
     push(', ')
-    genExpression(oper.arg, context)
+    genExpression(dir.arg, context)
   } else {
     push(', undefined')
   }
 
-  if (oper.modifiers && oper.modifiers.length) {
+  if (dir.modifiers && dir.modifiers.length) {
     push(', ')
     push('{ ')
-    push(genDirectiveModifiers(oper.modifiers))
+    push(genDirectiveModifiers(dir.modifiers))
     push(' }')
   }
   push(']])')
