@@ -104,7 +104,7 @@ describe('compile', () => {
         })
 
         expect(code).matchSnapshot()
-        expect(code).contains('_setAttr(n1, \\"id\\", undefined, _ctx.id)')
+        expect(code).contains('_setAttr(n1, "id", undefined, _ctx.id)')
       })
 
       // TODO: shorthand for v-bind
@@ -116,7 +116,7 @@ describe('compile', () => {
         })
 
         expect(code).matchSnapshot()
-        expect(code).contains('_setAttr(n1, \\"id\\", undefined, _ctx.id)')
+        expect(code).contains('_setAttr(n1, "id", undefined, _ctx.id)')
       })
 
       test('dynamic arg', async () => {
