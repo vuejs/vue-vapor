@@ -10,6 +10,7 @@ import {
   createSimpleExpression,
   walkIdentifiers,
   advancePositionWithClone,
+  isSimpleIdentifier,
 } from '@vue/compiler-dom'
 import {
   type IRDynamicChildren,
@@ -486,14 +487,14 @@ function genWithDirective(oper: WithDirectiveIRNode, context: CodegenContext) {
     push(', ')
     genExpression(dir.exp, context)
   } else if (dir.arg || dir.modifiers.length) {
-    push(', undefined')
+    push(', void 0')
   }
 
   if (dir.arg) {
     push(', ')
     genExpression(dir.arg, context)
   } else if (dir.modifiers.length) {
-    push(', undefined')
+    push(', void 0')
   }
 
   if (dir.modifiers.length) {
@@ -595,5 +596,10 @@ function genIdentifier(
 }
 
 function genDirectiveModifiers(modifiers: string[]) {
-  return modifiers.map((value) => `${value}: true`).join(', ')
+  return modifiers
+    .map(
+      (value) =>
+        `${isSimpleIdentifier(value) ? value : JSON.stringify(value)}: true`,
+    )
+    .join(', ')
 }

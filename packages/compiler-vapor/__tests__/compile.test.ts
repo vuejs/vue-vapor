@@ -374,7 +374,7 @@ describe('compile', () => {
       })
 
       test('modifiers w/o binding', async () => {
-        const code = await compile(`<div v-example.bar></div>`, {
+        const code = await compile(`<div v-example.foo-bar></div>`, {
           bindingMetadata: {
             vExample: BindingTypes.SETUP_CONST,
           },
