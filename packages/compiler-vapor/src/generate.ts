@@ -488,7 +488,6 @@ function genWithDirective(oper: WithDirectiveIRNode, context: CodegenContext) {
 
   if (oper.arg) {
     push(', ')
-    // TODO dynamic arg
     genExpression(oper.arg, context)
   } else {
     push(', undefined')

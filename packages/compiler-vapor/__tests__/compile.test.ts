@@ -379,6 +379,16 @@ describe('compile', () => {
         })
         expect(code).matchSnapshot()
       })
+
+      test('dynamic parameters', async () => {
+        const code = await compile(`<div v-example:[foo]="msg"></div>`, {
+          bindingMetadata: {
+            foo: BindingTypes.SETUP_REF,
+            vExample: BindingTypes.SETUP_CONST,
+          },
+        })
+        expect(code).matchSnapshot()
+      })
     })
   })
 

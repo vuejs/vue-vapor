@@ -71,7 +71,6 @@ function transformProp(
   if (directiveTransform) {
     directiveTransform(prop, node, context)
   } else if (!isBuiltInDirective(name)) {
-    // TODO dynamic arg
     context.registerOperation({
       type: IRNodeTypes.WITH_DIRECTIVE,
       element: context.reference(),
