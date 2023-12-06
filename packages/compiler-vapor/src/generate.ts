@@ -485,16 +485,18 @@ function genWithDirective(oper: WithDirectiveIRNode, context: CodegenContext) {
   if (dir.exp) {
     push(', ')
     genExpression(dir.exp, context)
+  } else if (dir.arg || dir.modifiers.length) {
+    push(', undefined')
   }
 
   if (dir.arg) {
     push(', ')
     genExpression(dir.arg, context)
-  } else {
+  } else if (dir.modifiers.length) {
     push(', undefined')
   }
 
-  if (dir.modifiers && dir.modifiers.length) {
+  if (dir.modifiers.length) {
     push(', ')
     push('{ ')
     push(genDirectiveModifiers(dir.modifiers))

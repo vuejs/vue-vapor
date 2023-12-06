@@ -23,7 +23,7 @@ export function render(_ctx) {
   const t0 = _template("<div></div>")
   const n0 = t0()
   const { 0: [n1],} = _children(n0)
-  _withDirectives(n1, [[_ctx.vExample, undefined]])
+  _withDirectives(n1, [[_ctx.vExample]])
   return n0
 }"
 `;
@@ -35,7 +35,7 @@ export function render(_ctx) {
   const t0 = _template("<div></div>")
   const n0 = t0()
   const { 0: [n1],} = _children(n0)
-  _withDirectives(n1, [[_ctx.vExample, _ctx.msg, undefined]])
+  _withDirectives(n1, [[_ctx.vExample, _ctx.msg]])
   return n0
 }"
 `;
@@ -64,7 +64,19 @@ export function render(_ctx) {
 }"
 `;
 
-exports[`compile > directives > custom directive > static parameters  1`] = `
+exports[`compile > directives > custom directive > modifiers w/o binding 1`] = `
+"import { template as _template, children as _children, withDirectives as _withDirectives } from 'vue/vapor';
+
+export function render(_ctx) {
+  const t0 = _template("<div></div>")
+  const n0 = t0()
+  const { 0: [n1],} = _children(n0)
+  _withDirectives(n1, [[_ctx.vExample, undefined, undefined, { bar: true }]])
+  return n0
+}"
+`;
+
+exports[`compile > directives > custom directive > static parameters 1`] = `
 "import { template as _template, children as _children, withDirectives as _withDirectives } from 'vue/vapor';
 
 export function render(_ctx) {

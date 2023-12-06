@@ -352,7 +352,8 @@ describe('compile', () => {
         })
         expect(code).matchSnapshot()
       })
-      test('static parameters ', async () => {
+
+      test('static parameters', async () => {
         const code = await compile(`<div v-example:foo="msg"></div>`, {
           bindingMetadata: {
             msg: BindingTypes.SETUP_REF,
@@ -361,6 +362,7 @@ describe('compile', () => {
         })
         expect(code).matchSnapshot()
       })
+
       test('modifiers', async () => {
         const code = await compile(`<div v-example.bar="msg"></div>`, {
           bindingMetadata: {
@@ -370,6 +372,16 @@ describe('compile', () => {
         })
         expect(code).matchSnapshot()
       })
+
+      test('modifiers w/o binding', async () => {
+        const code = await compile(`<div v-example.bar></div>`, {
+          bindingMetadata: {
+            vExample: BindingTypes.SETUP_CONST,
+          },
+        })
+        expect(code).matchSnapshot()
+      })
+
       test('static parameters and modifiers', async () => {
         const code = await compile(`<div v-example:foo.bar="msg"></div>`, {
           bindingMetadata: {
