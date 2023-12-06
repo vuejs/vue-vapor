@@ -239,7 +239,7 @@ export interface SimpleExpressionNode extends Node {
    *    parsing
    * - `false` means there was a parsing error
    */
-  ast?: BabelNode | null | false
+  ast: BabelNode | null | false
   /**
    * Indicates this is an identifier for a hoist vnode call and points to the
    * hoisted node.
@@ -690,14 +690,16 @@ export function createSimpleExpression(
   content: SimpleExpressionNode['content'],
   isStatic: SimpleExpressionNode['isStatic'] = false,
   loc: SourceLocation = locStub,
-  constType: ConstantTypes = ConstantTypes.NOT_CONSTANT
+  constType: ConstantTypes = ConstantTypes.NOT_CONSTANT,
+  ast: BabelNode | null = null
 ): SimpleExpressionNode {
   return {
     type: NodeTypes.SIMPLE_EXPRESSION,
     loc,
     content,
     isStatic,
-    constType: isStatic ? ConstantTypes.CAN_STRINGIFY : constType
+    constType: isStatic ? ConstantTypes.CAN_STRINGIFY : constType,
+    ast
   }
 }
 
