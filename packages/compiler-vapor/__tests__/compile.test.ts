@@ -1,10 +1,10 @@
 import {
-  BindingTypes,
-  DOMErrorCodes,
-  ErrorCodes,
   type RootNode,
+  BindingTypes,
+  ErrorCodes,
+  DOMErrorCodes,
 } from '@vue/compiler-dom'
-import { compile as _compile, type CompilerOptions } from '../src'
+import { type CompilerOptions, compile as _compile } from '../src'
 
 function compile(template: string | RootNode, options: CompilerOptions = {}) {
   let { code } = _compile(template, {
