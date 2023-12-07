@@ -50,7 +50,8 @@ import {
   ObjectEmitsOptions,
   EmitFn,
   emit,
-  normalizeEmitsOptions
+  normalizeEmitsOptions,
+  EmitsToProps
 } from './componentEmits'
 import {
   EMPTY_OBJ,
@@ -64,7 +65,8 @@ import {
   ShapeFlags,
   extend,
   getGlobalThis,
-  IfAny
+  IfAny,
+  Data
 } from '@vue/shared'
 import { SuspenseBoundary } from './components/Suspense'
 import { CompilerOptions } from '@vue/compiler-core'
@@ -79,8 +81,6 @@ import {
 } from './compat/compatConfig'
 import { SchedulerJob } from './scheduler'
 import { LifecycleHooks } from './enums'
-
-export type Data = Record<string, unknown>
 
 /**
  * For extending allowed non-declared props on components in TSX
@@ -131,7 +131,7 @@ export interface FunctionalComponent<
 > extends ComponentInternalOptions {
   // use of any here is intentional so it can be a valid JSX Element constructor
   (
-    props: P,
+    props: P & EmitsToProps<E>,
     ctx: Omit<SetupContext<E, IfAny<S, {}, SlotsType<S>>>, 'expose'>
   ): any
   props?: ComponentPropsOptions<P>

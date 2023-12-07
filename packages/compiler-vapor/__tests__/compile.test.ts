@@ -7,7 +7,11 @@ import {
 import { type CompilerOptions, compile as _compile } from '../src'
 
 function compile(template: string | RootNode, options: CompilerOptions = {}) {
-  let { code } = _compile(template, options)
+  let { code } = _compile(template, {
+    ...options,
+    mode: 'module',
+    prefixIdentifiers: true,
+  })
   return code
 }
 
@@ -69,7 +73,7 @@ describe('compile', () => {
 
       test('should error if no expression', async () => {
         const onError = vi.fn()
-        await compile(`<div v-bind:arg />`, { onError })
+        const code = await compile(`<div v-bind:arg="" />`, { onError })
 
         expect(onError.mock.calls[0][0]).toMatchObject({
           code: ErrorCodes.X_V_BIND_NO_EXPRESSION,
@@ -80,10 +84,57 @@ describe('compile', () => {
             },
             end: {
               line: 1,
-              column: 16,
+              column: 19,
             },
           },
         })
+
+        expect(code).matchSnapshot()
+        // the arg is static
+        expect(code).contains(JSON.stringify('<div arg=""></div>'))
+      })
+
+      test('no expression', async () => {
+        const code = await compile('<div v-bind:id />', {
+          bindingMetadata: {
+            id: BindingTypes.SETUP_REF,
+          },
+        })
+
+        expect(code).matchSnapshot()
+        expect(code).contains('_setAttr(n1, "id", undefined, _ctx.id)')
+      })
+
+      test('no expression (shorthand)', async () => {
+        const code = await compile('<div :camel-case />', {
+          bindingMetadata: {
+            camelCase: BindingTypes.SETUP_REF,
+          },
+        })
+
+        expect(code).matchSnapshot()
+        expect(code).contains(
+          '_setAttr(n1, "camel-case", undefined, _ctx.camelCase)',
+        )
+      })
+
+      test('dynamic arg', async () => {
+        const code = await compile('<div v-bind:[id]="id"/>', {
+          bindingMetadata: {
+            id: BindingTypes.SETUP_REF,
+          },
+        })
+
+        expect(code).matchSnapshot()
+        expect(code).contains('_setAttr(n1, _ctx.id, undefined, _ctx.id)')
+      })
+
+      // TODO: camel modifier for v-bind
+      test.fails('.camel modifier', async () => {
+        const code = await compile(`<div v-bind:foo-bar.camel="id"/>`)
+
+        expect(code).matchSnapshot()
+        expect(code).contains('fooBar')
       })
     })
 
@@ -120,8 +171,8 @@ describe('compile', () => {
           `<a @click.stop="handleEvent"></a>
             <form @submit.prevent="handleEvent"></form>
             <a @click.stop.prevent="handleEvent"></a>
-            <div @click.self="handleEvent"></div> 
-            <div @click.capture="handleEvent"></div> 
+            <div @click.self="handleEvent"></div>
+            <div @click.capture="handleEvent"></div>
             <a @click.once="handleEvent"></a>
             <div @scroll.passive="handleEvent"></div>
             <input @click.right="handleEvent" />
@@ -273,5 +324,111 @@ describe('compile', () => {
         // Waiting for TODO, There should be more here.
       })
     })
+
+    describe('v-cloak', () => {
+      test('basic', async () => {
+        const code = await compile(`<div v-cloak>test</div>`)
+        expect(code).toMatchSnapshot()
+        expect(code).not.contains('v-cloak')
+      })
+    })
+
+    describe('custom directive', () => {
+      test('basic', async () => {
+        const code = await compile(`<div v-example></div>`, {
+          bindingMetadata: {
+            vExample: BindingTypes.SETUP_CONST,
+          },
+        })
+        expect(code).matchSnapshot()
+      })
+
+      test('binding value', async () => {
+        const code = await compile(`<div v-example="msg"></div>`, {
+          bindingMetadata: {
+            msg: BindingTypes.SETUP_REF,
+            vExample: BindingTypes.SETUP_CONST,
+          },
+        })
+        expect(code).matchSnapshot()
+      })
+
+      test('static parameters', async () => {
+        const code = await compile(`<div v-example:foo="msg"></div>`, {
+          bindingMetadata: {
+            msg: BindingTypes.SETUP_REF,
+            vExample: BindingTypes.SETUP_CONST,
+          },
+        })
+        expect(code).matchSnapshot()
+      })
+
+      test('modifiers', async () => {
+        const code = await compile(`<div v-example.bar="msg"></div>`, {
+          bindingMetadata: {
+            msg: BindingTypes.SETUP_REF,
+            vExample: BindingTypes.SETUP_CONST,
+          },
+        })
+        expect(code).matchSnapshot()
+      })
+
+      test('modifiers w/o binding', async () => {
+        const code = await compile(`<div v-example.foo-bar></div>`, {
+          bindingMetadata: {
+            vExample: BindingTypes.SETUP_CONST,
+          },
+        })
+        expect(code).matchSnapshot()
+      })
+
+      test('static parameters and modifiers', async () => {
+        const code = await compile(`<div v-example:foo.bar="msg"></div>`, {
+          bindingMetadata: {
+            msg: BindingTypes.SETUP_REF,
+            vExample: BindingTypes.SETUP_CONST,
+          },
+        })
+        expect(code).matchSnapshot()
+      })
+
+      test('dynamic parameters', async () => {
+        const code = await compile(`<div v-example:[foo]="msg"></div>`, {
+          bindingMetadata: {
+            foo: BindingTypes.SETUP_REF,
+            vExample: BindingTypes.SETUP_CONST,
+          },
+        })
+        expect(code).matchSnapshot()
+      })
+    })
+  })
+
+  describe('expression parsing', () => {
+    test('interpolation', async () => {
+      const code = await compile(`{{ a + b }}`, {
+        inline: true,
+        bindingMetadata: {
+          b: BindingTypes.SETUP_REF,
+        },
+      })
+      expect(code).matchSnapshot()
+      expect(code).contains('a + b.value')
+    })
+
+    test('v-bind', async () => {
+      const code = compile(`<div :[key+1]="foo[key+1]()" />`, {
+        inline: true,
+        bindingMetadata: {
+          key: BindingTypes.SETUP_REF,
+          foo: BindingTypes.SETUP_MAYBE_REF,
+        },
+      })
+      expect(code).matchSnapshot()
+      expect(code).contains('key.value+1')
+      expect(code).contains('_unref(foo)[key.value+1]()')
+    })
+
+    // TODO: add more test for expression parsing (v-on, v-slot, v-for)
   })
 })

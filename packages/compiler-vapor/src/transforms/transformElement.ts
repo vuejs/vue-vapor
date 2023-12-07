@@ -1,15 +1,12 @@
 import {
   type ElementNode,
   type AttributeNode,
-  type DirectiveNode,
   NodeTypes,
-  ErrorCodes,
-  createCompilerError,
   ElementTypes,
 } from '@vue/compiler-dom'
 import { isBuiltInDirective, isVoidTag } from '@vue/shared'
 import { NodeTransform, TransformContext } from '../transform'
-import { IRNodeTypes } from '../ir'
+import { VaporDirectiveNode, IRNodeTypes } from '../ir'
 
 export const transformElement: NodeTransform = (node, ctx) => {
   return function postTransformElement() {
@@ -53,24 +50,22 @@ function buildProps(
   isComponent: boolean,
 ) {
   for (const prop of props) {
-    transformProp(prop, node, context)
+    transformProp(prop as VaporDirectiveNode | AttributeNode, node, context)
   }
 }
 
 function transformProp(
-  prop: DirectiveNode | AttributeNode,
+  prop: VaporDirectiveNode | AttributeNode,
   node: ElementNode,
   context: TransformContext<ElementNode>,
 ): void {
-  const { name } = prop
-
+  const { name, loc } = prop
   if (prop.type === NodeTypes.ATTRIBUTE) {
     context.template += ` ${name}`
     if (prop.value) context.template += `="${prop.value.content}"`
     return
   }
 
-  const { arg, exp, loc } = prop
   const directiveTransform = context.options.directiveTransforms[name]
   if (directiveTransform) {
     directiveTransform(prop, node, context)
@@ -78,46 +73,8 @@ function transformProp(
     context.registerOperation({
       type: IRNodeTypes.WITH_DIRECTIVE,
       element: context.reference(),
-      name,
-      binding: prop.exp,
-      loc: prop.loc,
+      dir: prop,
+      loc: loc,
     })
-  }
-
-  switch (name) {
-    case 'bind': {
-      if (
-        !exp ||
-        (exp.type === NodeTypes.SIMPLE_EXPRESSION && !exp.content.trim())
-      ) {
-        context.options.onError(
-          createCompilerError(ErrorCodes.X_V_BIND_NO_EXPRESSION, loc),
-        )
-        return
-      }
-
-      if (exp === null) {
-        // TODO: Vue 3.4 supported shorthand syntax
-        // https://github.com/vuejs/core/pull/9451
-        return
-      } else if (!arg) {
-        // TODO support v-bind="{}"
-        return
-      }
-
-      context.registerEffect(
-        [exp],
-        [
-          {
-            type: IRNodeTypes.SET_PROP,
-            loc: prop.loc,
-            element: context.reference(),
-            name: arg,
-            value: exp,
-          },
-        ],
-      )
-      break
-    }
   }
 }

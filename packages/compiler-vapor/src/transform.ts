@@ -9,7 +9,6 @@ import {
   NodeTypes,
   defaultOnError,
   defaultOnWarn,
-  DirectiveNode,
 } from '@vue/compiler-dom'
 import { EMPTY_OBJ, NOOP, isArray } from '@vue/shared'
 import {
@@ -19,7 +18,7 @@ import {
   type IRExpression,
   IRNodeTypes,
 } from './ir'
-import type { HackOptions } from './ir'
+import type { VaporDirectiveNode, HackOptions } from './ir'
 
 export type NodeTransform = (
   node: RootNode | TemplateChildNode,
@@ -27,12 +26,9 @@ export type NodeTransform = (
 ) => void | (() => void) | (() => void)[]
 
 export type DirectiveTransform = (
-  dir: DirectiveNode,
+  dir: VaporDirectiveNode,
   node: ElementNode,
   context: TransformContext<ElementNode>,
-  // a platform specific compiler can import the base transform and augment
-  // it by passing in this optional argument.
-  // augmentor?: (ret: DirectiveTransformResult) => DirectiveTransformResult,
 ) => void
 
 export type TransformOptions = HackOptions<BaseTransformOptions>
@@ -117,11 +113,28 @@ function createRootContext(
       ) {
         return this.registerOperation(...operations)
       }
-      // TODO combine effects
-      effect.push({
-        expressions: expressions as IRExpression[],
-        operations,
-      })
+      const existing = effect.find((e) =>
+        isSameExpression(e.expressions, expressions as IRExpression[]),
+      )
+      if (existing) {
+        existing.operations.push(...operations)
+      } else {
+        effect.push({
+          expressions: expressions as IRExpression[],
+          operations,
+        })
+      }
+
+      function isSameExpression(a: IRExpression[], b: IRExpression[]) {
+        if (a.length !== b.length) return false
+        return a.every(
+          (exp, i) => identifyExpression(exp) === identifyExpression(b[i]),
+        )
+      }
+
+      function identifyExpression(exp: IRExpression) {
+        return typeof exp === 'string' ? exp : exp.content
+      }
     },
 
     template: '',

@@ -1,6 +1,8 @@
 import type {
-  ExpressionNode,
+  CompoundExpressionNode,
+  DirectiveNode,
   RootNode,
+  SimpleExpressionNode,
   SourceLocation,
 } from '@vue/compiler-dom'
 import type { Prettify } from '@vue/shared'
@@ -115,8 +117,7 @@ export interface AppendNodeIRNode extends BaseIRNode {
 export interface WithDirectiveIRNode extends BaseIRNode {
   type: IRNodeTypes.WITH_DIRECTIVE
   element: number
-  name: string
-  binding: IRExpression | undefined
+  dir: VaporDirectiveNode
 }
 
 export type IRNode =
@@ -145,7 +146,7 @@ export interface IRDynamicInfo {
 }
 export type IRDynamicChildren = Record<number, IRDynamicInfo>
 
-export type IRExpression = ExpressionNode | string
+export type IRExpression = SimpleExpressionNode | string
 export interface IREffect {
   // TODO multi-expression effect
   expressions: IRExpression[]
@@ -163,4 +164,12 @@ export type HackOptions<T> = Prettify<
       directiveTransforms?: Record<string, DirectiveTransform | undefined>
     }
   >
+>
+
+export type VaporDirectiveNode = Overwrite<
+  DirectiveNode,
+  {
+    exp: Exclude<DirectiveNode['exp'], CompoundExpressionNode>
+    arg: Exclude<DirectiveNode['arg'], CompoundExpressionNode>
+  }
 >

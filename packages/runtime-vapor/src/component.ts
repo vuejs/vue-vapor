@@ -1,17 +1,26 @@
 import { EffectScope } from '@vue/reactivity'
+
 import { EMPTY_OBJ } from '@vue/shared'
-import { Block, BlockFn } from './render'
+import { Block } from './render'
 import { DirectiveBinding } from './directives'
 import {
   ComponentPropsOptions,
   NormalizedPropsOptions,
   normalizePropsOptions,
 } from './componentProps'
+import type { Data } from '@vue/shared'
 
-// Conventional ConcreteComponent
-export interface Component<P = {}> {
-  props?: ComponentPropsOptions<P>
-  blockFn: BlockFn
+export type Component = FunctionalComponent | ObjectComponent
+
+export type SetupFn = (props: any, ctx: any) => Block | Data
+export type FunctionalComponent = SetupFn & {
+  props: ComponentPropsOptions
+  render(ctx: any): Block
+}
+export interface ObjectComponent {
+  props: ComponentPropsOptions
+  setup: SetupFn
+  render(ctx: any): Block
 }
 
 export interface ComponentInternalInstance {
@@ -19,8 +28,7 @@ export interface ComponentInternalInstance {
   container: ParentNode
   block: Block | null
   scope: EffectScope
-
-  blockFn: BlockFn
+  component: FunctionalComponent | ObjectComponent
   propsOptions: NormalizedPropsOptions
 
   // state
@@ -42,26 +50,22 @@ export const getCurrentInstance: () => ComponentInternalInstance | null = () =>
 
 export const setCurrentInstance = (instance: ComponentInternalInstance) => {
   currentInstance = instance
-  instance.scope.on()
 }
 
 export const unsetCurrentInstance = () => {
-  currentInstance && currentInstance.scope.off()
   currentInstance = null
 }
 
-export interface ComponentPublicInstance {}
-
 let uid = 0
 export const createComponentInstance = (
-  component: Component,
+  component: ObjectComponent | FunctionalComponent,
 ): ComponentInternalInstance => {
   const instance: ComponentInternalInstance = {
     uid: uid++,
     block: null,
     container: null!, // set on mount
     scope: new EffectScope(true /* detached */)!,
-    blockFn: component.blockFn,
+    component,
 
     // resolved props and emits options
     propsOptions: normalizePropsOptions(component),
@@ -78,6 +82,3 @@ export const createComponentInstance = (
   }
   return instance
 }
-
-// FIXME: duplicated with runtime-core
-export type Data = Record<string, unknown>

@@ -18,7 +18,15 @@ export default {
     const handleClick = () => {
       count.value++
     }
-    return { count, handleClick }
+
+    const __returned__ = { count, handleClick }
+
+    Object.defineProperty(__returned__, '__isScriptSetup', {
+      enumerable: false,
+      value: true
+    })
+
+    return __returned__
   },
 
   render(_ctx) {
@@ -36,14 +44,8 @@ export default {
     // const c0 = createComponent(...)
     // insert(n0, c0)
     renderComponent(
-      {
-        props: child.props,
-        blockFn: props => {
-          const returned = child.setup?.(props, { expose() {} })
-          const ctx = extend(props, returned) // TODO: merge
-          return child.render(ctx)
-        }
-      },
+      child,
+
       // TODO: proxy??
       {
         /* <Comp :count="count" /> */
@@ -78,6 +80,15 @@ const child = {
       () => props.inlineDouble,
       v => console.log('inlineDouble changed', v)
     )
+
+    const __returned__ = {}
+
+    Object.defineProperty(__returned__, '__isScriptSetup', {
+      enumerable: false,
+      value: true
+    })
+
+    return __returned__
   },
 
   render(_ctx) {

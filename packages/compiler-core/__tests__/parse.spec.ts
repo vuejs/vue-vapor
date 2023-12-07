@@ -14,6 +14,7 @@ import {
 } from '../src/ast'
 
 import { baseParse } from '../src/parser'
+import { Program } from '@babel/types'
 
 /* eslint jest/no-disabled-tests: "off" */
 
@@ -1732,6 +1733,35 @@ describe('compiler: parse', () => {
       })
     })
 
+    // https://github.com/vuejs/docs/issues/2586
+    test('v-pre with half-open interpolation', () => {
+      const ast = baseParse(
+        `<div v-pre>
+          <span>{{ number </span>
+          <span>}}</span>
+        </div>
+        `
+      )
+      expect((ast.children[0] as ElementNode).children).toMatchObject([
+        {
+          type: NodeTypes.ELEMENT,
+          children: [{ type: NodeTypes.TEXT, content: `{{ number ` }]
+        },
+        {
+          type: NodeTypes.ELEMENT,
+          children: [{ type: NodeTypes.TEXT, content: `}}` }]
+        }
+      ])
+
+      const ast2 = baseParse(`<div v-pre><span>{{ number </span></div>`)
+      expect((ast2.children[0] as ElementNode).children).toMatchObject([
+        {
+          type: NodeTypes.ELEMENT,
+          children: [{ type: NodeTypes.TEXT, content: `{{ number ` }]
+        }
+      ])
+    })
+
     test('self-closing v-pre', () => {
       const ast = baseParse(
         `<div v-pre/>\n<div :id="foo"><Comp/>{{ bar }}</div>`
@@ -2167,6 +2197,63 @@ describe('compiler: parse', () => {
       const content = `   foo  \n    bar     baz     `
       const ast = parse(content)
       expect((ast.children[0] as TextNode).content).toBe(content)
+    })
+  })
+
+  describe('expression parsing', () => {
+    test('interpolation', () => {
+      const ast = baseParse(`{{ a + b }}`, { prefixIdentifiers: true })
+      // @ts-ignore
+      expect((ast.children[0] as InterpolationNode).content.ast?.type).toBe(
+        'BinaryExpression'
+      )
+    })
+
+    test('v-bind', () => {
+      const ast = baseParse(`<div :[key+1]="foo()" />`, {
+        prefixIdentifiers: true
+      })
+      const dir = (ast.children[0] as ElementNode).props[0] as DirectiveNode
+      // @ts-ignore
+      expect(dir.arg?.ast?.type).toBe('BinaryExpression')
+      // @ts-ignore
+      expect(dir.exp?.ast?.type).toBe('CallExpression')
+    })
+
+    test('v-on multi statements', () => {
+      const ast = baseParse(`<div @click="a++;b++" />`, {
+        prefixIdentifiers: true
+      })
+      const dir = (ast.children[0] as ElementNode).props[0] as DirectiveNode
+      // @ts-ignore
+      expect(dir.exp?.ast?.type).toBe('Program')
+      expect((dir.exp?.ast as Program).body).toMatchObject([
+        { type: 'ExpressionStatement' },
+        { type: 'ExpressionStatement' }
+      ])
+    })
+
+    test('v-slot', () => {
+      const ast = baseParse(`<Comp #foo="{ a, b }" />`, {
+        prefixIdentifiers: true
+      })
+      const dir = (ast.children[0] as ElementNode).props[0] as DirectiveNode
+      // @ts-ignore
+      expect(dir.exp?.ast?.type).toBe('ArrowFunctionExpression')
+    })
+
+    test('v-for', () => {
+      const ast = baseParse(`<div v-for="({ a, b }, key, index) of a.b" />`, {
+        prefixIdentifiers: true
+      })
+      const dir = (ast.children[0] as ElementNode).props[0] as DirectiveNode
+      const { source, value, key, index } = dir.forParseResult!
+      // @ts-ignore
+      expect(source.ast?.type).toBe('MemberExpression')
+      // @ts-ignore
+      expect(value?.ast?.type).toBe('ArrowFunctionExpression')
+      expect(key?.ast).toBeNull() // simple ident
+      expect(index?.ast).toBeNull() // simple ident
     })
   })
 
