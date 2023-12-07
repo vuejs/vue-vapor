@@ -1,4 +1,3 @@
-import { extend } from '@vue/shared'
 import { watch } from 'vue'
 import {
   children,

@@ -68,11 +68,6 @@ export function mountComponent(
 
     const setupFn =
       typeof component === 'function' ? component : component.setup
-    console.log(
-      '🚀 ~ file: render.ts:70 ~ block ~ setupFn:',
-      component,
-      setupFn,
-    )
 
     const state = setupFn(props, ctx)
 
