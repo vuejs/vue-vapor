@@ -2,10 +2,10 @@ import { EffectScope } from '@vue/reactivity'
 
 import { EMPTY_OBJ } from '@vue/shared'
 import { Block } from './render'
-import { DirectiveBinding } from './directives'
+import { type DirectiveBinding } from './directives'
 import {
-  ComponentPropsOptions,
-  NormalizedPropsOptions,
+  type ComponentPropsOptions,
+  type NormalizedPropsOptions,
   normalizePropsOptions,
 } from './componentProps'
 import type { Data } from '@vue/shared'

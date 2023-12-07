@@ -1,5 +1,5 @@
 import { markRaw, proxyRefs } from '@vue/reactivity'
-import { Data } from '@vue/shared'
+import { type Data } from '@vue/shared'
 
 import {
   type Component,
