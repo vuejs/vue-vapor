@@ -31,8 +31,12 @@ export interface ComponentInternalInstance {
   component: FunctionalComponent | ObjectComponent
   propsOptions: NormalizedPropsOptions
 
+  // TODO: type
+  proxy: Data | null
+
   // state
   props: Data
+  setupState: Data
 
   /** directives */
   dirs: Map<Node, DirectiveBinding[]>
@@ -71,8 +75,11 @@ export const createComponentInstance = (
     propsOptions: normalizePropsOptions(component),
     // emitsOptions: normalizeEmitsOptions(type, appContext), // TODO:
 
+    proxy: null,
+
     // state
     props: EMPTY_OBJ,
+    setupState: EMPTY_OBJ,
 
     dirs: new Map(),
 

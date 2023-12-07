@@ -1,5 +1,5 @@
-import { reactive } from '@vue/reactivity'
-import { Data, extend } from '@vue/shared'
+import { markRaw, proxyRefs } from '@vue/reactivity'
+import { Data } from '@vue/shared'
 
 import {
   type Component,
@@ -13,6 +13,7 @@ import { initProps } from './componentProps'
 
 import { invokeDirectiveHook } from './directives'
 import { insert, remove } from './dom'
+import { PublicInstanceProxyHandlers } from './componentPublicInstance'
 
 export type Block = Node | Fragment | Block[]
 export type ParentBlock = ParentNode | Node[]
@@ -35,26 +36,6 @@ export function normalizeContainer(container: string | ParentNode): ParentNode {
     : container
 }
 
-// export const mountComponent = (
-//   comp: Component,
-//   props: any,
-//   container: ParentNode,
-// ): ComponentInternalInstance => {
-//   const instance = createComponentInstance(comp)
-//   initProps(instance, props)
-
-//   setCurrentInstance(instance)
-//   instance.container = container
-//   const block = instance.scope.run(
-//     () => (instance.block = instance.blockFn(instance.props)),
-//   )!
-//   insert(block, instance.container)
-//   instance.isMounted = true
-//   unsetCurrentInstance()
-
-//   return instance
-// }
-
 export function mountComponent(
   instance: ComponentInternalInstance,
   container: ParentNode,
@@ -70,14 +51,12 @@ export function mountComponent(
       typeof component === 'function' ? component : component.setup
 
     const state = setupFn(props, ctx)
-
+    instance.proxy = markRaw(
+      new Proxy({ _: instance }, PublicInstanceProxyHandlers),
+    )
     if (state && '__isScriptSetup' in state) {
-      return (instance.block = component.render(
-        reactive(
-          // TODO: merge
-          extend(props, state),
-        ),
-      ))
+      instance.setupState = proxyRefs(state)
+      return (instance.block = component.render(instance.proxy))
     } else {
       return (instance.block = state as Block)
     }

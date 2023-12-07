@@ -36,7 +36,7 @@ export default {
     } = children(n0)
     on(n1, 'click', _ctx.handleClick)
     effect(() => {
-      setText(n1, void 0, _ctx.count.value)
+      setText(n1, void 0, _ctx.count)
     })
 
     // TODO: create component fn?
@@ -49,12 +49,12 @@ export default {
       {
         /* <Comp :count="count" /> */
         get count() {
-          return _ctx.count.value
+          return _ctx.count
         },
 
         /* <Comp :inline-double="count * 2" /> */
         get inlineDouble() {
-          return _ctx.count.value * 2
+          return _ctx.count * 2
         }
       },
       n0
