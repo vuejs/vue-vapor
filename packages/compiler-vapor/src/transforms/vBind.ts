@@ -2,7 +2,6 @@ import {
   createCompilerError,
   createSimpleExpression,
   ErrorCodes,
-  NodeTypes,
 } from '@vue/compiler-core'
 import { camelize } from '@vue/shared'
 import { IRNodeTypes } from '../ir'
@@ -22,16 +21,13 @@ export const transformVBind: DirectiveTransform = (dir, node, context) => {
     exp.ast = null
   }
 
+  let camel = false
   if (modifiers.includes('camel')) {
-    if (arg.type === NodeTypes.SIMPLE_EXPRESSION) {
-      if (arg.isStatic) {
-        arg.content = camelize(arg.content)
-      } else {
-        // arg.content = `${context.helperString('camelize')}(${arg.content})`
-      }
+    console.log('arg:', arg)
+    if (arg.isStatic) {
+      arg.content = camelize(arg.content)
     } else {
-      // arg.children.unshift(`${context.helperString('camelize')}(`)
-      // arg.children.push(`)`)
+      camel = true
     }
   }
 
@@ -52,6 +48,7 @@ export const transformVBind: DirectiveTransform = (dir, node, context) => {
         element: context.reference(),
         key: arg,
         value: exp,
+        camel,
       },
     ],
   )

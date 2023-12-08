@@ -60,6 +60,7 @@ export interface SetPropIRNode extends BaseIRNode {
   element: number
   key: IRExpression
   value: IRExpression
+  camel: boolean
 }
 
 export interface SetTextIRNode extends BaseIRNode {
