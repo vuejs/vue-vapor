@@ -11,8 +11,8 @@ function compile(template: string | RootNode, options: CompilerOptions = {}) {
 }
 
 describe('v-text', () => {
-  test('simple expression', async () => {
-    const code = await compile(`<div v-text="str"></div>`, {
+  test('simple expression', () => {
+    const code = compile(`<div v-text="str"></div>`, {
       bindingMetadata: {
         str: BindingTypes.SETUP_REF,
       },
@@ -20,9 +20,9 @@ describe('v-text', () => {
     expect(code).matchSnapshot()
   })
 
-  test('no expression', async () => {
+  test('no expression', () => {
     const onError = vi.fn()
-    const code = await compile(`<div v-text></div>`, { onError })
+    const code = compile(`<div v-text></div>`, { onError })
     expect(code).matchSnapshot()
     expect(onError.mock.calls).toMatchObject([
       [{ code: DOMErrorCodes.X_V_TEXT_NO_EXPRESSION }],

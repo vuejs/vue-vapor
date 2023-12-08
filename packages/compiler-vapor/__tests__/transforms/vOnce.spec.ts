@@ -11,8 +11,8 @@ function compile(template: string | RootNode, options: CompilerOptions = {}) {
 }
 
 describe('v-once', () => {
-  test('basic', async () => {
-    const code = await compile(
+  test('basic', () => {
+    const code = compile(
       `<div v-once>
         {{ msg }}
         <span :class="clz" />
@@ -27,8 +27,8 @@ describe('v-once', () => {
     expect(code).matchSnapshot()
   })
 
-  test('as root node', async () => {
-    const code = await compile(`<div :id="foo" v-once />`)
+  test('as root node', () => {
+    const code = compile(`<div :id="foo" v-once />`)
     expect(code).toMatchSnapshot()
     expect(code).not.contains('effect')
   })

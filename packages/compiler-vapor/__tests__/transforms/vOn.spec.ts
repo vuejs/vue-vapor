@@ -11,8 +11,8 @@ function compile(template: string | RootNode, options: CompilerOptions = {}) {
 }
 
 describe('v-on', () => {
-  test('simple expression', async () => {
-    const code = await compile(`<div @click="handleClick"></div>`, {
+  test('simple expression', () => {
+    const code = compile(`<div @click="handleClick"></div>`, {
       bindingMetadata: {
         handleClick: BindingTypes.SETUP_CONST,
       },
@@ -20,9 +20,9 @@ describe('v-on', () => {
     expect(code).matchSnapshot()
   })
 
-  test('should error if no expression AND no modifier', async () => {
+  test('should error if no expression AND no modifier', () => {
     const onError = vi.fn()
-    await compile(`<div v-on:click />`, { onError })
+    compile(`<div v-on:click />`, { onError })
     expect(onError.mock.calls[0][0]).toMatchObject({
       code: ErrorCodes.X_V_ON_NO_EXPRESSION,
       loc: {
@@ -38,8 +38,8 @@ describe('v-on', () => {
     })
   })
 
-  test('event modifier', async () => {
-    const code = await compile(
+  test('event modifier', () => {
+    const code = compile(
       `<a @click.stop="handleEvent"></a>
         <form @submit.prevent="handleEvent"></form>
         <a @click.stop.prevent="handleEvent"></a>

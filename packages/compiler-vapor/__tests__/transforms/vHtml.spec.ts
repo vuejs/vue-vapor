@@ -11,8 +11,8 @@ function compile(template: string | RootNode, options: CompilerOptions = {}) {
 }
 
 describe('v-html', () => {
-  test('simple expression', async () => {
-    const code = await compile(`<div v-html="code"></div>`, {
+  test('simple expression', () => {
+    const code = compile(`<div v-html="code"></div>`, {
       bindingMetadata: {
         code: BindingTypes.SETUP_REF,
       },
@@ -20,9 +20,9 @@ describe('v-html', () => {
     expect(code).matchSnapshot()
   })
 
-  test('should raise error and ignore children when v-html is present', async () => {
+  test('should raise error and ignore children when v-html is present', () => {
     const onError = vi.fn()
-    const code = await compile(`<div v-html="test">hello</div>`, {
+    const code = compile(`<div v-html="test">hello</div>`, {
       onError,
     })
     expect(code).matchSnapshot()
@@ -31,9 +31,9 @@ describe('v-html', () => {
     ])
   })
 
-  test('should raise error if has no expression', async () => {
+  test('should raise error if has no expression', () => {
     const onError = vi.fn()
-    const code = await compile(`<div v-html></div>`, {
+    const code = compile(`<div v-html></div>`, {
       onError,
     })
     expect(code).matchSnapshot()

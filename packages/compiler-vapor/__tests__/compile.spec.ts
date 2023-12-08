@@ -11,8 +11,8 @@ function compile(template: string | RootNode, options: CompilerOptions = {}) {
 }
 
 describe('compile', () => {
-  test('static template', async () => {
-    const code = await compile(
+  test('static template', () => {
+    const code = compile(
       `<div>
         <p>hello</p>
         <input />
@@ -22,32 +22,32 @@ describe('compile', () => {
     expect(code).matchSnapshot()
   })
 
-  test('dynamic root', async () => {
-    const code = await compile(`{{ 1 }}{{ 2 }}`)
+  test('dynamic root', () => {
+    const code = compile(`{{ 1 }}{{ 2 }}`)
     expect(code).matchSnapshot()
   })
 
-  test('dynamic root nodes and interpolation', async () => {
-    const code = await compile(
+  test('dynamic root nodes and interpolation', () => {
+    const code = compile(
       `<button @click="handleClick" :id="count">{{count}}foo{{count}}foo{{count}} </button>`,
     )
     expect(code).matchSnapshot()
   })
 
-  test('static + dynamic root', async () => {
-    const code = await compile(
+  test('static + dynamic root', () => {
+    const code = compile(
       `{{ 1 }}{{ 2 }}3{{ 4 }}{{ 5 }}6{{ 7 }}{{ 8 }}9{{ 'A' }}{{ 'B' }}`,
     )
     expect(code).matchSnapshot()
   })
 
-  test('fragment', async () => {
-    const code = await compile(`<p/><span/><div/>`)
+  test('fragment', () => {
+    const code = compile(`<p/><span/><div/>`)
     expect(code).matchSnapshot()
   })
 
-  test('bindings', async () => {
-    const code = await compile(`<div>count is {{ count }}.</div>`, {
+  test('bindings', () => {
+    const code = compile(`<div>count is {{ count }}.</div>`, {
       bindingMetadata: {
         count: BindingTypes.SETUP_REF,
       },
@@ -57,16 +57,13 @@ describe('compile', () => {
 
   describe('directives', () => {
     describe('v-pre', () => {
-      test('basic', async () => {
-        const code = await compile(
-          `<div v-pre :id="foo"><Comp/>{{ bar }}</div>\n`,
-          {
-            bindingMetadata: {
-              foo: BindingTypes.SETUP_REF,
-              bar: BindingTypes.SETUP_REF,
-            },
+      test('basic', () => {
+        const code = compile(`<div v-pre :id="foo"><Comp/>{{ bar }}</div>\n`, {
+          bindingMetadata: {
+            foo: BindingTypes.SETUP_REF,
+            bar: BindingTypes.SETUP_REF,
           },
-        )
+        })
 
         expect(code).toMatchSnapshot()
         expect(code).contains(
@@ -76,8 +73,8 @@ describe('compile', () => {
       })
 
       // TODO: support multiple root nodes and components
-      test('should not affect siblings after it', async () => {
-        const code = await compile(
+      test('should not affect siblings after it', () => {
+        const code = compile(
           `<div v-pre :id="foo"><Comp/>{{ bar }}</div>\n` +
             `<div :id="foo"><Comp/>{{ bar }}</div>`,
           {
@@ -93,8 +90,8 @@ describe('compile', () => {
       })
 
       // TODO: support multiple root nodes and components
-      test('self-closing v-pre', async () => {
-        const code = await compile(
+      test('self-closing v-pre', () => {
+        const code = compile(
           `<div v-pre/>\n<div :id="foo"><Comp/>{{ bar }}</div>`,
         )
 
@@ -105,16 +102,16 @@ describe('compile', () => {
     })
 
     describe('v-cloak', () => {
-      test('basic', async () => {
-        const code = await compile(`<div v-cloak>test</div>`)
+      test('basic', () => {
+        const code = compile(`<div v-cloak>test</div>`)
         expect(code).toMatchSnapshot()
         expect(code).not.contains('v-cloak')
       })
     })
 
     describe('custom directive', () => {
-      test('basic', async () => {
-        const code = await compile(`<div v-example></div>`, {
+      test('basic', () => {
+        const code = compile(`<div v-example></div>`, {
           bindingMetadata: {
             vExample: BindingTypes.SETUP_CONST,
           },
@@ -122,18 +119,8 @@ describe('compile', () => {
         expect(code).matchSnapshot()
       })
 
-      test('binding value', async () => {
-        const code = await compile(`<div v-example="msg"></div>`, {
-          bindingMetadata: {
-            msg: BindingTypes.SETUP_REF,
-            vExample: BindingTypes.SETUP_CONST,
-          },
-        })
-        expect(code).matchSnapshot()
-      })
-
-      test('static parameters', async () => {
-        const code = await compile(`<div v-example:foo="msg"></div>`, {
+      test('binding value', () => {
+        const code = compile(`<div v-example="msg"></div>`, {
           bindingMetadata: {
             msg: BindingTypes.SETUP_REF,
             vExample: BindingTypes.SETUP_CONST,
@@ -142,8 +129,8 @@ describe('compile', () => {
         expect(code).matchSnapshot()
       })
 
-      test('modifiers', async () => {
-        const code = await compile(`<div v-example.bar="msg"></div>`, {
+      test('static parameters', () => {
+        const code = compile(`<div v-example:foo="msg"></div>`, {
           bindingMetadata: {
             msg: BindingTypes.SETUP_REF,
             vExample: BindingTypes.SETUP_CONST,
@@ -152,17 +139,8 @@ describe('compile', () => {
         expect(code).matchSnapshot()
       })
 
-      test('modifiers w/o binding', async () => {
-        const code = await compile(`<div v-example.foo-bar></div>`, {
-          bindingMetadata: {
-            vExample: BindingTypes.SETUP_CONST,
-          },
-        })
-        expect(code).matchSnapshot()
-      })
-
-      test('static parameters and modifiers', async () => {
-        const code = await compile(`<div v-example:foo.bar="msg"></div>`, {
+      test('modifiers', () => {
+        const code = compile(`<div v-example.bar="msg"></div>`, {
           bindingMetadata: {
             msg: BindingTypes.SETUP_REF,
             vExample: BindingTypes.SETUP_CONST,
@@ -171,8 +149,27 @@ describe('compile', () => {
         expect(code).matchSnapshot()
       })
 
-      test('dynamic parameters', async () => {
-        const code = await compile(`<div v-example:[foo]="msg"></div>`, {
+      test('modifiers w/o binding', () => {
+        const code = compile(`<div v-example.foo-bar></div>`, {
+          bindingMetadata: {
+            vExample: BindingTypes.SETUP_CONST,
+          },
+        })
+        expect(code).matchSnapshot()
+      })
+
+      test('static parameters and modifiers', () => {
+        const code = compile(`<div v-example:foo.bar="msg"></div>`, {
+          bindingMetadata: {
+            msg: BindingTypes.SETUP_REF,
+            vExample: BindingTypes.SETUP_CONST,
+          },
+        })
+        expect(code).matchSnapshot()
+      })
+
+      test('dynamic parameters', () => {
+        const code = compile(`<div v-example:[foo]="msg"></div>`, {
           bindingMetadata: {
             foo: BindingTypes.SETUP_REF,
             vExample: BindingTypes.SETUP_CONST,
@@ -184,8 +181,8 @@ describe('compile', () => {
   })
 
   describe('expression parsing', () => {
-    test('interpolation', async () => {
-      const code = await compile(`{{ a + b }}`, {
+    test('interpolation', () => {
+      const code = compile(`{{ a + b }}`, {
         inline: true,
         bindingMetadata: {
           b: BindingTypes.SETUP_REF,
@@ -195,7 +192,7 @@ describe('compile', () => {
       expect(code).contains('a + b.value')
     })
 
-    test('v-bind', async () => {
+    test('v-bind', () => {
       const code = compile(`<div :[key+1]="foo[key+1]()" />`, {
         inline: true,
         bindingMetadata: {
