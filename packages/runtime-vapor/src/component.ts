@@ -45,7 +45,6 @@ export interface ComponentInternalInstance {
   // lifecycle
   get isMounted(): boolean
   isMountedRef: Ref<boolean>
-  isMounted: boolean
   // TODO: registory of provides, appContext, lifecycles, ...
 }
 
