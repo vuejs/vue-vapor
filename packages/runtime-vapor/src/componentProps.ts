@@ -35,10 +35,6 @@ export interface PropOptions<T = any, D = T> {
   /**
    * @internal
    */
-  skipCheck?: boolean
-  /**
-   * @internal
-   */
   skipFactory?: boolean
 }
 
