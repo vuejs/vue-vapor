@@ -11,7 +11,8 @@ import {
 
 import { initProps } from './componentProps'
 
-import { invokeDirectiveHook } from './directives'
+import { invokeDirectiveHook } from './directive'
+
 import { insert, remove } from './dom'
 import { PublicInstanceProxyHandlers } from './componentPublicInstance'
 
@@ -63,7 +64,7 @@ export function mountComponent(
   })!
   invokeDirectiveHook(instance, 'beforeMount')
   insert(block, instance.container)
-  instance.isMounted = true
+  instance.isMountedRef.value = true
   invokeDirectiveHook(instance, 'mounted')
   unsetCurrentInstance()
 
@@ -80,7 +81,7 @@ export function unmountComponent(instance: ComponentInternalInstance) {
   invokeDirectiveHook(instance, 'beforeUnmount')
   scope.stop()
   block && remove(block, container)
-  instance.isMounted = false
+  instance.isMountedRef.value = false
   invokeDirectiveHook(instance, 'unmounted')
   unsetCurrentInstance()
 

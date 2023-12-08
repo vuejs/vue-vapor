@@ -1,13 +1,14 @@
-import { EffectScope } from '@vue/reactivity'
+import { EffectScope, Ref, ref } from '@vue/reactivity'
 
 import { EMPTY_OBJ } from '@vue/shared'
 import { Block } from './render'
-import { type DirectiveBinding } from './directives'
+import { type DirectiveBinding } from './directive'
 import {
   type ComponentPropsOptions,
   type NormalizedPropsOptions,
   normalizePropsOptions,
 } from './componentProps'
+
 import type { Data } from '@vue/shared'
 
 export type Component = FunctionalComponent | ObjectComponent
@@ -42,6 +43,8 @@ export interface ComponentInternalInstance {
   dirs: Map<Node, DirectiveBinding[]>
 
   // lifecycle
+  get isMounted(): boolean
+  isMountedRef: Ref<boolean>
   isMounted: boolean
   // TODO: registory of provides, appContext, lifecycles, ...
 }
@@ -64,6 +67,7 @@ let uid = 0
 export const createComponentInstance = (
   component: ObjectComponent | FunctionalComponent,
 ): ComponentInternalInstance => {
+  const isMountedRef = ref(false)
   const instance: ComponentInternalInstance = {
     uid: uid++,
     block: null,
@@ -83,8 +87,11 @@ export const createComponentInstance = (
 
     dirs: new Map(),
 
-    // lifecycle hooks
-    isMounted: false,
+    // lifecycle
+    get isMounted() {
+      return isMountedRef.value
+    },
+    isMountedRef,
     // TODO: registory of provides, appContext, lifecycles, ...
   }
   return instance
