@@ -20,3 +20,5 @@ export const PublicInstanceProxyHandlers: ProxyHandler<any> = {
     }
   },
 }
+
+// TODO: publicPropertiesMap

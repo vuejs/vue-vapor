@@ -1,6 +1,7 @@
 import { EffectScope, Ref, ref } from '@vue/reactivity'
-
+import type { Data } from '@vue/shared'
 import { EMPTY_OBJ } from '@vue/shared'
+
 import { Block } from './render'
 import { type DirectiveBinding } from './directive'
 import {
@@ -9,17 +10,25 @@ import {
   normalizePropsOptions,
 } from './componentProps'
 
-import type { Data } from '@vue/shared'
+import {
+  type EmitFn,
+  type EmitsOptions,
+  type ObjectEmitsOptions,
+  emit,
+  normalizeEmitsOptions,
+} from './componentEmits'
 
 export type Component = FunctionalComponent | ObjectComponent
 
 export type SetupFn = (props: any, ctx: any) => Block | Data
 export type FunctionalComponent = SetupFn & {
   props: ComponentPropsOptions
+  emits: EmitsOptions
   render(ctx: any): Block
 }
 export interface ObjectComponent {
   props: ComponentPropsOptions
+  emits: EmitsOptions
   setup: SetupFn
   render(ctx: any): Block
 }
@@ -29,8 +38,14 @@ export interface ComponentInternalInstance {
   container: ParentNode
   block: Block | null
   scope: EffectScope
+
+  // conventional vnode.type
   component: FunctionalComponent | ObjectComponent
+  rawProps: Data
+
+  // normalized options
   propsOptions: NormalizedPropsOptions
+  emitsOptions: ObjectEmitsOptions | null
 
   // TODO: type
   proxy: Data | null
@@ -38,6 +53,8 @@ export interface ComponentInternalInstance {
   // state
   props: Data
   setupState: Data
+  emit: EmitFn
+  emitted: Record<string, boolean> | null
 
   /** directives */
   dirs: Map<Node, DirectiveBinding[]>
@@ -45,6 +62,8 @@ export interface ComponentInternalInstance {
   // lifecycle
   get isMounted(): boolean
   isMountedRef: Ref<boolean>
+  get isUnmounted(): boolean
+  isUnmountedRef: Ref<boolean>
   // TODO: registory of provides, appContext, lifecycles, ...
 }
 
@@ -65,18 +84,25 @@ export const unsetCurrentInstance = () => {
 let uid = 0
 export const createComponentInstance = (
   component: ObjectComponent | FunctionalComponent,
+  rawProps: Data,
 ): ComponentInternalInstance => {
   const isMountedRef = ref(false)
+  const isUnmountedRef = ref(false)
   const instance: ComponentInternalInstance = {
     uid: uid++,
     block: null,
     container: null!, // set on mount
     scope: new EffectScope(true /* detached */)!,
     component,
+    rawProps,
 
     // resolved props and emits options
     propsOptions: normalizePropsOptions(component),
-    // emitsOptions: normalizeEmitsOptions(type, appContext), // TODO:
+    emitsOptions: normalizeEmitsOptions(component),
+
+    // emit
+    emit: null!, // to be set immediately
+    emitted: null,
 
     proxy: null,
 
@@ -91,7 +117,14 @@ export const createComponentInstance = (
       return isMountedRef.value
     },
     isMountedRef,
+    get isUnmounted() {
+      return isUnmountedRef.value
+    },
+    isUnmountedRef,
     // TODO: registory of provides, appContext, lifecycles, ...
   }
+
+  instance.emit = emit.bind(null, instance)
+
   return instance
 }

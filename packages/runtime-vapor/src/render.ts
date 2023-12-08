@@ -26,7 +26,7 @@ export function render(
   props: Data,
   container: string | ParentNode,
 ): ComponentInternalInstance {
-  const instance = createComponentInstance(comp)
+  const instance = createComponentInstance(comp, props)
   initProps(instance, props)
   return mountComponent(instance, (container = normalizeContainer(container)))
 }
@@ -45,8 +45,8 @@ export function mountComponent(
 
   setCurrentInstance(instance)
   const block = instance.scope.run(() => {
-    const { component, props } = instance
-    const ctx = { expose: () => {} }
+    const { component, props, emit } = instance
+    const ctx = { emit, expose: () => {} }
 
     const setupFn =
       typeof component === 'function' ? component : component.setup
@@ -82,6 +82,7 @@ export function unmountComponent(instance: ComponentInternalInstance) {
   scope.stop()
   block && remove(block, container)
   instance.isMountedRef.value = false
+  instance.isUnmountedRef.value = true
   invokeDirectiveHook(instance, 'unmounted')
   unsetCurrentInstance()
 
