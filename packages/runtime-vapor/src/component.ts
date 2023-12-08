@@ -1,14 +1,12 @@
 import { EffectScope, Ref, ref } from '@vue/reactivity'
-
 import { EMPTY_OBJ } from '@vue/shared'
 import { Block } from './render'
-import { type DirectiveBinding } from './directive'
 import {
   type ComponentPropsOptions,
   type NormalizedPropsOptions,
   normalizePropsOptions,
 } from './componentProps'
-
+import type { DirectiveBinding } from './directive'
 import type { Data } from '@vue/shared'
 
 export type Component = FunctionalComponent | ObjectComponent
