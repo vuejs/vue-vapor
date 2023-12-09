@@ -19,7 +19,6 @@ function compileWithVBind(
   code: string
 } {
   const ast = parse(template, { prefixIdentifiers: true, ...options })
-
   const ir = transform(ast, {
     nodeTransforms: [transformElement],
     directiveTransforms: {
@@ -28,9 +27,7 @@ function compileWithVBind(
     prefixIdentifiers: true,
     ...options,
   })
-
   const { code } = generate(ir, { prefixIdentifiers: true, ...options })
-
   return { ir, code }
 }
 
@@ -86,6 +83,7 @@ describe('compiler v-bind', () => {
     })
 
     expect(code).matchSnapshot()
+    expect(code).contains('_setAttr(n1, "id", undefined, _ctx.id)')
   })
 
   test('no expression', () => {
