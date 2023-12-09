@@ -11,8 +11,6 @@ import {
   walkIdentifiers,
   advancePositionWithClone,
   isSimpleIdentifier,
-  CAMELIZE,
-  helperNameMap,
 } from '@vue/compiler-dom'
 import {
   type IRDynamicChildren,
@@ -374,9 +372,9 @@ function genOperation(oper: OperationNode, context: CodegenContext) {
 function genSetProp(oper: SetPropIRNode, context: CodegenContext) {
   const { push, pushWithNewline, vaporHelper, helper } = context
   pushWithNewline(`${vaporHelper('setAttr')}(n${oper.element}, `)
-  if (oper.camel) push(`${helper(helperNameMap[CAMELIZE])}(`)
+  if (oper.runtimeCamelize) push(`${helper('camelize')}(`)
   genExpression(oper.key, context)
-  if (oper.camel) push(`)`)
+  if (oper.runtimeCamelize) push(`)`)
   push(`, undefined, `)
   genExpression(oper.value, context)
   push(')')

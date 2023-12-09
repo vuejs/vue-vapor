@@ -23,7 +23,6 @@ export const transformVBind: DirectiveTransform = (dir, node, context) => {
 
   let camel = false
   if (modifiers.includes('camel')) {
-    console.log('arg:', arg)
     if (arg.isStatic) {
       arg.content = camelize(arg.content)
     } else {
@@ -48,7 +47,7 @@ export const transformVBind: DirectiveTransform = (dir, node, context) => {
         element: context.reference(),
         key: arg,
         value: exp,
-        camel,
+        runtimeCamelize: camel,
       },
     ],
   )
