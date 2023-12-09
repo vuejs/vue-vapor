@@ -88,4 +88,5 @@ export function unmountComponent(instance: ComponentInternalInstance) {
   if (um) {
     invokeArrayFns(um)
   }
+  instance.isUnmountedRef.value = true
 }
