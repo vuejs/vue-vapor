@@ -32,7 +32,7 @@ export const injectHook = (
     const wrappedHook =
       hook.__weh ||
       (hook.__weh = (...args: unknown[]) => {
-        if (target.isUnMounted) {
+        if (target.isUnmounted) {
           return
         }
         pauseTracking()

@@ -21,9 +21,9 @@ export interface ComponentInternalInstance {
 
   component: FunctionalComponent | ObjectComponent
   get isMounted(): boolean
-  get isUnMounted(): boolean
+  get isUnmounted(): boolean
   isMountedRef: Ref<boolean>
-  isUnMountedRef: Ref<boolean>
+  isUnmountedRef: Ref<boolean>
 
   /** directives */
   dirs: Map<Node, DirectiveBinding[]>
@@ -105,7 +105,7 @@ export const createComponentInstance = (
   component: ObjectComponent | FunctionalComponent,
 ): ComponentInternalInstance => {
   const isMountedRef = ref(false)
-  const isUnMountedRef = ref(false)
+  const isUnmountedRef = ref(false)
   const instance: ComponentInternalInstance = {
     uid: uid++,
     block: null,
@@ -116,11 +116,11 @@ export const createComponentInstance = (
     get isMounted() {
       return isMountedRef.value
     },
-    get isUnMounted() {
-      return isUnMountedRef.value
+    get isUnmounted() {
+      return isUnmountedRef.value
     },
     isMountedRef,
-    isUnMountedRef,
+    isUnmountedRef,
 
     dirs: new Map(),
     // TODO: registory of provides, appContext, lifecycles, ...
