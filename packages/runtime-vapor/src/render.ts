@@ -71,9 +71,6 @@ export function mountComponent(
   if (m) {
     invokeArrayFns(m)
   }
-  // TODO: lifecycle hooks (mounted, ...)
-  // const { m } = instance
-  // m && invoke(m)
 
   return instance
 }
@@ -91,7 +88,4 @@ export function unmountComponent(instance: ComponentInternalInstance) {
   if (um) {
     invokeArrayFns(um)
   }
-  // TODO: lifecycle hooks (unmounted, ...)
-  // const { um } = instance
-  // um && invoke(um)
 }
