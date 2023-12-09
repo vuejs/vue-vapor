@@ -17,7 +17,6 @@ function compileWithOnce(
   code: string
 } {
   const ast = parse(template, { prefixIdentifiers: true, ...options })
-
   const [nodeTransforms, directiveTransforms] = getBaseTransformPreset(true)
   const ir = transform(ast, {
     nodeTransforms,
@@ -25,9 +24,7 @@ function compileWithOnce(
     prefixIdentifiers: true,
     ...options,
   })
-
   const { code } = generate(ir, { prefixIdentifiers: true, ...options })
-
   return { ir, code }
 }
 
