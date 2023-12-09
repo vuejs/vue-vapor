@@ -1,7 +1,7 @@
 // NOTE: runtime-core/src/componentProps.ts
 
 import {
-  Data,
+  type Data,
   EMPTY_ARR,
   EMPTY_OBJ,
   camelize,
@@ -13,7 +13,7 @@ import {
   isReservedProp,
 } from '@vue/shared'
 import { shallowReactive, toRaw } from '@vue/reactivity'
-import { type ComponentInternalInstance, type Component } from './component'
+import type { ComponentInternalInstance, Component } from './component'
 
 export type ComponentPropsOptions<P = Data> =
   | ComponentObjectPropsOptions<P>
@@ -77,6 +77,7 @@ export function initProps(
   if (rawProps) {
     for (let key in rawProps) {
       // key, ref are reserved and never passed down
+      // TODO: remove vnode
       if (isReservedProp(key)) {
         continue
       }

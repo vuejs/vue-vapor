@@ -1,22 +1,19 @@
-import { EffectScope, Ref, ref } from '@vue/reactivity'
 import type { Data } from '@vue/shared'
 import { EMPTY_OBJ } from '@vue/shared'
+import { EffectScope, Ref, ref } from '@vue/reactivity'
 
 import { Block } from './render'
-import { type DirectiveBinding } from './directive'
-import {
-  type ComponentPropsOptions,
-  type NormalizedPropsOptions,
-  normalizePropsOptions,
-} from './componentProps'
 
-import {
-  type EmitFn,
-  type EmitsOptions,
-  type ObjectEmitsOptions,
-  emit,
-  normalizeEmitsOptions,
-} from './componentEmits'
+import type {
+  ComponentPropsOptions,
+  NormalizedPropsOptions,
+} from './componentProps'
+import { normalizePropsOptions } from './componentProps'
+
+import type { EmitFn, EmitsOptions, ObjectEmitsOptions } from './componentEmits'
+import { emit, normalizeEmitsOptions } from './componentEmits'
+
+import type { DirectiveBinding } from './directive'
 
 export type Component = FunctionalComponent | ObjectComponent
 
