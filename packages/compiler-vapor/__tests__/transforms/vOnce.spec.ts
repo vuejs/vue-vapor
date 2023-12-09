@@ -31,7 +31,7 @@ function compileWithOnce(
   return { ir, code }
 }
 
-describe('compiler: v-once transform', () => {
+describe('compiler: v-once', () => {
   test('basic', () => {
     const { ir, code } = compileWithOnce(
       `<div v-once>
