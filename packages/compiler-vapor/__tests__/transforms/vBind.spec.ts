@@ -34,22 +34,22 @@ function compileWithVBind(
   return { ir, code }
 }
 
-describe('compiler: transform v-bind', () => {
+describe('compiler v-bind', () => {
   test('basic', () => {
-    const { ir: node, code } = compileWithVBind(`<div v-bind:id="id"/>`)
+    const { ir, code } = compileWithVBind(`<div v-bind:id="id"/>`)
 
-    expect(node.dynamic.children[0]).toMatchObject({
+    expect(ir.dynamic.children[0]).toMatchObject({
       id: 1,
       referenced: true,
     })
-    expect(node.template[0]).toMatchObject({
+    expect(ir.template[0]).toMatchObject({
       type: IRNodeTypes.TEMPLATE_FACTORY,
       template: '<div></div>',
     })
-    expect(node.effect).lengthOf(1)
-    expect(node.effect[0].expressions).lengthOf(1)
-    expect(node.effect[0].operations).lengthOf(1)
-    expect(node.effect[0]).toMatchObject({
+    expect(ir.effect).lengthOf(1)
+    expect(ir.effect[0].expressions).lengthOf(1)
+    expect(ir.effect[0].operations).lengthOf(1)
+    expect(ir.effect[0]).toMatchObject({
       expressions: [
         {
           type: NodeTypes.SIMPLE_EXPRESSION,
@@ -89,9 +89,9 @@ describe('compiler: transform v-bind', () => {
   })
 
   test('no expression', () => {
-    const { ir: node, code } = compileWithVBind(`<div v-bind:id />`)
+    const { ir, code } = compileWithVBind(`<div v-bind:id />`)
 
-    expect(node.effect[0].operations[0]).toMatchObject({
+    expect(ir.effect[0].operations[0]).toMatchObject({
       type: IRNodeTypes.SET_PROP,
       key: {
         content: `id`,
@@ -116,9 +116,9 @@ describe('compiler: transform v-bind', () => {
   })
 
   test('no expression (shorthand)', () => {
-    const { ir: node, code } = compileWithVBind(`<div :camel-case />`)
+    const { ir, code } = compileWithVBind(`<div :camel-case />`)
 
-    expect(node.effect[0].operations[0]).toMatchObject({
+    expect(ir.effect[0].operations[0]).toMatchObject({
       type: IRNodeTypes.SET_PROP,
       key: {
         content: `camel-case`,
@@ -137,8 +137,8 @@ describe('compiler: transform v-bind', () => {
   })
 
   test('dynamic arg', () => {
-    const { ir: node, code } = compileWithVBind(`<div v-bind:[id]="id"/>`)
-    expect(node.effect[0].operations[0]).toMatchObject({
+    const { ir, code } = compileWithVBind(`<div v-bind:[id]="id"/>`)
+    expect(ir.effect[0].operations[0]).toMatchObject({
       type: IRNodeTypes.SET_PROP,
       element: 1,
       key: {
@@ -159,7 +159,7 @@ describe('compiler: transform v-bind', () => {
 
   test('should error if empty expression', () => {
     const onError = vi.fn()
-    const { ir: node, code } = compileWithVBind(`<div v-bind:arg="" />`, {
+    const { ir, code } = compileWithVBind(`<div v-bind:arg="" />`, {
       onError,
     })
 
@@ -170,7 +170,7 @@ describe('compiler: transform v-bind', () => {
         end: { line: 1, column: 19 },
       },
     })
-    expect(node.template[0]).toMatchObject({
+    expect(ir.template[0]).toMatchObject({
       type: IRNodeTypes.TEMPLATE_FACTORY,
       template: '<div arg=""></div>',
     })
@@ -180,11 +180,9 @@ describe('compiler: transform v-bind', () => {
   })
 
   test('.camel modifier', () => {
-    const { ir: node, code } = compileWithVBind(
-      `<div v-bind:foo-bar.camel="id"/>`,
-    )
+    const { ir, code } = compileWithVBind(`<div v-bind:foo-bar.camel="id"/>`)
 
-    expect(node.effect[0].operations[0]).toMatchObject({
+    expect(ir.effect[0].operations[0]).toMatchObject({
       key: {
         content: `fooBar`,
         isStatic: true,
@@ -200,9 +198,9 @@ describe('compiler: transform v-bind', () => {
   })
 
   test('.camel modifier w/ no expression', () => {
-    const { ir: node, code } = compileWithVBind(`<div v-bind:foo-bar.camel />`)
+    const { ir, code } = compileWithVBind(`<div v-bind:foo-bar.camel />`)
 
-    expect(node.effect[0].operations[0]).toMatchObject({
+    expect(ir.effect[0].operations[0]).toMatchObject({
       key: {
         content: `fooBar`,
         isStatic: true,
@@ -219,11 +217,9 @@ describe('compiler: transform v-bind', () => {
   })
 
   test('.camel modifier w/ dynamic arg', () => {
-    const { ir: node, code } = compileWithVBind(
-      `<div v-bind:[foo].camel="id"/>`,
-    )
+    const { ir, code } = compileWithVBind(`<div v-bind:[foo].camel="id"/>`)
 
-    expect(node.effect[0].operations[0]).toMatchObject({
+    expect(ir.effect[0].operations[0]).toMatchObject({
       runtimeCamelize: true,
       key: {
         content: `foo`,

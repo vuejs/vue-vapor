@@ -1,6 +1,6 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`compiler: transform v-bind > .camel modifier 1`] = `
+exports[`compiler v-bind > .camel modifier 1`] = `
 "import { template as _template, children as _children, effect as _effect, setAttr as _setAttr } from 'vue/vapor';
 
 export function render(_ctx) {
@@ -14,7 +14,7 @@ export function render(_ctx) {
 }"
 `;
 
-exports[`compiler: transform v-bind > .camel modifier w/ dynamic arg 1`] = `
+exports[`compiler v-bind > .camel modifier w/ dynamic arg 1`] = `
 "import { camelize as _camelize } from 'vue';
 
 export function render(_ctx) {
@@ -28,7 +28,7 @@ export function render(_ctx) {
 }"
 `;
 
-exports[`compiler: transform v-bind > .camel modifier w/ no expression 1`] = `
+exports[`compiler v-bind > .camel modifier w/ no expression 1`] = `
 "import { template as _template, children as _children, effect as _effect, setAttr as _setAttr } from 'vue/vapor';
 
 export function render(_ctx) {
@@ -42,7 +42,7 @@ export function render(_ctx) {
 }"
 `;
 
-exports[`compiler: transform v-bind > basic 1`] = `
+exports[`compiler v-bind > basic 1`] = `
 "import { template as _template, children as _children, effect as _effect, setAttr as _setAttr } from 'vue/vapor';
 
 export function render(_ctx) {
@@ -56,7 +56,7 @@ export function render(_ctx) {
 }"
 `;
 
-exports[`compiler: transform v-bind > dynamic arg 1`] = `
+exports[`compiler v-bind > dynamic arg 1`] = `
 "import { template as _template, children as _children, effect as _effect, setAttr as _setAttr } from 'vue/vapor';
 
 export function render(_ctx) {
@@ -70,7 +70,7 @@ export function render(_ctx) {
 }"
 `;
 
-exports[`compiler: transform v-bind > no expression (shorthand) 1`] = `
+exports[`compiler v-bind > no expression (shorthand) 1`] = `
 "import { template as _template, children as _children, effect as _effect, setAttr as _setAttr } from 'vue/vapor';
 
 export function render(_ctx) {
@@ -84,7 +84,7 @@ export function render(_ctx) {
 }"
 `;
 
-exports[`compiler: transform v-bind > no expression 1`] = `
+exports[`compiler v-bind > no expression 1`] = `
 "import { template as _template, children as _children, effect as _effect, setAttr as _setAttr } from 'vue/vapor';
 
 export function render(_ctx) {
@@ -98,7 +98,7 @@ export function render(_ctx) {
 }"
 `;
 
-exports[`compiler: transform v-bind > should error if empty expression 1`] = `
+exports[`compiler v-bind > should error if empty expression 1`] = `
 "import { template as _template } from 'vue/vapor';
 
 export function render(_ctx) {
