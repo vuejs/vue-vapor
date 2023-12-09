@@ -1,6 +1,6 @@
 import { pauseTracking, resetTracking } from '@vue/reactivity'
 import {
-  ComponentInternalInstance,
+  type ComponentInternalInstance,
   currentInstance,
   setCurrentInstance,
 } from './component'
