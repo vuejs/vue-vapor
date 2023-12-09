@@ -1,4 +1,4 @@
-import { BindingTypes, parse } from '@vue/compiler-dom'
+import { BindingTypes, NodeTypes, parse } from '@vue/compiler-dom'
 import {
   type CompilerOptions,
   compile as _compile,
@@ -38,6 +38,49 @@ describe('compiler: v-once transform', () => {
         },
       },
     )
+    expect(root.helpers.size).toBe(0)
+    expect(root.vaporHelpers.size).toBe(0)
+    expect(root.effect).toMatchObject([])
+
+    expect(root.operation).toMatchObject([
+      {
+        id: 1,
+        type: IRNodeTypes.CREATE_TEXT_NODE,
+        value: {
+          type: NodeTypes.SIMPLE_EXPRESSION,
+          content: 'msg',
+          isStatic: false,
+        },
+      },
+      {
+        element: 1,
+        type: IRNodeTypes.SET_TEXT,
+        value: {
+          type: NodeTypes.SIMPLE_EXPRESSION,
+          content: 'msg',
+          isStatic: false,
+        },
+      },
+      {
+        element: 2,
+        key: {
+          type: NodeTypes.SIMPLE_EXPRESSION,
+          content: 'class',
+          isStatic: true,
+        },
+        type: IRNodeTypes.SET_PROP,
+        value: {
+          type: NodeTypes.SIMPLE_EXPRESSION,
+          content: 'clz',
+          isStatic: false,
+        },
+      },
+      {
+        type: IRNodeTypes.PREPEND_NODE,
+        elements: [1],
+        parent: 3,
+      },
+    ])
 
     const { code } = generate(root, { prefixIdentifiers: true })
     expect(code).toMatchSnapshot()
@@ -49,22 +92,23 @@ describe('compiler: v-once transform', () => {
     expect(root.helpers.size).toBe(0)
     expect(root.vaporHelpers.size).toBe(0)
     expect(root.effect).toMatchObject([])
-    expect(root.operation.length).toBe(1)
 
-    expect(root.operation[0]).toMatchObject({
-      type: IRNodeTypes.SET_PROP,
-      element: 1,
-      name: {
-        type: IRNodeTypes.SET_TEXT,
-        content: 'id',
-        isStatic: true,
+    expect(root.operation).toMatchObject([
+      {
+        type: IRNodeTypes.SET_PROP,
+        element: 1,
+        key: {
+          type: NodeTypes.SIMPLE_EXPRESSION,
+          content: 'id',
+          isStatic: true,
+        },
+        value: {
+          type: NodeTypes.SIMPLE_EXPRESSION,
+          content: 'foo',
+          isStatic: false,
+        },
       },
-      value: {
-        type: IRNodeTypes.SET_TEXT,
-        content: 'foo',
-        isStatic: false,
-      },
-    })
+    ])
 
     const { code } = generate(root, { prefixIdentifiers: true })
     expect(code).toMatchSnapshot()
