@@ -5,28 +5,35 @@ import {
   transform,
   generate as generate,
   IRNodeTypes,
+  RootIRNode,
 } from '../../src'
 import { getBaseTransformPreset } from '../../src/compile'
 
-function transformWithOnce(template: string, options: CompilerOptions = {}) {
-  const ast = parse(template, {
-    prefixIdentifiers: true,
-    ...options,
-  })
-  const [nodeTransforms, directiveTransforms] = getBaseTransformPreset(true)
+function compileWithOnce(
+  template: string,
+  options: CompilerOptions = {},
+): {
+  ir: RootIRNode
+  code: string
+} {
+  const ast = parse(template, { prefixIdentifiers: true, ...options })
 
+  const [nodeTransforms, directiveTransforms] = getBaseTransformPreset(true)
   const ir = transform(ast, {
     nodeTransforms,
     directiveTransforms,
     prefixIdentifiers: true,
     ...options,
   })
-  return ir
+
+  const { code } = generate(ir, { prefixIdentifiers: true, ...options })
+
+  return { ir, code }
 }
 
 describe('compiler: v-once transform', () => {
   test('basic', () => {
-    const root = transformWithOnce(
+    const { ir, code } = compileWithOnce(
       `<div v-once>
         {{ msg }}
         <span :class="clz" />
@@ -38,11 +45,10 @@ describe('compiler: v-once transform', () => {
         },
       },
     )
-    expect(root.helpers.size).toBe(0)
-    expect(root.vaporHelpers.size).toBe(0)
-    expect(root.effect).toMatchObject([])
+    expect(ir.helpers.size).toBe(0)
+    expect(ir.effect).toMatchObject([])
 
-    expect(root.operation).toMatchObject([
+    expect(ir.operation).toMatchObject([
       {
         id: 1,
         type: IRNodeTypes.CREATE_TEXT_NODE,
@@ -82,18 +88,16 @@ describe('compiler: v-once transform', () => {
       },
     ])
 
-    const { code } = generate(root, { prefixIdentifiers: true })
     expect(code).toMatchSnapshot()
   })
 
   test('as root node', () => {
-    const root = transformWithOnce(`<div :id="foo" v-once />`)
+    const { ir, code } = compileWithOnce(`<div :id="foo" v-once />`)
 
-    expect(root.helpers.size).toBe(0)
-    expect(root.vaporHelpers.size).toBe(0)
-    expect(root.effect).toMatchObject([])
+    expect(ir.helpers.size).toBe(0)
+    expect(ir.effect).toMatchObject([])
 
-    expect(root.operation).toMatchObject([
+    expect(ir.operation).toMatchObject([
       {
         type: IRNodeTypes.SET_PROP,
         element: 1,
@@ -110,7 +114,7 @@ describe('compiler: v-once transform', () => {
       },
     ])
 
-    const { code } = generate(root, { prefixIdentifiers: true })
     expect(code).toMatchSnapshot()
+    expect(code).not.contains('effect')
   })
 })
