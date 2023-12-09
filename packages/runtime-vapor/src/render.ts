@@ -15,6 +15,7 @@ import { invokeDirectiveHook } from './directive'
 
 import { insert, remove } from './dom'
 import { PublicInstanceProxyHandlers } from './componentPublicInstance'
+import { invokeArrayFns } from '@vue/shared'
 
 export type Block = Node | Fragment | Block[]
 export type ParentBlock = ParentNode | Node[]
@@ -36,7 +37,6 @@ export function normalizeContainer(container: string | ParentNode): ParentNode {
     ? (document.querySelector(container) as ParentNode)
     : container
 }
-
 export function mountComponent(
   instance: ComponentInternalInstance,
   container: ParentNode,
@@ -67,7 +67,10 @@ export function mountComponent(
   instance.isMountedRef.value = true
   invokeDirectiveHook(instance, 'mounted')
   unsetCurrentInstance()
-
+  const { m } = instance
+  if (m) {
+    invokeArrayFns(m)
+  }
   // TODO: lifecycle hooks (mounted, ...)
   // const { m } = instance
   // m && invoke(m)
@@ -84,7 +87,10 @@ export function unmountComponent(instance: ComponentInternalInstance) {
   instance.isMountedRef.value = false
   invokeDirectiveHook(instance, 'unmounted')
   unsetCurrentInstance()
-
+  const { um } = instance
+  if (um) {
+    invokeArrayFns(um)
+  }
   // TODO: lifecycle hooks (unmounted, ...)
   // const { um } = instance
   // um && invoke(um)

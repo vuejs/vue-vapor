@@ -12,6 +12,7 @@ import {
 import type { Data } from '@vue/shared'
 
 export type Component = FunctionalComponent | ObjectComponent
+import { LifecycleHooks } from './apiLifecycle'
 
 export type SetupFn = (props: any, ctx: any) => Block | Data
 export type FunctionalComponent = SetupFn & {
@@ -23,7 +24,7 @@ export interface ObjectComponent {
   setup: SetupFn
   render(ctx: any): Block
 }
-
+type LifecycleHook<TFn = Function> = TFn[] | null
 export interface ComponentInternalInstance {
   uid: number
   container: ParentNode
@@ -37,7 +38,9 @@ export interface ComponentInternalInstance {
 
   // state
   props: Data
+  get isUnMounted(): boolean
   setupState: Data
+  isUnMountedRef: Ref<boolean>
 
   /** directives */
   dirs: Map<Node, DirectiveBinding[]>
@@ -46,6 +49,62 @@ export interface ComponentInternalInstance {
   get isMounted(): boolean
   isMountedRef: Ref<boolean>
   // TODO: registory of provides, appContext, lifecycles, ...
+  /**
+   * @internal
+   */
+  [LifecycleHooks.BEFORE_CREATE]: LifecycleHook
+  /**
+   * @internal
+   */
+  [LifecycleHooks.CREATED]: LifecycleHook
+  /**
+   * @internal
+   */
+  [LifecycleHooks.BEFORE_MOUNT]: LifecycleHook
+  /**
+   * @internal
+   */
+  [LifecycleHooks.MOUNTED]: LifecycleHook
+  /**
+   * @internal
+   */
+  [LifecycleHooks.BEFORE_UPDATE]: LifecycleHook
+  /**
+   * @internal
+   */
+  [LifecycleHooks.UPDATED]: LifecycleHook
+  /**
+   * @internal
+   */
+  [LifecycleHooks.BEFORE_UNMOUNT]: LifecycleHook
+  /**
+   * @internal
+   */
+  [LifecycleHooks.UNMOUNTED]: LifecycleHook
+  /**
+   * @internal
+   */
+  [LifecycleHooks.RENDER_TRACKED]: LifecycleHook
+  /**
+   * @internal
+   */
+  [LifecycleHooks.RENDER_TRIGGERED]: LifecycleHook
+  /**
+   * @internal
+   */
+  [LifecycleHooks.ACTIVATED]: LifecycleHook
+  /**
+   * @internal
+   */
+  [LifecycleHooks.DEACTIVATED]: LifecycleHook
+  /**
+   * @internal
+   */
+  [LifecycleHooks.ERROR_CAPTURED]: LifecycleHook
+  /**
+   * @internal
+   */
+  [LifecycleHooks.SERVER_PREFETCH]: LifecycleHook<() => Promise<unknown>>
 }
 
 // TODO
@@ -67,10 +126,11 @@ export const createComponentInstance = (
   component: ObjectComponent | FunctionalComponent,
 ): ComponentInternalInstance => {
   const isMountedRef = ref(false)
+  const isUnMountedRef = ref(false)
   const instance: ComponentInternalInstance = {
     uid: uid++,
     block: null,
-    container: null!, // set on mount
+    container: null!,
     scope: new EffectScope(true /* detached */)!,
     component,
 
@@ -90,8 +150,68 @@ export const createComponentInstance = (
     get isMounted() {
       return isMountedRef.value
     },
+    get isUnMounted() {
+      return isUnMountedRef.value
+    },
     isMountedRef,
+    isUnMountedRef,
     // TODO: registory of provides, appContext, lifecycles, ...
+    /**
+     * @internal
+     */
+    [LifecycleHooks.BEFORE_CREATE]: null,
+    /**
+     * @internal
+     */
+    [LifecycleHooks.CREATED]: null,
+    /**
+     * @internal
+     */
+    [LifecycleHooks.BEFORE_MOUNT]: null,
+    /**
+     * @internal
+     */
+    [LifecycleHooks.MOUNTED]: null,
+    /**
+     * @internal
+     */
+    [LifecycleHooks.BEFORE_UPDATE]: null,
+    /**
+     * @internal
+     */
+    [LifecycleHooks.UPDATED]: null,
+    /**
+     * @internal
+     */
+    [LifecycleHooks.BEFORE_UNMOUNT]: null,
+    /**
+     * @internal
+     */
+    [LifecycleHooks.UNMOUNTED]: null,
+    /**
+     * @internal
+     */
+    [LifecycleHooks.RENDER_TRACKED]: null,
+    /**
+     * @internal
+     */
+    [LifecycleHooks.RENDER_TRIGGERED]: null,
+    /**
+     * @internal
+     */
+    [LifecycleHooks.ACTIVATED]: null,
+    /**
+     * @internal
+     */
+    [LifecycleHooks.DEACTIVATED]: null,
+    /**
+     * @internal
+     */
+    [LifecycleHooks.ERROR_CAPTURED]: null,
+    /**
+     * @internal
+     */
+    [LifecycleHooks.SERVER_PREFETCH]: null,
   }
   return instance
 }
