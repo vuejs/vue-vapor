@@ -1,4 +1,4 @@
-import { ErrorCodes, NodeTypes, BindingTypes } from '@vue/compiler-dom'
+import { ErrorCodes, NodeTypes } from '@vue/compiler-dom'
 import {
   type RootIRNode,
   type CompilerOptions,
