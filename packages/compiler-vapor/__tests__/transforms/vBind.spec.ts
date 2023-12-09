@@ -167,7 +167,6 @@ describe('compiler: transform v-bind', () => {
 
   test('.camel modifier', () => {
     const node = parseWithVBind(`<div v-bind:foo-bar.camel="id"/>`)
-    console.log('node.effect[0].operations[0]', node.effect[0].operations[0])
     expect(node.effect[0].operations[0]).toMatchObject({
       key: {
         content: `fooBar`,
