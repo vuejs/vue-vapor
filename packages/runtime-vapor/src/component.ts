@@ -2,7 +2,7 @@ import { type Ref, EffectScope, ref } from '@vue/reactivity'
 import type { Block } from './render'
 import type { DirectiveBinding } from './directive'
 import type { Data } from '@vue/shared'
-import { LifecycleHooks } from './apiLifecycle'
+import { VaporLifecycleHooks } from './apiLifecycle'
 
 export type SetupFn = (props: any, ctx: any) => Block | Data
 export type FunctionalComponent = SetupFn & {
@@ -31,59 +31,59 @@ export interface ComponentInternalInstance {
   /**
    * @internal
    */
-  [LifecycleHooks.BEFORE_CREATE]: LifecycleHook
+  [VaporLifecycleHooks.BEFORE_CREATE]: LifecycleHook
   /**
    * @internal
    */
-  [LifecycleHooks.CREATED]: LifecycleHook
+  [VaporLifecycleHooks.CREATED]: LifecycleHook
   /**
    * @internal
    */
-  [LifecycleHooks.BEFORE_MOUNT]: LifecycleHook
+  [VaporLifecycleHooks.BEFORE_MOUNT]: LifecycleHook
   /**
    * @internal
    */
-  [LifecycleHooks.MOUNTED]: LifecycleHook
+  [VaporLifecycleHooks.MOUNTED]: LifecycleHook
   /**
    * @internal
    */
-  [LifecycleHooks.BEFORE_UPDATE]: LifecycleHook
+  [VaporLifecycleHooks.BEFORE_UPDATE]: LifecycleHook
   /**
    * @internal
    */
-  [LifecycleHooks.UPDATED]: LifecycleHook
+  [VaporLifecycleHooks.UPDATED]: LifecycleHook
   /**
    * @internal
    */
-  [LifecycleHooks.BEFORE_UNMOUNT]: LifecycleHook
+  [VaporLifecycleHooks.BEFORE_UNMOUNT]: LifecycleHook
   /**
    * @internal
    */
-  [LifecycleHooks.UNMOUNTED]: LifecycleHook
+  [VaporLifecycleHooks.UNMOUNTED]: LifecycleHook
   /**
    * @internal
    */
-  [LifecycleHooks.RENDER_TRACKED]: LifecycleHook
+  [VaporLifecycleHooks.RENDER_TRACKED]: LifecycleHook
   /**
    * @internal
    */
-  [LifecycleHooks.RENDER_TRIGGERED]: LifecycleHook
+  [VaporLifecycleHooks.RENDER_TRIGGERED]: LifecycleHook
   /**
    * @internal
    */
-  [LifecycleHooks.ACTIVATED]: LifecycleHook
+  [VaporLifecycleHooks.ACTIVATED]: LifecycleHook
   /**
    * @internal
    */
-  [LifecycleHooks.DEACTIVATED]: LifecycleHook
+  [VaporLifecycleHooks.DEACTIVATED]: LifecycleHook
   /**
    * @internal
    */
-  [LifecycleHooks.ERROR_CAPTURED]: LifecycleHook
+  [VaporLifecycleHooks.ERROR_CAPTURED]: LifecycleHook
   /**
    * @internal
    */
-  [LifecycleHooks.SERVER_PREFETCH]: LifecycleHook<() => Promise<unknown>>
+  [VaporLifecycleHooks.SERVER_PREFETCH]: LifecycleHook<() => Promise<unknown>>
 }
 
 // TODO
@@ -127,59 +127,59 @@ export const createComponentInstance = (
     /**
      * @internal
      */
-    [LifecycleHooks.BEFORE_CREATE]: null,
+    [VaporLifecycleHooks.BEFORE_CREATE]: null,
     /**
      * @internal
      */
-    [LifecycleHooks.CREATED]: null,
+    [VaporLifecycleHooks.CREATED]: null,
     /**
      * @internal
      */
-    [LifecycleHooks.BEFORE_MOUNT]: null,
+    [VaporLifecycleHooks.BEFORE_MOUNT]: null,
     /**
      * @internal
      */
-    [LifecycleHooks.MOUNTED]: null,
+    [VaporLifecycleHooks.MOUNTED]: null,
     /**
      * @internal
      */
-    [LifecycleHooks.BEFORE_UPDATE]: null,
+    [VaporLifecycleHooks.BEFORE_UPDATE]: null,
     /**
      * @internal
      */
-    [LifecycleHooks.UPDATED]: null,
+    [VaporLifecycleHooks.UPDATED]: null,
     /**
      * @internal
      */
-    [LifecycleHooks.BEFORE_UNMOUNT]: null,
+    [VaporLifecycleHooks.BEFORE_UNMOUNT]: null,
     /**
      * @internal
      */
-    [LifecycleHooks.UNMOUNTED]: null,
+    [VaporLifecycleHooks.UNMOUNTED]: null,
     /**
      * @internal
      */
-    [LifecycleHooks.RENDER_TRACKED]: null,
+    [VaporLifecycleHooks.RENDER_TRACKED]: null,
     /**
      * @internal
      */
-    [LifecycleHooks.RENDER_TRIGGERED]: null,
+    [VaporLifecycleHooks.RENDER_TRIGGERED]: null,
     /**
      * @internal
      */
-    [LifecycleHooks.ACTIVATED]: null,
+    [VaporLifecycleHooks.ACTIVATED]: null,
     /**
      * @internal
      */
-    [LifecycleHooks.DEACTIVATED]: null,
+    [VaporLifecycleHooks.DEACTIVATED]: null,
     /**
      * @internal
      */
-    [LifecycleHooks.ERROR_CAPTURED]: null,
+    [VaporLifecycleHooks.ERROR_CAPTURED]: null,
     /**
      * @internal
      */
-    [LifecycleHooks.SERVER_PREFETCH]: null,
+    [VaporLifecycleHooks.SERVER_PREFETCH]: null,
   }
   return instance
 }

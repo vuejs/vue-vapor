@@ -5,7 +5,7 @@ import {
   setCurrentInstance,
 } from './component'
 
-export enum LifecycleHooks {
+export enum VaporLifecycleHooks {
   BEFORE_CREATE = 'bc',
   CREATED = 'c',
   BEFORE_MOUNT = 'bm',
@@ -21,8 +21,9 @@ export enum LifecycleHooks {
   ERROR_CAPTURED = 'ec',
   SERVER_PREFETCH = 'sp',
 }
+
 export const injectHook = (
-  type: LifecycleHooks,
+  type: VaporLifecycleHooks,
   hook: Function & { __weh?: Function },
   target: ComponentInternalInstance | null = currentInstance,
   prepend: boolean = false,
@@ -53,13 +54,13 @@ export const injectHook = (
   }
 }
 export const createHook =
-  <T extends Function = () => any>(lifecycle: LifecycleHooks) =>
+  <T extends Function = () => any>(lifecycle: VaporLifecycleHooks) =>
   (hook: T, target: ComponentInternalInstance | null = currentInstance) =>
     injectHook(lifecycle, (...args: unknown[]) => hook(...args), target)
 
-export const onMounted = createHook(LifecycleHooks.MOUNTED)
-export const onBeforeMount = createHook(LifecycleHooks.BEFORE_MOUNT)
-export const onBeforeUpdate = createHook(LifecycleHooks.BEFORE_UPDATE)
-export const onUpdated = createHook(LifecycleHooks.UPDATED)
-export const onBeforeUnmount = createHook(LifecycleHooks.BEFORE_UNMOUNT)
-export const onUnmounted = createHook(LifecycleHooks.UNMOUNTED)
+export const onMounted = createHook(VaporLifecycleHooks.MOUNTED)
+export const onBeforeMount = createHook(VaporLifecycleHooks.BEFORE_MOUNT)
+export const onBeforeUpdate = createHook(VaporLifecycleHooks.BEFORE_UPDATE)
+export const onUpdated = createHook(VaporLifecycleHooks.UPDATED)
+export const onBeforeUnmount = createHook(VaporLifecycleHooks.BEFORE_UNMOUNT)
+export const onUnmounted = createHook(VaporLifecycleHooks.UNMOUNTED)
