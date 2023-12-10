@@ -140,4 +140,16 @@ describe('compiler: v-once', () => {
 
     expect(code).toMatchSnapshot()
   })
+
+  test.todo('on component')
+  test.todo('on slot outlet')
+
+  test('inside v-once', () => {
+    const { ir, code } = compileWithOnce(`<div v-once><div v-once/></div>`)
+    expect(ir.helpers.size).toBe(0)
+    expect(ir.effect).toMatchObject([])
+    expect(ir.operation).toMatchObject([])
+
+    expect(code).toMatchSnapshot()
+  })
 })

@@ -27,6 +27,16 @@ export function render(_ctx) {
 }"
 `;
 
+exports[`compiler: v-once > inside v-once 1`] = `
+"import { template as _template } from 'vue/vapor';
+
+export function render(_ctx) {
+  const t0 = _template("<div><div></div></div>")
+  const n0 = t0()
+  return n0
+}"
+`;
+
 exports[`compiler: v-once > on nested plain element 1`] = `
 "import { template as _template, children as _children, setAttr as _setAttr } from 'vue/vapor';
 
