@@ -44,7 +44,7 @@ describe('v-text', () => {
     expect(ir.vaporHelpers).contains('setText')
     expect(ir.helpers.size).toBe(0)
 
-    expect(ir.operation).toMatchObject([])
+    expect(ir.operation).toEqual([])
 
     expect(ir.effect).toMatchObject([
       {

@@ -44,7 +44,7 @@ describe('v-html', () => {
     expect(ir.vaporHelpers).contains('setHtml')
     expect(ir.helpers.size).toBe(0)
 
-    expect(ir.operation).toMatchObject([])
+    expect(ir.operation).toEqual([])
     expect(ir.effect).toMatchObject([
       {
         expressions: [
@@ -80,7 +80,7 @@ describe('v-html', () => {
     expect(ir.vaporHelpers).contains('setHtml')
     expect(ir.helpers.size).toBe(0)
 
-    expect(ir.operation).toMatchObject([])
+    expect(ir.operation).toEqual([])
     expect(ir.effect).toMatchObject([
       {
         expressions: [
