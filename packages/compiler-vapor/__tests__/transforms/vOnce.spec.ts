@@ -43,7 +43,7 @@ describe('compiler: v-once', () => {
       },
     )
     expect(ir.helpers.size).toBe(0)
-    expect(ir.effect).toMatchObject([])
+    expect(ir.effect).toEqual([])
 
     expect(ir.operation).toMatchObject([
       {
@@ -92,7 +92,7 @@ describe('compiler: v-once', () => {
     const { ir, code } = compileWithOnce(`<div :id="foo" v-once />`)
 
     expect(ir.helpers.size).toBe(0)
-    expect(ir.effect).toMatchObject([])
+    expect(ir.effect).toEqual([])
 
     expect(ir.operation).toMatchObject([
       {
@@ -118,7 +118,7 @@ describe('compiler: v-once', () => {
   test('on nested plain element', () => {
     const { ir, code } = compileWithOnce(`<div><div :id="foo" v-once /></div>`)
     expect(ir.helpers.size).toBe(0)
-    expect(ir.effect).toMatchObject([])
+    expect(ir.effect).toEqual([])
 
     expect(ir.operation).toMatchObject([
       {
