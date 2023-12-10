@@ -13,6 +13,7 @@ import type { Data } from '@vue/shared'
 
 export type Component = FunctionalComponent | ObjectComponent
 import { VaporLifecycleHooks } from './apiLifecycle'
+import { VaporLifecycleHooks } from './apiLifecycle'
 
 export type SetupFn = (props: any, ctx: any) => Block | Data
 export type FunctionalComponent = SetupFn & {
