@@ -152,4 +152,8 @@ describe('compiler: v-once', () => {
 
     expect(code).toMatchSnapshot()
   })
+
+  test.todo('with hoistStatic: true')
+  test.todo('with v-if/else')
+  test.todo('with v-for')
 })
