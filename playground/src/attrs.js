@@ -60,10 +60,6 @@ const child = {
       () => attrs.count,
       v => console.log('attrs.count changed', v)
     )
-    watch(
-      () => attrs.inlineDouble,
-      v => console.log('attrs.inlineDouble changed', v)
-    )
 
     const __returned__ = {}
 
