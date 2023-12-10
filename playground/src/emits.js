@@ -49,6 +49,17 @@ export default {
       n0
     )
 
+    renderComponent(
+      child,
+      {
+        get count() {
+          return _ctx.count
+        },
+        'onClick:childOnce': _ctx.setCount
+      },
+      n0
+    )
+
     return n0
   }
 }
