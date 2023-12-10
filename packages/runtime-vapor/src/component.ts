@@ -49,6 +49,7 @@ export interface ComponentInternalInstance {
 
   // state
   props: Data
+  attrs: Data
   setupState: Data
   emit: EmitFn
   emitted: Record<string, boolean> | null
@@ -97,15 +98,14 @@ export const createComponentInstance = (
     propsOptions: normalizePropsOptions(component),
     emitsOptions: normalizeEmitsOptions(component),
 
-    // emit
-    emit: null!, // to be set immediately
-    emitted: null,
-
     proxy: null,
 
     // state
     props: EMPTY_OBJ,
+    attrs: EMPTY_OBJ,
     setupState: EMPTY_OBJ,
+    emit: null!, // to be set immediately
+    emitted: null,
 
     dirs: new Map(),
 

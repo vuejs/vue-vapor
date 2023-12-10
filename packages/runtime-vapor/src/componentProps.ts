@@ -14,6 +14,7 @@ import {
 } from '@vue/shared'
 import { shallowReactive, toRaw } from '@vue/reactivity'
 import type { ComponentInternalInstance, Component } from './component'
+import { isEmitListener } from './componentEmits'
 
 export type ComponentPropsOptions<P = Data> =
   | ComponentObjectPropsOptions<P>
@@ -71,6 +72,7 @@ export function initProps(
   rawProps: Data | null,
 ) {
   const props: Data = {}
+  const attrs: Data = {}
 
   const [options, needCastKeys] = instance.propsOptions
   let rawCastValues: Data | undefined
@@ -103,8 +105,16 @@ export function initProps(
             },
           })
         }
-      } else {
-        // TODO:
+      } else if (!isEmitListener(instance.emitsOptions, key)) {
+        if (!(key in attrs) || valueGetter() !== attrs[key]) {
+          // NOTE: must getter
+          // attrs[key] = value
+          Object.defineProperty(attrs, key, {
+            get() {
+              return valueGetter()
+            },
+          })
+        }
       }
     }
   }
@@ -140,6 +150,7 @@ export function initProps(
   }
 
   instance.props = shallowReactive(props)
+  instance.attrs = attrs
 }
 
 function resolvePropValue(

@@ -45,8 +45,8 @@ export function mountComponent(
 
   setCurrentInstance(instance)
   const block = instance.scope.run(() => {
-    const { component, props, emit } = instance
-    const ctx = { emit, expose: () => {} }
+    const { component, props, emit, attrs } = instance
+    const ctx = { emit, attrs, expose: () => {} }
 
     const setupFn =
       typeof component === 'function' ? component : component.setup

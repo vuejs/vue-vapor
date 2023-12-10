@@ -1,5 +1,22 @@
-import { hasOwn } from '@vue/shared'
+import { extend, hasOwn } from '@vue/shared'
+import { TrackOpTypes, track } from '@vue/reactivity'
 import { type ComponentInternalInstance } from './component'
+
+export type PublicPropertiesMap = Record<
+  string,
+  (i: ComponentInternalInstance) => any
+>
+
+export const publicPropertiesMap: PublicPropertiesMap = extend(
+  Object.create(null),
+  {
+    $: (i) => i.proxy,
+    $props: (i) => i.props,
+    $attrs: (i) => i.attrs,
+    $emit: (i) => i.emit,
+    // TODO: others
+  } as PublicPropertiesMap,
+)
 
 export interface ComponentRenderContext {
   [key: string]: any
@@ -18,7 +35,15 @@ export const PublicInstanceProxyHandlers: ProxyHandler<any> = {
     ) {
       return props![key]
     }
+
+    const publicGetter = publicPropertiesMap[key]
+    if (publicGetter) {
+      if (key === '$attrs') {
+        track(instance, TrackOpTypes.GET, key)
+      }
+      return publicGetter(instance)
+    } else {
+      // TODO: css modules, global properties, ...
+    }
   },
 }
-
-// TODO: publicPropertiesMap
