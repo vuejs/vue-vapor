@@ -60,14 +60,28 @@ export default {
       n0
     )
 
+    // test default value
+    renderComponent(
+      child,
+      {
+        get count() {
+          return _ctx.count % 2 === 0 ? _ctx.count : undefined
+        },
+        get inlineDouble() {
+          return _ctx.count % 2 === 0 ? undefined : _ctx.count * 2
+        }
+      },
+      n0
+    )
+
     return n0
   }
 }
 
 const child = {
   props: {
-    count: { type: Number, default: 1 },
-    inlineDouble: { type: Number, default: 2 }
+    count: { type: Number, default: 'opps!' },
+    inlineDouble: { type: Number, default: 'opps!' }
   },
 
   setup(props) {
