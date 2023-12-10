@@ -72,48 +72,45 @@ describe('v-text', () => {
     expect(code).matchSnapshot()
   })
 
-  test.fails(
-    'should raise error and ignore children when v-text is present',
-    () => {
-      const onError = vi.fn()
-      const { code, ir } = compileWithVText(`<div v-text="test">hello</div>`, {
-        onError,
-      })
-      expect(onError.mock.calls).toMatchObject([
-        [{ code: DOMErrorCodes.X_V_TEXT_WITH_CHILDREN }],
-      ])
+  test('should raise error and ignore children when v-text is present', () => {
+    const onError = vi.fn()
+    const { code, ir } = compileWithVText(`<div v-text="test">hello</div>`, {
+      onError,
+    })
+    expect(onError.mock.calls).toMatchObject([
+      [{ code: DOMErrorCodes.X_V_TEXT_WITH_CHILDREN }],
+    ])
 
-      // children should have been removed
-      expect(ir.template).toMatchObject([{ template: '<div></div>' }])
+    // children should have been removed
+    expect(ir.template).toMatchObject([{ template: '<div></div>' }])
 
-      expect(ir.effect).toMatchObject([
-        {
-          expressions: [
-            {
+    expect(ir.effect).toMatchObject([
+      {
+        expressions: [
+          {
+            type: NodeTypes.SIMPLE_EXPRESSION,
+            content: 'test',
+            isStatic: false,
+          },
+        ],
+        operations: [
+          {
+            type: IRNodeTypes.SET_TEXT,
+            element: 1,
+            value: {
               type: NodeTypes.SIMPLE_EXPRESSION,
               content: 'test',
               isStatic: false,
             },
-          ],
-          operations: [
-            {
-              type: IRNodeTypes.SET_TEXT,
-              element: 1,
-              value: {
-                type: NodeTypes.SIMPLE_EXPRESSION,
-                content: 'test',
-                isStatic: false,
-              },
-            },
-          ],
-        },
-      ])
+          },
+        ],
+      },
+    ])
 
-      expect(code).matchSnapshot()
-      // children should have been removed
-      expect(code).contains('template("<div></div>")')
-    },
-  )
+    expect(code).matchSnapshot()
+    // children should have been removed
+    expect(code).contains('template("<div></div>")')
+  })
 
   test('should raise error if has no expression', () => {
     const onError = vi.fn()
