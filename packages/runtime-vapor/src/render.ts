@@ -1,5 +1,5 @@
 import { markRaw, proxyRefs } from '@vue/reactivity'
-import { type Data } from '@vue/shared'
+import { invokeArrayFns, type Data } from '@vue/shared'
 import {
   type Component,
   type ComponentInternalInstance,
@@ -68,9 +68,8 @@ export function mountComponent(
   invokeDirectiveHook(instance, 'mounted')
   unsetCurrentInstance()
 
-  // TODO: lifecycle hooks (mounted, ...)
-  // const { m } = instance
-  // m && invoke(m)
+  const { m } = instance
+  m && invokeArrayFns(m)
 
   return instance
 }
@@ -85,7 +84,7 @@ export function unmountComponent(instance: ComponentInternalInstance) {
   invokeDirectiveHook(instance, 'unmounted')
   unsetCurrentInstance()
 
-  // TODO: lifecycle hooks (unmounted, ...)
-  // const { um } = instance
-  // um && invoke(um)
+  const { um } = instance
+  um && invokeArrayFns(um)
+  instance.isUnmountedRef.value = true
 }
