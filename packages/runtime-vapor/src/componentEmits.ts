@@ -13,7 +13,7 @@ import { type Component, type ComponentInternalInstance } from './component'
 
 export type ObjectEmitsOptions = Record<
   string,
-  ((...args: any[]) => any) | null
+  ((...args: any[]) => any) | null // TODO: call validation?
 >
 
 export type EmitsOptions = ObjectEmitsOptions | string[]
