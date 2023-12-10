@@ -14,7 +14,7 @@ import {
 } from '../../src'
 import { getBaseTransformPreset } from '../../src/compile'
 
-function compileWithOnce(
+function compileWithVHtml(
   template: string,
   options: CompilerOptions = {},
 ): {
@@ -35,7 +35,7 @@ function compileWithOnce(
 
 describe('v-html', () => {
   test('should convert v-html to innerHTML', () => {
-    const { code, ir } = compileWithOnce(`<div v-html="code"></div>`, {
+    const { code, ir } = compileWithVHtml(`<div v-html="code"></div>`, {
       bindingMetadata: {
         code: BindingTypes.SETUP_REF,
       },
@@ -73,7 +73,7 @@ describe('v-html', () => {
 
   test('should raise error and ignore children when v-html is present', () => {
     const onError = vi.fn()
-    const { code, ir } = compileWithOnce(`<div v-html="test">hello</div>`, {
+    const { code, ir } = compileWithVHtml(`<div v-html="test">hello</div>`, {
       onError,
     })
 
@@ -113,7 +113,7 @@ describe('v-html', () => {
 
   test('should raise error if has no expression', () => {
     const onError = vi.fn()
-    const { code } = compileWithOnce(`<div v-html></div>`, {
+    const { code } = compileWithVHtml(`<div v-html></div>`, {
       onError,
     })
     expect(code).matchSnapshot()
