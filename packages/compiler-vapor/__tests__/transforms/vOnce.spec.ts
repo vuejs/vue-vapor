@@ -114,4 +114,30 @@ describe('compiler: v-once', () => {
     expect(code).toMatchSnapshot()
     expect(code).not.contains('effect')
   })
+
+  test('on nested plain element', () => {
+    const { ir, code } = compileWithOnce(`<div><div :id="foo" v-once /></div>`)
+    expect(ir.helpers.size).toBe(0)
+    expect(ir.effect).toMatchObject([])
+
+    expect(ir.operation).toMatchObject([
+      {
+        type: IRNodeTypes.SET_PROP,
+        element: 1,
+        runtimeCamelize: false,
+        key: {
+          type: NodeTypes.SIMPLE_EXPRESSION,
+          content: 'id',
+          isStatic: true,
+        },
+        value: {
+          type: NodeTypes.SIMPLE_EXPRESSION,
+          content: 'foo',
+          isStatic: false,
+        },
+      },
+    ])
+
+    expect(code).toMatchSnapshot()
+  })
 })
