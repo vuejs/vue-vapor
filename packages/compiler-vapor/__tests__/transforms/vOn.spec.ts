@@ -72,6 +72,32 @@ describe('v-on', () => {
     expect(code).matchSnapshot()
   })
 
+  test.fails('dynamic arg', () => {
+    const { code, ir } = compileWithVHtml(`<div v-on:[event]="handler"/>`)
+
+    expect(ir.vaporHelpers).contains('on')
+    expect(ir.vaporHelpers).contains('effect')
+    expect(ir.helpers.size).toBe(0)
+    expect(ir.operation).toEqual([])
+
+    expect(ir.effect[0].operations[0]).toMatchObject({
+      type: IRNodeTypes.SET_EVENT,
+      element: 1,
+      key: {
+        type: NodeTypes.SIMPLE_EXPRESSION,
+        content: 'event',
+        isStatic: false,
+      },
+      value: {
+        type: NodeTypes.SIMPLE_EXPRESSION,
+        content: 'handleClick',
+        isStatic: false,
+      },
+    })
+
+    expect(code).matchSnapshot()
+  })
+
   test('should error if no expression AND no modifier', () => {
     const onError = vi.fn()
     compileWithVHtml(`<div v-on:click />`, { onError })
