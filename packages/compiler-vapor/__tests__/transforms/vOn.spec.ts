@@ -10,6 +10,7 @@ import {
 
 import { transformVOn } from '../../src/transforms/vOn'
 import { transformElement } from '../../src/transforms/transformElement'
+import exp from 'node:constants'
 
 function compileWithVOn(
   template: string,
@@ -185,7 +186,36 @@ describe('v-on', () => {
     })
   })
 
-  test.todo('')
+  test.todo('vue: prefixed events')
+
+  test('should support multiple modifiers w/ prefixIdentifiers: true', () => {
+    const { code, ir } = compileWithVOn(`<div @click.stop.prevent="test"/>`, {
+      prefixIdentifiers: true,
+    })
+
+    expect(ir.vaporHelpers).contains('on')
+    expect(ir.vaporHelpers).contains('withModifiers')
+
+    expect(ir.operation).toMatchObject([
+      {
+        type: IRNodeTypes.SET_EVENT,
+        value: {
+          type: NodeTypes.SIMPLE_EXPRESSION,
+          content: 'test',
+          isStatic: false,
+        },
+        modifiers: {
+          keys: [],
+          nonKeys: ['stop', 'prevent'],
+          options: [],
+        },
+        keyOverride: undefined,
+      },
+    ])
+
+    expect(code).matchSnapshot()
+  })
+
   test.todo('')
   test.todo('')
   test.todo('')
