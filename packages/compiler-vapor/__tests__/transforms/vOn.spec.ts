@@ -167,6 +167,24 @@ describe('v-on', () => {
     expect(code).matchSnapshot()
   })
 
+  test.fails('error for vnode hooks', () => {
+    const onError = vi.fn()
+    compileWithVOn(`<div v-on:vnode-mounted="onMount"/>`, { onError })
+    expect(onError.mock.calls[0][0]).toMatchObject({
+      code: ErrorCodes.X_VNODE_HOOKS,
+      loc: {
+        start: {
+          line: 1,
+          column: 11,
+        },
+        end: {
+          line: 1,
+          column: 24,
+        },
+      },
+    })
+  })
+
   test.todo('')
   test.todo('')
   test.todo('')
