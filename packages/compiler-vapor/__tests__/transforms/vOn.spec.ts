@@ -1,10 +1,4 @@
-import {
-  type RootNode,
-  BindingTypes,
-  ErrorCodes,
-  parse,
-  NodeTypes,
-} from '@vue/compiler-dom'
+import { BindingTypes, ErrorCodes, parse, NodeTypes } from '@vue/compiler-dom'
 import {
   type CompilerOptions,
   compile as _compile,
@@ -17,7 +11,7 @@ import {
 import { transformVOn } from '../../src/transforms/vOn'
 import { transformElement } from '../../src/transforms/transformElement'
 
-function compileWithVHtml(
+function compileWithVOn(
   template: string,
   options: CompilerOptions = {},
 ): {
@@ -39,12 +33,11 @@ function compileWithVHtml(
 
 describe('v-on', () => {
   test('simple expression', () => {
-    const { code, ir } = compileWithVHtml(`<div @click="handleClick"></div>`, {
+    const { code, ir } = compileWithVOn(`<div @click="handleClick"></div>`, {
       bindingMetadata: {
         handleClick: BindingTypes.SETUP_CONST,
       },
     })
-    console.log('ir.operation\n', ir.operation)
 
     expect(ir.vaporHelpers).contains('on')
     expect(ir.helpers.size).toBe(0)
@@ -73,7 +66,7 @@ describe('v-on', () => {
   })
 
   test.fails('dynamic arg', () => {
-    const { code, ir } = compileWithVHtml(`<div v-on:[event]="handler"/>`)
+    const { code, ir } = compileWithVOn(`<div v-on:[event]="handler"/>`)
 
     expect(ir.vaporHelpers).contains('on')
     expect(ir.vaporHelpers).contains('effect')
@@ -98,9 +91,34 @@ describe('v-on', () => {
     expect(code).matchSnapshot()
   })
 
+  test.todo('dynamic arg with prefixing')
+  test.todo('dynamic arg with complex exp prefixing')
+  test.todo('should wrap as function if expression is inline statement')
+  test.todo('should handle multiple inline statement')
+  test.todo('should handle multi-line statement')
+  test.todo('inline statement w/ prefixIdentifiers: true')
+  test.todo('multiple inline statements w/ prefixIdentifiers: true')
+  test.todo(
+    'should NOT wrap as function if expression is already function expression',
+  )
+  test.todo(
+    'should NOT wrap as function if expression is already function expression (with Typescript)',
+  )
+  test.todo(
+    'should NOT wrap as function if expression is already function expression (with newlines)',
+  )
+  test.todo(
+    'should NOT wrap as function if expression is already function expression (with newlines + function keyword)',
+  )
+  test.todo(
+    'should NOT wrap as function if expression is complex member expression',
+  )
+  test.todo('complex member expression w/ prefixIdentifiers: true')
+  test.todo('function expression w/ prefixIdentifiers: true')
+
   test('should error if no expression AND no modifier', () => {
     const onError = vi.fn()
-    compileWithVHtml(`<div v-on:click />`, { onError })
+    compileWithVOn(`<div v-on:click />`, { onError })
     expect(onError.mock.calls[0][0]).toMatchObject({
       code: ErrorCodes.X_V_ON_NO_EXPRESSION,
       loc: {
@@ -116,8 +134,52 @@ describe('v-on', () => {
     })
   })
 
+  test('should NOT error if no expression but has modifier', () => {
+    const onError = vi.fn()
+    compileWithVOn(`<div v-on:click.prevent />`, { onError })
+    expect(onError).not.toHaveBeenCalled()
+  })
+
+  test.fails('case conversion for kebab-case events', () => {
+    const { ir, code } = compileWithVOn(`<div v-on:foo-bar="onMount"/>`)
+
+    expect(ir.vaporHelpers).contains('on')
+    expect(ir.helpers.size).toBe(0)
+    expect(ir.effect).toEqual([])
+
+    expect(ir.operation).toMatchObject([
+      {
+        type: IRNodeTypes.SET_EVENT,
+        element: 1,
+        key: {
+          type: NodeTypes.SIMPLE_EXPRESSION,
+          content: 'onFooBar',
+          isStatic: true,
+        },
+        value: {
+          type: NodeTypes.SIMPLE_EXPRESSION,
+          content: 'onMount',
+          isStatic: false,
+        },
+      },
+    ])
+
+    expect(code).matchSnapshot()
+  })
+
+  test.todo('')
+  test.todo('')
+  test.todo('')
+  test.todo('')
+  test.todo('')
+  test.todo('')
+  test.todo('')
+  test.todo('')
+  test.todo('')
+  test.todo('')
+
   test('event modifier', () => {
-    const { code } = compileWithVHtml(
+    const { code } = compileWithVOn(
       `<a @click.stop="handleEvent"></a>
         <form @submit.prevent="handleEvent"></form>
         <a @click.stop.prevent="handleEvent"></a>
