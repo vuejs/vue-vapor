@@ -57,6 +57,7 @@ export default {
           return _ctx.count * 2
         }
       },
+      [],
       n0
     )
 
@@ -71,6 +72,7 @@ export default {
           return _ctx.count % 2 === 0 ? undefined : _ctx.count * 2
         }
       },
+      [],
       n0
     )
 

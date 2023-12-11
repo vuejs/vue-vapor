@@ -14,6 +14,7 @@ export const publicPropertiesMap: PublicPropertiesMap = extend(
     $props: (i) => i.props,
     $attrs: (i) => i.attrs,
     $emit: (i) => i.emit,
+    $slots: (i) => i.slots,
     // TODO: others
   } as PublicPropertiesMap,
 )

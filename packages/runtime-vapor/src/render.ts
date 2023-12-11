@@ -15,19 +15,24 @@ import { invokeDirectiveHook } from './directive'
 
 import { insert, remove } from './dom'
 import { PublicInstanceProxyHandlers } from './componentPublicInstance'
+import { initSlots } from './componentSlots'
+import { Slot } from 'vue'
 
 export type Block = Node | Fragment | Block[]
 export type ParentBlock = ParentNode | Node[]
+export type ChildBlock = Block | Slot | Record<string, Slot>
 export type Fragment = { nodes: Block; anchor: Node }
 export type BlockFn = (props: any, ctx: any) => Block
 
 export function render(
   comp: Component,
   props: Data,
+  children: ChildBlock,
   container: string | ParentNode,
 ): ComponentInternalInstance {
   const instance = createComponentInstance(comp, props)
   initProps(instance, props)
+  initSlots(instance, children)
   return mountComponent(instance, (container = normalizeContainer(container)))
 }
 
@@ -45,8 +50,8 @@ export function mountComponent(
 
   setCurrentInstance(instance)
   const block = instance.scope.run(() => {
-    const { component, props, emit, attrs } = instance
-    const ctx = { emit, attrs, expose: () => {} }
+    const { component, props, emit, attrs, slots } = instance
+    const ctx = { emit, attrs, slots, expose: () => {} }
 
     const setupFn =
       typeof component === 'function' ? component : component.setup

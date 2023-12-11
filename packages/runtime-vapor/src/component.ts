@@ -13,6 +13,8 @@ import { normalizePropsOptions } from './componentProps'
 import type { EmitFn, EmitsOptions, ObjectEmitsOptions } from './componentEmits'
 import { emit, normalizeEmitsOptions } from './componentEmits'
 
+import type { InternalSlots } from './componentSlots'
+
 import type { DirectiveBinding } from './directive'
 
 export type Component = FunctionalComponent | ObjectComponent
@@ -50,6 +52,7 @@ export interface ComponentInternalInstance {
   // state
   props: Data
   attrs: Data
+  slots: InternalSlots
   setupState: Data
   emit: EmitFn
   emitted: Record<string, boolean> | null
@@ -103,6 +106,7 @@ export const createComponentInstance = (
     // state
     props: EMPTY_OBJ,
     attrs: EMPTY_OBJ,
+    slots: EMPTY_OBJ,
     setupState: EMPTY_OBJ,
     emit: null!, // to be set immediately
     emitted: null,

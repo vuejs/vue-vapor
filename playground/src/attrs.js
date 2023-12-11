@@ -46,6 +46,7 @@ export default {
           return _ctx.count
         }
       },
+      [],
       n0
     )
 
