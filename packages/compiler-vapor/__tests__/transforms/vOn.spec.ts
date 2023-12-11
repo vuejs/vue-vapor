@@ -192,10 +192,13 @@ describe('v-on', () => {
 
   test.todo('vue: prefixed events')
 
-  test('should support multiple modifiers w/ prefixIdentifiers: true', () => {
-    const { code, ir } = compileWithVOn(`<div @click.stop.prevent="test"/>`, {
-      prefixIdentifiers: true,
-    })
+  test('should support multiple modifiers and event options w/ prefixIdentifiers: true', () => {
+    const { code, ir } = compileWithVOn(
+      `<div @click.stop.prevent.capture.once="test"/>`,
+      {
+        prefixIdentifiers: true,
+      },
+    )
 
     expect(ir.vaporHelpers).contains('on')
     expect(ir.vaporHelpers).contains('withModifiers')
@@ -211,7 +214,7 @@ describe('v-on', () => {
         modifiers: {
           keys: [],
           nonKeys: ['stop', 'prevent'],
-          options: [],
+          options: ['capture', 'once'],
         },
         keyOverride: undefined,
       },
@@ -220,6 +223,7 @@ describe('v-on', () => {
     expect(code).matchSnapshot()
     expect(code).contains('_withModifiers')
     expect(code).contains('["stop", "prevent"]')
+    expect(code).contains('{ capture: true, once: true }')
   })
 
   test('should support multiple events and modifiers options w/ prefixIdentifiers: true', () => {
@@ -233,6 +237,11 @@ describe('v-on', () => {
     expect(ir.operation).toMatchObject([
       {
         type: IRNodeTypes.SET_EVENT,
+        key: {
+          type: NodeTypes.SIMPLE_EXPRESSION,
+          content: 'click',
+          isStatic: true,
+        },
         value: {
           type: NodeTypes.SIMPLE_EXPRESSION,
           content: 'test',
@@ -246,6 +255,11 @@ describe('v-on', () => {
       },
       {
         type: IRNodeTypes.SET_EVENT,
+        key: {
+          type: NodeTypes.SIMPLE_EXPRESSION,
+          content: 'keyup',
+          isStatic: true,
+        },
         value: {
           type: NodeTypes.SIMPLE_EXPRESSION,
           content: 'test',
@@ -266,6 +280,39 @@ describe('v-on', () => {
     expect(code).contains(
       '_on(n1, "keyup", _withKeys((...args) => (_ctx.test && _ctx.test(...args)), ["enter"]))',
     )
+  })
+
+  test('should wrap keys guard for keyboard events or dynamic events', () => {
+    const { code, ir } = compileWithVOn(
+      `<div @keydown.stop.capture.ctrl.a="test"/>`,
+      {
+        prefixIdentifiers: true,
+      },
+    )
+
+    expect(ir.operation).toMatchObject([
+      {
+        type: IRNodeTypes.SET_EVENT,
+        element: 1,
+        key: {
+          type: NodeTypes.SIMPLE_EXPRESSION,
+          content: 'keydown',
+          isStatic: true,
+        },
+        value: {
+          type: NodeTypes.SIMPLE_EXPRESSION,
+          content: 'test',
+          isStatic: false,
+        },
+        modifiers: {
+          keys: ['a'],
+          nonKeys: ['stop', 'ctrl'],
+          options: ['capture'],
+        },
+      },
+    ])
+
+    expect(code).matchSnapshot()
   })
 
   test.todo('')

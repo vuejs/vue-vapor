@@ -46,14 +46,14 @@ export function render(_ctx) {
 }"
 `;
 
-exports[`v-on > should support multiple modifiers w/ prefixIdentifiers: true 1`] = `
+exports[`v-on > should support multiple modifiers and event options w/ prefixIdentifiers: true 1`] = `
 "import { template as _template, children as _children, on as _on, withModifiers as _withModifiers } from 'vue/vapor';
 
 export function render(_ctx) {
   const t0 = _template("<div></div>")
   const n0 = t0()
   const { 0: [n1],} = _children(n0)
-  _on(n1, "click", _withModifiers((...args) => (_ctx.test && _ctx.test(...args)), ["stop", "prevent"]))
+  _on(n1, "click", _withModifiers((...args) => (_ctx.test && _ctx.test(...args)), ["stop", "prevent"]), { capture: true, once: true })
   return n0
 }"
 `;
@@ -66,6 +66,18 @@ export function render(_ctx) {
   const n0 = t0()
   const { 0: [n1],} = _children(n0)
   _on(n1, "click", (...args) => (_ctx.i++ && _ctx.i++(...args)))
+  return n0
+}"
+`;
+
+exports[`v-on > should wrap keys guard for keyboard events or dynamic events 1`] = `
+"import { template as _template, children as _children, on as _on, withKeys as _withKeys, withModifiers as _withModifiers } from 'vue/vapor';
+
+export function render(_ctx) {
+  const t0 = _template("<div></div>")
+  const n0 = t0()
+  const { 0: [n1],} = _children(n0)
+  _on(n1, "keydown", _withKeys(_withModifiers((...args) => (_ctx.test && _ctx.test(...args)), ["stop", "ctrl"]), ["a"]), { capture: true })
   return n0
 }"
 `;
