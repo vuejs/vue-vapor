@@ -10,7 +10,6 @@ import {
 
 import { transformVOn } from '../../src/transforms/vOn'
 import { transformElement } from '../../src/transforms/transformElement'
-import exp from 'node:constants'
 
 function compileWithVOn(
   template: string,
@@ -63,6 +62,39 @@ describe('v-on', () => {
       },
     ])
 
+    expect(code).matchSnapshot()
+  })
+
+  test('event modifier', () => {
+    const { code } = compileWithVOn(
+      `<a @click.stop="handleEvent"></a>
+        <form @submit.prevent="handleEvent"></form>
+        <a @click.stop.prevent="handleEvent"></a>
+        <div @click.self="handleEvent"></div>
+        <div @click.capture="handleEvent"></div>
+        <a @click.once="handleEvent"></a>
+        <div @scroll.passive="handleEvent"></div>
+        <input @click.right="handleEvent" />
+        <input @click.left="handleEvent" />
+        <input @click.middle="handleEvent" />
+        <input @click.enter.right="handleEvent" />
+        <input @keyup.enter="handleEvent" />
+        <input @keyup.tab="handleEvent" />
+        <input @keyup.delete="handleEvent" />
+        <input @keyup.esc="handleEvent" />
+        <input @keyup.space="handleEvent" />
+        <input @keyup.up="handleEvent" />
+        <input @keyup.down="handleEvent" />
+        <input @keyup.left="handleEvent" />
+        <input @keyup.middle="submit" />
+        <input @keyup.middle.self="submit" />
+        <input @keyup.self.enter="handleEvent" />`,
+      {
+        bindingMetadata: {
+          handleEvent: BindingTypes.SETUP_CONST,
+        },
+      },
+    )
     expect(code).matchSnapshot()
   })
 
@@ -424,47 +456,5 @@ describe('v-on', () => {
     expect(code2).contains(
       '(_ctx.event) === "click" ? "mouseup" : (_ctx.event)',
     )
-  })
-
-  test.todo('')
-  test.todo('')
-  test.todo('')
-  test.todo('')
-  test.todo('')
-  test.todo('')
-  test.todo('')
-  test.todo('')
-
-  test('event modifier', () => {
-    const { code } = compileWithVOn(
-      `<a @click.stop="handleEvent"></a>
-        <form @submit.prevent="handleEvent"></form>
-        <a @click.stop.prevent="handleEvent"></a>
-        <div @click.self="handleEvent"></div>
-        <div @click.capture="handleEvent"></div>
-        <a @click.once="handleEvent"></a>
-        <div @scroll.passive="handleEvent"></div>
-        <input @click.right="handleEvent" />
-        <input @click.left="handleEvent" />
-        <input @click.middle="handleEvent" />
-        <input @click.enter.right="handleEvent" />
-        <input @keyup.enter="handleEvent" />
-        <input @keyup.tab="handleEvent" />
-        <input @keyup.delete="handleEvent" />
-        <input @keyup.esc="handleEvent" />
-        <input @keyup.space="handleEvent" />
-        <input @keyup.up="handleEvent" />
-        <input @keyup.down="handleEvent" />
-        <input @keyup.left="handleEvent" />
-        <input @keyup.middle="submit" />
-        <input @keyup.middle.self="submit" />
-        <input @keyup.self.enter="handleEvent" />`,
-      {
-        bindingMetadata: {
-          handleEvent: BindingTypes.SETUP_CONST,
-        },
-      },
-    )
-    expect(code).matchSnapshot()
   })
 })
