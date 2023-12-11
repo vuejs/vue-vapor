@@ -90,6 +90,9 @@ describe('v-on', () => {
     })
 
     expect(code).matchSnapshot()
+    expect(code).contains(
+      '_on(n1, "click", (...args) => (_ctx.handleClick && _ctx.handleClick(...args)))',
+    )
   })
 
   test.todo('dynamic arg with prefixing')
@@ -166,6 +169,7 @@ describe('v-on', () => {
     ])
 
     expect(code).matchSnapshot()
+    expect(code).contains('onFooBar')
   })
 
   test.fails('error for vnode hooks', () => {
@@ -214,6 +218,54 @@ describe('v-on', () => {
     ])
 
     expect(code).matchSnapshot()
+    expect(code).contains('_withModifiers')
+    expect(code).contains('["stop", "prevent"]')
+  })
+
+  test('should support multiple events and modifiers options w/ prefixIdentifiers: true', () => {
+    const { code, ir } = compileWithVOn(
+      `<div @click.stop="test" @keyup.enter="test" />`,
+      {
+        prefixIdentifiers: true,
+      },
+    )
+
+    expect(ir.operation).toMatchObject([
+      {
+        type: IRNodeTypes.SET_EVENT,
+        value: {
+          type: NodeTypes.SIMPLE_EXPRESSION,
+          content: 'test',
+          isStatic: false,
+        },
+        modifiers: {
+          keys: [],
+          nonKeys: ['stop'],
+          options: [],
+        },
+      },
+      {
+        type: IRNodeTypes.SET_EVENT,
+        value: {
+          type: NodeTypes.SIMPLE_EXPRESSION,
+          content: 'test',
+          isStatic: false,
+        },
+        modifiers: {
+          keys: ['enter'],
+          nonKeys: [],
+          options: [],
+        },
+      },
+    ])
+
+    expect(code).matchSnapshot()
+    expect(code).contains(
+      '_on(n1, "click", _withModifiers((...args) => (_ctx.test && _ctx.test(...args)), ["stop"]))',
+    )
+    expect(code).contains(
+      '_on(n1, "keyup", _withKeys((...args) => (_ctx.test && _ctx.test(...args)), ["enter"]))',
+    )
   })
 
   test.todo('')
