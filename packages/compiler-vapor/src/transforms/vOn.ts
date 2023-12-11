@@ -1,6 +1,6 @@
 import { createCompilerError, ErrorCodes } from '@vue/compiler-core'
 import type { DirectiveTransform } from '../transform'
-import { IRNodeTypes, KeyOverride } from '../ir'
+import { IRNodeTypes, KeyOverride, SetEventIRNode } from '../ir'
 import { resolveModifiers } from '@vue/compiler-dom'
 
 export const transformVOn: DirectiveTransform = (dir, node, context) => {
@@ -48,7 +48,7 @@ export const transformVOn: DirectiveTransform = (dir, node, context) => {
     }
   }
 
-  context.registerOperation({
+  const operation: SetEventIRNode = {
     type: IRNodeTypes.SET_EVENT,
     loc,
     element: context.reference(),
@@ -60,5 +60,11 @@ export const transformVOn: DirectiveTransform = (dir, node, context) => {
       options: eventOptionModifiers,
     },
     keyOverride,
-  })
+  }
+
+  if (arg.isStatic) {
+    context.registerOperation(operation)
+  } else {
+    context.registerEffect([arg], [operation])
+  }
 }

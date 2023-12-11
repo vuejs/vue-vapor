@@ -98,7 +98,7 @@ describe('v-on', () => {
     expect(code).matchSnapshot()
   })
 
-  test.fails('dynamic arg', () => {
+  test('dynamic arg', () => {
     const { code, ir } = compileWithVOn(`<div v-on:[event]="handler"/>`)
 
     expect(ir.vaporHelpers).contains('on')
@@ -116,7 +116,7 @@ describe('v-on', () => {
       },
       value: {
         type: NodeTypes.SIMPLE_EXPRESSION,
-        content: 'handleClick',
+        content: 'handler',
         isStatic: false,
       },
     })
@@ -397,7 +397,7 @@ describe('v-on', () => {
     const { code: code2, ir: ir2 } = compileWithVOn(
       `<div @[event].right="test"/>`,
     )
-    expect(ir2.operation).toMatchObject([
+    expect(ir2.effect[0].operations).toMatchObject([
       {
         type: IRNodeTypes.SET_EVENT,
         key: {
@@ -439,7 +439,7 @@ describe('v-on', () => {
       `<div @[event].middle="test"/>`,
     )
 
-    expect(ir2.operation).toMatchObject([
+    expect(ir2.effect[0].operations).toMatchObject([
       {
         type: IRNodeTypes.SET_EVENT,
         key: {
