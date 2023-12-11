@@ -315,6 +315,29 @@ describe('v-on', () => {
     expect(code).matchSnapshot()
   })
 
+  test('should not wrap keys guard if no key modifier is present', () => {
+    const { code, ir } = compileWithVOn(`<div @keyup.exact="test"/>`, {
+      prefixIdentifiers: true,
+    })
+    expect(ir.operation).toMatchObject([
+      {
+        type: IRNodeTypes.SET_EVENT,
+        value: {
+          type: NodeTypes.SIMPLE_EXPRESSION,
+          content: 'test',
+          isStatic: false,
+        },
+        modifiers: {
+          keys: [],
+          nonKeys: ['exact'],
+          options: [],
+        },
+      },
+    ])
+
+    expect(code).matchSnapshot()
+  })
+
   test.todo('')
   test.todo('')
   test.todo('')
