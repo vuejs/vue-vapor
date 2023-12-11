@@ -173,7 +173,7 @@ describe('v-on', () => {
     expect(onError).not.toHaveBeenCalled()
   })
 
-  test.fails('case conversion for kebab-case events', () => {
+  test('case conversion for kebab-case events', () => {
     const { ir, code } = compileWithVOn(`<div v-on:foo-bar="onMount"/>`)
 
     expect(ir.vaporHelpers).contains('on')
@@ -186,7 +186,7 @@ describe('v-on', () => {
         element: 1,
         key: {
           type: NodeTypes.SIMPLE_EXPRESSION,
-          content: 'onFooBar',
+          content: 'fooBar',
           isStatic: true,
         },
         value: {
@@ -198,7 +198,7 @@ describe('v-on', () => {
     ])
 
     expect(code).matchSnapshot()
-    expect(code).contains('onFooBar')
+    expect(code).contains('fooBar')
   })
 
   test.fails('error for vnode hooks', () => {

@@ -1,7 +1,12 @@
-import { createCompilerError, ErrorCodes } from '@vue/compiler-core'
+import {
+  createCompilerError,
+  ElementTypes,
+  ErrorCodes,
+} from '@vue/compiler-core'
 import type { DirectiveTransform } from '../transform'
 import { IRNodeTypes, KeyOverride, SetEventIRNode } from '../ir'
 import { resolveModifiers } from '@vue/compiler-dom'
+import { camelize } from '@vue/shared'
 
 export const transformVOn: DirectiveTransform = (dir, node, context) => {
   let { arg, exp, loc, modifiers } = dir
@@ -14,6 +19,16 @@ export const transformVOn: DirectiveTransform = (dir, node, context) => {
   if (!arg) {
     // TODO support v-on="{}"
     return
+  }
+
+  let rawName = arg.content
+  if (
+    arg.isStatic &&
+    (node.tagType !== ElementTypes.ELEMENT ||
+      rawName.startsWith('vnode') ||
+      !/[A-Z]/.test(rawName))
+  ) {
+    arg.content = camelize(arg.content)
   }
 
   const { keyModifiers, nonKeyModifiers, eventOptionModifiers } =
