@@ -343,9 +343,8 @@ describe('v-on', () => {
 
   test.todo('should wrap both for dynamic key event w/ left/right modifiers')
 
-  test.fails('should transform click.right', () => {
+  test('should transform click.right', () => {
     const { code, ir } = compileWithVOn(`<div @click.right="test"/>`)
-    expect(ir.vaporHelpers).not.contains('effect')
     expect(ir.operation).toMatchObject([
       {
         type: IRNodeTypes.SET_EVENT,
@@ -360,13 +359,12 @@ describe('v-on', () => {
     ])
 
     expect(code).matchSnapshot()
+    expect(code).contains('"contextmenu"')
 
     // dynamic
     const { code: code2, ir: ir2 } = compileWithVOn(
       `<div @[event].right="test"/>`,
     )
-
-    expect(ir2.vaporHelpers).contains('effect')
     expect(ir2.operation).toMatchObject([
       {
         type: IRNodeTypes.SET_EVENT,
@@ -383,6 +381,48 @@ describe('v-on', () => {
     expect(code2).matchSnapshot()
     expect(code2).contains(
       '(_ctx.event) === "click" ? "contextmenu" : (_ctx.event)',
+    )
+  })
+
+  test('should transform click.middle', () => {
+    const { code, ir } = compileWithVOn(`<div @click.middle="test"/>`)
+    expect(ir.operation).toMatchObject([
+      {
+        type: IRNodeTypes.SET_EVENT,
+        key: {
+          type: NodeTypes.SIMPLE_EXPRESSION,
+          content: 'mouseup',
+          isStatic: true,
+        },
+        modifiers: { nonKeys: ['middle'] },
+        keyOverride: undefined,
+      },
+    ])
+
+    expect(code).matchSnapshot()
+    expect(code).contains('"mouseup"')
+
+    // dynamic
+    const { code: code2, ir: ir2 } = compileWithVOn(
+      `<div @[event].middle="test"/>`,
+    )
+
+    expect(ir2.operation).toMatchObject([
+      {
+        type: IRNodeTypes.SET_EVENT,
+        key: {
+          type: NodeTypes.SIMPLE_EXPRESSION,
+          content: 'event',
+          isStatic: false,
+        },
+        modifiers: { nonKeys: ['middle'] },
+        keyOverride: ['click', 'mouseup'],
+      },
+    ])
+
+    expect(code2).matchSnapshot()
+    expect(code2).contains(
+      '(_ctx.event) === "click" ? "mouseup" : (_ctx.event)',
     )
   })
 
