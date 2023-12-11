@@ -108,8 +108,11 @@ export function withDirectives<T extends Node>(
 
     callDirectiveHook(node, binding, 'created')
     effect(() => {
-      if (!currentInstance!.isMountedRef.value) return
-      callDirectiveHook(node, binding, 'updated')
+      if (currentInstance && !currentInstance.isMountedRef.value) {
+        return
+      } else if (binding.instance && binding.instance.isMountedRef.value) {
+        callDirectiveHook(node, binding, 'updated')
+      }
     })
   }
 
