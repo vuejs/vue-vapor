@@ -322,16 +322,22 @@ describe('v-on', () => {
     expect(ir.operation).toMatchObject([
       {
         type: IRNodeTypes.SET_EVENT,
-        value: {
-          type: NodeTypes.SIMPLE_EXPRESSION,
-          content: 'test',
-          isStatic: false,
-        },
-        modifiers: {
-          keys: [],
-          nonKeys: ['exact'],
-          options: [],
-        },
+        modifiers: { nonKeys: ['exact'] },
+      },
+    ])
+
+    expect(code).matchSnapshot()
+  })
+
+  test('should wrap keys guard for static key event w/ left/right modifiers', () => {
+    const { code, ir } = compileWithVOn(`<div @keyup.left="test"/>`, {
+      prefixIdentifiers: true,
+    })
+
+    expect(ir.operation).toMatchObject([
+      {
+        type: IRNodeTypes.SET_EVENT,
+        modifiers: { keys: ['left'] },
       },
     ])
 
