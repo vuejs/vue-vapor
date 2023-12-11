@@ -21,14 +21,21 @@ export const transformVOn: DirectiveTransform = (dir, node, context) => {
     return
   }
 
-  let rawName = arg.content
-  if (
-    arg.isStatic &&
-    (node.tagType !== ElementTypes.ELEMENT ||
+  if (arg.isStatic) {
+    let rawName = arg.content
+    if (__DEV__ && rawName.startsWith('vnode')) {
+      context.options.onError(
+        createCompilerError(ErrorCodes.X_VNODE_HOOKS, arg.loc),
+      )
+    }
+
+    if (
+      node.tagType !== ElementTypes.ELEMENT ||
       rawName.startsWith('vnode') ||
-      !/[A-Z]/.test(rawName))
-  ) {
-    arg.content = camelize(arg.content)
+      !/[A-Z]/.test(rawName)
+    ) {
+      arg.content = camelize(arg.content)
+    }
   }
 
   const { keyModifiers, nonKeyModifiers, eventOptionModifiers } =

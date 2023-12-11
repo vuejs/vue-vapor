@@ -201,7 +201,7 @@ describe('v-on', () => {
     expect(code).contains('fooBar')
   })
 
-  test.fails('error for vnode hooks', () => {
+  test('error for vnode hooks', () => {
     const onError = vi.fn()
     compileWithVOn(`<div v-on:vnode-mounted="onMount"/>`, { onError })
     expect(onError.mock.calls[0][0]).toMatchObject({
