@@ -537,7 +537,7 @@ function genSetEvent(oper: SetEventIRNode, context: CodegenContext) {
       if (isInlineStatement) {
         push('$event => ')
         push(hasMultipleStatements ? '{' : '(')
-        genExpression(exp, context)
+        genExpression(exp, context, new Set(['$event']))
         push(hasMultipleStatements ? '}' : ')')
         push('')
       } else if (isMemberExp) {
@@ -617,7 +617,11 @@ function genArrayExpression(elements: string[]) {
 
 const isLiteralWhitelisted = /*#__PURE__*/ makeMap('true,false,null,this')
 
-function genExpression(node: IRExpression, context: CodegenContext): void {
+function genExpression(
+  node: IRExpression,
+  context: CodegenContext,
+  excludedIds = new Set<string>(),
+): void {
   const { push } = context
   if (isString(node)) return push(node)
 
@@ -642,9 +646,6 @@ function genExpression(node: IRExpression, context: CodegenContext): void {
     return genIdentifier(rawExpr, context, loc)
   }
 
-  const excludedIds = new Set<string>()
-  const isFunction = isFunctionType(ast!)
-
   const getSourceById = (id: Identifier) => {
     // range is offset by -1 due to the wrapping parens when parsed
     const start = id.start! - 1
@@ -656,7 +657,7 @@ function genExpression(node: IRExpression, context: CodegenContext): void {
     }
   }
 
-  if (isFunction) {
+  if (isFunctionType(ast!)) {
     walkFunctionParams(ast!, (id) => {
       const { source } = getSourceById(id)
       excludedIds.add(source)
@@ -667,10 +668,10 @@ function genExpression(node: IRExpression, context: CodegenContext): void {
   walkIdentifiers(
     ast!,
     (id) => {
-      const { source } = getSourceById(id)
-
-      if (excludedIds.has(source)) return
-      if (!isFunction && id.name === '$event') return
+      if (excludedIds.size) {
+        const { source } = getSourceById(id)
+        if (excludedIds.has(source)) return
+      }
 
       ids.push(id)
     },
