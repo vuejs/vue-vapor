@@ -12,6 +12,18 @@ export function render(_ctx) {
 }"
 `;
 
+exports[`v-on > complex member expression w/ prefixIdentifiers: true 1`] = `
+"import { template as _template, children as _children, on as _on } from 'vue/vapor';
+
+export function render(_ctx) {
+  const t0 = _template("<div></div>")
+  const n0 = t0()
+  const { 0: [n1],} = _children(n0)
+  _on(n1, "click", (...args) => (_ctx.a['b' + _ctx.c] && _ctx.a['b' + _ctx.c](...args)))
+  return n0
+}"
+`;
+
 exports[`v-on > dynamic arg 1`] = `
 "import { template as _template, children as _children, effect as _effect, on as _on } from 'vue/vapor';
 
@@ -35,6 +47,20 @@ export function render(_ctx) {
   const { 0: [n1],} = _children(n0)
   _effect(() => {
     _on(n1, _ctx.event(_ctx.foo), (...args) => (_ctx.handler && _ctx.handler(...args)))
+  })
+  return n0
+}"
+`;
+
+exports[`v-on > dynamic arg with prefixing 1`] = `
+"import { template as _template, children as _children, effect as _effect, on as _on } from 'vue/vapor';
+
+export function render(_ctx) {
+  const t0 = _template("<div></div>")
+  const n0 = t0()
+  const { 0: [n1],} = _children(n0)
+  _effect(() => {
+    _on(n1, _ctx.event, (...args) => (_ctx.handler && _ctx.handler(...args)))
   })
   return n0
 }"
@@ -69,6 +95,18 @@ export function render(_ctx) {
   _on(n20, "keyup", _withModifiers((...args) => (_ctx.submit && _ctx.submit(...args)), ["middle"]))
   _on(n21, "keyup", _withModifiers((...args) => (_ctx.submit && _ctx.submit(...args)), ["middle", "self"]))
   _on(n22, "keyup", _withKeys(_withModifiers((...args) => (_ctx.handleEvent && _ctx.handleEvent(...args)), ["self"]), ["enter"]))
+  return n0
+}"
+`;
+
+exports[`v-on > function expression w/ prefixIdentifiers: true 1`] = `
+"import { template as _template, children as _children, on as _on } from 'vue/vapor';
+
+export function render(_ctx) {
+  const t0 = _template("<div></div>")
+  const n0 = t0()
+  const { 0: [n1],} = _children(n0)
+  _on(n1, "click", _ctx.e => _ctx.foo(_ctx.e))
   return n0
 }"
 `;

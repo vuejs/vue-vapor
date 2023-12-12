@@ -124,7 +124,13 @@ describe('v-on', () => {
     expect(code).matchSnapshot()
   })
 
-  test.todo('dynamic arg with prefixing')
+  test('dynamic arg with prefixing', () => {
+    const { code } = compileWithVOn(`<div v-on:[event]="handler"/>`, {
+      prefixIdentifiers: true,
+    })
+
+    expect(code).matchSnapshot()
+  })
 
   test('dynamic arg with complex exp prefixing', () => {
     const { ir, code } = compileWithVOn(`<div v-on:[event(foo)]="handler"/>`, {
@@ -318,13 +324,38 @@ describe('v-on', () => {
     ])
 
     expect(code).matchSnapshot()
+  })
+
+  test('complex member expression w/ prefixIdentifiers: true', () => {
+    const { ir, code } = compileWithVOn(`<div @click="a['b' + c]"/>`)
+    expect(ir.operation).toMatchObject([
+      {
+        type: IRNodeTypes.SET_EVENT,
+        value: { content: `a['b' + c]` },
+      },
+    ])
+
+    expect(code).matchSnapshot()
     expect(code).contains(
       `_on(n1, "click", (...args) => (_ctx.a['b' + _ctx.c] && _ctx.a['b' + _ctx.c](...args)))`,
     )
   })
 
-  test.todo('complex member expression w/ prefixIdentifiers: true')
-  test.todo('function expression w/ prefixIdentifiers: true')
+  test.fails('function expression w/ prefixIdentifiers: true', () => {
+    const { code, ir } = compileWithVOn(`<div @click="e => foo(e)"/>`, {
+      prefixIdentifiers: true,
+    })
+
+    expect(ir.operation).toMatchObject([
+      {
+        type: IRNodeTypes.SET_EVENT,
+        value: { content: `e => foo(e)` },
+      },
+    ])
+
+    expect(code).matchSnapshot()
+    expect(code).contains('_on(n1, "click", e => _ctx.foo(e))')
+  })
 
   test('should error if no expression AND no modifier', () => {
     const onError = vi.fn()
