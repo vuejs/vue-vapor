@@ -534,9 +534,9 @@ function genSetEvent(oper: SetEventIRNode, context: CodegenContext) {
 
       if (isInlineStatement) {
         push('$event => ')
-        hasMultipleStatements ? push('{') : push('(')
+        push(hasMultipleStatements ? '{' : '(')
         genExpression(exp, context)
-        hasMultipleStatements ? push('}') : push(')')
+        push(hasMultipleStatements ? '}' : ')')
         push('')
       }
 
