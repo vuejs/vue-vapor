@@ -76,9 +76,9 @@ export function withDirectives<T extends Node>(
     let [dir, source, arg, modifiers] = directive
     if (!dir) continue
     if (isFunction(dir)) {
-      // TODO function directive
       dir = {
         created: dir,
+        updated: dir,
       } satisfies ObjectDirective
     }
 
