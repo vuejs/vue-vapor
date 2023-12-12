@@ -26,6 +26,20 @@ export function render(_ctx) {
 }"
 `;
 
+exports[`v-on > dynamic arg with complex exp prefixing 1`] = `
+"import { template as _template, children as _children, effect as _effect, on as _on } from 'vue/vapor';
+
+export function render(_ctx) {
+  const t0 = _template("<div></div>")
+  const n0 = t0()
+  const { 0: [n1],} = _children(n0)
+  _effect(() => {
+    _on(n1, _ctx.event(_ctx.foo), (...args) => (_ctx.handler && _ctx.handler(...args)))
+  })
+  return n0
+}"
+`;
+
 exports[`v-on > event modifier 1`] = `
 "import { template as _template, children as _children, on as _on, withModifiers as _withModifiers, withKeys as _withKeys } from 'vue/vapor';
 
