@@ -681,6 +681,12 @@ function genIdentifier(
   loc?: SourceLocation,
 ): void {
   let name: string | undefined = id
+
+  if (id === '$event') {
+    push(id, NewlineType.None, loc, name)
+    return
+  }
+
   if (inline) {
     switch (bindingMetadata[id]) {
       case BindingTypes.SETUP_REF:

@@ -212,7 +212,23 @@ describe('v-on', () => {
       '_on(n1, "click", $event => {\n_ctx.foo();\n_ctx.bar()\n})',
     )
   })
-  test.todo('inline statement w/ prefixIdentifiers: true')
+
+  test('inline statement w/ prefixIdentifiers: true', () => {
+    const { code, ir } = compileWithVOn(`<div @click="foo($event)"/>`, {
+      prefixIdentifiers: true,
+    })
+
+    expect(ir.operation).toMatchObject([
+      {
+        type: IRNodeTypes.SET_EVENT,
+        value: { content: 'foo($event)' },
+      },
+    ])
+
+    expect(code).matchSnapshot()
+    expect(code).contains('_on(n1, "click", $event => (_ctx.foo($event)))')
+  })
+
   test.todo('multiple inline statements w/ prefixIdentifiers: true')
   test.todo(
     'should NOT wrap as function if expression is already function expression',
