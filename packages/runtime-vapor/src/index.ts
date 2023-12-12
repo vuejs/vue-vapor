@@ -37,6 +37,8 @@ export {
 } from '@vue/reactivity'
 export { withModifiers, withKeys } from '@vue/runtime-dom'
 
+export {getCurrentInstance} from './component'
+export type { ComponentInternalInstance } from './component'
 export * from './on'
 export * from './render'
 export * from './template'
