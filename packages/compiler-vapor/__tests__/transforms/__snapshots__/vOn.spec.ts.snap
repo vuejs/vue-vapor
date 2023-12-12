@@ -155,7 +155,7 @@ export function render(_ctx) {
   const t0 = _template("<div></div>")
   const n0 = t0()
   const { 0: [n1],} = _children(n0)
-  _on(n1, "click", (...args) => (_ctx.i++ && _ctx.i++(...args)))
+  _on(n1, "click", ($event) => (_ctx.i++))
   return n0
 }"
 `;

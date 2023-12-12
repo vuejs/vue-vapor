@@ -126,7 +126,30 @@ describe('v-on', () => {
 
   test.todo('dynamic arg with prefixing')
   test.todo('dynamic arg with complex exp prefixing')
-  test.todo('should wrap as function if expression is inline statement')
+
+  test('should wrap as function if expression is inline statement', () => {
+    const { code, ir } = compileWithVOn(`<div @click="i++"/>`)
+
+    expect(ir.vaporHelpers).contains('on')
+    expect(ir.helpers.size).toBe(0)
+    expect(ir.effect).toEqual([])
+
+    expect(ir.operation).toMatchObject([
+      {
+        type: IRNodeTypes.SET_EVENT,
+        element: 1,
+        value: {
+          type: NodeTypes.SIMPLE_EXPRESSION,
+          content: 'i++',
+          isStatic: false,
+        },
+      },
+    ])
+
+    expect(code).matchSnapshot()
+    expect(code).contains('_on(n1, "click", ($event) => (_ctx.i++))')
+  })
+
   test.todo('should handle multiple inline statement')
   test.todo('should handle multi-line statement')
   test.todo('inline statement w/ prefixIdentifiers: true')

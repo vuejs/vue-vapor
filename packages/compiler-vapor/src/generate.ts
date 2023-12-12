@@ -11,6 +11,7 @@ import {
   walkIdentifiers,
   advancePositionWithClone,
   isSimpleIdentifier,
+  isMemberExpression,
 } from '@vue/compiler-dom'
 import {
   type IRDynamicChildren,
@@ -32,6 +33,10 @@ import {
 import { SourceMapGenerator } from 'source-map-js'
 import { camelize, isGloballyAllowed, isString, makeMap } from '@vue/shared'
 import type { Identifier } from '@babel/types'
+
+// TODO: share this with compiler-core
+const fnExpRE =
+  /^\s*([\w$_]+|(async\s*)?\([^)]*?\))\s*(:[^=]+)?=>|^\s*(async\s+)?function(?:\s+[\w$]+)?\s*\(/
 
 // remove when stable
 // @ts-expect-error
@@ -508,15 +513,7 @@ function genSetEvent(oper: SetEventIRNode, context: CodegenContext) {
 
       ;(keys.length ? pushWithKeys : pushNoop)(() =>
         (nonKeys.length ? pushWithModifiers : pushNoop)(() => {
-          if (oper.value && oper.value.content.trim()) {
-            push('(...args) => (')
-            genExpression(oper.value, context)
-            push(' && ')
-            genExpression(oper.value, context)
-            push('(...args))')
-          } else {
-            push('() => {}')
-          }
+          genEventHandler()
         }),
       )
     },
@@ -524,6 +521,34 @@ function genSetEvent(oper: SetEventIRNode, context: CodegenContext) {
     !!options.length &&
       (() => push(`{ ${options.map((v) => `${v}: true`).join(', ')} }`)),
   )
+
+  function genEventHandler() {
+    const exp = oper.value
+    if (exp && exp.content.trim()) {
+      const isMemberExp = isMemberExpression(exp.content, {
+        // TODO: expression plugins
+        expressionPlugins: [],
+      })
+      const isInlineStatement = !(isMemberExp || fnExpRE.test(exp.content))
+      const hasMultipleStatements = exp.content.includes(`;`)
+
+      if (isInlineStatement) {
+        push('($event) => (')
+        genExpression(exp, context)
+        push(')')
+      }
+
+      if (!(isInlineStatement || hasMultipleStatements)) {
+        push('(...args) => (')
+        genExpression(exp, context)
+        push(' && ')
+        genExpression(exp, context)
+        push('(...args))')
+      }
+    } else {
+      push('() => {}')
+    }
+  }
 }
 
 function genWithDirective(oper: WithDirectiveIRNode, context: CodegenContext) {
