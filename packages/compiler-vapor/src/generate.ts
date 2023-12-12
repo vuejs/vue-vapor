@@ -533,9 +533,11 @@ function genSetEvent(oper: SetEventIRNode, context: CodegenContext) {
       const hasMultipleStatements = exp.content.includes(`;`)
 
       if (isInlineStatement) {
-        push('($event) => (')
+        push('$event => ')
+        hasMultipleStatements ? push('{') : push('(')
         genExpression(exp, context)
-        push(')')
+        hasMultipleStatements ? push('}') : push(')')
+        push('')
       }
 
       if (!(isInlineStatement || hasMultipleStatements)) {

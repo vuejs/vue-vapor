@@ -174,10 +174,23 @@ describe('v-on', () => {
     ])
 
     expect(code).matchSnapshot()
-    expect(code).contains('_on(n1, "click", ($event) => (_ctx.i++))')
+    expect(code).contains('_on(n1, "click", $event => (_ctx.i++))')
   })
 
-  test.todo('should handle multiple inline statement')
+  test('should handle multiple inline statement', () => {
+    const { ir, code } = compileWithVOn(`<div @click="foo();bar()"/>`)
+
+    expect(ir.operation).toMatchObject([
+      {
+        type: IRNodeTypes.SET_EVENT,
+        value: { content: 'foo();bar()' },
+      },
+    ])
+
+    expect(code).matchSnapshot()
+    expect(code).contains('_on(n1, "click", $event => {_ctx.foo();_ctx.bar()})')
+  })
+
   test.todo('should handle multi-line statement')
   test.todo('inline statement w/ prefixIdentifiers: true')
   test.todo('multiple inline statements w/ prefixIdentifiers: true')
