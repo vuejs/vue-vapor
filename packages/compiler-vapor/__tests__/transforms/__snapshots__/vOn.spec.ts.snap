@@ -97,6 +97,18 @@ export function render(_ctx) {
 }"
 `;
 
+exports[`v-on > should NOT wrap as function if expression is already function expression 1`] = `
+"import { template as _template, children as _children, on as _on } from 'vue/vapor';
+
+export function render(_ctx) {
+  const t0 = _template("<div></div>")
+  const n0 = t0()
+  const { 0: [n1],} = _children(n0)
+  _on(n1, "click", $event => _ctx.foo($event))
+  return n0
+}"
+`;
+
 exports[`v-on > should handle multi-line statement 1`] = `
 "import { template as _template, children as _children, on as _on } from 'vue/vapor';
 

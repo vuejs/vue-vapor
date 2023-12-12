@@ -249,9 +249,19 @@ describe('v-on', () => {
     )
   })
 
-  test.todo(
-    'should NOT wrap as function if expression is already function expression',
-  )
+  test('should NOT wrap as function if expression is already function expression', () => {
+    const { code, ir } = compileWithVOn(`<div @click="$event => foo($event)"/>`)
+
+    expect(ir.operation).toMatchObject([
+      {
+        type: IRNodeTypes.SET_EVENT,
+        value: { content: '$event => foo($event)' },
+      },
+    ])
+
+    expect(code).matchSnapshot()
+    expect(code).contains('_on(n1, "click", $event => _ctx.foo($event))')
+  })
   test.todo(
     'should NOT wrap as function if expression is already function expression (with Typescript)',
   )

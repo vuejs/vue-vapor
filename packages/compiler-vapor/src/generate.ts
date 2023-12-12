@@ -538,14 +538,14 @@ function genSetEvent(oper: SetEventIRNode, context: CodegenContext) {
         genExpression(exp, context)
         push(hasMultipleStatements ? '}' : ')')
         push('')
-      }
-
-      if (!(isInlineStatement || hasMultipleStatements)) {
+      } else if (isMemberExp) {
         push('(...args) => (')
         genExpression(exp, context)
         push(' && ')
         genExpression(exp, context)
         push('(...args))')
+      } else {
+        genExpression(exp, context)
       }
     } else {
       push('() => {}')
