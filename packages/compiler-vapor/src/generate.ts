@@ -12,6 +12,8 @@ import {
   advancePositionWithClone,
   isSimpleIdentifier,
   isMemberExpression,
+  walkFunctionParams,
+  isFunctionType,
 } from '@vue/compiler-dom'
 import {
   type IRDynamicChildren,
@@ -640,10 +642,36 @@ function genExpression(node: IRExpression, context: CodegenContext): void {
     return genIdentifier(rawExpr, context, loc)
   }
 
+  const excludedIds = new Set<string>()
+  const isFunction = isFunctionType(ast!)
+
+  const getSourceById = (id: Identifier) => {
+    // range is offset by -1 due to the wrapping parens when parsed
+    const start = id.start! - 1
+    const end = id.end! - 1
+    return {
+      source: rawExpr.slice(start, end),
+      start,
+      end,
+    }
+  }
+
+  if (isFunction) {
+    walkFunctionParams(ast!, (id) => {
+      const { source } = getSourceById(id)
+      excludedIds.add(source)
+    })
+  }
+
   const ids: Identifier[] = []
   walkIdentifiers(
     ast!,
     (id) => {
+      const { source } = getSourceById(id)
+
+      if (excludedIds.has(source)) return
+      if (!isFunction && id.name === '$event') return
+
       ids.push(id)
     },
     true,
@@ -651,15 +679,12 @@ function genExpression(node: IRExpression, context: CodegenContext): void {
   if (ids.length) {
     ids.sort((a, b) => a.start! - b.start!)
     ids.forEach((id, i) => {
-      // range is offset by -1 due to the wrapping parens when parsed
-      const start = id.start! - 1
-      const end = id.end! - 1
+      const { start, end, source } = getSourceById(id)
       const last = ids[i - 1]
 
       const leadingText = rawExpr.slice(last ? last.end! - 1 : 0, start)
       if (leadingText.length) push(leadingText, NewlineType.Unknown)
 
-      const source = rawExpr.slice(start, end)
       genIdentifier(source, context, {
         start: advancePositionWithClone(node.loc.start, source, start),
         end: advancePositionWithClone(node.loc.start, source, end),
@@ -681,11 +706,6 @@ function genIdentifier(
   loc?: SourceLocation,
 ): void {
   let name: string | undefined = id
-
-  if (id === '$event') {
-    push(id, NewlineType.None, loc, name)
-    return
-  }
 
   if (inline) {
     switch (bindingMetadata[id]) {

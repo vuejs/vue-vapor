@@ -341,7 +341,7 @@ describe('v-on', () => {
     )
   })
 
-  test.fails('function expression w/ prefixIdentifiers: true', () => {
+  test('function expression w/ prefixIdentifiers: true', () => {
     const { code, ir } = compileWithVOn(`<div @click="e => foo(e)"/>`, {
       prefixIdentifiers: true,
     })
