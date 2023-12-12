@@ -77,7 +77,7 @@ export function withDirectives<T extends Node>(
     if (!dir) continue
     if (isFunction(dir)) {
       dir = {
-        created: dir,
+        mounted: dir,
         updated: dir,
       } satisfies ObjectDirective
     }
