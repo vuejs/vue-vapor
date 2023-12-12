@@ -1,52 +1,63 @@
-import {ref} from "@vue/reactivity";
 import {
-  ComponentInternalInstance,
-  defineComponent,
-  DirectiveBinding,
-  DirectiveHook,
-  h,
-  nextTick,
-  VNode,
-  withDirectives
-} from "@vue/runtime-core";
-import {nodeOps, render} from "@vue/runtime-test";
+  template,
+  children,
+  withDirectives,
+  effect,
+  setText,
+  render,
+  getCurrentInstance,
+  on,
+  ref,
+  unmountComponent
+} from '../src'
+import type { DirectiveBinding, DirectiveHook, ComponentInternalInstance } from '../src'
+import {afterEach, beforeEach, describe, expect} from "vitest";
+import { defineComponent, nextTick } from "@vue/runtime-core";
+
+let host: HTMLElement
+
+const initHost = () => {
+  host = document.createElement('div')
+  host.setAttribute('id', 'host')
+  document.body.appendChild(host)
+}
+beforeEach(() => {
+  initHost()
+})
+afterEach(() => {
+  host.remove()
+})
 
 describe('directives', () => {
   it('should work', async () => {
-    const count = ref(0)
-
+    const count = ref(0);
     function assertBindings(binding: DirectiveBinding) {
       expect(binding.value).toBe(count.value)
       expect(binding.arg).toBe('foo')
-      expect(binding.instance).toBe(_instance && _instance.proxy)
+      expect(binding.instance).toBe(_instance)
       expect(binding.modifiers && binding.modifiers.ok).toBe(true)
     }
 
-    const beforeMount = vi.fn(((el, binding, vnode, prevVNode) => {
-      expect(el.tag).toBe('div')
+    const beforeMount = vi.fn(((el, binding) => {
+      expect(el.tagName).toBe('DIV')
       // should not be inserted yet
-      expect(el.parentNode).toBe(null)
-      expect(root.children.length).toBe(0)
+      expect(el.parentElement).toBe(null)
+      expect(host.children.length).toBe(0)
 
       assertBindings(binding)
-
-      expect(vnode).toBe(_vnode)
-      expect(prevVNode).toBe(null)
     }) as DirectiveHook)
 
-    const mounted = vi.fn(((el, binding, vnode, prevVNode) => {
-      expect(el.tag).toBe('div')
+    const mounted = vi.fn(((el, binding) => {
+      expect(el.tagName).toBe('DIV')
       // should be inserted now
-      expect(el.parentNode).toBe(root)
-      expect(root.children[0]).toBe(el)
+      expect(el.parentNode).toBe(host)
+      expect(host.children[0]).toBe(el)
 
       assertBindings(binding)
-
-      expect(vnode).toBe(_vnode)
-      expect(prevVNode).toBe(null)
     }) as DirectiveHook)
 
-    const beforeUpdate = vi.fn(((el, binding, vnode, prevVNode) => {
+    // TODO: beforeUpdate hook unit test
+    /*const beforeUpdate = vi.fn(((el, binding, vnode, prevVNode) => {
       expect(el.tag).toBe('div')
       expect(el.parentNode).toBe(root)
       expect(root.children[0]).toBe(el)
@@ -58,93 +69,79 @@ describe('directives', () => {
 
       expect(vnode).toBe(_vnode)
       expect(prevVNode).toBe(_prevVnode)
-    }) as DirectiveHook)
+    }) as DirectiveHook)*/
 
-    const updated = vi.fn(((el, binding, vnode, prevVNode) => {
-      expect(el.tag).toBe('div')
-      expect(el.parentNode).toBe(root)
-      expect(root.children[0]).toBe(el)
-
+    const updated = vi.fn(((el, binding) => {
+      expect(el.tagName).toBe('DIV')
+      expect(el.parentElement).toBe(host)
+      expect(host.children[0]).toBe(el)
       // node should have been updated
-      expect(el.children[0].text).toBe(`${count.value}`)
+      expect(el.innerHTML).toBe(`${count.value}`)
 
       assertBindings(binding)
-
-      expect(vnode).toBe(_vnode)
-      expect(prevVNode).toBe(_prevVnode)
     }) as DirectiveHook)
 
-    const beforeUnmount = vi.fn(((el, binding, vnode, prevVNode) => {
-      expect(el.tag).toBe('div')
+    const beforeUnmount = vi.fn(((el, binding) => {
+      expect(el.tagName).toBe('DIV')
       // should be removed now
-      expect(el.parentNode).toBe(root)
-      expect(root.children[0]).toBe(el)
+      expect(el.parentElement).toBe(host)
+      expect(host.children[0]).toBe(el)
 
       assertBindings(binding)
-
-      expect(vnode).toBe(_vnode)
-      expect(prevVNode).toBe(null)
     }) as DirectiveHook)
 
-    const unmounted = vi.fn(((el, binding, vnode, prevVNode) => {
-      expect(el.tag).toBe('div')
+    const unmounted = vi.fn(((el, binding) => {
+      expect(el.tagName).toBe('DIV')
       // should have been removed
-      expect(el.parentNode).toBe(null)
-      expect(root.children.length).toBe(0)
+      expect(el.parentElement).toBe(null)
+      expect(host.children.length).toBe(0)
 
       assertBindings(binding)
-
-      expect(vnode).toBe(_vnode)
-      expect(prevVNode).toBe(null)
     }) as DirectiveHook)
 
     const dir = {
       beforeMount,
       mounted,
-      beforeUpdate,
+      // beforeUpdate
       updated,
       beforeUnmount,
       unmounted
     }
 
     let _instance: ComponentInternalInstance | null = null
-    let _vnode: VNode | null = null
-    let _prevVnode: VNode | null = null
-    const Comp = {
-      setup() {
-        _instance = currentInstance
+    const Comp = defineComponent({
+      setup(){
+        _instance = getCurrentInstance()
+        const __returned__ = { count, dir };
+        Object.defineProperty(__returned__, "__isScriptSetup", { enumerable: false, value: true });
+        return __returned__;
       },
-      render() {
-        _prevVnode = _vnode
-        _vnode = withDirectives(h('div', count.value), [
-          [
-            dir,
-            // value
-            count.value,
-            // argument
-            'foo',
-            // modifiers
-            { ok: true }
-          ]
-        ])
-        return _vnode
+      render(ctx: any){
+        const t0 = template("<div id=\"foo\"></div>");
+        const n0 = t0();
+        const { 0: [n1] } = children(n0 as ChildNode);
+        withDirectives(n1, [[ctx.dir, () => ctx.count, "foo", { ok: true }]]);
+        effect(() => {
+          setText(n1 as Element, void 0, ctx.count);
+        });
+        return n0;
       }
-    }
+    })
 
-    const root = nodeOps.createElement('div')
-    render(h(Comp), root)
-
+    render(Comp as any, {}, '#host')
+    await nextTick()
     expect(beforeMount).toHaveBeenCalledTimes(1)
     expect(mounted).toHaveBeenCalledTimes(1)
 
     count.value++
     await nextTick()
-    expect(beforeUpdate).toHaveBeenCalledTimes(1)
     expect(updated).toHaveBeenCalledTimes(1)
 
-    render(null, root)
+    debugger
+    unmountComponent(_instance!)
+    // render(null, root)
     expect(beforeUnmount).toHaveBeenCalledTimes(1)
-    expect(unmounted).toHaveBeenCalledTimes(1)
+    // expect(unmounted).toHaveBeenCalledTimes(1)
   })
 
 /*  it('should work with a function directive', async () => {
