@@ -308,12 +308,21 @@ describe('v-on', () => {
     expect(code).matchSnapshot()
   })
 
-  test.todo(
-    'should NOT wrap as function if expression is already function expression (with newlines + function keyword)',
-  )
-  test.todo(
-    'should NOT wrap as function if expression is complex member expression',
-  )
+  test('should NOT wrap as function if expression is complex member expression', () => {
+    const { ir, code } = compileWithVOn(`<div @click="a['b' + c]"/>`)
+    expect(ir.operation).toMatchObject([
+      {
+        type: IRNodeTypes.SET_EVENT,
+        value: { content: `a['b' + c]` },
+      },
+    ])
+
+    expect(code).matchSnapshot()
+    expect(code).contains(
+      `_on(n1, "click", (...args) => (_ctx.a['b' + _ctx.c] && _ctx.a['b' + _ctx.c](...args)))`,
+    )
+  })
+
   test.todo('complex member expression w/ prefixIdentifiers: true')
   test.todo('function expression w/ prefixIdentifiers: true')
 
