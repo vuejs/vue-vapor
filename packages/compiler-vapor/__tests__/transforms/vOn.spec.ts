@@ -262,6 +262,7 @@ describe('v-on', () => {
     expect(code).matchSnapshot()
     expect(code).contains('_on(n1, "click", $event => _ctx.foo($event))')
   })
+
   test.fails(
     'should NOT wrap as function if expression is already function expression (with Typescript)',
     () => {
@@ -281,9 +282,32 @@ describe('v-on', () => {
       expect(code).contains('_on(n1, "click", e => _ctx.foo(e))')
     },
   )
-  test.todo(
-    'should NOT wrap as function if expression is already function expression (with newlines)',
-  )
+
+  test('should NOT wrap as function if expression is already function expression (with newlines)', () => {
+    const { ir, code } = compileWithVOn(
+      `<div @click="
+      $event => {
+        foo($event)
+      }
+    "/>`,
+    )
+
+    expect(ir.operation).toMatchObject([
+      {
+        type: IRNodeTypes.SET_EVENT,
+        value: {
+          content: `
+      $event => {
+        foo($event)
+      }
+    `,
+        },
+      },
+    ])
+
+    expect(code).matchSnapshot()
+  })
+
   test.todo(
     'should NOT wrap as function if expression is already function expression (with newlines + function keyword)',
   )
