@@ -574,14 +574,40 @@ describe('v-on', () => {
     expect(ir.operation).toMatchObject([
       {
         type: IRNodeTypes.SET_EVENT,
-        modifiers: { keys: ['left'] },
+        modifiers: {
+          keys: ['left'],
+          nonKeys: [],
+          options: [],
+        },
       },
     ])
 
     expect(code).matchSnapshot()
   })
 
-  test.todo('should wrap both for dynamic key event w/ left/right modifiers')
+  test('should wrap both for dynamic key event w/ left/right modifiers', () => {
+    const { code, ir } = compileWithVOn(`<div @[e].left="test"/>`, {
+      prefixIdentifiers: true,
+    })
+
+    expect(ir.effect[0].operations).toMatchObject([
+      {
+        type: IRNodeTypes.SET_EVENT,
+        key: {
+          type: NodeTypes.SIMPLE_EXPRESSION,
+          content: 'e',
+          isStatic: false,
+        },
+        modifiers: {
+          keys: ['left'],
+          nonKeys: ['left'],
+          options: [],
+        },
+      },
+    ])
+
+    expect(code).matchSnapshot()
+  })
 
   test('should transform click.right', () => {
     const { code, ir } = compileWithVOn(`<div @click.right="test"/>`)
