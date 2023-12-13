@@ -18,15 +18,19 @@ const vDirective: ObjectDirective<HTMLDivElement, undefined> = {
     if (node.parentElement) node.textContent += 'mounted, '
   }
 }
-const vDirectiveSimple:FunctionDirective<HTMLDivElement> = (node, binding) => {
+const vDirectiveSimple: FunctionDirective<HTMLDivElement> = (node, binding) => {
   console.log(node, binding)
 }
 const handleClick = () => {
   text.value = 'change'
 }
-
 </script>
 
 <template>
-  <div v-directive:foo.bar="text" v-text="text" v-directive-simple="text" @click="handleClick"/>
+  <div
+    v-directive:foo.bar="text"
+    v-text="text"
+    v-directive-simple="text"
+    @click="handleClick"
+  />
 </template>
