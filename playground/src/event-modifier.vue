@@ -5,6 +5,11 @@ const handleClick = () => {
 }
 
 const i = ref(0)
+const j = ref(0)
+const event = ref('click')
+const changeEvent = () => {
+  event.value = event.value === 'click' ? 'contextmenu' : 'click'
+}
 </script>
 
 <template>
@@ -21,6 +26,16 @@ const i = ref(0)
     {{ i }}
     <button @click="i++">
       Add1
+    </button>
+  </div>
+
+  <div>
+    {{ j }}
+    <button @[event]="j++">
+      Add
+    </button>
+    <button @click="changeEvent">
+      Change Event
     </button>
   </div>
 </template>

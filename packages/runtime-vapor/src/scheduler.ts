@@ -24,7 +24,14 @@ export const nextTick = (fn: any) => p.then(fn)
 
 export function effect(fn: any) {
   let run: () => void
-  const e = new ReactiveEffect(fn, () => queue(run))
+  let cleanup: (() => void) | undefined
+  const e = new ReactiveEffect(
+    () => {
+      cleanup?.()
+      cleanup = fn()
+    },
+    () => queue(run),
+  )
   run = e.run.bind(e)
   run()
 }

@@ -5,4 +5,5 @@ export function on(
   options?: AddEventListenerOptions,
 ) {
   el.addEventListener(event, handler, options)
+  return () => el.removeEventListener(event, handler, options)
 }
