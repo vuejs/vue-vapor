@@ -53,16 +53,12 @@ export function mountComponent(
     instance.proxy = markRaw(
       new Proxy({ _: instance }, PublicInstanceProxyHandlers),
     )
-    if (setupFn) {
-      const state = setupFn(props, ctx)
-      if (state && '__isScriptSetup' in state) {
-        instance.setupState = proxyRefs(state)
-        return (instance.block = component.render(instance.proxy))
-      } else {
-        return (instance.block = state as Block)
-      }
-    } else {
+    const state = setupFn && setupFn(props, ctx)
+    if (state && '__isScriptSetup' in state) {
+      instance.setupState = proxyRefs(state)
       return (instance.block = component.render(instance.proxy))
+    } else {
+      return (instance.block = state as Block)
     }
   })!
   invokeDirectiveHook(instance, 'beforeMount')
