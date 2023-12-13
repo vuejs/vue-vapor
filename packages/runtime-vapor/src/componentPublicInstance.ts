@@ -19,4 +19,13 @@ export const PublicInstanceProxyHandlers: ProxyHandler<any> = {
       return props![key]
     }
   },
+
+  set({ _: instance }: ComponentRenderContext, key: string, value: any) {
+    const { setupState } = instance
+    if (hasOwn(setupState, key)) {
+      setupState[key] = value
+      return true
+    }
+    return false
+  },
 }
