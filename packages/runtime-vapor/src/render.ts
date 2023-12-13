@@ -5,6 +5,7 @@ import {
   type Component,
   type ComponentInternalInstance,
   createComponentInstance,
+  setComponentInstanceBlock,
   setCurrentInstance,
   unsetCurrentInstance,
 } from './component'
@@ -56,7 +57,9 @@ export function mountComponent(
     const state = setupFn && setupFn(props, ctx)
     if (state && '__isScriptSetup' in state) {
       instance.setupState = proxyRefs(state)
-      return (instance.block = component.render(instance.proxy))
+      const renderBlock = component.render(instance.proxy)
+      setComponentInstanceBlock(instance, renderBlock)
+      return renderBlock
     } else {
       return (instance.block = state as Block)
     }
