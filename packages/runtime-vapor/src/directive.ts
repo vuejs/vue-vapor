@@ -68,22 +68,23 @@ export function withDirectives<T extends Node>(
     return node
   }
 
-  if (!currentInstance.dirs.has(node)) currentInstance.dirs.set(node, [])
-  const bindings = currentInstance.dirs.get(node)!
+  const instance = currentInstance
+  if (!instance.dirs.has(node)) instance.dirs.set(node, [])
+  const bindings = instance.dirs.get(node)!
 
   for (const directive of directives) {
     let [dir, source, arg, modifiers] = directive
     if (!dir) continue
     if (isFunction(dir)) {
-      // TODO function directive
       dir = {
-        created: dir,
+        mounted: dir,
+        updated: dir,
       } satisfies ObjectDirective
     }
 
     const binding: DirectiveBinding = {
       dir,
-      instance: currentInstance,
+      instance,
       source,
       value: null, // set later
       oldValue: null,
@@ -93,8 +94,9 @@ export function withDirectives<T extends Node>(
     bindings.push(binding)
 
     callDirectiveHook(node, binding, 'created')
+
     effect(() => {
-      if (!currentInstance!.isMountedRef.value) return
+      if (!instance.isMountedRef.value) return
       callDirectiveHook(node, binding, 'updated')
     })
   }
