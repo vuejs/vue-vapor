@@ -62,21 +62,22 @@ export function mountComponent(
     }
     return (instance.block = block)
   })!
+  const { bm, m } = instance
+
+  bm && invokeArrayFns(bm)
   invokeDirectiveHook(instance, 'beforeMount')
   insert(block, instance.container)
   instance.isMountedRef.value = true
   invokeDirectiveHook(instance, 'mounted')
   unsetCurrentInstance()
-
-  const { m } = instance
   m && invokeArrayFns(m)
-
   return instance
 }
 
 export function unmountComponent(instance: ComponentInternalInstance) {
-  const { container, block, scope } = instance
+  const { container, block, scope, um, bum } = instance
 
+  bum && invokeArrayFns(bum)
   invokeDirectiveHook(instance, 'beforeUnmount')
   scope.stop()
   block && remove(block, container)
@@ -84,7 +85,6 @@ export function unmountComponent(instance: ComponentInternalInstance) {
   invokeDirectiveHook(instance, 'unmounted')
   unsetCurrentInstance()
 
-  const { um } = instance
   um && invokeArrayFns(um)
   instance.isUnmountedRef.value = true
 }
