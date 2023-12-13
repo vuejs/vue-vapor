@@ -44,7 +44,9 @@ export default {
         get count() {
           return _ctx.count
         },
-        'onClick:child': _ctx.setCount
+        get ['onClick:child']() {
+          return _ctx.setCount
+        }
       },
       n0
     )
@@ -55,7 +57,9 @@ export default {
         get count() {
           return _ctx.count
         },
-        'onClick:childOnce': _ctx.setCount
+        get ['onClick:childOnce']() {
+          return _ctx.setCount
+        }
       },
       n0
     )
