@@ -132,7 +132,7 @@ export const createComponentInstance = (
   const instance: ComponentInternalInstance = {
     uid: uid++,
     block: null,
-    container: null!,
+    container: null!, // set on mountComponent
     scope: new EffectScope(true /* detached */)!,
     component,
 
