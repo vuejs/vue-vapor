@@ -106,7 +106,7 @@ export interface ComponentInternalInstance {
   /**
    * @internal
    */
-  [VaporLifecycleHooks.SERVER_PREFETCH]: LifecycleHook<() => Promise<unknown>>
+  // [VaporLifecycleHooks.SERVER_PREFETCH]: LifecycleHook<() => Promise<unknown>>
 }
 
 // TODO
@@ -212,7 +212,7 @@ export const createComponentInstance = (
     /**
      * @internal
      */
-    [VaporLifecycleHooks.SERVER_PREFETCH]: null,
+    // [VaporLifecycleHooks.SERVER_PREFETCH]: null,
   }
   return instance
 }

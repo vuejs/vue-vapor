@@ -1,9 +1,4 @@
-import { pauseTracking, resetTracking } from '@vue/reactivity'
-import {
-  type ComponentInternalInstance,
-  currentInstance,
-  setCurrentInstance,
-} from './component'
+import { type ComponentInternalInstance, currentInstance } from './component'
 
 export enum VaporLifecycleHooks {
   BEFORE_CREATE = 'bc',
@@ -19,36 +14,23 @@ export enum VaporLifecycleHooks {
   RENDER_TRIGGERED = 'rtg',
   RENDER_TRACKED = 'rtc',
   ERROR_CAPTURED = 'ec',
-  SERVER_PREFETCH = 'sp',
+  // SERVER_PREFETCH = 'sp',
 }
 
 export const injectHook = (
   type: VaporLifecycleHooks,
-  hook: Function & { __weh?: Function },
+  hook: Function,
   target: ComponentInternalInstance | null = currentInstance,
   prepend: boolean = false,
 ) => {
   if (target) {
     const hooks = target[type] || (target[type] = [])
-    const wrappedHook =
-      hook.__weh ||
-      (hook.__weh = (...args: unknown[]) => {
-        if (target.isUnmounted) {
-          return
-        }
-        pauseTracking()
-        setCurrentInstance(target)
-        // TODO: call error handling
-        const res = hook(...args)
-        resetTracking()
-        return res
-      })
     if (prepend) {
-      hooks.unshift(wrappedHook)
+      hooks.unshift(hook)
     } else {
-      hooks.push(wrappedHook)
+      hooks.push(hook)
     }
-    return wrappedHook
+    return hook
   } else if (__DEV__) {
     // TODO: warn need
   }
@@ -58,8 +40,8 @@ export const createHook =
   (hook: T, target: ComponentInternalInstance | null = currentInstance) =>
     injectHook(lifecycle, (...args: unknown[]) => hook(...args), target)
 
-export const onMounted = createHook(VaporLifecycleHooks.MOUNTED)
 export const onBeforeMount = createHook(VaporLifecycleHooks.BEFORE_MOUNT)
+export const onMounted = createHook(VaporLifecycleHooks.MOUNTED)
 export const onBeforeUpdate = createHook(VaporLifecycleHooks.BEFORE_UPDATE)
 export const onUpdated = createHook(VaporLifecycleHooks.UPDATED)
 export const onBeforeUnmount = createHook(VaporLifecycleHooks.BEFORE_UNMOUNT)

@@ -64,27 +64,35 @@ export function mountComponent(
   })!
   const { bm, m } = instance
 
+  // hook: beforeMount
   bm && invokeArrayFns(bm)
   invokeDirectiveHook(instance, 'beforeMount')
+
   insert(block, instance.container)
   instance.isMountedRef.value = true
+
+  // hook: mounted
   invokeDirectiveHook(instance, 'mounted')
-  unsetCurrentInstance()
   m && invokeArrayFns(m)
+  unsetCurrentInstance()
+
   return instance
 }
 
 export function unmountComponent(instance: ComponentInternalInstance) {
   const { container, block, scope, um, bum } = instance
 
+  // hook: beforeUnmount
   bum && invokeArrayFns(bum)
   invokeDirectiveHook(instance, 'beforeUnmount')
+
   scope.stop()
   block && remove(block, container)
   instance.isMountedRef.value = false
-  invokeDirectiveHook(instance, 'unmounted')
-  unsetCurrentInstance()
-
-  um && invokeArrayFns(um)
   instance.isUnmountedRef.value = true
+
+  // hook: unmounted
+  invokeDirectiveHook(instance, 'unmounted')
+  um && invokeArrayFns(um)
+  unsetCurrentInstance()
 }
