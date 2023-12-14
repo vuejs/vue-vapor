@@ -314,6 +314,22 @@ describe('v-on', () => {
     expect(code).matchSnapshot()
   })
 
+  test('should NOT add a prefix to $event if the expression is a function expression', () => {
+    const { ir, code } = compileWithVOn(
+      `<div @click="$event => {i++;foo($event)}"></div>`,
+      {
+        prefixIdentifiers: true,
+      },
+    )
+
+    expect(ir.operation[0]).toMatchObject({
+      type: IRNodeTypes.SET_EVENT,
+      value: { content: '$event => {i++;foo($event)}' },
+    })
+
+    expect(code).matchSnapshot()
+  })
+
   test('should NOT wrap as function if expression is complex member expression', () => {
     const { ir, code } = compileWithVOn(`<div @click="a['b' + c]"/>`)
     expect(ir.operation).toMatchObject([

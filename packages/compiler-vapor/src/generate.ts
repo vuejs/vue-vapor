@@ -12,8 +12,6 @@ import {
   advancePositionWithClone,
   isSimpleIdentifier,
   isMemberExpression,
-  walkFunctionParams,
-  isFunctionType,
 } from '@vue/compiler-dom'
 import {
   type IRDynamicChildren,
@@ -546,7 +544,9 @@ function genSetEvent(
       if (isInlineStatement) {
         push('$event => ')
         push(hasMultipleStatements ? '{' : '(')
-        genExpression(exp, context, new Set(['$event']))
+        const knownIds = Object.create(null)
+        knownIds['$event'] = 1
+        genExpression(exp, context, knownIds)
         push(hasMultipleStatements ? '}' : ')')
         push('')
       } else if (isMemberExp) {
@@ -629,7 +629,7 @@ const isLiteralWhitelisted = /*#__PURE__*/ makeMap('true,false,null,this')
 function genExpression(
   node: IRExpression,
   context: CodegenContext,
-  excludedIds = new Set<string>(),
+  knownIds: Record<string, number> = Object.create(null),
 ): void {
   const { push } = context
   if (isString(node)) return push(node)
@@ -666,25 +666,16 @@ function genExpression(
     }
   }
 
-  if (isFunctionType(ast!)) {
-    walkFunctionParams(ast!, (id) => {
-      const { source } = getSourceById(id)
-      excludedIds.add(source)
-    })
-  }
-
   const ids: Identifier[] = []
   walkIdentifiers(
     ast!,
-    (id) => {
-      if (excludedIds.size) {
-        const { source } = getSourceById(id)
-        if (excludedIds.has(source)) return
-      }
-
+    (id, parent, parentStack, isReference, isLocal) => {
+      if (isLocal) return
       ids.push(id)
     },
     true,
+    [],
+    knownIds,
   )
   if (ids.length) {
     ids.sort((a, b) => a.start! - b.start!)
