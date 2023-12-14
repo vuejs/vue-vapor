@@ -95,12 +95,3 @@ export const createComponentInstance = (
   }
   return instance
 }
-
-export const setComponentInstanceBlock = (
-  instance: ComponentInternalInstance,
-  block: Block,
-) => {
-  if (block instanceof DocumentFragment) {
-    instance.block = Array.from(block.childNodes)
-  }
-}
