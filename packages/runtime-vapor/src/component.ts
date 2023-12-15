@@ -15,6 +15,8 @@ import { emit, normalizeEmitsOptions } from './componentEmits'
 
 import type { DirectiveBinding } from './directive'
 
+import { VaporLifecycleHooks } from './apiLifecycle'
+
 export type Component = FunctionalComponent | ObjectComponent
 
 export type SetupFn = (props: any, ctx: any) => Block | Data
@@ -29,6 +31,8 @@ export interface ObjectComponent {
   setup?: SetupFn
   render(ctx: any): Block
 }
+
+type LifecycleHook<TFn = Function> = TFn[] | null
 
 export interface ComponentInternalInstance {
   uid: number
@@ -56,12 +60,69 @@ export interface ComponentInternalInstance {
   /** directives */
   dirs: Map<Node, DirectiveBinding[]>
 
+  // TODO: registory of provides, appContext, ...
+
   // lifecycle
   get isMounted(): boolean
   isMountedRef: Ref<boolean>
   get isUnmounted(): boolean
   isUnmountedRef: Ref<boolean>
-  // TODO: registory of provides, appContext, lifecycles, ...
+  /**
+   * @internal
+   */
+  [VaporLifecycleHooks.BEFORE_CREATE]: LifecycleHook
+  /**
+   * @internal
+   */
+  [VaporLifecycleHooks.CREATED]: LifecycleHook
+  /**
+   * @internal
+   */
+  [VaporLifecycleHooks.BEFORE_MOUNT]: LifecycleHook
+  /**
+   * @internal
+   */
+  [VaporLifecycleHooks.MOUNTED]: LifecycleHook
+  /**
+   * @internal
+   */
+  [VaporLifecycleHooks.BEFORE_UPDATE]: LifecycleHook
+  /**
+   * @internal
+   */
+  [VaporLifecycleHooks.UPDATED]: LifecycleHook
+  /**
+   * @internal
+   */
+  [VaporLifecycleHooks.BEFORE_UNMOUNT]: LifecycleHook
+  /**
+   * @internal
+   */
+  [VaporLifecycleHooks.UNMOUNTED]: LifecycleHook
+  /**
+   * @internal
+   */
+  [VaporLifecycleHooks.RENDER_TRACKED]: LifecycleHook
+  /**
+   * @internal
+   */
+  [VaporLifecycleHooks.RENDER_TRIGGERED]: LifecycleHook
+  /**
+   * @internal
+   */
+  [VaporLifecycleHooks.ACTIVATED]: LifecycleHook
+  /**
+   * @internal
+   */
+  [VaporLifecycleHooks.DEACTIVATED]: LifecycleHook
+  /**
+   * @internal
+   */
+  [VaporLifecycleHooks.ERROR_CAPTURED]: LifecycleHook
+  /**
+   * @internal
+   */
+  // [VaporLifecycleHooks.SERVER_PREFETCH]: LifecycleHook<() => Promise<unknown>>
 }
 
 // TODO
@@ -88,7 +149,7 @@ export const createComponentInstance = (
   const instance: ComponentInternalInstance = {
     uid: uid++,
     block: null,
-    container: null!, // set on mount
+    container: null!, // set on mountComponent
     scope: new EffectScope(true /* detached */)!,
     component,
     rawProps,
@@ -109,16 +170,73 @@ export const createComponentInstance = (
 
     dirs: new Map(),
 
+    // TODO: registory of provides, appContext, ...
+
     // lifecycle
     get isMounted() {
       return isMountedRef.value
     },
-    isMountedRef,
     get isUnmounted() {
       return isUnmountedRef.value
     },
+    isMountedRef,
     isUnmountedRef,
-    // TODO: registory of provides, appContext, lifecycles, ...
+    /**
+     * @internal
+     */
+    [VaporLifecycleHooks.BEFORE_CREATE]: null,
+    /**
+     * @internal
+     */
+    [VaporLifecycleHooks.CREATED]: null,
+    /**
+     * @internal
+     */
+    [VaporLifecycleHooks.BEFORE_MOUNT]: null,
+    /**
+     * @internal
+     */
+    [VaporLifecycleHooks.MOUNTED]: null,
+    /**
+     * @internal
+     */
+    [VaporLifecycleHooks.BEFORE_UPDATE]: null,
+    /**
+     * @internal
+     */
+    [VaporLifecycleHooks.UPDATED]: null,
+    /**
+     * @internal
+     */
+    [VaporLifecycleHooks.BEFORE_UNMOUNT]: null,
+    /**
+     * @internal
+     */
+    [VaporLifecycleHooks.UNMOUNTED]: null,
+    /**
+     * @internal
+     */
+    [VaporLifecycleHooks.RENDER_TRACKED]: null,
+    /**
+     * @internal
+     */
+    [VaporLifecycleHooks.RENDER_TRIGGERED]: null,
+    /**
+     * @internal
+     */
+    [VaporLifecycleHooks.ACTIVATED]: null,
+    /**
+     * @internal
+     */
+    [VaporLifecycleHooks.DEACTIVATED]: null,
+    /**
+     * @internal
+     */
+    [VaporLifecycleHooks.ERROR_CAPTURED]: null,
+    /**
+     * @internal
+     */
+    // [VaporLifecycleHooks.SERVER_PREFETCH]: null,
   }
 
   instance.emit = emit.bind(null, instance)

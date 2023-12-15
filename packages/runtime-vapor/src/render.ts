@@ -1,6 +1,5 @@
 import { markRaw, proxyRefs } from '@vue/reactivity'
-import { type Data } from '@vue/shared'
-
+import { invokeArrayFns, type Data } from '@vue/shared'
 import {
   type Component,
   type ComponentInternalInstance,
@@ -8,11 +7,8 @@ import {
   setCurrentInstance,
   unsetCurrentInstance,
 } from './component'
-
 import { initProps } from './componentProps'
-
 import { invokeDirectiveHook } from './directive'
-
 import { insert, remove } from './dom'
 import { PublicInstanceProxyHandlers } from './componentPublicInstance'
 
@@ -54,38 +50,49 @@ export function mountComponent(
       new Proxy({ _: instance }, PublicInstanceProxyHandlers),
     )
     const state = setupFn && setupFn(props, ctx)
+    let block: Block | null = null
     if (state && '__isScriptSetup' in state) {
       instance.setupState = proxyRefs(state)
-      return (instance.block = component.render(instance.proxy))
+      block = component.render(instance.proxy)
     } else {
-      return (instance.block = state as Block)
+      block = state as Block
     }
+    if (block instanceof DocumentFragment) {
+      block = Array.from(block.childNodes)
+    }
+    return (instance.block = block)
   })!
+  const { bm, m } = instance
+
+  // hook: beforeMount
+  bm && invokeArrayFns(bm)
   invokeDirectiveHook(instance, 'beforeMount')
+
   insert(block, instance.container)
   instance.isMountedRef.value = true
-  invokeDirectiveHook(instance, 'mounted')
-  unsetCurrentInstance()
 
-  // TODO: lifecycle hooks (mounted, ...)
-  // const { m } = instance
-  // m && invoke(m)
+  // hook: mounted
+  invokeDirectiveHook(instance, 'mounted')
+  m && invokeArrayFns(m)
+  unsetCurrentInstance()
 
   return instance
 }
 
 export function unmountComponent(instance: ComponentInternalInstance) {
-  const { container, block, scope } = instance
+  const { container, block, scope, um, bum } = instance
 
+  // hook: beforeUnmount
+  bum && invokeArrayFns(bum)
   invokeDirectiveHook(instance, 'beforeUnmount')
+
   scope.stop()
   block && remove(block, container)
   instance.isMountedRef.value = false
   instance.isUnmountedRef.value = true
-  invokeDirectiveHook(instance, 'unmounted')
-  unsetCurrentInstance()
 
-  // TODO: lifecycle hooks (unmounted, ...)
-  // const { um } = instance
-  // um && invoke(um)
+  // hook: unmounted
+  invokeDirectiveHook(instance, 'unmounted')
+  um && invokeArrayFns(um)
+  unsetCurrentInstance()
 }
