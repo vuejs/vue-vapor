@@ -148,5 +148,5 @@ function callDirectiveHook(
 
   binding.value = newValue
   hook(node, binding)
-  if (name === 'updated') binding.oldValue = newValue
+  if (name != 'beforeUpdate') binding.oldValue = binding.value
 }
