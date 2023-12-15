@@ -103,10 +103,13 @@ export function withDirectives<T extends Node>(
       { flush: 'pre' },
     )
 
-    effect(() => {
-      if (!instance.isMountedRef.value) return
-      callDirectiveHook(node, binding, 'updated')
-    })
+    effect(
+      () => {
+        if (!instance.isMountedRef.value) return
+        callDirectiveHook(node, binding, 'updated')
+      },
+      { flush: 'post' },
+    )
   }
 
   return node
@@ -137,9 +140,13 @@ function callDirectiveHook(
   if (!hook) return
 
   const newValue = binding.source ? binding.source() : undefined
-  if (name === 'updated' && binding.value === newValue) return
+  if (
+    ['updated', 'beforeUpdate'].includes(name) &&
+    newValue === binding.oldValue
+  )
+    return
 
-  binding.oldValue = binding.value
   binding.value = newValue
   hook(node, binding)
+  if (name === 'updated') binding.oldValue = newValue
 }

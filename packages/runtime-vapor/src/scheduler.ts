@@ -2,16 +2,17 @@ import { ReactiveEffect } from '@vue/reactivity'
 
 const p = Promise.resolve()
 
-let preQueued: any[] | undefined
-let renderQueued: any[] | undefined
-let postQueued: any[] | undefined
+type Queued = { value?: any[] }
+let preQueued: Queued = {}
+let renderQueued: Queued = {}
+let postQueued: Queued = {}
 
-function queue(fn: any, queued: any[] | undefined) {
-  if (!queued) {
-    queued = [fn]
+function queue(fn: any, queued: Queued) {
+  if (!queued.value) {
+    queued.value = [fn]
     p.then(flush)
   } else {
-    queued.push(fn)
+    queued.value.push(fn)
   }
 }
 
@@ -21,26 +22,31 @@ function flush() {
   flushAQueued(postQueued)
 }
 
-function flushAQueued(queued: any[] | undefined) {
-  if (queued) {
-    for (let i = 0; i < queued.length; i++) {
-      queued[i]()
+function flushAQueued(queued: Queued) {
+  if (queued.value) {
+    for (let i = 0; i < queued.value.length; i++) {
+      queued.value[i]()
     }
-    queued = undefined
   }
+  queued.value = undefined
 }
 
 export const nextTick = (fn?: any) => (fn ? p.then(fn) : p)
 
-export function effect(fn: any, options: any) {
+export type EffectOptions = {
+  flush?: 'pre' | 'post' | 'render'
+}
+
+export function effect(fn: any, options?: EffectOptions) {
   let run: () => void
 
+  const flushMode = options?.flush
   const queued =
-    options.flush === 'pre'
+    flushMode === 'pre'
       ? preQueued
-      : options.flush === 'post'
+      : flushMode === 'post'
         ? postQueued
-        : renderQueued
+        : renderQueued // default
 
   const e = new ReactiveEffect(fn, () => queue(run, queued))
   run = e.run.bind(e)
