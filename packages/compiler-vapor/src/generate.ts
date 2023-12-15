@@ -689,7 +689,6 @@ function genIdentifier(
   loc?: SourceLocation,
 ): void {
   let name: string | undefined = id
-
   if (inline) {
     switch (bindingMetadata[id]) {
       case BindingTypes.SETUP_REF:
