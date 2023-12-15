@@ -294,14 +294,14 @@ export function generate(
       }
 
       for (const operation of ir.operation) {
-        genOperation(operation, ctx, false)
+        genOperation(operation, ctx)
       }
 
       for (const { operations } of ir.effect) {
         pushNewline(`${vaporHelper('effect')}(() => {`)
         withIndent(() => {
           for (const operation of operations) {
-            genOperation(operation, ctx, true)
+            genOperation(operation, ctx)
           }
         })
         pushNewline('})')
@@ -368,11 +368,7 @@ function genChildren(children: IRDynamicChildren) {
   return `{${code}}`
 }
 
-function genOperation(
-  oper: OperationNode,
-  context: CodegenContext,
-  isInEffect: boolean,
-) {
+function genOperation(oper: OperationNode, context: CodegenContext) {
   // TODO: cache old value
   switch (oper.type) {
     case IRNodeTypes.SET_PROP:
@@ -380,7 +376,7 @@ function genOperation(
     case IRNodeTypes.SET_TEXT:
       return genSetText(oper, context)
     case IRNodeTypes.SET_EVENT:
-      return genSetEvent(oper, context, isInEffect)
+      return genSetEvent(oper, context)
     case IRNodeTypes.SET_HTML:
       return genSetHtml(oper, context)
     case IRNodeTypes.CREATE_TEXT_NODE:
@@ -480,16 +476,11 @@ function genAppendNode(oper: AppendNodeIRNode, context: CodegenContext) {
   )
 }
 
-function genSetEvent(
-  oper: SetEventIRNode,
-  context: CodegenContext,
-  isInEffect: boolean,
-) {
+function genSetEvent(oper: SetEventIRNode, context: CodegenContext) {
   const { vaporHelper, push, newline, pushMulti, pushFnCall } = context
   const { keys, nonKeys, options } = oper.modifiers
 
   newline()
-  if (isInEffect) push('return ')
   pushFnCall(
     vaporHelper('on'),
     // 1st arg: event name

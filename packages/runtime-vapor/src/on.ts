@@ -1,3 +1,5 @@
+import { onCleanup } from './scheduler'
+
 export function on(
   el: HTMLElement,
   event: string,
@@ -5,5 +7,5 @@ export function on(
   options?: AddEventListenerOptions,
 ) {
   el.addEventListener(event, handler, options)
-  return () => el.removeEventListener(event, handler, options)
+  onCleanup(() => el.removeEventListener(event, handler, options))
 }
