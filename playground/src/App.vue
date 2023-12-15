@@ -26,13 +26,6 @@ onMounted(() => {
     count.value++
   }, 1000)
 })
-
-const i = ref(0)
-const vTest = {
-  updated(node, { value, oldValue }) {
-    console.log('vTest updated', 'value:', value, 'oldValue:', oldValue, 'node:', node)
-  },
-}
 </script>
 
 <template>
@@ -49,8 +42,6 @@ const vTest = {
     <div v-once>once: {{ count }}</div>
     <div v-pre>{{ count }}</div>
     <div v-cloak>{{ count }}</div>
-    <div v-test="i">v-test: {{ i }} <button @click="i++" @keyup.a="i++">Add</button></div>
-
   </div>
 </template>
 

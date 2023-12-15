@@ -5,11 +5,7 @@ const handleClick = () => {
 }
 
 const i = ref(0)
-const j = ref(0)
 const event = ref('click')
-const changeEvent = () => {
-  event.value = event.value === 'click' ? 'contextmenu' : 'click'
-}
 </script>
 
 <template>
@@ -21,20 +17,12 @@ const changeEvent = () => {
     <button @click.prevent="handleClick">no submit</button>
   </form>
 
-
   <div>
     {{ i }}
-    <button @click="i++">
-      Add1
+    <button @[event].prevent="i++">
+      Add by {{ event }}
     </button>
-  </div>
-
-  <div>
-    {{ j }}
-    <button @[event]="j++">
-      Add
-    </button>
-    <button @click="changeEvent">
+    <button @click="event = event === 'click' ? 'contextmenu' : 'click'">
       Change Event
     </button>
   </div>
