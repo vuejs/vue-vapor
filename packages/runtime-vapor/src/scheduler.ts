@@ -1,4 +1,5 @@
 import { ReactiveEffect } from '@vue/reactivity'
+import { clean } from 'semver'
 
 const p = Promise.resolve()
 
@@ -28,14 +29,17 @@ let activeEffect: any = undefined
 export function effect(fn: any) {
   let run: () => void
 
+  const cleanup = () => {
+    const cleanups = cleanupMap.get(fn)
+    if (cleanups) {
+      cleanups.forEach((cleanup) => cleanup())
+      cleanupMap.delete(fn)
+    }
+  }
+
   const e = new ReactiveEffect(
     () => {
-      const cleanups = cleanupMap.get(fn)
-      if (cleanups) {
-        cleanups.forEach((cleanup) => cleanup())
-        cleanupMap.delete(fn)
-      }
-
+      cleanup()
       activeEffect = fn
       try {
         activeEffect()
@@ -45,6 +49,8 @@ export function effect(fn: any) {
     },
     () => queue(run),
   )
+
+  e.onStop = cleanup
   run = e.run.bind(e)
   run()
 }
