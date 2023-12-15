@@ -1,5 +1,4 @@
 import { ReactiveEffect } from '@vue/reactivity'
-import { clean } from 'semver'
 
 const p = Promise.resolve()
 
@@ -23,26 +22,26 @@ function flush() {
 
 export const nextTick = (fn?: any) => (fn ? p.then(fn) : p)
 
-const cleanupMap: WeakMap<any, (() => void)[]> = new WeakMap()
-let activeEffect: any = undefined
+const cleanupMap: WeakMap<ReactiveEffect, (() => void)[]> = new WeakMap()
+let activeEffect: ReactiveEffect | undefined = undefined
 
 export function effect(fn: any) {
   let run: () => void
 
   const cleanup = () => {
-    const cleanups = cleanupMap.get(fn)
+    const cleanups = cleanupMap.get(e)
     if (cleanups) {
       cleanups.forEach((cleanup) => cleanup())
-      cleanupMap.delete(fn)
+      cleanupMap.delete(e)
     }
   }
 
   const e = new ReactiveEffect(
     () => {
       cleanup()
-      activeEffect = fn
+      activeEffect = e
       try {
-        activeEffect()
+        fn()
       } finally {
         activeEffect = undefined
       }
@@ -55,11 +54,11 @@ export function effect(fn: any) {
   run()
 }
 
-export function onCleanup(fn: any) {
+export function onCleanup(cleanupFn: () => void) {
   if (activeEffect) {
     const cleanups =
       cleanupMap.get(activeEffect) ||
       cleanupMap.set(activeEffect, []).get(activeEffect)!
-    cleanups.push(fn)
+    cleanups.push(cleanupFn)
   }
 }
