@@ -27,7 +27,7 @@ export type DirectiveHookName =
   | 'created'
   | 'beforeMount'
   | 'mounted'
-  // | 'beforeUpdate'
+  | 'beforeUpdate'
   | 'updated'
   | 'beforeUnmount'
   | 'unmounted'
@@ -94,6 +94,14 @@ export function withDirectives<T extends Node>(
     bindings.push(binding)
 
     callDirectiveHook(node, binding, 'created')
+
+    effect(
+      () => {
+        if (!instance.isMountedRef.value) return
+        callDirectiveHook(node, binding, 'beforeUpdate')
+      },
+      { flush: 'pre' },
+    )
 
     effect(() => {
       if (!instance.isMountedRef.value) return
