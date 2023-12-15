@@ -548,7 +548,6 @@ function genSetEvent(
         knownIds['$event'] = 1
         genExpression(exp, context, knownIds)
         push(hasMultipleStatements ? '}' : ')')
-        push('')
       } else if (isMemberExp) {
         push('(...args) => (')
         genExpression(exp, context)
@@ -655,17 +654,6 @@ function genExpression(
     return genIdentifier(rawExpr, context, loc)
   }
 
-  const getSourceById = (id: Identifier) => {
-    // range is offset by -1 due to the wrapping parens when parsed
-    const start = id.start! - 1
-    const end = id.end! - 1
-    return {
-      source: rawExpr.slice(start, end),
-      start,
-      end,
-    }
-  }
-
   const ids: Identifier[] = []
   walkIdentifiers(
     ast!,
@@ -680,12 +668,15 @@ function genExpression(
   if (ids.length) {
     ids.sort((a, b) => a.start! - b.start!)
     ids.forEach((id, i) => {
-      const { start, end, source } = getSourceById(id)
+      // range is offset by -1 due to the wrapping parens when parsed
+      const start = id.start! - 1
+      const end = id.end! - 1
       const last = ids[i - 1]
 
       const leadingText = rawExpr.slice(last ? last.end! - 1 : 0, start)
       if (leadingText.length) push(leadingText, NewlineType.Unknown)
 
+      const source = rawExpr.slice(start, end)
       genIdentifier(source, context, {
         start: advancePositionWithClone(node.loc.start, source, start),
         end: advancePositionWithClone(node.loc.start, source, end),
