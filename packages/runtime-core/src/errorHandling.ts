@@ -135,7 +135,10 @@ export function handleError(
       ? ErrorTypeStrings[type]
       : `https://vuejs.org/errors/#runtime-${type}`
     while (cur) {
-      const errorCapturedHooks = 'ec' in cur ? cur.ec : null
+      const errorCapturedHooks =
+        LifecycleHooks.ERROR_CAPTURED in cur
+          ? cur[LifecycleHooks.ERROR_CAPTURED]
+          : null
       if (errorCapturedHooks) {
         for (let i = 0; i < errorCapturedHooks.length; i++) {
           if (
