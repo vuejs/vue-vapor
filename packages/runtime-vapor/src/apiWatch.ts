@@ -5,7 +5,6 @@ import {
   ReactiveEffect,
   WatchCallback,
   WatchEffect,
-  WatchOptions,
   WatchOptionsBase,
   WatchSource,
   WatchStopHandle,
@@ -27,16 +26,28 @@ import {
 } from '@vue/shared'
 import { currentInstance } from './component'
 import { SchedulerJob } from 'packages/runtime-core/src/scheduler'
-import { queueJob, queuePostRenderEffect } from './scheduler'
+import {
+  type Scheduler,
+  getVaporSchedulerByFlushMode,
+  vaporPostScheduler,
+  vaporSyncScheduler,
+} from './scheduler'
 
 type OnCleanup = (cleanupFn: () => void) => void
+
+export interface doWatchOptions<Immediate = boolean> extends DebuggerOptions {
+  immediate?: Immediate
+  deep?: boolean
+  once?: boolean
+}
 
 // Simple effect.
 export function watchEffect(
   effect: WatchEffect,
-  options?: WatchOptionsBase,
+  options: WatchOptionsBase = EMPTY_OBJ,
 ): WatchStopHandle {
-  return doWatch(effect, null, options)
+  const { flush } = options
+  return doWatch(effect, null, getVaporSchedulerByFlushMode(flush), options)
 }
 
 export function watchPostEffect(
@@ -46,6 +57,7 @@ export function watchPostEffect(
   return doWatch(
     effect,
     null,
+    vaporPostScheduler,
     __DEV__ ? extend({}, options as any, { flush: 'post' }) : { flush: 'post' },
   )
 }
@@ -57,6 +69,7 @@ export function watchSyncEffect(
   return doWatch(
     effect,
     null,
+    vaporSyncScheduler,
     __DEV__ ? extend({}, options as any, { flush: 'sync' }) : { flush: 'sync' },
   )
 }
@@ -64,14 +77,8 @@ export function watchSyncEffect(
 export function doWatch(
   source: WatchSource | WatchSource[] | WatchEffect | object,
   cb: WatchCallback | null,
-  {
-    immediate,
-    deep,
-    flush,
-    once,
-    onTrack,
-    onTrigger,
-  }: WatchOptions = EMPTY_OBJ,
+  scheduler: Scheduler,
+  { immediate, deep, once, onTrack, onTrigger }: doWatchOptions = EMPTY_OBJ,
 ): WatchStopHandle {
   if (cb && once) {
     const _cb = cb
@@ -194,19 +201,15 @@ export function doWatch(
   // it is allowed to self-trigger (#1727)
   job.allowRecurse = !!cb
 
-  let scheduler: EffectScheduler
-  if (flush === 'sync') {
-    scheduler = job as any // the scheduler function gets called directly
-  } else if (flush === 'post') {
-    scheduler = () => queuePostRenderEffect(job, instance)
-  } else {
-    // default: 'pre'
-    job.pre = true
-    if (instance) job.id = instance.uid
-    scheduler = () => queueJob(job)
-  }
+  let effectScheduler: EffectScheduler = () =>
+    scheduler({
+      effect,
+      job,
+      instance: instance,
+      isInit: false,
+    })
 
-  const effect = new ReactiveEffect(getter, NOOP, scheduler)
+  const effect = new ReactiveEffect(getter, NOOP, effectScheduler)
 
   const unwatch = () => {
     effect.stop()
@@ -221,13 +224,12 @@ export function doWatch(
   }
 
   // initial run
-  if (cb) {
-    // TODO: watch(source, cb)
-  } else if (flush === 'post') {
-    queuePostRenderEffect(effect.run.bind(effect), instance)
-  } else {
-    effect.run()
-  }
+  scheduler({
+    effect,
+    job,
+    instance: instance,
+    isInit: true,
+  })
 
   // TODO: ssr
   // if (__SSR__ && ssrCleanup) ssrCleanup.push(unwatch)
