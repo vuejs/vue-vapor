@@ -1,6 +1,6 @@
 import { EffectScope, Ref, ref } from '@vue/reactivity'
 
-import { EMPTY_OBJ } from '@vue/shared'
+import { EMPTY_OBJ, isFunction } from '@vue/shared'
 import { Block } from './render'
 import { type DirectiveBinding } from './directive'
 import {
@@ -215,4 +215,14 @@ export const createComponentInstance = (
     // [VaporLifecycleHooks.SERVER_PREFETCH]: null,
   }
   return instance
+}
+
+export const getComponentname = (instance: ComponentInternalInstance) => {
+  /**
+   * TODO:
+   *   ref. packages/runtime-core/src/components.ts L1112.
+   *   component.__name, component.name, component.displayName need.
+   *
+   */
+  return isFunction(instance.component) ? instance.component.name : ''
 }
