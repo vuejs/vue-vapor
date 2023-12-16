@@ -3,6 +3,8 @@ import { ComponentInternalInstance } from './component'
 import { warn, pushWarningContext, popWarningContext } from './warning'
 import { isPromise, isFunction } from '@vue/shared'
 import { LifecycleHooks } from './enums'
+import { AppContext } from './apiCreateApp'
+import { ComponentPublicInstance } from './componentPublicInstance'
 
 // contexts where user provided function may be executed, in addition to
 // lifecycle hooks.
@@ -60,9 +62,27 @@ export const ErrorTypeStrings: Record<LifecycleHooks | ErrorCodes, string> = {
 
 export type ErrorTypes = LifecycleHooks | ErrorCodes
 
+export type HandleErrorVaprInstanceBoundary = {
+  parent: HandleErrorVaprInstanceBoundary | null
+  appContext: AppContext
+  // TODO: add more
+}
+
+export type HandleErrorCoreInstanceBoundary = {
+  parent: HandleErrorCoreInstanceBoundary | null
+  appContext: AppContext
+  proxy: ComponentPublicInstance | null
+  vnode: VNode | null
+  [LifecycleHooks.ERROR_CAPTURED]: ComponentInternalInstance[LifecycleHooks.ERROR_CAPTURED]
+}
+
+export type HandleErrorInstanceBoundary =
+  | HandleErrorVaprInstanceBoundary
+  | HandleErrorCoreInstanceBoundary
+
 export function callWithErrorHandling(
   fn: Function,
-  instance: ComponentInternalInstance | null,
+  instance: HandleErrorInstanceBoundary | null,
   type: ErrorTypes,
   args?: unknown[]
 ) {
@@ -77,7 +97,7 @@ export function callWithErrorHandling(
 
 export function callWithAsyncErrorHandling(
   fn: Function | Function[],
-  instance: ComponentInternalInstance | null,
+  instance: HandleErrorInstanceBoundary | null,
   type: ErrorTypes,
   args?: unknown[]
 ): any[] {
@@ -100,21 +120,22 @@ export function callWithAsyncErrorHandling(
 
 export function handleError(
   err: unknown,
-  instance: ComponentInternalInstance | null,
+  instance: HandleErrorInstanceBoundary | null,
   type: ErrorTypes,
   throwInDev = true
 ) {
-  const contextVNode = instance ? instance.vnode : null
+  const contextVNode =
+    (instance ? 'vnode' in instance && instance.vnode : null) || null
   if (instance) {
     let cur = instance.parent
     // the exposed instance is the render proxy to keep it consistent with 2.x
-    const exposedInstance = instance.proxy
+    const exposedInstance = ('proxy' in instance && instance.proxy) || null
     // in production the hook receives only the error code
     const errorInfo = __DEV__
       ? ErrorTypeStrings[type]
       : `https://vuejs.org/errors/#runtime-${type}`
     while (cur) {
-      const errorCapturedHooks = cur.ec
+      const errorCapturedHooks = 'ec' in cur ? cur.ec : null
       if (errorCapturedHooks) {
         for (let i = 0; i < errorCapturedHooks.length; i++) {
           if (
@@ -127,7 +148,7 @@ export function handleError(
       cur = cur.parent
     }
     // app-level handling
-    const appErrorHandler = instance.appContext.config.errorHandler
+    const appErrorHandler = instance.appContext?.config.errorHandler
     if (appErrorHandler) {
       callWithErrorHandling(
         appErrorHandler,

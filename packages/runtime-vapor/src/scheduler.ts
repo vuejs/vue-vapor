@@ -1,4 +1,11 @@
 import { ReactiveEffect } from '@vue/reactivity'
+import { ComponentInternalInstance } from './component'
+import { SchedulerJobs } from '@vue/runtime-core'
+
+export type QueueEffect = (
+  cb: SchedulerJobs,
+  suspense: ComponentInternalInstance | null,
+) => void
 
 const p = Promise.resolve()
 
@@ -27,4 +34,17 @@ export function effect(fn: any) {
   const e = new ReactiveEffect(fn, () => queue(run))
   run = e.run.bind(e)
   run()
+}
+
+export function queueJob(cb: SchedulerJobs) {
+  // TODO: implement suspense
+  throw new Error('Function not implemented.')
+}
+
+export function queuePostRenderEffect(
+  cb: SchedulerJobs,
+  suspense: ComponentInternalInstance | null,
+) {
+  // TODO: implement suspense
+  throw new Error('Function not implemented.')
 }

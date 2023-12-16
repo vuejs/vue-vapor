@@ -11,6 +11,7 @@ import {
 
 import type { Data } from '@vue/shared'
 import { VaporLifecycleHooks } from './apiLifecycle'
+import { AppContext } from '@vue/runtime-core'
 
 export type Component = FunctionalComponent | ObjectComponent
 
@@ -35,6 +36,9 @@ export interface ComponentInternalInstance {
   component: FunctionalComponent | ObjectComponent
   propsOptions: NormalizedPropsOptions
 
+  parent: ComponentInternalInstance | null
+  appContext: AppContext
+
   // TODO: type
   proxy: Data | null
 
@@ -50,7 +54,7 @@ export interface ComponentInternalInstance {
   get isUnmounted(): boolean
   isUnmountedRef: Ref<boolean>
   isMountedRef: Ref<boolean>
-  // TODO: registory of provides, appContext, lifecycles, ...
+  // TODO: registory of provides, lifecycles, ...
   /**
    * @internal
    */
@@ -135,6 +139,10 @@ export const createComponentInstance = (
     container: null!, // set on mountComponent
     scope: new EffectScope(true /* detached */)!,
     component,
+
+    // TODO: registory of parent, appContext
+    parent: null,
+    appContext: null!,
 
     // resolved props and emits options
     propsOptions: normalizePropsOptions(component),
