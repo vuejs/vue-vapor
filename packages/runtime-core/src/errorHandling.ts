@@ -73,6 +73,9 @@ export type HandleErrorCoreInstanceBoundary = {
   appContext: AppContext
   proxy: ComponentPublicInstance | null
   vnode: VNode | null
+  /**
+   * @internal
+   */
   [LifecycleHooks.ERROR_CAPTURED]: ComponentInternalInstance[LifecycleHooks.ERROR_CAPTURED]
 }
 
@@ -135,10 +138,7 @@ export function handleError(
       ? ErrorTypeStrings[type]
       : `https://vuejs.org/errors/#runtime-${type}`
     while (cur) {
-      const errorCapturedHooks =
-        LifecycleHooks.ERROR_CAPTURED in cur
-          ? cur[LifecycleHooks.ERROR_CAPTURED]
-          : null
+      const errorCapturedHooks = 'ec' in cur ? cur.ec : null
       if (errorCapturedHooks) {
         for (let i = 0; i < errorCapturedHooks.length; i++) {
           if (
