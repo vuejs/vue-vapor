@@ -74,6 +74,19 @@ export function watchSyncEffect(
   )
 }
 
+const cleanupMap: WeakMap<ReactiveEffect, (() => void)[]> = new WeakMap()
+let activeEffect: ReactiveEffect | undefined = undefined
+
+// TODO: extract it to the reactivity package
+export function onEffectCleanup(cleanupFn: () => void) {
+  if (activeEffect) {
+    const cleanups =
+      cleanupMap.get(activeEffect) ||
+      cleanupMap.set(activeEffect, []).get(activeEffect)!
+    cleanups.push(cleanupFn)
+  }
+}
+
 function doWatch(
   source: WatchSource | WatchSource[] | WatchEffect | object,
   cb: WatchCallback | null,
@@ -155,12 +168,18 @@ function doWatch(
         if (cleanup) {
           cleanup()
         }
-        return callWithAsyncErrorHandling(
-          source,
-          instance,
-          ErrorCodes.WATCH_CALLBACK,
-          [onCleanup],
-        )
+        const currentEffectScope = activeEffect
+        activeEffect = effect
+        try {
+          return callWithAsyncErrorHandling(
+            source,
+            instance,
+            ErrorCodes.WATCH_CALLBACK,
+            [onEffectCleanup],
+          )
+        } finally {
+          activeEffect = currentEffectScope
+        }
       }
     }
   } else {
@@ -171,14 +190,6 @@ function doWatch(
   if (cb && deep) {
     const baseGetter = getter
     getter = () => traverse(baseGetter())
-  }
-
-  let cleanup: (() => void) | undefined
-  let onCleanup: OnCleanup = (fn: () => void) => {
-    cleanup = effect.onStop = () => {
-      callWithErrorHandling(fn, instance, ErrorCodes.WATCH_CLEANUP)
-      cleanup = effect.onStop = undefined
-    }
   }
 
   // TODO: ssr
@@ -210,6 +221,14 @@ function doWatch(
     })
 
   const effect = new ReactiveEffect(getter, NOOP, effectScheduler)
+
+  const cleanup = (effect.onStop = () => {
+    const cleanups = cleanupMap.get(effect)
+    if (cleanups) {
+      cleanups.forEach((cleanup) => cleanup())
+      cleanupMap.delete(effect)
+    }
+  })
 
   const unwatch = () => {
     effect.stop()

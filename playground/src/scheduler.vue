@@ -1,30 +1,45 @@
 <script setup lang="ts">
-import { ref, watchEffect, watchPostEffect, watchSyncEffect } from 'vue/vapor'
+import { onEffectCleanup, ref, watchEffect, watchPostEffect, watchSyncEffect } from 'vue/vapor'
 
-const i = ref(0)
-const add = () => i.value++
-
-watchEffect(() => {
-  console.log('pre i:', i.value)
-})
+const source = ref(0)
+const add = () => source.value++
 
 watchPostEffect(() => {
-  console.log('post i:', i.value)
+  const current = source.value
+  console.log('post', current)
+  onEffectCleanup(() => console.log('cleanup post', current))
+})
+
+watchEffect(() => {
+  const current = source.value
+  console.log('pre', current)
+  onEffectCleanup(() => console.log('cleanup pre', current))
 })
 
 watchSyncEffect(() => {
-  console.log('sync i:', i.value)
+  const current = source.value
+  console.log('sync', current)
+  onEffectCleanup(() => console.log('cleanup sync', current))
 })
 
-const log = (arg: any) => (console.log('render i:', i.value), arg)
+const onUpdate = (arg: any) => {
+  const current = source.value
+  console.log('render', current)
+  onEffectCleanup(() => console.log('cleanup render', current))
+  return arg
+}
 </script>
 
 <template>
   <div>
-    {{ log(i) }}
-    <button @click="add">
-      Add
-    </button>
+    <p>Please check the console</p>
+    <div>
+      <button @click="add">
+        Add
+      </button>
+      |
+      <span>{{ onUpdate(source) }}</span>
+    </div>
   </div>
 </template>
 
