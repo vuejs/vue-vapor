@@ -33,8 +33,6 @@ import {
   vaporSyncScheduler,
 } from './scheduler'
 
-type OnCleanup = (cleanupFn: () => void) => void
-
 export interface doWatchOptions<Immediate = boolean> extends DebuggerOptions {
   immediate?: Immediate
   deep?: boolean
