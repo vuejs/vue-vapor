@@ -1,6 +1,7 @@
 import { ReactiveEffect } from '@vue/reactivity'
 import { ComponentInternalInstance } from './component'
 import { SchedulerJob, SchedulerJobs } from '@vue/runtime-core'
+import { getIsRendering } from '.'
 
 export type QueueEffect = (
   cb: SchedulerJobs,
@@ -17,9 +18,15 @@ export type Scheduler = (context: {
 let isFlushing = false
 let isFlushPending = false
 
+// TODO: The queues in Vapor need to be merged with the queues in Core.
+//       this is a temporary solution, the ultimate goal is to support
+//       the mixed use of vapor components and default components.
 const queue: SchedulerJob[] = []
 let flushIndex = 0
 
+// TODO: The queues in Vapor need to be merged with the queues in Core.
+//       this is a temporary solution, the ultimate goal is to support
+//       the mixed use of vapor components and default components.
 const pendingPostFlushCbs: SchedulerJob[] = []
 let activePostFlushCbs: SchedulerJob[] | null = null
 let postFlushIndex = 0
@@ -168,25 +175,20 @@ const comparator = (a: SchedulerJob, b: SchedulerJob): number => {
   return diff
 }
 
-// TODO: remove this
-export function effect(fn: any) {
-  let run: () => void
-  const e = new ReactiveEffect(fn, () => queueJob(run))
-  run = e.run.bind(e)
-  run()
-}
-
 export function getVaporSchedulerByFlushMode(
   flush?: 'pre' | 'post' | 'sync',
 ): Scheduler {
+  if (getIsRendering()) {
+    return vaporRenderingScheduler
+  }
   if (flush === 'post') {
     return vaporPostScheduler
-  } else if (flush === 'sync') {
-    return vaporSyncScheduler
-  } else {
-    // default: 'pre'
-    return vaporPreScheduler
   }
+  if (flush === 'sync') {
+    return vaporSyncScheduler
+  }
+  // default: 'pre'
+  return vaporPreScheduler
 }
 
 export const vaporSyncScheduler: Scheduler = ({ isInit, effect, job }) => {
@@ -207,6 +209,21 @@ export const vaporPreScheduler: Scheduler = ({
     effect.run()
   } else {
     job.pre = true
+    if (instance) job.id = instance.uid
+    queueJob(job)
+  }
+}
+
+export const vaporRenderingScheduler: Scheduler = ({
+  isInit,
+  effect,
+  instance,
+  job,
+}) => {
+  if (isInit) {
+    effect.run()
+  } else {
+    job.pre = false
     if (instance) job.id = instance.uid
     queueJob(job)
   }

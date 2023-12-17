@@ -74,7 +74,7 @@ export function watchSyncEffect(
   )
 }
 
-export function doWatch(
+function doWatch(
   source: WatchSource | WatchSource[] | WatchEffect | object,
   cb: WatchCallback | null,
   scheduler: Scheduler,
