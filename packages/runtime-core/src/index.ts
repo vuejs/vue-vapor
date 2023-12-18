@@ -296,7 +296,6 @@ export type {
   AsyncComponentLoader
 } from './apiAsyncComponent'
 export type { HMRRuntime } from './hmr'
-export type { SchedulerJob, SchedulerJobs } from './scheduler'
 
 // Internal API ----------------------------------------------------------------
 
@@ -339,9 +338,6 @@ export {
 
 // For test-utils
 export { transformVNodeArgs } from './vnode'
-
-// For runtime-vapor
-export { traverse } from './apiWatch'
 
 // SSR -------------------------------------------------------------------------
 

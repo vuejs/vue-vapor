@@ -1,8 +1,12 @@
-import { VNode } from './vnode'
-import { ComponentInternalInstance } from './component'
-import { warn, pushWarningContext, popWarningContext } from './warning'
-import { isPromise, isFunction } from '@vue/shared'
+// These codes originate from a file of the same name in runtime-core,
+// duplicated during Vapor's early development to ensure its independence.
+// The ultimate aim is to uncouple this replicated code and
+// facilitate its shared use between two runtimes.
+
 import { LifecycleHooks } from './enums'
+import { type ComponentInternalInstance } from './component'
+import { isFunction, isPromise } from '@vue/shared'
+import { warn } from './warning'
 
 // contexts where user provided function may be executed, in addition to
 // lifecycle hooks.
@@ -21,7 +25,7 @@ export enum ErrorCodes {
   APP_WARN_HANDLER,
   FUNCTION_REF,
   ASYNC_COMPONENT_LOADER,
-  SCHEDULER
+  SCHEDULER,
 }
 
 export const ErrorTypeStrings: Record<LifecycleHooks | ErrorCodes, string> = {
@@ -55,7 +59,7 @@ export const ErrorTypeStrings: Record<LifecycleHooks | ErrorCodes, string> = {
   [ErrorCodes.ASYNC_COMPONENT_LOADER]: 'async component loader',
   [ErrorCodes.SCHEDULER]:
     'scheduler flush. This is likely a Vue internals bug. ' +
-    'Please open an issue at https://new-issue.vuejs.org/?repo=vuejs/core'
+    'Please open an issue at https://new-issue.vuejs.org/?repo=vuejs/core',
 }
 
 export type ErrorTypes = LifecycleHooks | ErrorCodes
@@ -64,7 +68,7 @@ export function callWithErrorHandling(
   fn: Function,
   instance: ComponentInternalInstance | null,
   type: ErrorTypes,
-  args?: unknown[]
+  args?: unknown[],
 ) {
   let res
   try {
@@ -79,12 +83,12 @@ export function callWithAsyncErrorHandling(
   fn: Function | Function[],
   instance: ComponentInternalInstance | null,
   type: ErrorTypes,
-  args?: unknown[]
+  args?: unknown[],
 ): any[] {
   if (isFunction(fn)) {
     const res = callWithErrorHandling(fn, instance, type, args)
     if (res && isPromise(res)) {
-      res.catch(err => {
+      res.catch((err) => {
         handleError(err, instance, type)
       })
     }
@@ -102,19 +106,18 @@ export function handleError(
   err: unknown,
   instance: ComponentInternalInstance | null,
   type: ErrorTypes,
-  throwInDev = true
+  throwInDev = true,
 ) {
-  const contextVNode = instance ? instance.vnode : null
   if (instance) {
     let cur = instance.parent
     // the exposed instance is the render proxy to keep it consistent with 2.x
-    const exposedInstance = instance.proxy
+    const exposedInstance = ('proxy' in instance && instance.proxy) || null
     // in production the hook receives only the error code
     const errorInfo = __DEV__
       ? ErrorTypeStrings[type]
       : `https://vuejs.org/errors/#runtime-${type}`
     while (cur) {
-      const errorCapturedHooks = cur.ec
+      const errorCapturedHooks = 'ec' in cur ? cur.ec : null
       if (errorCapturedHooks) {
         for (let i = 0; i < errorCapturedHooks.length; i++) {
           if (
@@ -126,36 +129,27 @@ export function handleError(
       }
       cur = cur.parent
     }
+
+    // TODO: need appContext interface
     // app-level handling
-    const appErrorHandler = instance.appContext.config.errorHandler
-    if (appErrorHandler) {
-      callWithErrorHandling(
-        appErrorHandler,
-        null,
-        ErrorCodes.APP_ERROR_HANDLER,
-        [err, exposedInstance, errorInfo]
-      )
-      return
-    }
+    // const appErrorHandler = instance.appContext?.config.errorHandler
+    // if (appErrorHandler) {
+    //   callWithErrorHandling(
+    //     appErrorHandler,
+    //     null,
+    //     ErrorCodes.APP_ERROR_HANDLER,
+    //     [err, exposedInstance, errorInfo],
+    //   )
+    //   return
+    // }
   }
-  logError(err, type, contextVNode, throwInDev)
+  logError(err, type, throwInDev)
 }
 
-function logError(
-  err: unknown,
-  type: ErrorTypes,
-  contextVNode: VNode | null,
-  throwInDev = true
-) {
+function logError(err: unknown, type: ErrorTypes, throwInDev = true) {
   if (__DEV__) {
     const info = ErrorTypeStrings[type]
-    if (contextVNode) {
-      pushWarningContext(contextVNode)
-    }
     warn(`Unhandled error${info ? ` during execution of ${info}` : ``}`)
-    if (contextVNode) {
-      popWarningContext()
-    }
     // crash in dev by default so it's more noticeable
     if (throwInDev) {
       throw err

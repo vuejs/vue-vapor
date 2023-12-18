@@ -1,42 +1,57 @@
 import {
-  DebuggerOptions,
-  EffectScheduler,
-  ErrorCodes,
-  ReactiveEffect,
-  WatchCallback,
-  WatchEffect,
-  WatchOptionsBase,
-  WatchSource,
-  WatchStopHandle,
-  callWithAsyncErrorHandling,
-  callWithErrorHandling,
-  getCurrentScope,
+  ComputedRef,
+  Ref,
   isReactive,
   isRef,
-  traverse,
-  warn,
-} from '@vue/runtime-core'
+  ReactiveEffect,
+  EffectScheduler,
+  DebuggerOptions,
+  getCurrentScope,
+  ReactiveFlags,
+} from '@vue/reactivity'
 import {
   EMPTY_OBJ,
   NOOP,
   extend,
   isArray,
   isFunction,
+  isMap,
+  isObject,
+  isPlainObject,
+  isSet,
   remove,
 } from '@vue/shared'
 import { currentInstance } from './component'
-import { SchedulerJob } from 'packages/runtime-core/src/scheduler'
 import {
   type Scheduler,
   getVaporSchedulerByFlushMode,
   vaporPostScheduler,
   vaporSyncScheduler,
+  SchedulerJob,
 } from './scheduler'
+import {
+  ErrorCodes,
+  callWithAsyncErrorHandling,
+  callWithErrorHandling,
+} from './errorHandling'
+import { warn } from './warning'
 
-export interface doWatchOptions<Immediate = boolean> extends DebuggerOptions {
-  immediate?: Immediate
-  deep?: boolean
-  once?: boolean
+export type WatchEffect = (onCleanup: OnCleanup) => void
+
+export type WatchSource<T = any> = Ref<T> | ComputedRef<T> | (() => T)
+
+export type WatchCallback<V = any, OV = any> = (
+  value: V,
+  oldValue: OV,
+  onCleanup: OnCleanup,
+) => any
+
+export type WatchStopHandle = () => void
+
+type OnCleanup = (cleanupFn: () => void) => void
+
+export interface WatchOptionsBase extends DebuggerOptions {
+  flush?: 'pre' | 'post' | 'sync'
 }
 
 // Simple effect.
@@ -83,6 +98,12 @@ export function onEffectCleanup(cleanupFn: () => void) {
       cleanupMap.set(activeEffect, []).get(activeEffect)!
     cleanups.push(cleanupFn)
   }
+}
+
+export interface doWatchOptions<Immediate = boolean> extends DebuggerOptions {
+  immediate?: Immediate
+  deep?: boolean
+  once?: boolean
 }
 
 function doWatch(
@@ -251,4 +272,31 @@ function doWatch(
   // TODO: ssr
   // if (__SSR__ && ssrCleanup) ssrCleanup.push(unwatch)
   return unwatch
+}
+
+export function traverse(value: unknown, seen?: Set<unknown>) {
+  if (!isObject(value) || (value as any)[ReactiveFlags.SKIP]) {
+    return value
+  }
+  seen = seen || new Set()
+  if (seen.has(value)) {
+    return value
+  }
+  seen.add(value)
+  if (isRef(value)) {
+    traverse(value.value, seen)
+  } else if (isArray(value)) {
+    for (let i = 0; i < value.length; i++) {
+      traverse(value[i], seen)
+    }
+  } else if (isSet(value) || isMap(value)) {
+    value.forEach((v: any) => {
+      traverse(v, seen)
+    })
+  } else if (isPlainObject(value)) {
+    for (const key in value) {
+      traverse(value[key], seen)
+    }
+  }
+  return value
 }

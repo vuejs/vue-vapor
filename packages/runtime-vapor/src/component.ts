@@ -11,7 +11,6 @@ import {
 
 import type { Data } from '@vue/shared'
 import { VaporLifecycleHooks } from './apiLifecycle'
-import { AppContext } from '@vue/runtime-core'
 
 export type Component = FunctionalComponent | ObjectComponent
 
@@ -37,7 +36,6 @@ export interface ComponentInternalInstance {
   propsOptions: NormalizedPropsOptions
 
   parent: ComponentInternalInstance | null
-  appContext: AppContext
 
   // TODO: type
   proxy: Data | null
@@ -140,9 +138,8 @@ export const createComponentInstance = (
     scope: new EffectScope(true /* detached */)!,
     component,
 
-    // TODO: registory of parent, appContext
+    // TODO: registory of parent
     parent: null,
-    appContext: null!,
 
     // resolved props and emits options
     propsOptions: normalizePropsOptions(component),
