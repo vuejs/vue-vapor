@@ -1,3 +1,4 @@
+import { ComponentPublicInstance } from '@vue/runtime-core'
 import { type ComponentInternalInstance, currentInstance } from './component'
 
 export enum VaporLifecycleHooks {
@@ -46,3 +47,16 @@ export const onBeforeUpdate = createHook(VaporLifecycleHooks.BEFORE_UPDATE)
 export const onUpdated = createHook(VaporLifecycleHooks.UPDATED)
 export const onBeforeUnmount = createHook(VaporLifecycleHooks.BEFORE_UNMOUNT)
 export const onUnmounted = createHook(VaporLifecycleHooks.UNMOUNTED)
+
+export type ErrorCapturedHook<TError = unknown> = (
+  err: TError,
+  instance: ComponentPublicInstance | null,
+  info: string,
+) => boolean | void
+
+export function onErrorCaptured<TError = Error>(
+  hook: ErrorCapturedHook<TError>,
+  target: ComponentInternalInstance | null = currentInstance,
+) {
+  injectHook(VaporLifecycleHooks.ERROR_CAPTURED, hook, target)
+}
