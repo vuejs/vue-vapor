@@ -30,7 +30,7 @@ import {
   SchedulerJob,
 } from './scheduler'
 import {
-  ErrorCodes,
+  VaporErrorCodes,
   callWithAsyncErrorHandling,
   callWithErrorHandling,
 } from './errorHandling'
@@ -168,7 +168,11 @@ function doWatch(
         } else if (isReactive(s)) {
           return traverse(s)
         } else if (isFunction(s)) {
-          return callWithErrorHandling(s, instance, ErrorCodes.WATCH_GETTER)
+          return callWithErrorHandling(
+            s,
+            instance,
+            VaporErrorCodes.WATCH_GETTER,
+          )
         } else {
           __DEV__ && warnInvalidSource(s)
         }
@@ -177,7 +181,7 @@ function doWatch(
     if (cb) {
       // getter with cb
       getter = () =>
-        callWithErrorHandling(source, instance, ErrorCodes.WATCH_GETTER)
+        callWithErrorHandling(source, instance, VaporErrorCodes.WATCH_GETTER)
     } else {
       // no cb -> simple effect
       getter = () => {
@@ -193,7 +197,7 @@ function doWatch(
           return callWithAsyncErrorHandling(
             source,
             instance,
-            ErrorCodes.WATCH_CALLBACK,
+            VaporErrorCodes.WATCH_CALLBACK,
             [onEffectCleanup],
           )
         } finally {

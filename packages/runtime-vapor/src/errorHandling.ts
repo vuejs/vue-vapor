@@ -10,7 +10,7 @@ import { warn } from './warning'
 
 // contexts where user provided function may be executed, in addition to
 // lifecycle hooks.
-export enum ErrorCodes {
+export enum VaporErrorCodes {
   SETUP_FUNCTION,
   RENDER_FUNCTION,
   WATCH_GETTER,
@@ -29,7 +29,7 @@ export enum ErrorCodes {
 }
 
 export const ErrorTypeStrings: Record<
-  VaporLifecycleHooks | ErrorCodes,
+  VaporLifecycleHooks | VaporErrorCodes,
   string
 > = {
   // [VaporLifecycleHooks.SERVER_PREFETCH]: 'serverPrefetch hook',
@@ -46,26 +46,26 @@ export const ErrorTypeStrings: Record<
   [VaporLifecycleHooks.ERROR_CAPTURED]: 'errorCaptured hook',
   [VaporLifecycleHooks.RENDER_TRACKED]: 'renderTracked hook',
   [VaporLifecycleHooks.RENDER_TRIGGERED]: 'renderTriggered hook',
-  [ErrorCodes.SETUP_FUNCTION]: 'setup function',
-  [ErrorCodes.RENDER_FUNCTION]: 'render function',
-  [ErrorCodes.WATCH_GETTER]: 'watcher getter',
-  [ErrorCodes.WATCH_CALLBACK]: 'watcher callback',
-  [ErrorCodes.WATCH_CLEANUP]: 'watcher cleanup function',
-  [ErrorCodes.NATIVE_EVENT_HANDLER]: 'native event handler',
-  [ErrorCodes.COMPONENT_EVENT_HANDLER]: 'component event handler',
-  [ErrorCodes.VNODE_HOOK]: 'vnode hook',
-  [ErrorCodes.DIRECTIVE_HOOK]: 'directive hook',
-  [ErrorCodes.TRANSITION_HOOK]: 'transition hook',
-  [ErrorCodes.APP_ERROR_HANDLER]: 'app errorHandler',
-  [ErrorCodes.APP_WARN_HANDLER]: 'app warnHandler',
-  [ErrorCodes.FUNCTION_REF]: 'ref function',
-  [ErrorCodes.ASYNC_COMPONENT_LOADER]: 'async component loader',
-  [ErrorCodes.SCHEDULER]:
+  [VaporErrorCodes.SETUP_FUNCTION]: 'setup function',
+  [VaporErrorCodes.RENDER_FUNCTION]: 'render function',
+  [VaporErrorCodes.WATCH_GETTER]: 'watcher getter',
+  [VaporErrorCodes.WATCH_CALLBACK]: 'watcher callback',
+  [VaporErrorCodes.WATCH_CLEANUP]: 'watcher cleanup function',
+  [VaporErrorCodes.NATIVE_EVENT_HANDLER]: 'native event handler',
+  [VaporErrorCodes.COMPONENT_EVENT_HANDLER]: 'component event handler',
+  [VaporErrorCodes.VNODE_HOOK]: 'vnode hook',
+  [VaporErrorCodes.DIRECTIVE_HOOK]: 'directive hook',
+  [VaporErrorCodes.TRANSITION_HOOK]: 'transition hook',
+  [VaporErrorCodes.APP_ERROR_HANDLER]: 'app errorHandler',
+  [VaporErrorCodes.APP_WARN_HANDLER]: 'app warnHandler',
+  [VaporErrorCodes.FUNCTION_REF]: 'ref function',
+  [VaporErrorCodes.ASYNC_COMPONENT_LOADER]: 'async component loader',
+  [VaporErrorCodes.SCHEDULER]:
     'scheduler flush. This is likely a Vue internals bug. ' +
     'Please open an issue at https://new-issue.vuejs.org/?repo=vuejs/core',
 }
 
-export type ErrorTypes = VaporLifecycleHooks | ErrorCodes
+export type ErrorTypes = VaporLifecycleHooks | VaporErrorCodes
 
 export function callWithErrorHandling(
   fn: Function,
