@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onEffectCleanup, ref, watchEffect, watchPostEffect, watchSyncEffect } from 'vue/vapor'
+import { onEffectCleanup, ref, watch, watchEffect, watchPostEffect, watchSyncEffect } from 'vue/vapor'
 
 const source = ref(0)
 const add = () => source.value++
@@ -20,6 +20,11 @@ watchSyncEffect(() => {
   const current = source.value
   console.log('sync', current)
   onEffectCleanup(() => console.log('cleanup sync', current))
+})
+
+watch(source, (value, oldValue) => {
+  console.log('sync watch', value, 'oldValue:', oldValue)
+  onEffectCleanup(() => console.log('cleanup sync watch', value))
 })
 
 const onUpdate = (arg: any) => {
