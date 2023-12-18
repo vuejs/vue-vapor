@@ -3,7 +3,7 @@
 // The ultimate aim is to uncouple this replicated code and
 // facilitate its shared use between two runtimes.
 
-import { LifecycleHooks } from './enums'
+import { VaporLifecycleHooks } from './apiLifecycle'
 import { type ComponentInternalInstance } from './component'
 import { isFunction, isPromise } from '@vue/shared'
 import { warn } from './warning'
@@ -28,21 +28,24 @@ export enum ErrorCodes {
   SCHEDULER,
 }
 
-export const ErrorTypeStrings: Record<LifecycleHooks | ErrorCodes, string> = {
-  [LifecycleHooks.SERVER_PREFETCH]: 'serverPrefetch hook',
-  [LifecycleHooks.BEFORE_CREATE]: 'beforeCreate hook',
-  [LifecycleHooks.CREATED]: 'created hook',
-  [LifecycleHooks.BEFORE_MOUNT]: 'beforeMount hook',
-  [LifecycleHooks.MOUNTED]: 'mounted hook',
-  [LifecycleHooks.BEFORE_UPDATE]: 'beforeUpdate hook',
-  [LifecycleHooks.UPDATED]: 'updated',
-  [LifecycleHooks.BEFORE_UNMOUNT]: 'beforeUnmount hook',
-  [LifecycleHooks.UNMOUNTED]: 'unmounted hook',
-  [LifecycleHooks.ACTIVATED]: 'activated hook',
-  [LifecycleHooks.DEACTIVATED]: 'deactivated hook',
-  [LifecycleHooks.ERROR_CAPTURED]: 'errorCaptured hook',
-  [LifecycleHooks.RENDER_TRACKED]: 'renderTracked hook',
-  [LifecycleHooks.RENDER_TRIGGERED]: 'renderTriggered hook',
+export const ErrorTypeStrings: Record<
+  VaporLifecycleHooks | ErrorCodes,
+  string
+> = {
+  // [VaporLifecycleHooks.SERVER_PREFETCH]: 'serverPrefetch hook',
+  [VaporLifecycleHooks.BEFORE_CREATE]: 'beforeCreate hook',
+  [VaporLifecycleHooks.CREATED]: 'created hook',
+  [VaporLifecycleHooks.BEFORE_MOUNT]: 'beforeMount hook',
+  [VaporLifecycleHooks.MOUNTED]: 'mounted hook',
+  [VaporLifecycleHooks.BEFORE_UPDATE]: 'beforeUpdate hook',
+  [VaporLifecycleHooks.UPDATED]: 'updated',
+  [VaporLifecycleHooks.BEFORE_UNMOUNT]: 'beforeUnmount hook',
+  [VaporLifecycleHooks.UNMOUNTED]: 'unmounted hook',
+  [VaporLifecycleHooks.ACTIVATED]: 'activated hook',
+  [VaporLifecycleHooks.DEACTIVATED]: 'deactivated hook',
+  [VaporLifecycleHooks.ERROR_CAPTURED]: 'errorCaptured hook',
+  [VaporLifecycleHooks.RENDER_TRACKED]: 'renderTracked hook',
+  [VaporLifecycleHooks.RENDER_TRIGGERED]: 'renderTriggered hook',
   [ErrorCodes.SETUP_FUNCTION]: 'setup function',
   [ErrorCodes.RENDER_FUNCTION]: 'render function',
   [ErrorCodes.WATCH_GETTER]: 'watcher getter',
@@ -62,7 +65,7 @@ export const ErrorTypeStrings: Record<LifecycleHooks | ErrorCodes, string> = {
     'Please open an issue at https://new-issue.vuejs.org/?repo=vuejs/core',
 }
 
-export type ErrorTypes = LifecycleHooks | ErrorCodes
+export type ErrorTypes = VaporLifecycleHooks | ErrorCodes
 
 export function callWithErrorHandling(
   fn: Function,
