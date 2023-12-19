@@ -119,7 +119,7 @@ describe('directives', () => {
       render(ctx: any){
         const t0 = template("<div id=\"foo\"></div>");
         const n0 = t0();
-        const { 0: [n1] } = children(n0 as ChildNode);
+        const { 0: [n1] } = children(n0);
         withDirectives(n1, [[ctx.dir, () => ctx.count, "foo", { ok: true }]]);
         effect(() => {
           setText(n1 as Element, void 0, ctx.count);
@@ -137,59 +137,49 @@ describe('directives', () => {
     await nextTick()
     expect(updated).toHaveBeenCalledTimes(1)
 
-    debugger
     unmountComponent(_instance!)
-    // render(null, root)
     expect(beforeUnmount).toHaveBeenCalledTimes(1)
-    // expect(unmounted).toHaveBeenCalledTimes(1)
+    expect(unmounted).toHaveBeenCalledTimes(1)
   })
 
-/*  it('should work with a function directive', async () => {
+ it('should work with a function directive', async () => {
     const count = ref(0)
-
     function assertBindings(binding: DirectiveBinding) {
       expect(binding.value).toBe(count.value)
       expect(binding.arg).toBe('foo')
-      expect(binding.instance).toBe(_instance && _instance.proxy)
+      expect(binding.instance).toBe(_instance)
       expect(binding.modifiers && binding.modifiers.ok).toBe(true)
     }
 
-    const fn = vi.fn(((el, binding, vnode, prevVNode) => {
-      expect(el.tag).toBe('div')
-      expect(el.parentNode).toBe(root)
-
+    const fn = vi.fn(((el, binding) => {
+      expect(el.tagName).toBe('DIV')
+      // should be removed now
+      expect(el.parentElement).toBe(host)
       assertBindings(binding)
-
-      expect(vnode).toBe(_vnode)
-      expect(prevVNode).toBe(_prevVnode)
     }) as DirectiveHook)
 
-    let _instance: ComponentInternalInstance | null = null
-    let _vnode: VNode | null = null
-    let _prevVnode: VNode | null = null
-    const Comp = {
-      setup() {
-        _instance = currentInstance
-      },
-      render() {
-        _prevVnode = _vnode
-        _vnode = withDirectives(h('div', count.value), [
-          [
-            fn,
-            // value
-            count.value,
-            // argument
-            'foo',
-            // modifiers
-            { ok: true }
-          ]
-        ])
-        return _vnode
-      }
-    }
+   let _instance: ComponentInternalInstance | null = null
+   const Comp = defineComponent({
+     setup(){
+       _instance = getCurrentInstance()
+       const __returned__ = { count, dir: fn };
+       Object.defineProperty(__returned__, "__isScriptSetup", { enumerable: false, value: true });
+       return __returned__;
+     },
+     render(ctx: any){
+       const t0 = template("<div id=\"foo\"></div>");
+       const n0 = t0();
+       const { 0: [n1] } = children(n0);
+       withDirectives(n1, [[ctx.dir, () => ctx.count, "foo", { ok: true }]]);
+       effect(() => {
+         setText(n1 as Element, void 0, ctx.count);
+       });
+       return n0;
+     }
+   })
 
-    const root = nodeOps.createElement('div')
-    render(h(Comp), root)
+   render(Comp as any, {}, '#host')
+   await nextTick()
 
     expect(fn).toHaveBeenCalledTimes(1)
 
@@ -198,7 +188,8 @@ describe('directives', () => {
     expect(fn).toHaveBeenCalledTimes(2)
   })
 
-  it('should work on component vnode', async () => {
+  //TODO: Wait for component design to be completed
+ /*it('should work on component', async () => {
     const count = ref(0)
 
     function assertBindings(binding: DirectiveBinding) {
@@ -336,10 +327,11 @@ describe('directives', () => {
     render(null, root)
     expect(beforeUnmount).toHaveBeenCalledTimes(1)
     expect(unmounted).toHaveBeenCalledTimes(1)
-  })
+  })*/
 
+  // TODO: Wait for component design to be completed
   // #2298
-  it('directive merging on component root', () => {
+  /* it('directive merging on component root', () => {
     const d1 = {
       mounted: vi.fn()
     }
@@ -363,27 +355,34 @@ describe('directives', () => {
     render(h(App), root)
     expect(d1.mounted).toHaveBeenCalled()
     expect(d2.mounted).toHaveBeenCalled()
-  })
+  }) */
 
-  test('should disable tracking inside directive lifecycle hooks', async () => {
+  // TODO: Wait for beforeUpdated hook design to be completed
+  /*it('should disable tracking inside directive lifecycle hooks', async () => {
     const count = ref(0)
     const text = ref('')
     const beforeUpdate = vi.fn(() => count.value++)
 
-    const App = {
-      render() {
-        return withDirectives(h('p', text.value), [
-          [
-            {
-              beforeUpdate
-            }
-          ]
-        ])
+    const Comp = defineComponent({
+      setup(){
+        const __returned__ = { count, text, dir: { beforeUpdate } };
+        Object.defineProperty(__returned__, "__isScriptSetup", { enumerable: false, value: true });
+        return __returned__;
+      },
+      render(ctx: any){
+        const t0 = template("<div id=\"foo\"></div>");
+        const n0 = t0();
+        const { 0: [n1] } = children(n0);
+        withDirectives(n1, [[ctx.dir, () => ctx.count, "foo", { ok: true }]]);
+        effect(() => {
+          setText(n1 as Element, void 0, ctx.text);
+        });
+        return n0;
       }
-    }
+    })
 
-    const root = nodeOps.createElement('div')
-    render(h(App), root)
+    render(Comp as any, {}, '#host')
+    await nextTick()
     expect(beforeUpdate).toHaveBeenCalledTimes(0)
     expect(count.value).toBe(0)
 
@@ -391,47 +390,63 @@ describe('directives', () => {
     await nextTick()
     expect(beforeUpdate).toHaveBeenCalledTimes(1)
     expect(count.value).toBe(1)
+  })*/
+
+  // TODO: Example of design component closing
+   it('should receive exposeProxy for closed instances', async () => {
+    let res: number
+     const count = ref(0)
+     // @ts-ignore
+     const mounted = (el, { instance }) => {
+       res = instance.proxy.count
+     }
+     const Comp = defineComponent({
+       setup(){
+         const __returned__ = { count, dir: { mounted } };
+         Object.defineProperty(__returned__, "__isScriptSetup", { enumerable: false, value: true });
+         return __returned__;
+       },
+       render(ctx: any){
+         const t0 = template("<div id=\"foo\"></div>");
+         const n0 = t0();
+         const { 0: [n1] } = children(n0);
+         withDirectives(n1, [[ctx.dir, () => ctx.count, "foo", { ok: true }]]);
+         effect(() => {
+           setText(n1 as Element, void 0, ctx.count);
+         });
+         return n0;
+       }
+     })
+
+    render(Comp as any, {}, '#host')
+    await nextTick()
+    expect(res!).toBe(0)
   })
 
-  test('should receive exposeProxy for closed instances', async () => {
-    let res: string
-    const App = defineComponent({
-      setup(_, { expose }) {
-        expose({
-          msg: 'Test'
-        })
-
-        return () =>
-          withDirectives(h('p', 'Lore Ipsum'), [
-            [
-              {
-                mounted(el, { instance }) {
-                  res = (instance as any).msg as string
-                }
-              }
-            ]
-          ])
-      }
-    })
-    const root = nodeOps.createElement('div')
-    render(h(App), root)
-    expect(res!).toBe('Test')
-  })
-
-  test('should not throw with unknown directive', async () => {
+  it('should not throw with unknown directive', async () => {
     const d1 = {
       mounted: vi.fn()
     }
-    const App = {
-      name: 'App',
-      render() {
-        // simulates the code generated on an unknown directive
-        return withDirectives(h('div'), [[undefined], [d1]])
+    const Comp = defineComponent({
+      setup(){
+        const __returned__ = { dir: d1, dir2: undefined };
+        Object.defineProperty(__returned__, "__isScriptSetup", { enumerable: false, value: true });
+        return __returned__;
+      },
+      render(ctx: any){
+        const t0 = template("<div id=\"foo\"></div>");
+        const n0 = t0();
+        const { 0: [n1] } = children(n0);
+        withDirectives(n1, [[ctx.dir, () => ctx.count, "foo", { ok: true }]]);
+        withDirectives(n1, [[ctx.dir2, () => ctx.count, "foo", { ok: true }]]);
+        effect(() => {
+          setText(n1 as Element, void 0, ctx.count);
+        });
+        return n0;
       }
-    }
-
-    const root = nodeOps.createElement('div')
-    render(h(App), root)
+    })
+    render(Comp as any, {}, '#host')
+    await nextTick()
     expect(d1.mounted).toHaveBeenCalled()
-  })*/
+  })
 })
