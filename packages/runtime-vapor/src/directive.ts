@@ -1,7 +1,7 @@
 import { isFunction } from '@vue/shared'
 import { currentInstance, type ComponentInternalInstance } from './component'
 import { effect } from './scheduler'
-import { ComponentPublicInstance, getExposeProxy } from '@vue/runtime-core'
+import { getExposeProxy } from '@vue/runtime-core'
 
 export type DirectiveModifiers<M extends string = string> = Record<M, boolean>
 
