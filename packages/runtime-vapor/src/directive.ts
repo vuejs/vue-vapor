@@ -1,7 +1,6 @@
 import { isFunction } from '@vue/shared'
 import { currentInstance, type ComponentInternalInstance } from './component'
 import { effect } from './scheduler'
-import {ComponentPublicInstance, getExposeProxy} from "@vue/runtime-core";
 
 export type DirectiveModifiers<M extends string = string> = Record<M, boolean>
 
@@ -70,9 +69,6 @@ export function withDirectives<T extends Node>(
   }
 
   const instance = currentInstance
-  const instanceProxy =
-    (getExposeProxy(currentInstance as any) as ComponentInternalInstance) ||
-    currentInstance.proxy
   if (!instance.dirs.has(node)) instance.dirs.set(node, [])
   const bindings = instance.dirs.get(node)!
 
@@ -88,7 +84,7 @@ export function withDirectives<T extends Node>(
 
     const binding: DirectiveBinding = {
       dir,
-      instance: instanceProxy,
+      instance,
       source,
       value: null, // set later
       oldValue: null,

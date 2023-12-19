@@ -391,7 +391,6 @@ describe('directives', () => {
     expect(count.value).toBe(1)
   })*/
 
-  // TODO: Example of design component closing
    it('should receive exposeProxy for closed instances', async () => {
     let res: number
      const count = ref(0)

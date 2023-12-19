@@ -1055,7 +1055,6 @@ export function createSetupContext(
         }
       }
     }
-    debugger
     instance.exposed = exposed || {}
   }
 

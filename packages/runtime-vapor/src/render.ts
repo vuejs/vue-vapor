@@ -4,7 +4,6 @@ import {
   type Component,
   type ComponentInternalInstance,
   createComponentInstance,
-  createSetupContext,
   setCurrentInstance,
   unsetCurrentInstance,
 } from './component'
@@ -43,7 +42,7 @@ export function mountComponent(
   setCurrentInstance(instance)
   const block = instance.scope.run(() => {
     const { component, props } = instance
-    const ctx = createSetupContext(instance)
+    const ctx = { expose: () => {} }
 
     const setupFn =
       typeof component === 'function' ? component : component.setup
