@@ -401,7 +401,10 @@ describe('directives', () => {
        res = instance.proxy.count
      }
      const Comp = defineComponent({
-       setup(){
+       setup(_, {expose}){
+         expose({
+           msg: 'Test'
+         })
          const __returned__ = { count, dir: { mounted } };
          Object.defineProperty(__returned__, "__isScriptSetup", { enumerable: false, value: true });
          return __returned__;
