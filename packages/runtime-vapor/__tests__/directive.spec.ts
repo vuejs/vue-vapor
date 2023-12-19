@@ -7,11 +7,15 @@ import {
   render,
   getCurrentInstance,
   ref,
-  unmountComponent
+  unmountComponent,
 } from '../src'
-import type { DirectiveBinding, DirectiveHook, ComponentInternalInstance } from '../src'
-import {afterEach, beforeEach, describe, expect} from "vitest";
-import { defineComponent, nextTick } from "@vue/runtime-core";
+import type {
+  DirectiveBinding,
+  DirectiveHook,
+  ComponentInternalInstance,
+} from '../src'
+import { afterEach, beforeEach, describe, expect } from 'vitest'
+import { defineComponent, nextTick } from '@vue/runtime-core'
 
 let host: HTMLElement
 
@@ -29,7 +33,7 @@ afterEach(() => {
 
 describe('directives', () => {
   it('should work', async () => {
-    const count = ref(0);
+    const count = ref(0)
     function assertBindings(binding: DirectiveBinding) {
       expect(binding.value).toBe(count.value)
       expect(binding.arg).toBe('foo')
@@ -104,27 +108,32 @@ describe('directives', () => {
       // beforeUpdate
       updated,
       beforeUnmount,
-      unmounted
+      unmounted,
     }
 
     let _instance: ComponentInternalInstance | null = null
     const Comp = defineComponent({
-      setup(){
+      setup() {
         _instance = getCurrentInstance()
-        const __returned__ = { count, dir };
-        Object.defineProperty(__returned__, "__isScriptSetup", { enumerable: false, value: true });
-        return __returned__;
+        const __returned__ = { count, dir }
+        Object.defineProperty(__returned__, '__isScriptSetup', {
+          enumerable: false,
+          value: true,
+        })
+        return __returned__
       },
-      render(ctx: any){
-        const t0 = template("<div id=\"foo\"></div>");
-        const n0 = t0();
-        const { 0: [n1] } = children(n0);
-        withDirectives(n1, [[ctx.dir, () => ctx.count, "foo", { ok: true }]]);
+      render(ctx: any) {
+        const t0 = template('<div id="foo"></div>')
+        const n0 = t0()
+        const {
+          0: [n1],
+        } = children(n0)
+        withDirectives(n1, [[ctx.dir, () => ctx.count, 'foo', { ok: true }]])
         effect(() => {
-          setText(n1 as Element, void 0, ctx.count);
-        });
-        return n0;
-      }
+          setText(n1 as Element, void 0, ctx.count)
+        })
+        return n0
+      },
     })
 
     render(Comp as any, {}, '#host')
@@ -141,7 +150,7 @@ describe('directives', () => {
     expect(unmounted).toHaveBeenCalledTimes(1)
   })
 
- it('should work with a function directive', async () => {
+  it('should work with a function directive', async () => {
     const count = ref(0)
     function assertBindings(binding: DirectiveBinding) {
       expect(binding.value).toBe(count.value)
@@ -157,28 +166,33 @@ describe('directives', () => {
       assertBindings(binding)
     }) as DirectiveHook)
 
-   let _instance: ComponentInternalInstance | null = null
-   const Comp = defineComponent({
-     setup(){
-       _instance = getCurrentInstance()
-       const __returned__ = { count, dir: fn };
-       Object.defineProperty(__returned__, "__isScriptSetup", { enumerable: false, value: true });
-       return __returned__;
-     },
-     render(ctx: any){
-       const t0 = template("<div id=\"foo\"></div>");
-       const n0 = t0();
-       const { 0: [n1] } = children(n0);
-       withDirectives(n1, [[ctx.dir, () => ctx.count, "foo", { ok: true }]]);
-       effect(() => {
-         setText(n1 as Element, void 0, ctx.count);
-       });
-       return n0;
-     }
-   })
+    let _instance: ComponentInternalInstance | null = null
+    const Comp = defineComponent({
+      setup() {
+        _instance = getCurrentInstance()
+        const __returned__ = { count, dir: fn }
+        Object.defineProperty(__returned__, '__isScriptSetup', {
+          enumerable: false,
+          value: true,
+        })
+        return __returned__
+      },
+      render(ctx: any) {
+        const t0 = template('<div id="foo"></div>')
+        const n0 = t0()
+        const {
+          0: [n1],
+        } = children(n0)
+        withDirectives(n1, [[ctx.dir, () => ctx.count, 'foo', { ok: true }]])
+        effect(() => {
+          setText(n1 as Element, void 0, ctx.count)
+        })
+        return n0
+      },
+    })
 
-   render(Comp as any, {}, '#host')
-   await nextTick()
+    render(Comp as any, {}, '#host')
+    await nextTick()
 
     expect(fn).toHaveBeenCalledTimes(1)
 
@@ -188,7 +202,7 @@ describe('directives', () => {
   })
 
   //TODO: Wait for component design to be completed
- /*it('should work on component', async () => {
+  /*it('should work on component', async () => {
     const count = ref(0)
 
     function assertBindings(binding: DirectiveBinding) {
@@ -391,33 +405,38 @@ describe('directives', () => {
     expect(count.value).toBe(1)
   })*/
 
-   it('should receive exposeProxy for closed instances', async () => {
+  it('should receive exposeProxy for closed instances', async () => {
     let res: number
-     const count = ref(0)
-     // @ts-ignore
-     const mounted = (el, { instance }) => {
-       res = instance.msg
-     }
-     const Comp = defineComponent({
-       setup(_, { expose }){
-         expose({
-           msg: 'Test'
-         })
-         const __returned__ = { count, dir: { mounted } };
-         Object.defineProperty(__returned__, "__isScriptSetup", { enumerable: false, value: true });
-         return __returned__;
-       },
-       render(ctx: any){
-         const t0 = template("<div id=\"foo\"></div>");
-         const n0 = t0();
-         const { 0: [n1] } = children(n0);
-         withDirectives(n1, [[ctx.dir, () => ctx.count, "foo", { ok: true }]]);
-         effect(() => {
-           setText(n1 as Element, void 0, ctx.count);
-         });
-         return n0;
-       }
-     })
+    const count = ref(0)
+    // @ts-ignore
+    const mounted = (el, { instance }) => {
+      res = instance.msg
+    }
+    const Comp = defineComponent({
+      setup(_, { expose }) {
+        expose({
+          msg: 'Test',
+        })
+        const __returned__ = { count, dir: { mounted } }
+        Object.defineProperty(__returned__, '__isScriptSetup', {
+          enumerable: false,
+          value: true,
+        })
+        return __returned__
+      },
+      render(ctx: any) {
+        const t0 = template('<div id="foo"></div>')
+        const n0 = t0()
+        const {
+          0: [n1],
+        } = children(n0)
+        withDirectives(n1, [[ctx.dir, () => ctx.count, 'foo', { ok: true }]])
+        effect(() => {
+          setText(n1 as Element, void 0, ctx.count)
+        })
+        return n0
+      },
+    })
 
     render(Comp as any, {}, '#host')
     await nextTick()
@@ -426,25 +445,30 @@ describe('directives', () => {
 
   it('should not throw with unknown directive', async () => {
     const d1 = {
-      mounted: vi.fn()
+      mounted: vi.fn(),
     }
     const Comp = defineComponent({
-      setup(){
-        const __returned__ = { dir: d1, dir2: undefined };
-        Object.defineProperty(__returned__, "__isScriptSetup", { enumerable: false, value: true });
-        return __returned__;
+      setup() {
+        const __returned__ = { dir: d1, dir2: undefined }
+        Object.defineProperty(__returned__, '__isScriptSetup', {
+          enumerable: false,
+          value: true,
+        })
+        return __returned__
       },
-      render(ctx: any){
-        const t0 = template("<div id=\"foo\"></div>");
-        const n0 = t0();
-        const { 0: [n1] } = children(n0);
-        withDirectives(n1, [[ctx.dir, () => ctx.count, "foo", { ok: true }]]);
-        withDirectives(n1, [[ctx.dir2, () => ctx.count, "foo", { ok: true }]]);
+      render(ctx: any) {
+        const t0 = template('<div id="foo"></div>')
+        const n0 = t0()
+        const {
+          0: [n1],
+        } = children(n0)
+        withDirectives(n1, [[ctx.dir, () => ctx.count, 'foo', { ok: true }]])
+        withDirectives(n1, [[ctx.dir2, () => ctx.count, 'foo', { ok: true }]])
         effect(() => {
-          setText(n1 as Element, void 0, ctx.count);
-        });
-        return n0;
-      }
+          setText(n1 as Element, void 0, ctx.count)
+        })
+        return n0
+      },
     })
     render(Comp as any, {}, '#host')
     await nextTick()
