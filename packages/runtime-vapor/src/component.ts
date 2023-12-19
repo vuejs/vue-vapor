@@ -1,6 +1,6 @@
-import { EffectScope, Ref, ref } from '@vue/reactivity'
+import {EffectScope, isRef, Ref, ref} from '@vue/reactivity'
 
-import { EMPTY_OBJ } from '@vue/shared'
+import {EMPTY_OBJ, isArray} from '@vue/shared'
 import { Block } from './render'
 import { type DirectiveBinding } from './directive'
 import {
@@ -11,6 +11,7 @@ import {
 
 import type { Data } from '@vue/shared'
 import { VaporLifecycleHooks } from './apiLifecycle'
+import { warn } from "@vue/runtime-core";
 
 export type Component = FunctionalComponent | ObjectComponent
 
@@ -41,6 +42,10 @@ export interface ComponentInternalInstance {
   // state
   props: Data
   setupState: Data
+
+  // exposed properties via expose()
+  exposed: Record<string, any> | null
+  exposeProxy: Record<string, any> | null
 
   /** directives */
   dirs: Map<Node, DirectiveBinding[]>
@@ -123,6 +128,54 @@ export const unsetCurrentInstance = () => {
   currentInstance = null
 }
 
+// TODO: Maybe it can be reused
+// TODO: https://github.com/vuejs/core/blob/04d2c05054c26b02fbc1d84839b0ed5cd36455b6/packages/runtime-core/src/component.ts#L186C1-L186C1
+export type SetupContext = {
+  expose: (exposed?: Record<string, any>) => void
+}
+
+// TODO: Maybe it can be reused
+// TODO: https://github.com/vuejs/core/blob/04d2c05054c26b02fbc1d84839b0ed5cd36455b6/packages/runtime-core/src/component.ts#L983
+export function createSetupContext(
+  instance: ComponentInternalInstance
+): SetupContext {
+  const expose: SetupContext['expose'] = exposed => {
+    if (__DEV__) {
+      if (instance.exposed) {
+        warn(`expose() should be called only once per setup().`)
+      }
+      if (exposed != null) {
+        let exposedType: string = typeof exposed
+        if (exposedType === 'object') {
+          if (isArray(exposed)) {
+            exposedType = 'array'
+          } else if (isRef(exposed)) {
+            exposedType = 'ref'
+          }
+        }
+        if (exposedType !== 'object') {
+          warn(
+            `expose() should be passed a plain object, received ${exposedType}.`
+          )
+        }
+      }
+    }
+    instance.exposed = exposed || {}
+  }
+
+  if (__DEV__) {
+    // We use getters in dev in case libs like test-utils overwrite instance
+    // properties (overwrites should not be done in prod)
+    return Object.freeze({
+      expose
+    })
+  } else {
+    return {
+      expose
+    }
+  }
+}
+
 let uid = 0
 export const createComponentInstance = (
   component: ObjectComponent | FunctionalComponent,
@@ -144,6 +197,10 @@ export const createComponentInstance = (
     // state
     props: EMPTY_OBJ,
     setupState: EMPTY_OBJ,
+
+    // exposed properties via expose()
+    exposed: null,
+    exposeProxy: null,
 
     dirs: new Map(),
 

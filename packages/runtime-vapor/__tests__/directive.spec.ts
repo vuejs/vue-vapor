@@ -6,7 +6,6 @@ import {
   setText,
   render,
   getCurrentInstance,
-  on,
   ref,
   unmountComponent
 } from '../src'
@@ -34,7 +33,7 @@ describe('directives', () => {
     function assertBindings(binding: DirectiveBinding) {
       expect(binding.value).toBe(count.value)
       expect(binding.arg).toBe('foo')
-      expect(binding.instance).toBe(_instance)
+      expect(binding.instance).toBe(_instance && _instance.proxy)
       expect(binding.modifiers && binding.modifiers.ok).toBe(true)
     }
 
@@ -147,7 +146,7 @@ describe('directives', () => {
     function assertBindings(binding: DirectiveBinding) {
       expect(binding.value).toBe(count.value)
       expect(binding.arg).toBe('foo')
-      expect(binding.instance).toBe(_instance)
+      expect(binding.instance).toBe(_instance && _instance.proxy)
       expect(binding.modifiers && binding.modifiers.ok).toBe(true)
     }
 
@@ -398,10 +397,10 @@ describe('directives', () => {
      const count = ref(0)
      // @ts-ignore
      const mounted = (el, { instance }) => {
-       res = instance.proxy.count
+       res = instance.msg
      }
      const Comp = defineComponent({
-       setup(_, {expose}){
+       setup(_, { expose }){
          expose({
            msg: 'Test'
          })
@@ -423,7 +422,7 @@ describe('directives', () => {
 
     render(Comp as any, {}, '#host')
     await nextTick()
-    expect(res!).toBe(0)
+    expect(res!).toBe('Test')
   })
 
   it('should not throw with unknown directive', async () => {
