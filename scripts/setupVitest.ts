@@ -94,3 +94,23 @@ afterEach(() => {
     )
   }
 })
+
+export function setupHostElm() {
+  let host: HTMLElement
+  const initHost = () => {
+    host = document.createElement('div')
+    host.setAttribute('id', 'host')
+    document.body.appendChild(host)
+  }
+  beforeEach(() => {
+    initHost()
+  })
+  afterEach(() => {
+    host.remove()
+  })
+  return {
+    getHost: () => {
+      return host
+    }
+  }
+}

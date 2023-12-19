@@ -7,24 +7,14 @@ import {
   ref,
   unmountComponent,
 } from '../src'
-import { afterEach, beforeEach, describe, expect } from 'vitest'
+import { describe, expect } from 'vitest'
 import { defineComponent } from '@vue/runtime-core'
+import { setupHostElm } from '../../../scripts/setupVitest'
 
-let host: HTMLElement
-
-const initHost = () => {
-  host = document.createElement('div')
-  host.setAttribute('id', 'host')
-  document.body.appendChild(host)
-}
-beforeEach(() => {
-  initHost()
-})
-afterEach(() => {
-  host.remove()
-})
+const { getHost } = setupHostElm()
 describe('component', () => {
   test('unmountComponent', async () => {
+    const host = getHost()
     const Comp = defineComponent({
       setup() {
         const count = ref(0)

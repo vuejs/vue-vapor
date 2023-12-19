@@ -14,26 +14,14 @@ import type {
   DirectiveHook,
   ComponentInternalInstance,
 } from '../src'
-import { afterEach, beforeEach, describe, expect } from 'vitest'
+import { describe, expect } from 'vitest'
 import { defineComponent, nextTick } from '@vue/runtime-core'
-
-let host: HTMLElement
-
-const initHost = () => {
-  host = document.createElement('div')
-  host.setAttribute('id', 'host')
-  document.body.appendChild(host)
-}
-beforeEach(() => {
-  initHost()
-})
-afterEach(() => {
-  host.remove()
-})
-
+import { setupHostElm } from '../../../scripts/setupVitest'
+const { getHost } = setupHostElm()
 describe('directives', () => {
   it('should work', async () => {
     const count = ref(0)
+    const host = getHost()
     function assertBindings(binding: DirectiveBinding) {
       expect(binding.value).toBe(count.value)
       expect(binding.arg).toBe('foo')
@@ -151,6 +139,7 @@ describe('directives', () => {
   })
 
   it('should work with a function directive', async () => {
+    const host = getHost()
     const count = ref(0)
     function assertBindings(binding: DirectiveBinding) {
       expect(binding.value).toBe(count.value)

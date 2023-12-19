@@ -1,23 +1,12 @@
 import { template, children, withDirectives, on, vShow, render } from '../src'
 import { ref, defineComponent, nextTick } from 'vue'
-import { beforeEach, afterEach, describe, test, expect } from 'vitest'
+import { describe, test, expect } from 'vitest'
+import { setupHostElm } from '../../../scripts/setupVitest'
 
-let host: HTMLElement
-
-const initHost = () => {
-  host = document.createElement('div')
-  host.setAttribute('id', 'host')
-  document.body.appendChild(host)
-}
-beforeEach(() => {
-  initHost()
-})
-afterEach(() => {
-  host.remove()
-})
-
+const { getHost } = setupHostElm()
 describe('directive: v-show', () => {
   test('basic', async () => {
+    const host = getHost()
     const demo = defineComponent({
       setup() {
         const visible = ref(true)
