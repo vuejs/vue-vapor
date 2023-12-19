@@ -208,14 +208,14 @@ const comparator = (a: SchedulerJob, b: SchedulerJob): number => {
 export function getVaporSchedulerByFlushMode(
   flush?: 'pre' | 'post' | 'sync',
 ): Scheduler {
-  if (getIsRendering()) {
-    return vaporRenderingScheduler
-  }
   if (flush === 'post') {
     return vaporPostScheduler
   }
   if (flush === 'sync') {
     return vaporSyncScheduler
+  }
+  if (getIsRendering()) {
+    return vaporRenderingScheduler
   }
   // default: 'pre'
   return vaporPreScheduler
