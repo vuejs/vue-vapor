@@ -22,6 +22,7 @@ export enum IRNodeTypes {
   PREPEND_NODE,
   APPEND_NODE,
   CREATE_TEXT_NODE,
+  CREATE_COMPONENT_NODE,
 
   WITH_DIRECTIVE,
 }
@@ -123,6 +124,12 @@ export interface WithDirectiveIRNode extends BaseIRNode {
   dir: VaporDirectiveNode
 }
 
+export interface CreateComponentIRNode extends BaseIRNode {
+  type: IRNodeTypes.CREATE_COMPONENT_NODE
+  id: number
+  tag: string
+}
+
 export type IRNode =
   | OperationNode
   | RootIRNode
@@ -138,6 +145,7 @@ export type OperationNode =
   | PrependNodeIRNode
   | AppendNodeIRNode
   | WithDirectiveIRNode
+  | CreateComponentIRNode
 
 export interface IRDynamicInfo {
   id: number | null

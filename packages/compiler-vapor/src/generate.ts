@@ -28,6 +28,7 @@ import {
   type PrependNodeIRNode,
   type AppendNodeIRNode,
   IRNodeTypes,
+  CreateComponentIRNode,
 } from './ir'
 import { SourceMapGenerator } from 'source-map-js'
 import { camelize, isGloballyAllowed, isString, makeMap } from '@vue/shared'
@@ -376,6 +377,8 @@ function genOperation(oper: OperationNode, context: CodegenContext) {
       return genSetHtml(oper, context)
     case IRNodeTypes.CREATE_TEXT_NODE:
       return genCreateTextNode(oper, context)
+    case IRNodeTypes.CREATE_COMPONENT_NODE:
+      return genCreateComponentNode(oper, context)
     case IRNodeTypes.INSERT_NODE:
       return genInsertNode(oper, context)
     case IRNodeTypes.PREPEND_NODE:
@@ -434,6 +437,20 @@ function genCreateTextNode(
   pushNewline(`const n${oper.id} = `)
   pushFnCall(vaporHelper('createTextNode'), () =>
     genExpression(oper.value, context),
+  )
+}
+
+function genCreateComponentNode(
+  oper: CreateComponentIRNode,
+  context: CodegenContext,
+) {
+  const { pushNewline, pushFnCall, vaporHelper } = context
+  pushNewline(`const n${oper.id} = `)
+  // TODO: support props
+  pushFnCall(
+    vaporHelper('createComponent'),
+    () => genExpression(oper.tag, context),
+    '{}',
   )
 }
 

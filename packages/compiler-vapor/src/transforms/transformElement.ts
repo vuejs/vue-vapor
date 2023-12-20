@@ -25,7 +25,17 @@ export const transformElement: NodeTransform = (node, ctx) => {
     const { tag, props } = node
     const isComponent = node.tagType === ElementTypes.COMPONENT
 
-    ctx.template += `<${tag}`
+    if (isComponent) {
+      ctx.dynamic.ghost = true
+      ctx.registerOperation({
+        type: IRNodeTypes.CREATE_COMPONENT_NODE,
+        loc: node.loc,
+        id: ctx.reference(),
+        tag,
+      })
+    } else {
+      ctx.template += `<${tag}`
+    }
     if (props.length) {
       buildProps(
         node,
@@ -34,7 +44,9 @@ export const transformElement: NodeTransform = (node, ctx) => {
         isComponent,
       )
     }
-    ctx.template += `>` + ctx.childrenTemplate.join('')
+    if (!isComponent) {
+      ctx.template += `>` + ctx.childrenTemplate.join('')
+    }
 
     // TODO remove unnecessary close tag, e.g. if it's the last element of the template
     if (!isVoidTag(tag)) {

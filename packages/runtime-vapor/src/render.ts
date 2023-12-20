@@ -20,11 +20,12 @@ export type BlockFn = (props: any, ctx: any) => Block
 export function render(
   comp: Component,
   props: Data,
-  container: string | ParentNode,
+  container?: string | ParentNode,
 ): ComponentInternalInstance {
   const instance = createComponentInstance(comp)
   initProps(instance, props)
-  return mountComponent(instance, (container = normalizeContainer(container)))
+  if (container) container = normalizeContainer(container)
+  return mountComponent(instance, container as ParentNode)
 }
 
 export function normalizeContainer(container: string | ParentNode): ParentNode {
@@ -35,9 +36,9 @@ export function normalizeContainer(container: string | ParentNode): ParentNode {
 
 export function mountComponent(
   instance: ComponentInternalInstance,
-  container: ParentNode,
+  container?: ParentNode,
 ) {
-  instance.container = container
+  if (container) instance.container = container
 
   setCurrentInstance(instance)
   const block = instance.scope.run(() => {
@@ -68,8 +69,10 @@ export function mountComponent(
   bm && invokeArrayFns(bm)
   invokeDirectiveHook(instance, 'beforeMount')
 
-  insert(block, instance.container)
-  instance.isMountedRef.value = true
+  if (instance.container) {
+    insert(block, instance.container)
+    instance.isMountedRef.value = true
+  }
 
   // hook: mounted
   invokeDirectiveHook(instance, 'mounted')
