@@ -58,11 +58,12 @@ export function mountComponent(
     let block: Block | null = null
     if (state && '__isScriptSetup' in state) {
       instance.setupState = proxyRefs(state)
+      const currentlyRenderingActivity = isRenderingActivity
       isRenderingActivity = true
       try {
         block = component.render(instance.proxy)
       } finally {
-        isRenderingActivity = false
+        isRenderingActivity = currentlyRenderingActivity
       }
     } else {
       block = state as Block

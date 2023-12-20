@@ -278,7 +278,7 @@ function doWatch(
         if (cleanup) {
           cleanup()
         }
-        const currentEffectScope = activeEffect
+        const currentEffect = activeEffect
         activeEffect = effect
         try {
           return callWithAsyncErrorHandling(
@@ -288,7 +288,7 @@ function doWatch(
             [onEffectCleanup],
           )
         } finally {
-          activeEffect = currentEffectScope
+          activeEffect = currentEffect
         }
       }
     }
@@ -327,7 +327,7 @@ function doWatch(
         if (cleanup) {
           cleanup()
         }
-        const currentEffectScope = activeEffect
+        const currentEffect = activeEffect
         activeEffect = effect
         try {
           callWithAsyncErrorHandling(
@@ -347,7 +347,7 @@ function doWatch(
           )
           oldValue = newValue
         } finally {
-          activeEffect = currentEffectScope
+          activeEffect = currentEffect
         }
       }
     } else {
