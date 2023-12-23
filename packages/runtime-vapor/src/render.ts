@@ -20,6 +20,11 @@ export type ChildBlock = Block | Slot | Record<string, Slot>
 export type Fragment = { nodes: Block; anchor: Node }
 export type BlockFn = (props: any, ctx: any) => Block
 
+let isRenderingActivity = false
+export function getIsRendering() {
+  return isRenderingActivity
+}
+
 export function render(
   comp: Component,
   props: Data,
@@ -58,7 +63,13 @@ export function mountComponent(
     let block: Block | null = null
     if (state && '__isScriptSetup' in state) {
       instance.setupState = proxyRefs(state)
-      block = component.render(instance.proxy)
+      const currentlyRenderingActivity = isRenderingActivity
+      isRenderingActivity = true
+      try {
+        block = component.render(instance.proxy)
+      } finally {
+        isRenderingActivity = currentlyRenderingActivity
+      }
     } else {
       block = state as Block
     }
