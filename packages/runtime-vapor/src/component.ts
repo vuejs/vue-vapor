@@ -48,6 +48,8 @@ export interface ComponentInternalInstance {
   propsOptions: NormalizedPropsOptions
   emitsOptions: ObjectEmitsOptions | null
 
+  parent: ComponentInternalInstance | null
+
   // TODO: type
   proxy: Data | null
 
@@ -68,6 +70,7 @@ export interface ComponentInternalInstance {
   isMountedRef: Ref<boolean>
   get isUnmounted(): boolean
   isUnmountedRef: Ref<boolean>
+
   /**
    * @internal
    */
@@ -154,6 +157,9 @@ export const createComponentInstance = (
     scope: new EffectScope(true /* detached */)!,
     component,
     rawProps,
+
+    // TODO: registory of parent
+    parent: null,
 
     // resolved props and emits options
     propsOptions: normalizePropsOptions(component),
