@@ -1,5 +1,25 @@
-import { hasOwn } from '@vue/shared'
+import { Data, IfAny, Prettify, hasOwn } from '@vue/shared'
 import { type ComponentInternalInstance } from './component'
+import { ShallowUnwrapRef, UnwrapNestedRefs } from '@vue/reactivity'
+import { WatchOptions, WatchStopHandle } from './apiWatch'
+import { nextTick } from '.'
+
+export type ComponentPublicInstance<
+  P = {}, // props type extracted from props option
+  B = {}, // raw bindings returned from setup()
+  D = {}, // return from data()
+  // TODO: not ready yet
+
+  // C extends ComputedOptions = {},
+  // M extends MethodOptions = {},
+  // E extends EmitsOptions = {},
+  // PublicProps = P,
+  // Defaults = {},
+  // MakeDefaultsOptional extends boolean = false,
+  // Options = ComponentOptionsBase<any, any, any, any, any, any, any, any, any>,
+  // I extends ComponentInjectOptions = {},
+  // S extends SlotsType = {}
+> = {}
 
 export interface ComponentRenderContext {
   [key: string]: any
