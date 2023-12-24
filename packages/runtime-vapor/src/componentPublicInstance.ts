@@ -1,8 +1,5 @@
-import { Data, IfAny, Prettify, hasOwn } from '@vue/shared'
+import { hasOwn } from '@vue/shared'
 import { type ComponentInternalInstance } from './component'
-import { ShallowUnwrapRef, UnwrapNestedRefs } from '@vue/reactivity'
-import { WatchOptions, WatchStopHandle } from './apiWatch'
-import { nextTick } from '.'
 
 export type ComponentPublicInstance<
   P = {}, // props type extracted from props option
