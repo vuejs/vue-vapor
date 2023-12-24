@@ -1,4 +1,3 @@
-import { ComponentPublicInstance } from './componentPublicInstance'
 import {
   type ComponentInternalInstance,
   currentInstance,
@@ -65,7 +64,7 @@ export const onUnmounted = createHook(VaporLifecycleHooks.UNMOUNTED)
 
 export type ErrorCapturedHook<TError = unknown> = (
   err: TError,
-  instance: ComponentPublicInstance | null,
+  instance: ComponentInternalInstance | null,
   info: string,
 ) => boolean | void
 
