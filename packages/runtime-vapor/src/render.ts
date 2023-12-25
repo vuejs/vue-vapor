@@ -10,12 +10,16 @@ import {
 import { initProps } from './componentProps'
 import { invokeDirectiveHook } from './directive'
 import { insert, remove } from './dom'
-import { PublicInstanceProxyHandlers } from './componentPublicInstance'
 
 export type Block = Node | Fragment | Block[]
 export type ParentBlock = ParentNode | Node[]
 export type Fragment = { nodes: Block; anchor: Node }
 export type BlockFn = (props: any, ctx: any) => Block
+
+let isRenderingActivity = false
+export function getIsRendering() {
+  return isRenderingActivity
+}
 
 export function render(
   comp: Component,
@@ -46,14 +50,17 @@ export function mountComponent(
 
     const setupFn =
       typeof component === 'function' ? component : component.setup
-    instance.proxy = markRaw(
-      new Proxy({ _: instance }, PublicInstanceProxyHandlers),
-    )
     const state = setupFn && setupFn(props, ctx)
     let block: Block | null = null
     if (state && '__isScriptSetup' in state) {
       instance.setupState = proxyRefs(state)
-      block = component.render(instance.proxy)
+      const currentlyRenderingActivity = isRenderingActivity
+      isRenderingActivity = true
+      try {
+        block = component.render(instance.setupState)
+      } finally {
+        isRenderingActivity = currentlyRenderingActivity
+      }
     } else {
       block = state as Block
     }
