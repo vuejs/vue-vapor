@@ -3,15 +3,13 @@ import { ComponentInternalInstance } from './component'
 import { warn, pushWarningContext, popWarningContext } from './warning'
 import { isPromise, isFunction } from '@vue/shared'
 import { LifecycleHooks } from './enums'
+import { BaseWatchErrorCodes } from '@vue/reactivity'
 
 // contexts where user provided function may be executed, in addition to
 // lifecycle hooks.
 export enum ErrorCodes {
   SETUP_FUNCTION,
   RENDER_FUNCTION,
-  WATCH_GETTER,
-  WATCH_CALLBACK,
-  WATCH_CLEANUP,
   NATIVE_EVENT_HANDLER,
   COMPONENT_EVENT_HANDLER,
   VNODE_HOOK,
@@ -24,7 +22,9 @@ export enum ErrorCodes {
   SCHEDULER
 }
 
-export const ErrorTypeStrings: Record<LifecycleHooks | ErrorCodes, string> = {
+export type ErrorTypes = LifecycleHooks | ErrorCodes | BaseWatchErrorCodes
+
+export const ErrorTypeStrings: Record<ErrorTypes, string> = {
   [LifecycleHooks.SERVER_PREFETCH]: 'serverPrefetch hook',
   [LifecycleHooks.BEFORE_CREATE]: 'beforeCreate hook',
   [LifecycleHooks.CREATED]: 'created hook',
@@ -41,9 +41,9 @@ export const ErrorTypeStrings: Record<LifecycleHooks | ErrorCodes, string> = {
   [LifecycleHooks.RENDER_TRIGGERED]: 'renderTriggered hook',
   [ErrorCodes.SETUP_FUNCTION]: 'setup function',
   [ErrorCodes.RENDER_FUNCTION]: 'render function',
-  [ErrorCodes.WATCH_GETTER]: 'watcher getter',
-  [ErrorCodes.WATCH_CALLBACK]: 'watcher callback',
-  [ErrorCodes.WATCH_CLEANUP]: 'watcher cleanup function',
+  [BaseWatchErrorCodes.WATCH_GETTER]: 'watcher getter',
+  [BaseWatchErrorCodes.WATCH_CALLBACK]: 'watcher callback',
+  [BaseWatchErrorCodes.WATCH_CLEANUP]: 'watcher cleanup function',
   [ErrorCodes.NATIVE_EVENT_HANDLER]: 'native event handler',
   [ErrorCodes.COMPONENT_EVENT_HANDLER]: 'component event handler',
   [ErrorCodes.VNODE_HOOK]: 'vnode hook',
@@ -57,8 +57,6 @@ export const ErrorTypeStrings: Record<LifecycleHooks | ErrorCodes, string> = {
     'scheduler flush. This is likely a Vue internals bug. ' +
     'Please open an issue at https://new-issue.vuejs.org/?repo=vuejs/core'
 }
-
-export type ErrorTypes = LifecycleHooks | ErrorCodes
 
 export function callWithErrorHandling(
   fn: Function,

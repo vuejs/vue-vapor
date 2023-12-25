@@ -8,7 +8,8 @@ import {
   ReactiveFlags,
   EffectScheduler,
   DebuggerOptions,
-  getCurrentScope
+  getCurrentScope,
+  BaseWatchErrorCodes
 } from '@vue/reactivity'
 import { SchedulerJob, queueJob } from './scheduler'
 import {
@@ -33,7 +34,6 @@ import {
   unsetCurrentInstance
 } from './component'
 import {
-  ErrorCodes,
   callWithErrorHandling,
   callWithAsyncErrorHandling
 } from './errorHandling'
@@ -234,7 +234,11 @@ function doWatch(
         } else if (isReactive(s)) {
           return traverse(s)
         } else if (isFunction(s)) {
-          return callWithErrorHandling(s, instance, ErrorCodes.WATCH_GETTER)
+          return callWithErrorHandling(
+            s,
+            instance,
+            BaseWatchErrorCodes.WATCH_GETTER
+          )
         } else {
           __DEV__ && warnInvalidSource(s)
         }
@@ -243,7 +247,11 @@ function doWatch(
     if (cb) {
       // getter with cb
       getter = () =>
-        callWithErrorHandling(source, instance, ErrorCodes.WATCH_GETTER)
+        callWithErrorHandling(
+          source,
+          instance,
+          BaseWatchErrorCodes.WATCH_GETTER
+        )
     } else {
       // no cb -> simple effect
       getter = () => {
@@ -256,7 +264,7 @@ function doWatch(
         return callWithAsyncErrorHandling(
           source,
           instance,
-          ErrorCodes.WATCH_CALLBACK,
+          BaseWatchErrorCodes.WATCH_CALLBACK,
           [onCleanup]
         )
       }
@@ -274,7 +282,7 @@ function doWatch(
   let cleanup: (() => void) | undefined
   let onCleanup: OnCleanup = (fn: () => void) => {
     cleanup = effect.onStop = () => {
-      callWithErrorHandling(fn, instance, ErrorCodes.WATCH_CLEANUP)
+      callWithErrorHandling(fn, instance, BaseWatchErrorCodes.WATCH_CLEANUP)
       cleanup = effect.onStop = undefined
     }
   }
@@ -288,11 +296,12 @@ function doWatch(
     if (!cb) {
       getter()
     } else if (immediate) {
-      callWithAsyncErrorHandling(cb, instance, ErrorCodes.WATCH_CALLBACK, [
-        getter(),
-        isMultiSource ? [] : undefined,
-        onCleanup
-      ])
+      callWithAsyncErrorHandling(
+        cb,
+        instance,
+        BaseWatchErrorCodes.WATCH_CALLBACK,
+        [getter(), isMultiSource ? [] : undefined, onCleanup]
+      )
     }
     if (flush === 'sync') {
       const ctx = useSSRContext()!
@@ -323,16 +332,21 @@ function doWatch(
         if (cleanup) {
           cleanup()
         }
-        callWithAsyncErrorHandling(cb, instance, ErrorCodes.WATCH_CALLBACK, [
-          newValue,
-          // pass undefined as the old value when it's changed for the first time
-          oldValue === INITIAL_WATCHER_VALUE
-            ? undefined
-            : isMultiSource && oldValue[0] === INITIAL_WATCHER_VALUE
-              ? []
-              : oldValue,
-          onCleanup
-        ])
+        callWithAsyncErrorHandling(
+          cb,
+          instance,
+          BaseWatchErrorCodes.WATCH_CALLBACK,
+          [
+            newValue,
+            // pass undefined as the old value when it's changed for the first time
+            oldValue === INITIAL_WATCHER_VALUE
+              ? undefined
+              : isMultiSource && oldValue[0] === INITIAL_WATCHER_VALUE
+                ? []
+                : oldValue,
+            onCleanup
+          ]
+        )
         oldValue = newValue
       }
     } else {
