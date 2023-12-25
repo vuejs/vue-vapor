@@ -36,7 +36,7 @@ const createDemo = (defaultValue: boolean) =>
 describe('directive: v-show', () => {
   test('basic', async () => {
     const demo = createDemo(true)
-    render(demo as any, {}, '#host')
+    render(demo as any, {}, [], '#host')
     const btn = host.querySelector('button')
     expect(host.innerHTML).toBe('<button>toggle</button><h1>hello world</h1>')
     btn?.click()
@@ -47,7 +47,7 @@ describe('directive: v-show', () => {
   })
   test('should hide content when default value is false', async () => {
     const demo = createDemo(false)
-    render(demo as any, {}, '#host')
+    render(demo as any, {}, [], '#host')
     const btn = host.querySelector('button')
     const h1 = host.querySelector('h1')
     expect(h1?.style.display).toBe('none')

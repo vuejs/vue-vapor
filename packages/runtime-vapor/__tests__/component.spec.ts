@@ -39,7 +39,7 @@ describe('component', () => {
         return n0
       },
     })
-    const instance = render(Comp as any, {}, '#host')
+    const instance = render(Comp as any, {}, [], '#host')
     expect(host.innerHTML).toBe('<div>0</div>')
     unmountComponent(instance)
     expect(host.innerHTML).toBe('')
