@@ -1,4 +1,4 @@
-import { markRaw, proxyRefs } from '@vue/reactivity'
+import { proxyRefs } from '@vue/reactivity'
 import { invokeArrayFns, type Data } from '@vue/shared'
 import {
   type Component,
@@ -10,7 +10,6 @@ import {
 import { initProps } from './componentProps'
 import { invokeDirectiveHook } from './directive'
 import { insert, remove } from './dom'
-import { PublicInstanceProxyHandlers } from './componentPublicInstance'
 import { initSlots } from './componentSlots'
 import { Slot } from 'vue'
 
@@ -56,9 +55,6 @@ export function mountComponent(
 
     const setupFn =
       typeof component === 'function' ? component : component.setup
-    instance.proxy = markRaw(
-      new Proxy({ _: instance }, PublicInstanceProxyHandlers),
-    )
     const state = setupFn && setupFn(props, ctx)
     let block: Block | null = null
     if (state && '__isScriptSetup' in state) {
@@ -66,7 +62,7 @@ export function mountComponent(
       const currentlyRenderingActivity = isRenderingActivity
       isRenderingActivity = true
       try {
-        block = component.render(instance.proxy)
+        block = component.render(instance.setupState)
       } finally {
         isRenderingActivity = currentlyRenderingActivity
       }

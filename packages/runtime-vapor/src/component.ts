@@ -17,7 +17,7 @@ import type { InternalSlots } from './componentSlots'
 
 import type { DirectiveBinding } from './directive'
 
-import { VaporLifecycleHooks } from './apiLifecycle'
+import { VaporLifecycleHooks } from './enums'
 
 export type Component = FunctionalComponent | ObjectComponent
 
@@ -166,9 +166,12 @@ export const createComponentInstance = (
 
     // resolved props and emits options
     propsOptions: normalizePropsOptions(component),
+
     emitsOptions: normalizeEmitsOptions(component),
 
     proxy: null,
+
+    // emitsOptions: normalizeEmitsOptions(type, appContext), // TODO:
 
     // state
     props: EMPTY_OBJ,
