@@ -15,7 +15,7 @@ import { emit, normalizeEmitsOptions } from './componentEmits'
 
 import type { DirectiveBinding } from './directive'
 
-import { VaporLifecycleHooks } from './apiLifecycle'
+import { VaporLifecycleHooks } from './enums'
 
 export type Component = FunctionalComponent | ObjectComponent
 
@@ -162,6 +162,7 @@ export const createComponentInstance = (
 
     // resolved props and emits options
     propsOptions: normalizePropsOptions(component),
+
     emitsOptions: normalizeEmitsOptions(component),
 
     // emit
@@ -169,6 +170,8 @@ export const createComponentInstance = (
     emitted: null,
 
     proxy: null,
+
+    // emitsOptions: normalizeEmitsOptions(type, appContext), // TODO:
 
     // state
     props: EMPTY_OBJ,
