@@ -1,4 +1,4 @@
-import { proxyRefs } from '@vue/reactivity'
+import { markRaw, proxyRefs } from '@vue/reactivity'
 import { invokeArrayFns, type Data } from '@vue/shared'
 import {
   type Component,
@@ -10,6 +10,7 @@ import {
 import { initProps } from './componentProps'
 import { invokeDirectiveHook } from './directive'
 import { insert, remove } from './dom'
+import { PublicInstanceProxyHandlers } from './componentPublicInstance'
 
 export type Block = Node | Fragment | Block[]
 export type ParentBlock = ParentNode | Node[]
@@ -47,6 +48,9 @@ export function mountComponent(
   const block = instance.scope.run(() => {
     const { component, props, emit, attrs } = instance
     const ctx = { emit, attrs, expose: () => {} }
+    instance.proxy = markRaw(
+      new Proxy({ _: instance }, PublicInstanceProxyHandlers),
+    )
 
     const setupFn =
       typeof component === 'function' ? component : component.setup
@@ -57,7 +61,7 @@ export function mountComponent(
       const currentlyRenderingActivity = isRenderingActivity
       isRenderingActivity = true
       try {
-        block = component.render(instance.setupState)
+        block = component.render(instance.proxy)
       } finally {
         isRenderingActivity = currentlyRenderingActivity
       }
