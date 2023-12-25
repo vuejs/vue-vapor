@@ -48,6 +48,7 @@ export default {
           return _ctx.setCount
         }
       },
+      [],
       n0
     )
 
@@ -61,6 +62,7 @@ export default {
           return _ctx.setCount
         }
       },
+      [],
       n0
     )
 
