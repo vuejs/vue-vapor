@@ -3,7 +3,7 @@ import {
   on,
   ref,
   template,
-  effect,
+  watchEffect,
   setText,
   render as renderComponent // TODO:
 } from '@vue/vapor'
@@ -34,7 +34,7 @@ export default {
       0: [n1]
     } = children(n0)
 
-    effect(() => {
+    watchEffect(() => {
       setText(n1, void 0, _ctx.count)
     })
 
