@@ -25,6 +25,7 @@ export enum BaseWatchErrorCodes {
   WATCH_CLEANUP = 'BaseWatchErrorCodes_WATCH_CLEANUP'
 }
 
+// TODO move to a scheduler package
 export interface SchedulerJob extends Function {
   id?: number
   pre?: boolean
