@@ -1,7 +1,7 @@
 import { ErrorCodes, callWithErrorHandling, handleError } from './errorHandling'
-import { Awaited, isArray, NOOP } from '@vue/shared'
-import { ComponentInternalInstance, getComponentName } from './component'
-import { ReactiveEffect } from '@vue/reactivity'
+import { type Awaited, NOOP, isArray } from '@vue/shared'
+import { type ComponentInternalInstance, getComponentName } from './component'
+import type { ReactiveEffect } from '@vue/reactivity'
 
 export interface SchedulerJob extends Function {
   id?: number
@@ -52,7 +52,7 @@ type CountMap = Map<SchedulerJob, number>
 
 export function nextTick<T = void, R = void>(
   this: T,
-  fn?: (this: T) => R
+  fn?: (this: T) => R,
 ): Promise<Awaited<R>> {
   const p = currentFlushPromise || resolvedPromise
   return fn ? p.then(this ? fn.bind(this) : fn) : p
@@ -92,7 +92,7 @@ export function queueJob(job: SchedulerJob) {
     !queue.length ||
     !queue.includes(
       job,
-      isFlushing && job.allowRecurse ? flushIndex + 1 : flushIndex
+      isFlushing && job.allowRecurse ? flushIndex + 1 : flushIndex,
     )
   ) {
     if (job.id == null) {
@@ -124,7 +124,7 @@ export function queuePostFlushCb(cb: SchedulerJobs) {
       !activePostFlushCbs ||
       !activePostFlushCbs.includes(
         cb,
-        cb.allowRecurse ? postFlushIndex + 1 : postFlushIndex
+        cb.allowRecurse ? postFlushIndex + 1 : postFlushIndex,
       )
     ) {
       pendingPostFlushCbs.push(cb)
@@ -142,7 +142,7 @@ export function flushPreFlushCbs(
   instance?: ComponentInternalInstance,
   seen?: CountMap,
   // if currently flushing, skip the current job itself
-  i = isFlushing ? flushIndex + 1 : 0
+  i = isFlushing ? flushIndex + 1 : 0,
 ) {
   if (__DEV__) {
     seen = seen || new Map()
@@ -280,7 +280,7 @@ function checkRecursiveUpdates(seen: CountMap, fn: SchedulerJob) {
           `include component template, render function, updated hook or ` +
           `watcher source function.`,
         null,
-        ErrorCodes.APP_ERROR_HANDLER
+        ErrorCodes.APP_ERROR_HANDLER,
       )
       return true
     } else {
