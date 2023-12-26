@@ -16,6 +16,7 @@ import { ReactiveFlags } from './constants'
 import { DebuggerOptions, ReactiveEffect, EffectScheduler } from './effect'
 import { isShallow, isReactive } from './reactive'
 import { Ref, isRef } from './ref'
+import { getCurrentScope } from './effectScope'
 
 // contexts where user provided function may be executed, in addition to
 // lifecycle hooks.
@@ -130,7 +131,9 @@ export function baseWatch(
     )
   }
 
+  let effect: ReactiveEffect
   let getter: () => any
+  let cleanup: (() => void) | undefined
   let forceTrigger = false
   let isMultiSource = false
 
@@ -200,10 +203,14 @@ export function baseWatch(
 
   if (once) {
     if (!cb) {
+      // onEffectCleanup need use effect as a key
+      getCurrentScope()?.effects.push((effect = {} as any))
       getter()
       return NOOP
     }
     if (immediate) {
+      // onEffectCleanup need use effect as a key
+      getCurrentScope()?.effects.push((effect = {} as any))
       callWithAsyncErrorHandling(
         cb,
         handleError,
@@ -280,9 +287,9 @@ export function baseWatch(
       isInit: false
     })
 
-  const effect = new ReactiveEffect(getter, NOOP, effectScheduler)
+  effect = new ReactiveEffect(getter, NOOP, effectScheduler)
 
-  const cleanup = (effect.onStop = () => {
+  cleanup = effect.onStop = () => {
     const cleanups = cleanupMap.get(effect)
     if (cleanups) {
       cleanups.forEach(cleanup =>
@@ -294,7 +301,7 @@ export function baseWatch(
       )
       cleanupMap.delete(effect)
     }
-  })
+  }
 
   const unwatch: WatchInstance = () => {
     effect.stop()
