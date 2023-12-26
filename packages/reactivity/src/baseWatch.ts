@@ -65,11 +65,15 @@ export interface BaseWatchOptions<Immediate = boolean> extends DebuggerOptions {
   deep?: boolean
   once?: boolean
   scheduler?: Scheduler
-  handlerError?: HandleError
-  handlerWarn?: HandleWarn
+  handleError?: HandleError
+  handleWarn?: HandleWarn
 }
 
 export type WatchStopHandle = () => void
+
+export interface WatchInstance extends WatchStopHandle {
+  effect?: ReactiveEffect
+}
 
 // initial value for watchers to trigger on undefined initial values
 const INITIAL_WATCHER_VALUE = {}
@@ -112,20 +116,12 @@ export function baseWatch(
     onTrack,
     onTrigger,
     scheduler = DEFAULT_SCHEDULER,
-    handlerError = DEFAULT_HANDLE_ERROR,
-    handlerWarn = warn
+    handleError: handleError = DEFAULT_HANDLE_ERROR,
+    handleWarn: handleWarn = warn
   }: BaseWatchOptions = EMPTY_OBJ
-): WatchStopHandle {
-  if (cb && once) {
-    const _cb = cb
-    cb = (...args) => {
-      _cb(...args)
-      unwatch()
-    }
-  }
-
+): WatchInstance {
   const warnInvalidSource = (s: unknown) => {
-    handlerWarn(
+    handleWarn(
       `Invalid watch source: `,
       s,
       `A watch source can only be a getter/effect function, a ref, ` +
@@ -155,7 +151,7 @@ export function baseWatch(
         } else if (isFunction(s)) {
           return callWithErrorHandling(
             s,
-            handlerError,
+            handleError,
             BaseWatchErrorCodes.WATCH_GETTER
           )
         } else {
@@ -168,16 +164,12 @@ export function baseWatch(
       getter = () =>
         callWithErrorHandling(
           source,
-          handlerError,
+          handleError,
           BaseWatchErrorCodes.WATCH_GETTER
         )
     } else {
       // no cb -> simple effect
       getter = () => {
-        // TODO: move to scheduler
-        // if (instance && instance.isUnmounted) {
-        //   return
-        // }
         if (cleanup) {
           cleanup()
         }
@@ -186,7 +178,7 @@ export function baseWatch(
         try {
           return callWithAsyncErrorHandling(
             source,
-            handlerError,
+            handleError,
             BaseWatchErrorCodes.WATCH_CALLBACK,
             [onEffectCleanup]
           )
@@ -205,29 +197,26 @@ export function baseWatch(
     getter = () => traverse(baseGetter())
   }
 
-  // TODO: support SSR
-  // in SSR there is no need to setup an actual effect, and it should be noop
-  // unless it's eager or sync flush
-  // let ssrCleanup: (() => void)[] | undefined
-  // if (__SSR__ && isInSSRComponentSetup) {
-  //   // we will also not call the invalidate callback (+ runner is not set up)
-  //   onCleanup = NOOP
-  //   if (!cb) {
-  //     getter()
-  //   } else if (immediate) {
-  //     callWithAsyncErrorHandling(cb, handlerError, BaseWatchErrorCodes.WATCH_CALLBACK, [
-  //       getter(),
-  //       isMultiSource ? [] : undefined,
-  //       onCleanup
-  //     ])
-  //   }
-  //   if (flush === 'sync') {
-  //     const ctx = useSSRContext()!
-  //     ssrCleanup = ctx.__watcherHandles || (ctx.__watcherHandles = [])
-  //   } else {
-  //     return NOOP
-  //   }
-  // }
+  if (once) {
+    if (!cb) {
+      getter()
+      return NOOP
+    }
+    if (immediate) {
+      callWithAsyncErrorHandling(
+        cb,
+        handleError,
+        BaseWatchErrorCodes.WATCH_CALLBACK,
+        [getter(), isMultiSource ? [] : undefined, onEffectCleanup]
+      )
+      return NOOP
+    }
+    const _cb = cb
+    cb = (...args) => {
+      _cb(...args)
+      unwatch()
+    }
+  }
 
   let oldValue: any = isMultiSource
     ? new Array((source as []).length).fill(INITIAL_WATCHER_VALUE)
@@ -255,7 +244,7 @@ export function baseWatch(
         try {
           callWithAsyncErrorHandling(
             cb,
-            handlerError,
+            handleError,
             BaseWatchErrorCodes.WATCH_CALLBACK,
             [
               newValue,
@@ -295,18 +284,21 @@ export function baseWatch(
   const cleanup = (effect.onStop = () => {
     const cleanups = cleanupMap.get(effect)
     if (cleanups) {
-      cleanups.forEach(cleanup => cleanup())
+      cleanups.forEach(cleanup =>
+        callWithErrorHandling(
+          cleanup,
+          handleError,
+          BaseWatchErrorCodes.WATCH_CLEANUP
+        )
+      )
       cleanupMap.delete(effect)
     }
   })
 
-  const unwatch = () => {
+  const unwatch: WatchInstance = () => {
     effect.stop()
-    // TODO: move to doWatch
-    // if (instance && instance.scope) {
-    //   remove(instance.scope.effects!, effect)
-    // }
   }
+  unwatch.effect = effect
 
   if (__DEV__) {
     effect.onTrack = onTrack

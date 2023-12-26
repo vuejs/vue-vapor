@@ -948,7 +948,6 @@ export function createWatcher(
     const instance =
       getCurrentScope() === currentInstance?.scope ? currentInstance : null
 
-    console.log('createWatcher')
     const newValue = getter()
     if (
       isArray(newValue) &&
