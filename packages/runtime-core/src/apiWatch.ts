@@ -203,7 +203,9 @@ function doWatch(
     }
   }
 
-  const extendOptions: BaseWatchOptions = { handleWarn: warn }
+  const extendOptions: BaseWatchOptions = {}
+
+  if (__DEV__) extendOptions.handleWarn = warn
 
   let ssrCleanup: (() => void)[] | undefined
   if (__SSR__ && isInSSRComponentSetup) {
