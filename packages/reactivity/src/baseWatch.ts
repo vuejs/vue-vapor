@@ -1,21 +1,25 @@
 import {
   EMPTY_OBJ,
-  isObject,
+  NOOP,
+  hasChanged,
   isArray,
   isFunction,
-  hasChanged,
-  NOOP,
   isMap,
-  isSet,
+  isObject,
   isPlainObject,
-  isPromise
+  isPromise,
+  isSet,
 } from '@vue/shared'
 import { warn } from './warning'
-import { ComputedRef } from './computed'
+import type { ComputedRef } from './computed'
 import { ReactiveFlags } from './constants'
-import { DebuggerOptions, ReactiveEffect, EffectScheduler } from './effect'
-import { isShallow, isReactive } from './reactive'
-import { Ref, isRef } from './ref'
+import {
+  type DebuggerOptions,
+  type EffectScheduler,
+  ReactiveEffect,
+} from './effect'
+import { isReactive, isShallow } from './reactive'
+import { type Ref, isRef } from './ref'
 import { getCurrentScope } from './effectScope'
 
 // contexts where user provided function may be executed, in addition to
@@ -23,7 +27,7 @@ import { getCurrentScope } from './effectScope'
 export enum BaseWatchErrorCodes {
   WATCH_GETTER = 'BaseWatchErrorCodes_WATCH_GETTER',
   WATCH_CALLBACK = 'BaseWatchErrorCodes_WATCH_CALLBACK',
-  WATCH_CLEANUP = 'BaseWatchErrorCodes_WATCH_CLEANUP'
+  WATCH_CLEANUP = 'BaseWatchErrorCodes_WATCH_CLEANUP',
 }
 
 // TODO move to a scheduler package
@@ -57,7 +61,7 @@ export type WatchSource<T = any> = Ref<T> | ComputedRef<T> | (() => T)
 export type WatchCallback<V = any, OV = any> = (
   value: V,
   oldValue: OV,
-  onCleanup: OnCleanup
+  onCleanup: OnCleanup,
 ) => any
 
 type OnCleanup = (cleanupFn: () => void) => void
@@ -119,15 +123,15 @@ export function baseWatch(
     onTrigger,
     scheduler = DEFAULT_SCHEDULER,
     handleError: handleError = DEFAULT_HANDLE_ERROR,
-    handleWarn: handleWarn = warn
-  }: BaseWatchOptions = EMPTY_OBJ
+    handleWarn: handleWarn = warn,
+  }: BaseWatchOptions = EMPTY_OBJ,
 ): WatchInstance {
   const warnInvalidSource = (s: unknown) => {
     handleWarn(
       `Invalid watch source: `,
       s,
       `A watch source can only be a getter/effect function, a ref, ` +
-        `a reactive object, or an array of these types.`
+        `a reactive object, or an array of these types.`,
     )
   }
 
@@ -156,7 +160,7 @@ export function baseWatch(
           return callWithErrorHandling(
             s,
             handleError,
-            BaseWatchErrorCodes.WATCH_GETTER
+            BaseWatchErrorCodes.WATCH_GETTER,
           )
         } else {
           __DEV__ && warnInvalidSource(s)
@@ -169,7 +173,7 @@ export function baseWatch(
         callWithErrorHandling(
           source,
           handleError,
-          BaseWatchErrorCodes.WATCH_GETTER
+          BaseWatchErrorCodes.WATCH_GETTER,
         )
     } else {
       // no cb -> simple effect
@@ -184,7 +188,7 @@ export function baseWatch(
             source,
             handleError,
             BaseWatchErrorCodes.WATCH_CALLBACK,
-            [onEffectCleanup]
+            [onEffectCleanup],
           )
         } finally {
           activeEffect = currentEffect
@@ -215,7 +219,7 @@ export function baseWatch(
         cb,
         handleError,
         BaseWatchErrorCodes.WATCH_CALLBACK,
-        [getter(), isMultiSource ? [] : undefined, onEffectCleanup]
+        [getter(), isMultiSource ? [] : undefined, onEffectCleanup],
       )
       return NOOP
     }
@@ -262,8 +266,8 @@ export function baseWatch(
                 : isMultiSource && oldValue[0] === INITIAL_WATCHER_VALUE
                   ? []
                   : oldValue,
-              onEffectCleanup
-            ]
+              onEffectCleanup,
+            ],
           )
           oldValue = newValue
         } finally {
@@ -284,7 +288,7 @@ export function baseWatch(
     scheduler({
       effect,
       job,
-      isInit: false
+      isInit: false,
     })
 
   effect = new ReactiveEffect(getter, NOOP, effectScheduler)
@@ -296,8 +300,8 @@ export function baseWatch(
         callWithErrorHandling(
           cleanup,
           handleError,
-          BaseWatchErrorCodes.WATCH_CLEANUP
-        )
+          BaseWatchErrorCodes.WATCH_CLEANUP,
+        ),
       )
       cleanupMap.delete(effect)
     }
@@ -324,7 +328,7 @@ export function baseWatch(
     scheduler({
       effect,
       job,
-      isInit: true
+      isInit: true,
     })
   }
 
@@ -362,7 +366,7 @@ export function callWithErrorHandling(
   fn: Function,
   handleError: HandleError,
   type: BaseWatchErrorCodes,
-  args?: unknown[]
+  args?: unknown[],
 ) {
   let res
   try {
@@ -377,7 +381,7 @@ export function callWithAsyncErrorHandling(
   fn: Function | Function[],
   handleError: HandleError,
   type: BaseWatchErrorCodes,
-  args?: unknown[]
+  args?: unknown[],
 ): any[] {
   if (isFunction(fn)) {
     const res = callWithErrorHandling(fn, handleError, type, args)

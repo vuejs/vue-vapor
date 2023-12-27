@@ -1,43 +1,43 @@
 import {
-  isRef,
-  type Ref,
+  type BaseWatchErrorCodes,
+  type BaseWatchOptions,
   type ComputedRef,
-  ReactiveFlags,
   type DebuggerOptions,
-  getCurrentScope,
-  BaseWatchErrorCodes,
+  ReactiveFlags,
+  type Ref,
   baseWatch,
-  type BaseWatchOptions
+  getCurrentScope,
+  isRef,
 } from '@vue/reactivity'
 import {
   type SchedulerJob,
   usePreScheduler,
-  useSyncScheduler
+  useSyncScheduler,
 } from './scheduler'
 import {
   EMPTY_OBJ,
-  isObject,
+  NOOP,
+  extend,
   isArray,
   isFunction,
-  isString,
-  NOOP,
-  remove,
   isMap,
-  isSet,
+  isObject,
   isPlainObject,
-  extend
+  isSet,
+  isString,
+  remove,
 } from '@vue/shared'
 import {
-  currentInstance,
   type ComponentInternalInstance,
+  currentInstance,
   isInSSRComponentSetup,
   setCurrentInstance,
-  unsetCurrentInstance
+  unsetCurrentInstance,
 } from './component'
 import { handleError as handleErrorWithInstance } from './errorHandling'
 import { usePostRenderScheduler } from './renderer'
 import { warn } from './warning'
-import { type ObjectWatchOptionItem } from './componentOptions'
+import type { ObjectWatchOptionItem } from './componentOptions'
 import { useSSRContext } from '@vue/runtime-core'
 
 export type WatchEffect = (onCleanup: OnCleanup) => void
@@ -47,7 +47,7 @@ export type WatchSource<T = any> = Ref<T> | ComputedRef<T> | (() => T)
 export type WatchCallback<V = any, OV = any> = (
   value: V,
   oldValue: OV,
-  onCleanup: OnCleanup
+  onCleanup: OnCleanup,
 ) => any
 
 type MapSources<T, Immediate> = {
@@ -79,30 +79,30 @@ export type WatchStopHandle = () => void
 // Simple effect.
 export function watchEffect(
   effect: WatchEffect,
-  options?: WatchOptionsBase
+  options?: WatchOptionsBase,
 ): WatchStopHandle {
   return doWatch(effect, null, options)
 }
 
 export function watchPostEffect(
   effect: WatchEffect,
-  options?: DebuggerOptions
+  options?: DebuggerOptions,
 ) {
   return doWatch(
     effect,
     null,
-    __DEV__ ? extend({}, options as any, { flush: 'post' }) : { flush: 'post' }
+    __DEV__ ? extend({}, options as any, { flush: 'post' }) : { flush: 'post' },
   )
 }
 
 export function watchSyncEffect(
   effect: WatchEffect,
-  options?: DebuggerOptions
+  options?: DebuggerOptions,
 ) {
   return doWatch(
     effect,
     null,
-    __DEV__ ? extend({}, options as any, { flush: 'sync' }) : { flush: 'sync' }
+    __DEV__ ? extend({}, options as any, { flush: 'sync' }) : { flush: 'sync' },
   )
 }
 
@@ -111,11 +111,11 @@ type MultiWatchSources = (WatchSource<unknown> | object)[]
 // overload: array of multiple sources + cb
 export function watch<
   T extends MultiWatchSources,
-  Immediate extends Readonly<boolean> = false
+  Immediate extends Readonly<boolean> = false,
 >(
   sources: [...T],
   cb: WatchCallback<MapSources<T, false>, MapSources<T, Immediate>>,
-  options?: WatchOptions<Immediate>
+  options?: WatchOptions<Immediate>,
 ): WatchStopHandle
 
 // overload: multiple sources w/ `as const`
@@ -123,48 +123,48 @@ export function watch<
 // somehow [...T] breaks when the type is readonly
 export function watch<
   T extends Readonly<MultiWatchSources>,
-  Immediate extends Readonly<boolean> = false
+  Immediate extends Readonly<boolean> = false,
 >(
   source: T,
   cb: WatchCallback<MapSources<T, false>, MapSources<T, Immediate>>,
-  options?: WatchOptions<Immediate>
+  options?: WatchOptions<Immediate>,
 ): WatchStopHandle
 
 // overload: single source + cb
 export function watch<T, Immediate extends Readonly<boolean> = false>(
   source: WatchSource<T>,
   cb: WatchCallback<T, Immediate extends true ? T | undefined : T>,
-  options?: WatchOptions<Immediate>
+  options?: WatchOptions<Immediate>,
 ): WatchStopHandle
 
 // overload: watching reactive object w/ cb
 export function watch<
   T extends object,
-  Immediate extends Readonly<boolean> = false
+  Immediate extends Readonly<boolean> = false,
 >(
   source: T,
   cb: WatchCallback<T, Immediate extends true ? T | undefined : T>,
-  options?: WatchOptions<Immediate>
+  options?: WatchOptions<Immediate>,
 ): WatchStopHandle
 
 // implementation
 export function watch<T = any, Immediate extends Readonly<boolean> = false>(
   source: T | WatchSource<T>,
   cb: any,
-  options?: WatchOptions<Immediate>
+  options?: WatchOptions<Immediate>,
 ): WatchStopHandle {
   if (__DEV__ && !isFunction(cb)) {
     warn(
       `\`watch(fn, options?)\` signature has been moved to a separate API. ` +
         `Use \`watchEffect(fn, options?)\` instead. \`watch\` now only ` +
-        `supports \`watch(source, cb, options?) signature.`
+        `supports \`watch(source, cb, options?) signature.`,
     )
   }
   return doWatch(source as any, cb, options)
 }
 
 function getSchedulerByFlushMode(
-  flush: WatchOptionsBase['flush']
+  flush: WatchOptionsBase['flush'],
 ): SchedulerJob {
   if (flush === 'post') {
     return usePostRenderScheduler
@@ -179,26 +179,26 @@ function getSchedulerByFlushMode(
 function doWatch(
   source: WatchSource | WatchSource[] | WatchEffect | object,
   cb: WatchCallback | null,
-  options: WatchOptions = EMPTY_OBJ
+  options: WatchOptions = EMPTY_OBJ,
 ): WatchStopHandle {
   const { immediate, deep, flush, once } = options
   if (__DEV__ && !cb) {
     if (immediate !== undefined) {
       warn(
         `watch() "immediate" option is only respected when using the ` +
-          `watch(source, callback, options?) signature.`
+          `watch(source, callback, options?) signature.`,
       )
     }
     if (deep !== undefined) {
       warn(
         `watch() "deep" option is only respected when using the ` +
-          `watch(source, callback, options?) signature.`
+          `watch(source, callback, options?) signature.`,
       )
     }
     if (once !== undefined) {
       warn(
         `watch() "once" option is only respected when using the ` +
-          `watch(source, callback, options?) signature.`
+          `watch(source, callback, options?) signature.`,
       )
     }
   }
@@ -246,7 +246,7 @@ export function instanceWatch(
   this: ComponentInternalInstance,
   source: string | Function,
   value: WatchCallback | ObjectWatchOptionItem,
-  options?: WatchOptions
+  options?: WatchOptions,
 ): WatchStopHandle {
   const publicThis = this.proxy as any
   const getter = isString(source)
