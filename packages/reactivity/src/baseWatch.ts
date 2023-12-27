@@ -123,7 +123,7 @@ export function baseWatch(
     onTrigger,
     scheduler = DEFAULT_SCHEDULER,
     handleError: handleError = DEFAULT_HANDLE_ERROR,
-    handleWarn: handleWarn = warn,
+    handleWarn: handleWarn = __DEV__ ? warn : NOOP,
   }: BaseWatchOptions = EMPTY_OBJ,
 ): WatchInstance {
   const warnInvalidSource = (s: unknown) => {
