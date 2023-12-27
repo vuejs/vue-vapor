@@ -17,6 +17,8 @@ import {
   type DebuggerOptions,
   type EffectScheduler,
   ReactiveEffect,
+  pauseTracking,
+  resetTracking,
 } from './effect'
 import { isReactive, isShallow } from './reactive'
 import { type Ref, isRef } from './ref'
@@ -179,7 +181,12 @@ export function baseWatch(
       // no cb -> simple effect
       getter = () => {
         if (cleanup) {
-          cleanup()
+          pauseTracking()
+          try {
+            cleanup()
+          } finally {
+            resetTracking()
+          }
         }
         const currentEffect = activeEffect
         activeEffect = effect
