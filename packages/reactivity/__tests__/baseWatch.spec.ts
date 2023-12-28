@@ -1,14 +1,16 @@
+import type { Scheduler, SchedulerJob } from '../src/baseWatch'
 import {
-  type Scheduler,
-  type SchedulerJob,
+  BaseWatchErrorCodes,
+  EffectScope,
+  type Ref,
   baseWatch,
   onEffectCleanup,
-} from '../src/baseWatch'
-import { EffectScope } from '../src/effectScope'
-import { type Ref, ref } from '../src/ref'
+  ref,
+} from '../src/index'
 
 const queue: SchedulerJob[] = []
 
+// these codes are a simple scheduler
 let isFlushPending = false
 const resolvedPromise = /*#__PURE__*/ Promise.resolve() as Promise<any>
 const nextTick = (fn?: () => any) =>
@@ -27,8 +29,75 @@ const flushJobs = () => {
   })
 }
 
-describe('baseWatch with onEffectCleanup', () => {
-  test('basic', async () => {
+describe('baseWatch', () => {
+  test('effect', () => {
+    let dummy: any
+    const source = ref(0)
+    baseWatch(() => {
+      dummy = source.value
+    })
+    expect(dummy).toBe(0)
+    source.value++
+    expect(dummy).toBe(1)
+  })
+
+  test('watch', () => {
+    let dummy: any
+    const source = ref(0)
+    baseWatch(source, () => {
+      dummy = source.value
+    })
+    expect(dummy).toBe(undefined)
+    source.value++
+    expect(dummy).toBe(1)
+  })
+
+  test('custom error handler', () => {
+    const handleError = vi.fn()
+
+    baseWatch(
+      () => {
+        throw 'oops in effect'
+      },
+      null,
+      { handleError },
+    )
+
+    const source = ref(0)
+    const stop = baseWatch(
+      source,
+      () => {
+        onEffectCleanup(() => {
+          throw 'oops in cleanup'
+        })
+        throw 'oops in watch'
+      },
+      { handleError },
+    )
+
+    expect(handleError.mock.calls.length).toBe(1)
+    expect(handleError.mock.calls[0]).toMatchObject([
+      'oops in effect',
+      BaseWatchErrorCodes.WATCH_CALLBACK,
+    ])
+
+    source.value++
+    expect(handleError.mock.calls.length).toBe(2)
+    expect(handleError.mock.calls[1]).toMatchObject([
+      'oops in watch',
+      BaseWatchErrorCodes.WATCH_CALLBACK,
+    ])
+
+    stop()
+    source.value++
+    expect(handleError.mock.calls.length).toBe(3)
+    expect(handleError.mock.calls[2]).toMatchObject([
+      'oops in cleanup',
+      BaseWatchErrorCodes.WATCH_CLEANUP,
+    ])
+  })
+
+  test('baseWatch with onEffectCleanup', async () => {
     let dummy = 0
     let source: Ref<number>
     const scope = new EffectScope()
@@ -59,7 +128,7 @@ describe('baseWatch with onEffectCleanup', () => {
     expect(dummy).toBe(30)
   })
 
-  test('nested call to baseWatch', async () => {
+  test('nested calls to baseWatch and onEffectCleanup', async () => {
     let calls: string[] = []
     let source: Ref<number>
     let copyist: Ref<number>
