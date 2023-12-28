@@ -19,13 +19,12 @@ import {
   isPromise,
   isString,
 } from '@vue/shared'
-import { type Ref, getCurrentScope, isRef } from '@vue/reactivity'
+import { type Ref, getCurrentScope, isRef, traverse } from '@vue/reactivity'
 import { computed } from './apiComputed'
 import {
   type WatchCallback,
   type WatchOptions,
   createPathGetter,
-  traverse,
   watch,
 } from './apiWatch'
 import { inject, provide } from './apiInject'

@@ -73,5 +73,8 @@ export {
   baseWatch,
   onEffectCleanup,
   BaseWatchErrorCodes,
+  traverse,
   type BaseWatchOptions,
+  type Scheduler,
+  type WatchInstance,
 } from './baseWatch'

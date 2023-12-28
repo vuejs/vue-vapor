@@ -3,11 +3,9 @@ import {
   type BaseWatchOptions,
   type ComputedRef,
   type DebuggerOptions,
-  ReactiveFlags,
   type Ref,
   baseWatch,
   getCurrentScope,
-  isRef,
 } from '@vue/reactivity'
 import {
   type SchedulerJob,
@@ -18,12 +16,7 @@ import {
   EMPTY_OBJ,
   NOOP,
   extend,
-  isArray,
   isFunction,
-  isMap,
-  isObject,
-  isPlainObject,
-  isSet,
   isString,
   remove,
 } from '@vue/shared'
@@ -283,31 +276,4 @@ export function createPathGetter(ctx: any, path: string) {
     }
     return cur
   }
-}
-
-export function traverse(value: unknown, seen?: Set<unknown>) {
-  if (!isObject(value) || (value as any)[ReactiveFlags.SKIP]) {
-    return value
-  }
-  seen = seen || new Set()
-  if (seen.has(value)) {
-    return value
-  }
-  seen.add(value)
-  if (isRef(value)) {
-    traverse(value.value, seen)
-  } else if (isArray(value)) {
-    for (let i = 0; i < value.length; i++) {
-      traverse(value[i], seen)
-    }
-  } else if (isSet(value) || isMap(value)) {
-    value.forEach((v: any) => {
-      traverse(v, seen)
-    })
-  } else if (isPlainObject(value)) {
-    for (const key in value) {
-      traverse(value[key], seen)
-    }
-  }
-  return value
 }

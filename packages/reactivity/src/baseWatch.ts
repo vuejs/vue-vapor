@@ -56,11 +56,11 @@ export interface SchedulerJob extends Function {
   allowRecurse?: boolean
 }
 
-export type WatchEffect = (onCleanup: OnCleanup) => void
+type WatchEffect = (onCleanup: OnCleanup) => void
 
-export type WatchSource<T = any> = Ref<T> | ComputedRef<T> | (() => T)
+type WatchSource<T = any> = Ref<T> | ComputedRef<T> | (() => T)
 
-export type WatchCallback<V = any, OV = any> = (
+type WatchCallback<V = any, OV = any> = (
   value: V,
   oldValue: OV,
   onCleanup: OnCleanup,
@@ -77,7 +77,7 @@ export interface BaseWatchOptions<Immediate = boolean> extends DebuggerOptions {
   handleWarn?: HandleWarn
 }
 
-export type WatchStopHandle = () => void
+type WatchStopHandle = () => void
 
 export interface WatchInstance extends WatchStopHandle {
   effect?: ReactiveEffect
@@ -369,7 +369,7 @@ export function traverse(value: unknown, seen?: Set<unknown>) {
   return value
 }
 
-export function callWithErrorHandling(
+function callWithErrorHandling(
   fn: Function,
   handleError: HandleError,
   type: BaseWatchErrorCodes,
@@ -384,7 +384,7 @@ export function callWithErrorHandling(
   return res
 }
 
-export function callWithAsyncErrorHandling(
+function callWithAsyncErrorHandling(
   fn: Function | Function[],
   handleError: HandleError,
   type: BaseWatchErrorCodes,
