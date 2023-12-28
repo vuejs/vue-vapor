@@ -53,14 +53,14 @@ describe('baseWatch', () => {
   })
 
   test('custom error handler', () => {
-    const handleError = vi.fn()
+    const onError = vi.fn()
 
     baseWatch(
       () => {
         throw 'oops in effect'
       },
       null,
-      { handleError },
+      { onError },
     )
 
     const source = ref(0)
@@ -72,26 +72,26 @@ describe('baseWatch', () => {
         })
         throw 'oops in watch'
       },
-      { handleError },
+      { onError },
     )
 
-    expect(handleError.mock.calls.length).toBe(1)
-    expect(handleError.mock.calls[0]).toMatchObject([
+    expect(onError.mock.calls.length).toBe(1)
+    expect(onError.mock.calls[0]).toMatchObject([
       'oops in effect',
       BaseWatchErrorCodes.WATCH_CALLBACK,
     ])
 
     source.value++
-    expect(handleError.mock.calls.length).toBe(2)
-    expect(handleError.mock.calls[1]).toMatchObject([
+    expect(onError.mock.calls.length).toBe(2)
+    expect(onError.mock.calls[1]).toMatchObject([
       'oops in watch',
       BaseWatchErrorCodes.WATCH_CALLBACK,
     ])
 
     stop()
     source.value++
-    expect(handleError.mock.calls.length).toBe(3)
-    expect(handleError.mock.calls[2]).toMatchObject([
+    expect(onError.mock.calls.length).toBe(3)
+    expect(onError.mock.calls[2]).toMatchObject([
       'oops in cleanup',
       BaseWatchErrorCodes.WATCH_CLEANUP,
     ])

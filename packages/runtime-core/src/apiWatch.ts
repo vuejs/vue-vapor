@@ -198,7 +198,7 @@ function doWatch(
 
   const extendOptions: BaseWatchOptions = {}
 
-  if (__DEV__) extendOptions.handleWarn = warn
+  if (__DEV__) extendOptions.onWarn = warn
 
   let ssrCleanup: (() => void)[] | undefined
   if (__SSR__ && isInSSRComponentSetup) {
@@ -217,7 +217,7 @@ function doWatch(
   const instance =
     getCurrentScope() === currentInstance?.scope ? currentInstance : null
 
-  extendOptions.handleError = (err: unknown, type: BaseWatchErrorCodes) =>
+  extendOptions.onError = (err: unknown, type: BaseWatchErrorCodes) =>
     handleErrorWithInstance(err, instance, type)
 
   const scheduler = getSchedulerByFlushMode(flush)({ instance })

@@ -73,8 +73,8 @@ export interface BaseWatchOptions<Immediate = boolean> extends DebuggerOptions {
   deep?: boolean
   once?: boolean
   scheduler?: Scheduler
-  handleError?: HandleError
-  handleWarn?: HandleWarn
+  onError?: HandleError
+  onWarn?: HandleWarn
 }
 
 type WatchStopHandle = () => void
@@ -121,15 +121,15 @@ export function baseWatch(
     immediate,
     deep,
     once,
+    scheduler = DEFAULT_SCHEDULER,
+    onWarn = __DEV__ ? warn : NOOP,
+    onError = DEFAULT_HANDLE_ERROR,
     onTrack,
     onTrigger,
-    scheduler = DEFAULT_SCHEDULER,
-    handleError: handleError = DEFAULT_HANDLE_ERROR,
-    handleWarn: handleWarn = __DEV__ ? warn : NOOP,
   }: BaseWatchOptions = EMPTY_OBJ,
 ): WatchInstance {
   const warnInvalidSource = (s: unknown) => {
-    handleWarn(
+    onWarn(
       `Invalid watch source: `,
       s,
       `A watch source can only be a getter/effect function, a ref, ` +
@@ -161,7 +161,7 @@ export function baseWatch(
         } else if (isFunction(s)) {
           return callWithErrorHandling(
             s,
-            handleError,
+            onError,
             BaseWatchErrorCodes.WATCH_GETTER,
           )
         } else {
@@ -172,11 +172,7 @@ export function baseWatch(
     if (cb) {
       // getter with cb
       getter = () =>
-        callWithErrorHandling(
-          source,
-          handleError,
-          BaseWatchErrorCodes.WATCH_GETTER,
-        )
+        callWithErrorHandling(source, onError, BaseWatchErrorCodes.WATCH_GETTER)
     } else {
       // no cb -> simple effect
       getter = () => {
@@ -193,7 +189,7 @@ export function baseWatch(
         try {
           return callWithAsyncErrorHandling(
             source,
-            handleError,
+            onError,
             BaseWatchErrorCodes.WATCH_CALLBACK,
             [onEffectCleanup],
           )
@@ -224,7 +220,7 @@ export function baseWatch(
       getCurrentScope()?.effects.push((effect = {} as any))
       callWithAsyncErrorHandling(
         cb,
-        handleError,
+        onError,
         BaseWatchErrorCodes.WATCH_CALLBACK,
         [getter(), isMultiSource ? [] : undefined, onEffectCleanup],
       )
@@ -263,7 +259,7 @@ export function baseWatch(
         try {
           callWithAsyncErrorHandling(
             cb,
-            handleError,
+            onError,
             BaseWatchErrorCodes.WATCH_CALLBACK,
             [
               newValue,
@@ -306,7 +302,7 @@ export function baseWatch(
       cleanups.forEach(cleanup =>
         callWithErrorHandling(
           cleanup,
-          handleError,
+          onError,
           BaseWatchErrorCodes.WATCH_CLEANUP,
         ),
       )
