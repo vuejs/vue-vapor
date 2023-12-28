@@ -116,7 +116,7 @@ export function onEffectCleanup(cleanupFn: () => void) {
 
 export function baseWatch(
   source: WatchSource | WatchSource[] | WatchEffect | object,
-  cb: WatchCallback | null,
+  cb?: WatchCallback | null,
   {
     immediate,
     deep,
