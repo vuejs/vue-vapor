@@ -76,5 +76,4 @@ export {
   traverse,
   type BaseWatchOptions,
   type Scheduler,
-  type WatchInstance,
 } from './baseWatch'

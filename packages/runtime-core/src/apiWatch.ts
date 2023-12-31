@@ -223,14 +223,16 @@ function doWatch(
   const scheduler = getSchedulerByFlushMode(flush)({ instance })
   extendOptions.scheduler = scheduler
 
-  let baseUnwatch = baseWatch(source, cb, extend({}, options, extendOptions))
+  let effect = baseWatch(source, cb, extend({}, options, extendOptions))
 
-  const unwatch = () => {
-    baseUnwatch()
-    if (instance && instance.scope) {
-      remove(instance.scope.effects!, baseUnwatch.effect)
-    }
-  }
+  const unwatch = !effect
+    ? NOOP
+    : () => {
+        effect!.stop()
+        if (instance && instance.scope) {
+          remove(instance.scope.effects!, effect)
+        }
+      }
 
   if (__SSR__ && ssrCleanup) ssrCleanup.push(unwatch)
   return unwatch

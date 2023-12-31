@@ -64,7 +64,7 @@ describe('baseWatch', () => {
     )
 
     const source = ref(0)
-    const stop = baseWatch(
+    const effect = baseWatch(
       source,
       () => {
         onEffectCleanup(() => {
@@ -88,7 +88,7 @@ describe('baseWatch', () => {
       BaseWatchErrorCodes.WATCH_CALLBACK,
     ])
 
-    stop()
+    effect!.stop()
     source.value++
     expect(onError.mock.calls.length).toBe(3)
     expect(onError.mock.calls[2]).toMatchObject([

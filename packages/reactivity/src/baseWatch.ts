@@ -77,12 +77,6 @@ export interface BaseWatchOptions<Immediate = boolean> extends DebuggerOptions {
   onWarn?: HandleWarn
 }
 
-type WatchStopHandle = () => void
-
-export interface WatchInstance extends WatchStopHandle {
-  effect?: ReactiveEffect
-}
-
 // initial value for watchers to trigger on undefined initial values
 const INITIAL_WATCHER_VALUE = {}
 
@@ -146,7 +140,7 @@ export function baseWatch(
     onTrack,
     onTrigger,
   }: BaseWatchOptions = EMPTY_OBJ,
-): WatchInstance {
+): ReactiveEffect | undefined {
   const warnInvalidSource = (s: unknown) => {
     onWarn(
       `Invalid watch source: `,
@@ -232,7 +226,7 @@ export function baseWatch(
       // onEffectCleanup need use effect as a key
       getCurrentScope()?.effects.push((effect = {} as any))
       getter()
-      return NOOP
+      return
     }
     if (immediate) {
       // onEffectCleanup need use effect as a key
@@ -243,12 +237,12 @@ export function baseWatch(
         BaseWatchErrorCodes.WATCH_CALLBACK,
         [getter(), isMultiSource ? [] : undefined, onEffectCleanup],
       )
-      return NOOP
+      return
     }
     const _cb = cb
     cb = (...args) => {
       _cb(...args)
-      unwatch()
+      effect?.stop()
     }
   }
 
@@ -329,11 +323,6 @@ export function baseWatch(
     }
   }
 
-  const unwatch: WatchInstance = () => {
-    effect.stop()
-  }
-  unwatch.effect = effect
-
   if (__DEV__) {
     effect.onTrack = onTrack
     effect.onTrigger = onTrigger
@@ -354,7 +343,7 @@ export function baseWatch(
     })
   }
 
-  return unwatch
+  return effect
 }
 
 export function traverse(value: unknown, seen?: Set<unknown>) {
