@@ -105,12 +105,31 @@ export type HandleWarn = (msg: string, ...args: any[]) => void
 const cleanupMap: WeakMap<ReactiveEffect, (() => void)[]> = new WeakMap()
 let activeEffect: ReactiveEffect | undefined = undefined
 
+/**
+ * Returns the current active effect if there is one.
+ */
+export function getCurrentEffect() {
+  return activeEffect
+}
+
+/**
+ * Registers a cleanup callback on the current active effect. This
+ * registered cleanup callback will be invoked right before the
+ * associated effect re-runs.
+ *
+ * @param cleanupFn - The callback function to attach to the effect's cleanup.
+ */
 export function onEffectCleanup(cleanupFn: () => void) {
   if (activeEffect) {
     const cleanups =
       cleanupMap.get(activeEffect) ||
       cleanupMap.set(activeEffect, []).get(activeEffect)!
     cleanups.push(cleanupFn)
+  } else if (__DEV__) {
+    warn(
+      `onEffectCleanup() was called when there was no active effect` +
+        ` to associate with.`,
+    )
   }
 }
 
