@@ -31,7 +31,7 @@ import { handleError as handleErrorWithInstance } from './errorHandling'
 import { usePostRenderScheduler } from './renderer'
 import { warn } from './warning'
 import type { ObjectWatchOptionItem } from './componentOptions'
-import { useSSRContext } from '@vue/runtime-core'
+import { useSSRContext } from './helpers/useSsrContext'
 
 export type WatchEffect = (onCleanup: OnCleanup) => void
 
@@ -101,6 +101,13 @@ export function watchSyncEffect(
 
 type MultiWatchSources = (WatchSource<unknown> | object)[]
 
+// overload: single source + cb
+export function watch<T, Immediate extends Readonly<boolean> = false>(
+  source: WatchSource<T>,
+  cb: WatchCallback<T, Immediate extends true ? T | undefined : T>,
+  options?: WatchOptions<Immediate>,
+): WatchStopHandle
+
 // overload: array of multiple sources + cb
 export function watch<
   T extends MultiWatchSources,
@@ -120,13 +127,6 @@ export function watch<
 >(
   source: T,
   cb: WatchCallback<MapSources<T, false>, MapSources<T, Immediate>>,
-  options?: WatchOptions<Immediate>,
-): WatchStopHandle
-
-// overload: single source + cb
-export function watch<T, Immediate extends Readonly<boolean> = false>(
-  source: WatchSource<T>,
-  cb: WatchCallback<T, Immediate extends true ? T | undefined : T>,
   options?: WatchOptions<Immediate>,
 ): WatchStopHandle
 
