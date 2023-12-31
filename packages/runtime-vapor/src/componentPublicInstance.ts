@@ -1,6 +1,6 @@
 import { extend, hasOwn } from '@vue/shared'
 import { TrackOpTypes, track } from '@vue/reactivity'
-import { type ComponentInternalInstance } from './component'
+import type { ComponentInternalInstance } from './component'
 
 export type PublicPropertiesMap = Record<
   string,

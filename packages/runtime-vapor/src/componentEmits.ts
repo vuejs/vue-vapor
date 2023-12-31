@@ -4,14 +4,14 @@ import {
   type UnionToIntersection,
   camelize,
   extend,
+  hasOwn,
   hyphenate,
   isArray,
   isFunction,
-  toHandlerKey,
   isOn,
-  hasOwn,
+  toHandlerKey,
 } from '@vue/shared'
-import { type Component, type ComponentInternalInstance } from './component'
+import type { Component, ComponentInternalInstance } from './component'
 
 export type ObjectEmitsOptions = Record<
   string,

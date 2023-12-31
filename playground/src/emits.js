@@ -2,10 +2,10 @@ import {
   children,
   on,
   ref,
+  render as renderComponent, // TODO:
+  setText,
   template,
   watchEffect,
-  setText,
-  render as renderComponent // TODO:
 } from '@vue/vapor'
 
 export default {
@@ -21,7 +21,7 @@ export default {
 
     Object.defineProperty(__returned__, '__isScriptSetup', {
       enumerable: false,
-      value: true
+      value: true,
     })
 
     return __returned__
@@ -31,7 +31,7 @@ export default {
     const t0 = template('<p></p>')
     const n0 = t0()
     const {
-      0: [n1]
+      0: [n1],
     } = children(n0)
 
     watchEffect(() => {
@@ -46,10 +46,10 @@ export default {
         },
         get ['onClick:child']() {
           return _ctx.setCount
-        }
+        },
       },
       [],
-      n0
+      n0,
     )
 
     renderComponent(
@@ -60,19 +60,19 @@ export default {
         },
         get ['onClick:childOnce']() {
           return _ctx.setCount
-        }
+        },
       },
       [],
-      n0
+      n0,
     )
 
     return n0
-  }
+  },
 }
 
 const child = {
   props: {
-    count: { type: Number, default: 1 }
+    count: { type: Number, default: 1 },
   },
 
   setup(props, { emit }) {
@@ -84,7 +84,7 @@ const child = {
 
     Object.defineProperty(__returned__, '__isScriptSetup', {
       enumerable: false,
-      value: true
+      value: true,
     })
 
     return __returned__
@@ -94,9 +94,9 @@ const child = {
     const t0 = template('<button>set count * 2</button>')
     const n0 = t0()
     const {
-      0: [n1]
+      0: [n1],
     } = children(n0)
     on(n1, 'click', _ctx.handleClick)
     return n0
-  }
+  },
 }

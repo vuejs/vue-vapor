@@ -3,10 +3,10 @@ import {
   insert,
   on,
   ref,
+  render as renderComponent, // TODO:
+  setText,
   template,
   watchEffect,
-  setText,
-  render as renderComponent // TODO:
 } from '@vue/vapor'
 
 export default {
@@ -22,7 +22,7 @@ export default {
 
     Object.defineProperty(__returned__, '__isScriptSetup', {
       enumerable: false,
-      value: true
+      value: true,
     })
 
     return __returned__
@@ -33,10 +33,10 @@ export default {
 
     const n0 = t0()
     const {
-      0: [n1]
+      0: [n1],
     } = children(n0)
     const {
-      0: [b0]
+      0: [b0],
     } = children(n1)
     on(b0, 'click', _ctx.handleClick)
 
@@ -48,14 +48,14 @@ export default {
         const t0 = template('<div class="slot"></div>')
         const n0 = t0()
         const {
-          0: [n1]
+          0: [n1],
         } = children(n0)
         watchEffect(() => {
           setText(n1, void 0, _ctx.count)
         })
         return n0
       },
-      n1
+      n1,
     )
 
     // named slots
@@ -67,15 +67,15 @@ export default {
           const t0 = template('<div class="slot"></div>')
           const n0 = t0()
           const {
-            0: [n1]
+            0: [n1],
           } = children(n0)
           watchEffect(() => {
             setText(n1, void 0, _ctx.count)
           })
           return n0
-        }
+        },
       },
-      n1
+      n1,
     )
 
     // scoped
@@ -87,7 +87,7 @@ export default {
           const t0 = template('<div class="slot"></div>')
           const n0 = t0()
           const {
-            0: [n1]
+            0: [n1],
           } = children(n0)
           watchEffect(() => {
             setText(n1, void 0, _ctx.count)
@@ -98,19 +98,19 @@ export default {
           const t0 = template('<p></p>')
           const n0 = t0()
           const {
-            0: [n1]
+            0: [n1],
           } = children(n0)
           watchEffect(() => {
             setText(n1, void 0, props.message)
           })
           return n0
-        }
+        },
       },
-      n1
+      n1,
     )
 
     return n1
-  }
+  },
 }
 
 const child = {
@@ -125,7 +125,7 @@ const child = {
 
     Object.defineProperty(__returned__, '__isScriptSetup', {
       enumerable: false,
-      value: true
+      value: true,
     })
 
     return __returned__
@@ -137,7 +137,7 @@ const child = {
 
     const n0 = t0()
     const {
-      0: [n1]
+      0: [n1],
     } = children(n0)
     const s0 = _ctx.$slots.default?.()
     if (s0) {
@@ -149,13 +149,13 @@ const child = {
       {
         get message() {
           return _ctx.message
-        }
-      }
+        },
+      },
     )
     if (s1) {
       const n2 = t1()
       const {
-        0: [n3]
+        0: [n3],
       } = children(n2)
       on(n3, 'click', _ctx.changeMessage)
       insert(s1, n1)
@@ -163,5 +163,5 @@ const child = {
     }
 
     return n0
-  }
+  },
 }
