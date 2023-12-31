@@ -1,5 +1,5 @@
 import { hasOwn } from '@vue/shared'
-import { type ComponentInternalInstance } from './component'
+import type { ComponentInternalInstance } from './component'
 
 export interface ComponentRenderContext {
   [key: string]: any

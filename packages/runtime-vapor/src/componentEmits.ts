@@ -9,7 +9,7 @@ import {
   isFunction,
   toHandlerKey,
 } from '@vue/shared'
-import { type Component, type ComponentInternalInstance } from './component'
+import type { Component, ComponentInternalInstance } from './component'
 
 export type ObjectEmitsOptions = Record<
   string,
