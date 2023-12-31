@@ -13,8 +13,8 @@ import {
   isReservedProp,
 } from '@vue/shared'
 import { shallowReactive, toRaw } from '@vue/reactivity'
-import type { ComponentInternalInstance, Component } from './component'
 import { isEmitListener } from './componentEmits'
+import type { Component, ComponentInternalInstance } from './component'
 
 export type ComponentPropsOptions<P = Data> =
   | ComponentObjectPropsOptions<P>

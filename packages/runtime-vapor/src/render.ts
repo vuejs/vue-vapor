@@ -1,5 +1,5 @@
 import { markRaw, proxyRefs } from '@vue/reactivity'
-import { invokeArrayFns, type Data } from '@vue/shared'
+import { type Data, invokeArrayFns } from '@vue/shared'
 import {
   type Component,
   type ComponentInternalInstance,
@@ -34,7 +34,8 @@ export function render(
 
 export function normalizeContainer(container: string | ParentNode): ParentNode {
   return typeof container === 'string'
-    ? (document.querySelector(container) as ParentNode)
+    ? // eslint-disable-next-line no-restricted-globals
+      (document.querySelector(container) as ParentNode)
     : container
 }
 

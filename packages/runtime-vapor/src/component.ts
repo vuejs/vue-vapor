@@ -1,9 +1,9 @@
 import type { Data } from '@vue/shared'
 import { EMPTY_OBJ } from '@vue/shared'
-import { EffectScope, Ref, ref } from '@vue/reactivity'
+import { EffectScope, type Ref, ref } from '@vue/reactivity'
 
-import { Block } from './render'
-
+import type { Block } from './render'
+import type { DirectiveBinding } from './directive'
 import type {
   ComponentPropsOptions,
   NormalizedPropsOptions,
@@ -12,9 +12,6 @@ import { normalizePropsOptions } from './componentProps'
 
 import type { EmitFn, EmitsOptions, ObjectEmitsOptions } from './componentEmits'
 import { emit, normalizeEmitsOptions } from './componentEmits'
-
-import type { DirectiveBinding } from './directive'
-
 import { VaporLifecycleHooks } from './enums'
 
 export type Component = FunctionalComponent | ObjectComponent
