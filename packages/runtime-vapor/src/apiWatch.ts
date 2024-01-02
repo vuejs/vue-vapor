@@ -3,7 +3,6 @@ import {
   type BaseWatchOptions,
   type ComputedRef,
   type DebuggerOptions,
-  type ReactiveEffect,
   type Ref,
   baseWatch,
   getCurrentScope,
