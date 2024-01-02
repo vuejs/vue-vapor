@@ -1,14 +1,16 @@
-import { EffectScope, type Ref, ref } from '@vue/reactivity'
+import type { Ref } from '@vue/reactivity'
+import { defineComponent } from 'vue'
 import {
+  EffectScope,
+  nextTick,
   onEffectCleanup,
+  ref,
+  render,
+  template,
   watchEffect,
   watchPostEffect,
   watchSyncEffect,
-} from '../src/apiWatch'
-import { nextTick } from '../src/scheduler'
-import { defineComponent } from 'vue'
-import { render } from '../src/render'
-import { template } from '../src/template'
+} from '../src/index'
 
 let host: HTMLElement
 
