@@ -24,14 +24,16 @@ export function getIsRendering() {
 export function render(
   comp: Component,
   props: Data,
-  container: string | ParentNode,
+  container: string | ParentNode | null,
 ): ComponentInternalInstance {
   const instance = createComponentInstance(comp)
   initProps(instance, props)
   return mountComponent(instance, (container = normalizeContainer(container)))
 }
 
-export function normalizeContainer(container: string | ParentNode): ParentNode {
+export function normalizeContainer(
+  container: string | ParentNode | null,
+): ParentNode | null {
   return typeof container === 'string'
     ? // eslint-disable-next-line no-restricted-globals
       (document.querySelector(container) as ParentNode)
@@ -40,7 +42,7 @@ export function normalizeContainer(container: string | ParentNode): ParentNode {
 
 export function mountComponent(
   instance: ComponentInternalInstance,
-  container: ParentNode,
+  container: ParentNode | null,
 ) {
   instance.container = container
 
@@ -76,9 +78,10 @@ export function mountComponent(
   bm && invokeArrayFns(bm)
   invokeDirectiveHook(instance, 'beforeMount')
 
-  insert(block, instance.container)
-  instance.isMountedRef.value = true
-
+  if (container) {
+    insert(block, instance.container)
+    instance.isMountedRef.value = true
+  }
   // hook: mounted
   invokeDirectiveHook(instance, 'mounted')
   m && invokeArrayFns(m)

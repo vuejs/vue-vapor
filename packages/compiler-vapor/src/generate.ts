@@ -3,6 +3,7 @@ import {
   type CodegenOptions,
   type CodegenResult,
   NewlineType,
+  NodeTypes,
   type Position,
   type SourceLocation,
   advancePositionWithClone,
@@ -14,6 +15,7 @@ import {
 } from '@vue/compiler-dom'
 import {
   type AppendNodeIRNode,
+  type CreateComponentIRNode,
   type CreateTextNodeIRNode,
   type IRDynamicChildren,
   type IRExpression,
@@ -376,6 +378,8 @@ function genOperation(oper: OperationNode, context: CodegenContext) {
       return genSetHtml(oper, context)
     case IRNodeTypes.CREATE_TEXT_NODE:
       return genCreateTextNode(oper, context)
+    case IRNodeTypes.CREATE_COMPONENT:
+      return genCreateComponent(oper, context)
     case IRNodeTypes.INSERT_NODE:
       return genInsertNode(oper, context)
     case IRNodeTypes.PREPEND_NODE:
@@ -434,6 +438,171 @@ function genCreateTextNode(
   pushNewline(`const n${oper.id} = `)
   pushFnCall(vaporHelper('createTextNode'), () =>
     genExpression(oper.value, context),
+  )
+}
+
+function genCreateComponent(
+  oper: CreateComponentIRNode,
+  context: CodegenContext,
+) {
+  const { pushNewline, pushFnCall, vaporHelper } = context
+
+  pushNewline(`const n${oper.id} = `)
+
+  let props = null
+  if (oper.props.length && false) {
+    console.log('ZXZXX')
+    // props = oper.props
+    //   .map((prop) => {
+    //     const { name, value, exp, arg } = prop
+    //     console.log('using ', prop)
+
+    //     // const key = oper.runtimeCamelize
+    //     let key = null
+
+    //     // const content =
+
+    //     let content = null
+
+    //     switch (prop?.type) {
+    //       case NodeTypes.ATTRIBUTE: {
+    //         content = value.content
+    //         key = camelize(name)
+    //         break
+    //       }
+    //       case NodeTypes.DIRECTIVE: {
+    //         console.log('found ', prop)
+    //         // content = genExpression(prop.exp, context)
+    //         key = camelize(arg.content)
+    //         content = genWithDirective(exp, context)
+    //         break
+    //       }
+    //     }
+
+    //     return `${key}: ${JSON.stringify(value?.content)}`
+    //   })
+    //   .join(', ')
+
+    console.log('props', props)
+
+    // console.log('ppp', oper.props)
+
+    // genWithDirective(oper, ctx)
+
+    // console.log('res ', genWithDirective({ dir: oper.props[1] }, context))
+
+    const dir = oper.props[1]
+    const { push, newline, pushFnCall, pushMulti, vaporHelper } = context
+
+    // genExpression(dir.exp, context)
+    if (dir.exp) {
+      push(', () => ')
+      genExpression(dir.exp, context)
+    } else if (dir.arg || dir.modifiers.length) {
+      push(', void 0')
+    }
+
+    if (dir.arg) {
+      push(', ')
+      genExpression(dir.arg, context)
+    } else if (dir.modifiers.length) {
+      push(', void 0')
+    }
+
+    if (dir.modifiers.length) {
+      push(', ')
+      push('{ ')
+      push(genDirectiveModifiers(dir.modifiers))
+      push(' }')
+    }
+
+    /*
+    pushFnCall(
+    vaporHelper('setAttr'),
+    `n${oper.element}`,
+    // 2. key name
+    () => {
+      if (oper.runtimeCamelize) {
+        pushFnCall(helper('camelize'), () => genExpression(oper.key, context))
+      } else {
+        genExpression(oper.key, context)
+      }
+    },
+    'undefined',
+    () => genExpression(oper.value, context),
+  ) */
+  }
+  if (oper.props.length) {
+    props = oper.props
+      .map((prop) => {
+        const { name, value, exp, arg } = prop
+        // const key = oper.runtimeCamelize
+        let key = null
+
+        // const content =
+
+        let content = null
+
+        switch (prop?.type) {
+          case NodeTypes.ATTRIBUTE: {
+            content = value ? JSON.stringify(value.content) : undefined
+            key = camelize(name)
+            break
+          }
+          case NodeTypes.DIRECTIVE: {
+            console.log('found ', prop)
+            // content = genExpression(prop.exp, context)
+            key = camelize(arg.content)
+
+            // content = genWithDirective({ dir: prop }, context)
+            // genExpression(dir.exp, context)
+
+            genIdentifier(
+              exp.content,
+              {
+                inline: context.inline,
+                bindingMetadata: context.bindingMetadata,
+                push: (c) => (content = c),
+              },
+              {
+                start: advancePositionWithClone(
+                  exp.loc.start,
+                  exp.content,
+                  exp.loc.start,
+                ),
+                end: advancePositionWithClone(
+                  exp.loc.start,
+                  exp.content,
+                  exp.loc.end,
+                ),
+                source: exp.content,
+              },
+            )
+
+            return `get ${key}() { return ${content} }`
+
+            // genExpression(exp, {
+            //   ...context,
+            //   push: (c) => (content = c),
+            // })
+            break
+          }
+        }
+
+        return `${key}: ${content}`
+      })
+      .join(', ')
+
+    console.log('props', props)
+  }
+
+  pushFnCall(
+    vaporHelper('createComponent'),
+    () => genExpression(oper.tag, context),
+    // () => {
+    //   // oper.props.map((x) => genExpression(x, context))
+    // },
+    props ? `{ ${props} }` : '{}',
   )
 }
 

@@ -1,4 +1,5 @@
 import type {
+  AttributeNode,
   CompoundExpressionNode,
   DirectiveNode,
   RootNode,
@@ -22,6 +23,7 @@ export enum IRNodeTypes {
   PREPEND_NODE,
   APPEND_NODE,
   CREATE_TEXT_NODE,
+  CREATE_COMPONENT,
 
   WITH_DIRECTIVE,
 }
@@ -98,6 +100,16 @@ export interface CreateTextNodeIRNode extends BaseIRNode {
   value: IRExpression
 }
 
+export interface CreateComponentIRNode extends BaseIRNode {
+  type: IRNodeTypes.CREATE_COMPONENT
+  id: number
+  tag: string
+
+  children: string[]
+  props: AttributeNode[]
+  // children: IRExpression
+}
+
 export interface InsertNodeIRNode extends BaseIRNode {
   type: IRNodeTypes.INSERT_NODE
   element: number | number[]
@@ -134,6 +146,7 @@ export type OperationNode =
   | SetEventIRNode
   | SetHtmlIRNode
   | CreateTextNodeIRNode
+  | CreateComponentIRNode
   | InsertNodeIRNode
   | PrependNodeIRNode
   | AppendNodeIRNode

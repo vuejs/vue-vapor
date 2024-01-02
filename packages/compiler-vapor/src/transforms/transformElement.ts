@@ -25,20 +25,35 @@ export const transformElement: NodeTransform = (node, ctx) => {
     const { tag, props } = node
     const isComponent = node.tagType === ElementTypes.COMPONENT
 
-    ctx.template += `<${tag}`
-    if (props.length) {
-      buildProps(
-        node,
-        ctx as TransformContext<ElementNode>,
-        undefined,
-        isComponent,
-      )
-    }
-    ctx.template += `>` + ctx.childrenTemplate.join('')
+    if (isComponent) {
+      ctx.dynamic.ghost = true
 
-    // TODO remove unnecessary close tag, e.g. if it's the last element of the template
-    if (!isVoidTag(tag)) {
-      ctx.template += `</${tag}>`
+      ctx.registerOperation({
+        type: IRNodeTypes.CREATE_COMPONENT,
+        id: ctx.reference(),
+        loc: node.loc,
+        tag: tag,
+        children: ctx.childrenTemplate,
+        // TODO add type
+        props: props,
+      })
+    } else {
+      ctx.template += `<${tag}`
+
+      if (props.length) {
+        buildProps(
+          node,
+          ctx as TransformContext<ElementNode>,
+          undefined,
+          isComponent,
+        )
+      }
+      ctx.template += `>` + ctx.childrenTemplate.join('')
+
+      // TODO remove unnecessary close tag, e.g. if it's the last element of the template
+      if (!isVoidTag(tag)) {
+        ctx.template += `</${tag}>`
+      }
     }
   }
 }
@@ -49,6 +64,7 @@ function buildProps(
   props: ElementNode['props'] = node.props,
   isComponent: boolean,
 ) {
+  if (isComponent) console.log('props===== ', props)
   for (const prop of props) {
     transformProp(prop as VaporDirectiveNode | AttributeNode, node, context)
   }

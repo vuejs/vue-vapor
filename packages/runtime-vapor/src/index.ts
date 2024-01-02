@@ -46,4 +46,9 @@ export * from './directive'
 export * from './dom'
 export * from './directives/vShow'
 export * from './apiLifecycle'
-export { getCurrentInstance, type ComponentInternalInstance } from './component'
+
+export {
+  getCurrentInstance,
+  type ComponentInternalInstance,
+  createComponent,
+} from './component'

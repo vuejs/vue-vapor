@@ -1,7 +1,7 @@
 import { EffectScope, type Ref, ref } from '@vue/reactivity'
 
 import { EMPTY_OBJ } from '@vue/shared'
-import type { Block } from './render'
+import { type Block, render } from './render'
 import type { DirectiveBinding } from './directive'
 import {
   type ComponentPropsOptions,
@@ -216,4 +216,8 @@ export const createComponentInstance = (
     // [VaporLifecycleHooks.SERVER_PREFETCH]: null,
   }
   return instance
+}
+
+export function createComponent(component: Component, props: Data) {
+  return render(component, props, null).block
 }
