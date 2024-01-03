@@ -238,6 +238,68 @@ describe('runtime: compoentn props', () => {
   //   expect(host.innerHTML).toBe('<div><div>1</div></div>')
   // })
 
+  // TODO: pending: https://github.com/vuejs/core-vapor/issues/84
+  // test('should render inline computed props value', async () => {
+  //   const ChildComp = defineComponent({
+  //     props: { double: {} },
+  //     setup() {
+  //       const __returned__ = {}
+  //       Object.defineProperty(__returned__, '__isScriptSetup', {
+  //         enumerable: false,
+  //         value: true,
+  //       })
+  //       return __returned__
+  //     },
+  //     render(_ctx: any) {
+  //       const t0 = template('<div></div>')
+  //       const n0 = t0()
+  //       const {
+  //         0: [n1],
+  //       } = children(n0)
+  //       watchEffect(() => {
+  //         setText(n1, void 0, _ctx.double)
+  //       })
+  //       return n0
+  //     },
+  //   })
+
+  //   const count = ref(0) // state (Comp)
+  //   const increment = () => count.value++
+  //   const Comp = defineComponent({
+  //     setup() {
+  //       const __returned__ = { count }
+  //       Object.defineProperty(__returned__, '__isScriptSetup', {
+  //         enumerable: false,
+  //         value: true,
+  //       })
+  //       return __returned__
+  //     },
+  //     render() {
+  //       const t0 = template('<div></div>')
+  //       const n0 = t0()
+  //       const {
+  //         0: [n1],
+  //       } = children(n0)
+  //       renderComponent(
+  //         ChildComp as any,
+  //         {
+  //           get double() {
+  //             // inline computed
+  //             return count.value * 2
+  //           },
+  //         },
+  //         n1 as any,
+  //       )
+  //       return n0
+  //     },
+  //   })
+  //   renderComponent(Comp as any, {}, '#host')
+  //   expect(host.innerHTML).toBe('<div><div>0</div></div>')
+  //   increment() // update state
+  //   await nextTick()
+  //   expect(host.innerHTML).toBe('<div><div>2</div></div>')
+  // })
+
   test('should not render props value (no props spec)', () => {
     const ChildComp = defineComponent({
       // props: { foo: {} }, // no props specs
