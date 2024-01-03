@@ -3,7 +3,6 @@ import type { ComponentInternalInstance } from './component'
 
 export interface SchedulerJob extends Function {
   id?: number
-  effectId?: number
   pre?: boolean
   active?: boolean
   computed?: boolean
@@ -189,22 +188,17 @@ function findInsertionIndex(id: number) {
 const getId = (job: SchedulerJob): number =>
   job.id == null ? Infinity : job.id
 
-const getEffectId = (job: SchedulerJob): number =>
-  job.effectId == null ? Infinity : job.effectId
-
 const comparator = (a: SchedulerJob, b: SchedulerJob): number => {
   const diff = getId(a) - getId(b)
   if (diff === 0) {
     if (a.pre && !b.pre) return -1
     if (b.pre && !a.pre) return 1
-    return getEffectId(a) - getEffectId(b)
   }
   return diff
 }
 
 export type Scheduler = (options: {
   instance: ComponentInternalInstance | null
-  effectId?: number
 }) => (context: {
   effect: ReactiveEffect
   job: SchedulerJob
@@ -240,7 +234,7 @@ export const useVaporPreScheduler: Scheduler =
   }
 
 export const useVaporRenderingScheduler: Scheduler =
-  ({ instance, effectId }) =>
+  ({ instance }) =>
   ({ isInit, effect, job }) => {
     if (instance && instance.isUnmounted) {
       return
@@ -249,10 +243,7 @@ export const useVaporRenderingScheduler: Scheduler =
       effect.run()
     } else {
       job.pre = false
-      if (instance) {
-        job.id = instance.uid
-        job.effectId = effectId
-      }
+      if (instance) job.id = instance.uid
       queueJob(job)
     }
   }

@@ -71,9 +71,7 @@ function doWatch(
   extendOptions.onError = (err: unknown, type: BaseWatchErrorCodes) =>
     handleErrorWithInstance(err, instance, type)
 
-  const effectId = instance?.scope.effects.length
-
-  const scheduler = useVaporRenderingScheduler({ instance, effectId })
+  const scheduler = useVaporRenderingScheduler({ instance })
   extendOptions.scheduler = scheduler
 
   let effect = baseWatch(source, cb, extend({}, options, extendOptions))
