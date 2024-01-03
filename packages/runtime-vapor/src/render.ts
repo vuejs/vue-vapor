@@ -10,7 +10,7 @@ import {
 import { initProps } from './componentProps'
 import { invokeDirectiveHook } from './directive'
 import { insert, remove } from './dom'
-import { type SchedulerJob, queueJob, queuePostRenderEffect } from '.'
+import { type SchedulerJob, queueJob } from '.'
 
 export type Block = Node | Fragment | Block[]
 export type ParentBlock = ParentNode | Node[]
