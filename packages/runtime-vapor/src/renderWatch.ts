@@ -1,63 +1,30 @@
 import {
   type BaseWatchErrorCodes,
   type BaseWatchOptions,
-  type ComputedRef,
-  type DebuggerOptions,
-  type Ref,
   baseWatch,
   getCurrentScope,
 } from '@vue/reactivity'
-import { EMPTY_OBJ, NOOP, extend, remove } from '@vue/shared'
+import { NOOP, remove } from '@vue/shared'
 import { currentInstance } from './component'
 import { useVaporRenderingScheduler } from './scheduler'
 import { handleError as handleErrorWithInstance } from './errorHandling'
 import { warn } from './warning'
 
-type WatchSource<T = any> = Ref<T> | ComputedRef<T> | (() => T)
+type WatchStopHandle = () => void
 
-type WatchCallback<V = any, OV = any> = (
-  value: V,
-  oldValue: OV,
-  onCleanup: OnCleanup,
-) => any
-
-type OnCleanup = (cleanupFn: () => void) => void
-
-export interface renderWatchOptionsBase extends DebuggerOptions {}
-
-export interface WatchOptions<Immediate = boolean>
-  extends renderWatchOptionsBase {
-  immediate?: Immediate
-  deep?: boolean
-  once?: boolean
-}
-
-export type WatchStopHandle = () => void
-
-export function renderEffect(
-  effect: () => void,
-  options?: renderWatchOptionsBase,
-): WatchStopHandle {
-  return doWatch(effect, null, options)
+export function renderEffect(effect: () => void): WatchStopHandle {
+  return doWatch(effect)
 }
 
 // implementation
-export function renderWatch<
-  T = any,
-  Immediate extends Readonly<boolean> = false,
->(
-  source: T | WatchSource<T>,
-  cb: any,
-  options?: WatchOptions<Immediate>,
+export function renderWatch(
+  source: any,
+  cb: (value: any, oldValue: any) => void,
 ): WatchStopHandle {
-  return doWatch(source as any, cb, options)
+  return doWatch(source as any, cb)
 }
 
-function doWatch(
-  source: WatchSource | WatchSource[] | (() => void) | object,
-  cb: WatchCallback | null,
-  options: WatchOptions = EMPTY_OBJ,
-): WatchStopHandle {
+function doWatch(source: any, cb?: any): WatchStopHandle {
   const extendOptions: BaseWatchOptions = {}
 
   if (__DEV__) extendOptions.onWarn = warn
@@ -74,7 +41,7 @@ function doWatch(
   const scheduler = useVaporRenderingScheduler({ instance })
   extendOptions.scheduler = scheduler
 
-  let effect = baseWatch(source, cb, extend({}, options, extendOptions))
+  let effect = baseWatch(source, cb, extendOptions)
 
   const unwatch = !effect
     ? NOOP
