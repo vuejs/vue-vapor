@@ -64,7 +64,7 @@ let postFlushIndex = 0
 const resolvedPromise = /*#__PURE__*/ Promise.resolve() as Promise<any>
 let currentFlushPromise: Promise<void> | null = null
 
-export function queueJob(job: SchedulerJob) {
+function queueJob(job: SchedulerJob) {
   if (
     !queue.length ||
     !queue.includes(
