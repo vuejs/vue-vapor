@@ -5,8 +5,9 @@ import {
   onMounted,
   onBeforeMount,
   getCurrentInstance,
+  onUpdated,
+  onBeforeUpdate,
 } from 'vue/vapor'
-
 const instance = getCurrentInstance()!
 const count = ref(1)
 const double = computed(() => count.value * 2)
@@ -21,10 +22,11 @@ onBeforeMount(() => {
 onMounted(() => {
   console.log('onMounted', instance.isMounted)
 })
-onMounted(() => {
-  setTimeout(() => {
-    count.value++
-  }, 1000)
+onBeforeUpdate(()=>{
+  console.log('before updated');
+})
+onUpdated(()=>{
+  console.log('updated');
 })
 </script>
 

@@ -1,5 +1,5 @@
-import { proxyRefs } from '@vue/reactivity'
-import { type Data, invokeArrayFns } from '@vue/shared'
+import { ReactiveEffect, proxyRefs } from '@vue/reactivity'
+import { type Data, NOOP, invokeArrayFns } from '@vue/shared'
 import {
   type Component,
   type ComponentInternalInstance,
@@ -10,6 +10,7 @@ import {
 import { initProps } from './componentProps'
 import { invokeDirectiveHook } from './directive'
 import { insert, remove } from './dom'
+import { type SchedulerJob, queueJob, queuePostRenderEffect } from '.'
 
 export type Block = Node | Fragment | Block[]
 export type ParentBlock = ParentNode | Node[]
@@ -17,6 +18,8 @@ export type Fragment = { nodes: Block; anchor: Node }
 export type BlockFn = (props: any, ctx: any) => Block
 
 let isRenderingActivity = false
+let ob: MutationObserver
+
 export function getIsRendering() {
   return isRenderingActivity
 }
@@ -70,8 +73,7 @@ export function mountComponent(
     }
     return (instance.block = block)
   })!
-  const { bm, m } = instance
-
+  const { bm, m, bu, u } = instance
   // hook: beforeMount
   bm && invokeArrayFns(bm)
   invokeDirectiveHook(instance, 'beforeMount')
@@ -82,8 +84,48 @@ export function mountComponent(
   // hook: mounted
   invokeDirectiveHook(instance, 'mounted')
   m && invokeArrayFns(m)
+  const componentUpdate = () => {
+    if (bu) {
+      invokeArrayFns(bu)
+    }
+    if (u) {
+      invokeArrayFns(u)
+    }
+  }
+  const update: SchedulerJob = (instance.update = () => {
+    if (effect.dirty) {
+      effect.run()
+    }
+  })
+  const effect = (instance.effect = new ReactiveEffect(
+    componentUpdate,
+    NOOP,
+    () => queueJob(update),
+    instance.scope,
+  ))
+  if (!ob) {
+    ob = new MutationObserver(() => {
+      effect.dirty = true
+      update()
+    })
+    ob.observe(instance.container, {
+      childList: true,
+      attributes: true,
+      subtree: true,
+    })
+  }
+  if (__DEV__) {
+    effect.onTrack = instance.rtc
+      ? (e) => invokeArrayFns(instance.rtc!, e)
+      : void 0
+    effect.onTrigger = instance.rtg
+      ? (e) => invokeArrayFns(instance.rtg!, e)
+      : void 0
+    update.ownerInstance = instance
+  }
+  update.id = instance.uid
+  // update()
   unsetCurrentInstance()
-
   return instance
 }
 

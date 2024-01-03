@@ -1596,7 +1596,6 @@ function baseCreateRenderer(
         : void 0
       update.ownerInstance = instance
     }
-
     update()
   }
 

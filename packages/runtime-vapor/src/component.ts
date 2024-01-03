@@ -1,4 +1,9 @@
-import { EffectScope, type Ref, ref } from '@vue/reactivity'
+import {
+  EffectScope,
+  type ReactiveEffect,
+  type Ref,
+  ref,
+} from '@vue/reactivity'
 
 import { EMPTY_OBJ } from '@vue/shared'
 import type { Block } from './render'
@@ -11,6 +16,7 @@ import {
 
 import type { Data } from '@vue/shared'
 import { VaporLifecycleHooks } from './enums'
+import type { SchedulerJob } from '.'
 
 export type Component = FunctionalComponent | ObjectComponent
 
@@ -49,6 +55,11 @@ export interface ComponentInternalInstance {
   get isUnmounted(): boolean
   isUnmountedRef: Ref<boolean>
   isMountedRef: Ref<boolean>
+  effect: ReactiveEffect
+  /**
+   * Bound effect runner to be passed to schedulers
+   */
+  update: SchedulerJob
   // TODO: registory of provides, lifecycles, ...
   /**
    * @internal
@@ -131,7 +142,7 @@ export const createComponentInstance = (
   const instance: ComponentInternalInstance = {
     uid: uid++,
     block: null,
-    container: null!, // set on mountComponent
+    container: null!,
     scope: new EffectScope(true /* detached */)!,
     component,
 
@@ -141,7 +152,6 @@ export const createComponentInstance = (
     // resolved props and emits options
     propsOptions: normalizePropsOptions(component),
     // emitsOptions: normalizeEmitsOptions(type, appContext), // TODO:
-
     // state
     props: EMPTY_OBJ,
     setupState: EMPTY_OBJ,
@@ -210,10 +220,8 @@ export const createComponentInstance = (
      * @internal
      */
     [VaporLifecycleHooks.ERROR_CAPTURED]: null,
-    /**
-     * @internal
-     */
-    // [VaporLifecycleHooks.SERVER_PREFETCH]: null,
+    effect: null!,
+    update: null!,
   }
   return instance
 }
