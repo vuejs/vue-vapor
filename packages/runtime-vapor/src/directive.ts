@@ -1,8 +1,7 @@
 import { isFunction } from '@vue/shared'
-import { currentInstance, type ComponentInternalInstance } from './component'
-import { effect } from './scheduler'
+import { type ComponentInternalInstance, currentInstance } from './component'
+import { watchEffect } from './apiWatch'
 import { getExposeProxy } from '@vue/runtime-core'
-
 export type DirectiveModifiers<M extends string = string> = Record<M, boolean>
 
 export interface DirectiveBinding<V = any, M extends string = string> {
@@ -100,7 +99,7 @@ export function withDirectives<T extends Node>(
 
     callDirectiveHook(node, binding, 'created')
 
-    effect(() => {
+    watchEffect(() => {
       if (!instance.isMountedRef.value) return
       callDirectiveHook(node, binding, 'updated')
     })
