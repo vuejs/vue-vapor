@@ -70,6 +70,7 @@ describe('runtime: compoentn props', () => {
   //   renderComponent(Comp as any, {}, '#host')
   //   expect(host.innerHTML).toBe('<div><div>foo</div></div>')
   // })
+
   // TODO: pending: https://github.com/vuejs/core-vapor/issues/84
   // test('should render props value (object spec)', () => {
   //   const ChildComp = defineComponent({
@@ -179,6 +180,7 @@ describe('runtime: compoentn props', () => {
   //   renderComponent(Comp as any, {}, '#host')
   //   expect(host.innerHTML).toBe('<div><div>foo</div></div>')
   // })
+
   // TODO: pending: https://github.com/vuejs/core-vapor/issues/84
   // test('should render props updates', () => {
   //   const ChildComp = defineComponent({
@@ -235,6 +237,7 @@ describe('runtime: compoentn props', () => {
   //   renderComponent(Comp as any, {}, '#host')
   //   expect(host.innerHTML).toBe('<div><div>0</div></div>')
   //   increment() // update state
+  //   await nextTick()
   //   expect(host.innerHTML).toBe('<div><div>1</div></div>')
   // })
 
@@ -296,6 +299,71 @@ describe('runtime: compoentn props', () => {
   //   renderComponent(Comp as any, {}, '#host')
   //   expect(host.innerHTML).toBe('<div><div>0</div></div>')
   //   increment() // update state
+  //   await nextTick()
+  //   expect(host.innerHTML).toBe('<div><div>2</div></div>')
+  // })
+
+  // TODO: pending: https://github.com/vuejs/core-vapor/issues/84
+  // test('should render props updates (fallback to default value)', async () => {
+  //   const ChildComp = defineComponent({
+  //     props: { count: { default: 9999 } },
+  //     setup() {
+  //       const __returned__ = {}
+  //       Object.defineProperty(__returned__, '__isScriptSetup', {
+  //         enumerable: false,
+  //         value: true,
+  //       })
+  //       return __returned__
+  //     },
+  //     render(_ctx: any) {
+  //       const t0 = template('<div></div>')
+  //       const n0 = t0()
+  //       const {
+  //         0: [n1],
+  //       } = children(n0)
+  //       watchEffect(() => {
+  //         setText(n1, void 0, _ctx.count)
+  //       })
+  //       return n0
+  //     },
+  //   })
+
+  //   const count = ref(0) // state (Comp)
+  //   const increment = () => count.value++
+  //   const Comp = defineComponent({
+  //     setup() {
+  //       const __returned__ = { count }
+  //       Object.defineProperty(__returned__, '__isScriptSetup', {
+  //         enumerable: false,
+  //         value: true,
+  //       })
+  //       return __returned__
+  //     },
+  //     render(_ctx: any) {
+  //       const t0 = template('<div></div>')
+  //       const n0 = t0()
+  //       const {
+  //         0: [n1],
+  //       } = children(n0)
+  //       renderComponent(
+  //         ChildComp as any,
+  //         {
+  //           get count() {
+  //             // toggle the props value
+  //             return _ctx.count % 2 === 0 ? _ctx.count : void 0
+  //           },
+  //         },
+  //         n1 as any,
+  //       )
+  //       return n0
+  //     },
+  //   })
+  //   renderComponent(Comp as any, {}, '#host')
+  //   expect(host.innerHTML).toBe('<div><div>0</div></div>')
+  //   increment() // update state (count === 1)
+  //   await nextTick()
+  //   expect(host.innerHTML).toBe('<div><div>9999</div></div>')
+  //   increment() // update state (count === 2)
   //   await nextTick()
   //   expect(host.innerHTML).toBe('<div><div>2</div></div>')
   // })
