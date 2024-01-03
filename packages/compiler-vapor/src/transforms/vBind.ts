@@ -1,8 +1,8 @@
 import {
+  ErrorCodes,
+  type SimpleExpressionNode,
   createCompilerError,
   createSimpleExpression,
-  ErrorCodes,
-  SimpleExpressionNode,
 } from '@vue/compiler-core'
 import { camelize } from '@vue/shared'
 import { IRNodeTypes } from '../ir'

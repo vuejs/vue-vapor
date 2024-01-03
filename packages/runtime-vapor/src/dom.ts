@@ -125,9 +125,16 @@ export function setDynamicProp(
 
 type Children = Record<number, [ChildNode, Children]>
 export function children(n: Node): Children {
-  return { ...Array.from(n.childNodes).map((n) => [n, children(n)]) }
+  const result: Children = {}
+  const array = Array.from(n.childNodes)
+  for (let i = 0; i < array.length; i++) {
+    const n = array[i]
+    result[i] = [n, children(n)]
+  }
+  return result
 }
 
 export function createTextNode(val: unknown): Text {
+  // eslint-disable-next-line no-restricted-globals
   return document.createTextNode(toDisplayString(val))
 }
