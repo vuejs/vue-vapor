@@ -203,7 +203,7 @@ describe('runtime: compoentn props', () => {
   //       return n0
   //     },
   //   })
-  //   const count = ref(0) // state
+  //   const count = ref(0) // state (Comp)
   //   const increment = () => count.value++
   //   const Comp = defineComponent({
   //     setup() {
@@ -380,9 +380,8 @@ describe('runtime: compoentn props', () => {
       },
     })
 
-    const count = ref(0) // state
+    const count = ref(0) // state (Comp)
     const increment = () => count.value++
-
     const Comp = defineComponent({
       setup() {
         const __returned__ = { count }
