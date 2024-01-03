@@ -29,6 +29,8 @@ function doWatch(source: any, cb?: any): WatchStopHandle {
 
   if (__DEV__) extendOptions.onWarn = warn
 
+  // TODO: Life Cycle Hooks
+
   // TODO: SSR
   // if (__SSR__) {}
 
