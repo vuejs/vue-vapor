@@ -10,7 +10,7 @@ import {
   watchEffect,
   watchPostEffect,
   watchSyncEffect,
-} from '../src/index'
+} from '../src'
 
 let host: HTMLElement
 

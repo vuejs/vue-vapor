@@ -197,11 +197,11 @@ const comparator = (a: SchedulerJob, b: SchedulerJob): number => {
   return diff
 }
 
-export type CreateScheduler = (
+export type SchedulerFactory = (
   instance: ComponentInternalInstance | null,
 ) => Scheduler
 
-export const createVaporSyncScheduler: CreateScheduler =
+export const createVaporSyncScheduler: SchedulerFactory =
   (instance) => (job, effect, isInit) => {
     if (isInit) {
       effect.run()
@@ -210,7 +210,7 @@ export const createVaporSyncScheduler: CreateScheduler =
     }
   }
 
-export const createVaporPreScheduler: CreateScheduler =
+export const createVaporPreScheduler: SchedulerFactory =
   (instance) => (job, effect, isInit) => {
     if (isInit) {
       effect.run()
@@ -221,7 +221,7 @@ export const createVaporPreScheduler: CreateScheduler =
     }
   }
 
-export const createVaporRenderingScheduler: CreateScheduler =
+export const createVaporRenderingScheduler: SchedulerFactory =
   (instance) => (job, effect, isInit) => {
     if (isInit) {
       effect.run()
@@ -232,7 +232,7 @@ export const createVaporRenderingScheduler: CreateScheduler =
     }
   }
 
-export const createVaporPostScheduler: CreateScheduler =
+export const createVaporPostScheduler: SchedulerFactory =
   (instance) => (job, effect, isInit) => {
     if (isInit) {
       queuePostRenderEffect(effect.run.bind(effect))

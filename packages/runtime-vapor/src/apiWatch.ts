@@ -10,7 +10,7 @@ import {
 import { EMPTY_OBJ, NOOP, extend, isFunction, remove } from '@vue/shared'
 import { currentInstance } from './component'
 import {
-  type CreateScheduler,
+  type SchedulerFactory,
   createVaporPostScheduler,
   createVaporPreScheduler,
   createVaporSyncScheduler,
@@ -141,9 +141,7 @@ export function watch<T = any, Immediate extends Readonly<boolean> = false>(
   return doWatch(source as any, cb, options)
 }
 
-function getSchedulerByFlushMode(
-  flush: WatchOptionsBase['flush'],
-): CreateScheduler {
+function getScheduler(flush: WatchOptionsBase['flush']): SchedulerFactory {
   if (flush === 'post') {
     return createVaporPostScheduler
   }
@@ -214,7 +212,7 @@ function doWatch(
   extendOptions.onError = (err: unknown, type: BaseWatchErrorCodes) =>
     handleErrorWithInstance(err, instance, type)
 
-  const scheduler = getSchedulerByFlushMode(flush)(instance)
+  const scheduler = getScheduler(flush)(instance)
   extendOptions.scheduler = scheduler
 
   let effect = baseWatch(source, cb, extend({}, options, extendOptions))

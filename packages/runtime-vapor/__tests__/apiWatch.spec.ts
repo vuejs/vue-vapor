@@ -6,7 +6,7 @@ import {
   ref,
   watchEffect,
   watchSyncEffect,
-} from '../src/index'
+} from '../src'
 
 describe('watchEffect and onEffectCleanup', () => {
   test('basic', async () => {
