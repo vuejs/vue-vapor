@@ -8,7 +8,7 @@ import {
   getCurrentScope,
 } from '@vue/reactivity'
 import {
-  type CreateScheduler,
+  type SchedulerFactory,
   createPreScheduler,
   createSyncScheduler,
 } from './scheduler'
@@ -156,9 +156,7 @@ export function watch<T = any, Immediate extends Readonly<boolean> = false>(
   return doWatch(source as any, cb, options)
 }
 
-function getSchedulerByFlushMode(
-  flush: WatchOptionsBase['flush'],
-): CreateScheduler {
+function getScheduler(flush: WatchOptionsBase['flush']): SchedulerFactory {
   if (flush === 'post') {
     return createPostRenderScheduler
   }
@@ -224,12 +222,9 @@ function doWatch(
   }
 
   const instance = currentInstance
-
   extendOptions.onError = (err: unknown, type: BaseWatchErrorCodes) =>
     handleErrorWithInstance(err, instance, type)
-
-  const scheduler = getSchedulerByFlushMode(flush)(instance)
-  extendOptions.scheduler = scheduler
+  extendOptions.scheduler = getScheduler(flush)(instance)
 
   let effect = baseWatch(source, cb, extend({}, options, extendOptions))
 

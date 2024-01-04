@@ -289,11 +289,11 @@ function checkRecursiveUpdates(seen: CountMap, fn: SchedulerJob) {
   }
 }
 
-export type CreateScheduler = (
+export type SchedulerFactory = (
   instance: ComponentInternalInstance | null,
 ) => Scheduler
 
-export const createSyncScheduler: CreateScheduler =
+export const createSyncScheduler: SchedulerFactory =
   instance => (job, effect, isInit) => {
     if (isInit) {
       effect.run()
@@ -302,7 +302,7 @@ export const createSyncScheduler: CreateScheduler =
     }
   }
 
-export const createPreScheduler: CreateScheduler =
+export const createPreScheduler: SchedulerFactory =
   instance => (job, effect, isInit) => {
     if (isInit) {
       effect.run()

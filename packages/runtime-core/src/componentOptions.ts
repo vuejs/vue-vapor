@@ -942,7 +942,7 @@ export function createWatcher(
     ? createPathGetter(publicThis, key)
     : () => (publicThis as any)[key]
 
-  const options: WatchOptions<false> = {}
+  const options: WatchOptions = {}
   if (__COMPAT__) {
     const instance =
       getCurrentScope() === currentInstance?.scope ? currentInstance : null

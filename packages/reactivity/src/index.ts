@@ -72,8 +72,8 @@ export { TrackOpTypes, TriggerOpTypes, ReactiveFlags } from './constants'
 export {
   baseWatch,
   onEffectCleanup,
-  BaseWatchErrorCodes,
   traverse,
+  BaseWatchErrorCodes,
   type BaseWatchOptions,
   type Scheduler,
 } from './baseWatch'

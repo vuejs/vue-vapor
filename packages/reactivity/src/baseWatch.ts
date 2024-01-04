@@ -58,15 +58,12 @@ export interface SchedulerJob extends Function {
 }
 
 type WatchEffect = (onCleanup: OnCleanup) => void
-
 type WatchSource<T = any> = Ref<T> | ComputedRef<T> | (() => T)
-
 type WatchCallback<V = any, OV = any> = (
   value: V,
   oldValue: OV,
   onCleanup: OnCleanup,
 ) => any
-
 type OnCleanup = (cleanupFn: () => void) => void
 
 export interface BaseWatchOptions<Immediate = boolean> extends DebuggerOptions {
@@ -86,16 +83,13 @@ export type Scheduler = (
   effect: ReactiveEffect,
   isInit: boolean,
 ) => void
+export type HandleError = (err: unknown, type: BaseWatchErrorCodes) => void
+export type HandleWarn = (msg: string, ...args: any[]) => void
 
 const DEFAULT_SCHEDULER: Scheduler = job => job()
-
-export type HandleError = (err: unknown, type: BaseWatchErrorCodes) => void
-
 const DEFAULT_HANDLE_ERROR: HandleError = (err: unknown) => {
   throw err
 }
-
-export type HandleWarn = (msg: string, ...args: any[]) => void
 
 const cleanupMap: WeakMap<ReactiveEffect, (() => void)[]> = new WeakMap()
 let activeEffect: ReactiveEffect | undefined = undefined

@@ -6,7 +6,7 @@ import {
   baseWatch,
   onEffectCleanup,
   ref,
-} from '../src/index'
+} from '../src'
 
 const queue: SchedulerJob[] = []
 
