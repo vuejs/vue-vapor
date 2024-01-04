@@ -1,4 +1,4 @@
-import type { ReactiveEffect } from '@vue/reactivity'
+import type { Scheduler } from '@vue/reactivity'
 import type { ComponentInternalInstance } from './component'
 
 export interface SchedulerJob extends Function {
@@ -197,20 +197,12 @@ const comparator = (a: SchedulerJob, b: SchedulerJob): number => {
   return diff
 }
 
-export type Scheduler = (options: {
-  instance: ComponentInternalInstance | null
-}) => (context: {
-  effect: ReactiveEffect
-  job: SchedulerJob
-  isInit: boolean
-}) => void
+export type CreateScheduler = (
+  instance: ComponentInternalInstance | null,
+) => Scheduler
 
-export const useVaporSyncScheduler: Scheduler =
-  ({ instance }) =>
-  ({ isInit, effect, job }) => {
-    if (instance && instance.isUnmounted) {
-      return
-    }
+export const createVaporSyncScheduler: CreateScheduler =
+  (instance) => (job, effect, isInit) => {
     if (isInit) {
       effect.run()
     } else {
@@ -218,12 +210,8 @@ export const useVaporSyncScheduler: Scheduler =
     }
   }
 
-export const useVaporPreScheduler: Scheduler =
-  ({ instance }) =>
-  ({ isInit, effect, job }) => {
-    if (instance && instance.isUnmounted) {
-      return
-    }
+export const createVaporPreScheduler: CreateScheduler =
+  (instance) => (job, effect, isInit) => {
     if (isInit) {
       effect.run()
     } else {
@@ -233,12 +221,8 @@ export const useVaporPreScheduler: Scheduler =
     }
   }
 
-export const useVaporRenderingScheduler: Scheduler =
-  ({ instance }) =>
-  ({ isInit, effect, job }) => {
-    if (instance && instance.isUnmounted) {
-      return
-    }
+export const createVaporRenderingScheduler: CreateScheduler =
+  (instance) => (job, effect, isInit) => {
     if (isInit) {
       effect.run()
     } else {
@@ -248,9 +232,8 @@ export const useVaporRenderingScheduler: Scheduler =
     }
   }
 
-export const useVaporPostScheduler: Scheduler =
-  () =>
-  ({ isInit, effect, job }) => {
+export const createVaporPostScheduler: CreateScheduler =
+  (instance) => (job, effect, isInit) => {
     if (isInit) {
       queuePostRenderEffect(effect.run.bind(effect))
     } else {

@@ -6,7 +6,7 @@ import {
 } from '@vue/reactivity'
 import { NOOP, remove } from '@vue/shared'
 import { currentInstance } from './component'
-import { useVaporRenderingScheduler } from './scheduler'
+import { createVaporRenderingScheduler } from './scheduler'
 import { handleError as handleErrorWithInstance } from './errorHandling'
 import { warn } from './warning'
 
@@ -40,7 +40,7 @@ function doWatch(source: any, cb?: any): WatchStopHandle {
   extendOptions.onError = (err: unknown, type: BaseWatchErrorCodes) =>
     handleErrorWithInstance(err, instance, type)
 
-  const scheduler = useVaporRenderingScheduler({ instance })
+  const scheduler = createVaporRenderingScheduler(instance)
   extendOptions.scheduler = scheduler
 
   let effect = baseWatch(source, cb, extendOptions)
