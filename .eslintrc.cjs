@@ -19,6 +19,7 @@ module.exports = {
   plugins: ['jest', 'import', '@typescript-eslint'],
   rules: {
     'no-debugger': 'error',
+    'no-console': ['error', { allow: ['warn', 'error', 'info'] }],
     // most of the codebase are expected to be env agnostic
     'no-restricted-globals': ['error', ...DOMGlobals, ...NodeGlobals],
 
@@ -58,6 +59,7 @@ module.exports = {
     {
       files: ['**/__tests__/**', 'packages/dts-test/**'],
       rules: {
+        'no-console': 'off',
         'no-restricted-globals': 'off',
         'no-restricted-syntax': 'off',
         'jest/no-disabled-tests': 'error',
@@ -88,10 +90,15 @@ module.exports = {
     },
     // Private package, browser only + no syntax restrictions
     {
-      files: ['packages/template-explorer/**', 'packages/sfc-playground/**'],
+      files: [
+        'packages/template-explorer/**',
+        'packages/sfc-playground/**',
+        'playground/**',
+      ],
       rules: {
         'no-restricted-globals': ['error', ...NodeGlobals],
         'no-restricted-syntax': ['error', banConstEnum],
+        'no-console': 'off',
       },
     },
     // JavaScript files
@@ -113,6 +120,7 @@ module.exports = {
       rules: {
         'no-restricted-globals': 'off',
         'no-restricted-syntax': ['error', banConstEnum],
+        'no-console': 'off',
       },
     },
     // Import nodejs modules in compiler-sfc
