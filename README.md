@@ -77,6 +77,7 @@ The code provided here is a duplicate from `runtime-core` as Vapor cannot import
 - packages/runtime-vapor/src/componentEmits.ts
 - packages/runtime-vapor/src/componentProps.ts
 - packages/runtime-vapor/src/componentPublicInstance.ts
+- packages/runtime-vapor/src/componentSlots.ts
 - packages/runtime-vapor/src/enums.ts
 - packages/runtime-vapor/src/errorHandling.ts
 - packages/runtime-vapor/src/scheduler.ts
