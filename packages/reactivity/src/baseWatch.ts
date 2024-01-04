@@ -150,6 +150,12 @@ export function baseWatch(
     )
   }
 
+  const reactiveGetter = (source: object) =>
+    deep === true
+      ? source // traverse will happen in wrapped getter below
+      : // for deep: false, only traverse root-level properties
+        traverse(source, deep === false ? 1 : undefined)
+
   let effect: ReactiveEffect
   let getter: () => any
   let cleanup: (() => void) | undefined
@@ -160,10 +166,7 @@ export function baseWatch(
     getter = () => source.value
     forceTrigger = isShallow(source)
   } else if (isReactive(source)) {
-    getter =
-      isShallow(source) || deep === false
-        ? () => traverse(source, 1)
-        : () => traverse(source)
+    getter = () => reactiveGetter(source)
     forceTrigger = true
   } else if (isArray(source)) {
     isMultiSource = true
@@ -173,7 +176,7 @@ export function baseWatch(
         if (isRef(s)) {
           return s.value
         } else if (isReactive(s)) {
-          return traverse(s, isShallow(s) || deep === false ? 1 : undefined)
+          return reactiveGetter(s)
         } else if (isFunction(s)) {
           return callWithErrorHandling(
             s,

@@ -285,9 +285,6 @@ export const queuePostRenderEffect = __FEATURE_SUSPENSE__
 export const usePostRenderScheduler: Scheduler =
   ({ instance }) =>
   ({ isInit, effect, job }) => {
-    if (instance && instance.isUnmounted) {
-      return
-    }
     if (isInit) {
       queuePostRenderEffect(
         effect.run.bind(effect),

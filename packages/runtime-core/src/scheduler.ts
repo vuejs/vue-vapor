@@ -300,9 +300,6 @@ export type Scheduler = (options: {
 export const useSyncScheduler: Scheduler =
   ({ instance }) =>
   ({ isInit, effect, job }) => {
-    if (instance && instance.isUnmounted) {
-      return
-    }
     if (isInit) {
       effect.run()
     } else {
@@ -313,9 +310,6 @@ export const useSyncScheduler: Scheduler =
 export const usePreScheduler: Scheduler =
   ({ instance }) =>
   ({ isInit, effect, job }) => {
-    if (instance && instance.isUnmounted) {
-      return
-    }
     if (isInit) {
       effect.run()
     } else {

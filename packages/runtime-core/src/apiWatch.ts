@@ -175,6 +175,15 @@ function doWatch(
   options: WatchOptions = EMPTY_OBJ,
 ): WatchStopHandle {
   const { immediate, deep, flush, once } = options
+
+  // TODO remove in 3.5
+  if (__DEV__ && deep !== void 0 && typeof deep === 'number') {
+    warn(
+      `watch() "deep" option with number value will be used as watch depth in future versions. ` +
+        `Please use a boolean instead to avoid potential breakage.`,
+    )
+  }
+
   if (__DEV__ && !cb) {
     if (immediate !== undefined) {
       warn(
@@ -214,8 +223,7 @@ function doWatch(
     }
   }
 
-  const instance =
-    getCurrentScope() === currentInstance?.scope ? currentInstance : null
+  const instance = currentInstance
 
   extendOptions.onError = (err: unknown, type: BaseWatchErrorCodes) =>
     handleErrorWithInstance(err, instance, type)
@@ -225,12 +233,13 @@ function doWatch(
 
   let effect = baseWatch(source, cb, extend({}, options, extendOptions))
 
+  const scope = getCurrentScope()
   const unwatch = !effect
     ? NOOP
     : () => {
         effect!.stop()
-        if (instance && instance.scope) {
-          remove(instance.scope.effects!, effect)
+        if (scope) {
+          remove(scope.effects, effect)
         }
       }
 
