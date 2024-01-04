@@ -22,11 +22,16 @@ onBeforeMount(() => {
 onMounted(() => {
   console.log('onMounted', instance.isMounted)
 })
-onBeforeUpdate(()=>{
-  console.log('before updated');
+onMounted(() => {
+  setTimeout(() => {
+    count.value++
+  }, 1000)
 })
-onUpdated(()=>{
-  console.log('updated');
+onBeforeUpdate(() => {
+  console.log('before updated')
+})
+onUpdated(() => {
+  console.log('updated')
 })
 </script>
 
