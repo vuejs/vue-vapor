@@ -10,7 +10,13 @@ import { BaseWatchErrorCodes } from '@vue/reactivity'
 export enum ErrorCodes {
   SETUP_FUNCTION,
   RENDER_FUNCTION,
-  NATIVE_EVENT_HANDLER,
+  // The error codes for the watch have been transferred to the reactivity
+  // package along with baseWatch to maintain code compatibility. Hence,
+  // it is essential to keep these values unchanged.
+  // WATCH_GETTER,
+  // WATCH_CALLBACK,
+  // WATCH_CLEANUP,
+  NATIVE_EVENT_HANDLER = 5,
   COMPONENT_EVENT_HANDLER,
   VNODE_HOOK,
   DIRECTIVE_HOOK,

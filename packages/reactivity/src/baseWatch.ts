@@ -24,12 +24,13 @@ import { isReactive, isShallow } from './reactive'
 import { type Ref, isRef } from './ref'
 import { getCurrentScope } from './effectScope'
 
-// contexts where user provided function may be executed, in addition to
-// lifecycle hooks.
+// These errors were transferred from `packages/runtime-core/src/errorHandling.ts`
+// along with baseWatch to maintain code compatibility. Hence,
+// it is essential to keep these values unchanged.
 export enum BaseWatchErrorCodes {
-  WATCH_GETTER = 'BaseWatchErrorCodes_WATCH_GETTER',
-  WATCH_CALLBACK = 'BaseWatchErrorCodes_WATCH_CALLBACK',
-  WATCH_CLEANUP = 'BaseWatchErrorCodes_WATCH_CLEANUP',
+  WATCH_GETTER = 2,
+  WATCH_CALLBACK,
+  WATCH_CLEANUP,
 }
 
 // TODO move to a scheduler package
@@ -80,13 +81,13 @@ export interface BaseWatchOptions<Immediate = boolean> extends DebuggerOptions {
 // initial value for watchers to trigger on undefined initial values
 const INITIAL_WATCHER_VALUE = {}
 
-export type Scheduler = (context: {
-  effect: ReactiveEffect
-  job: SchedulerJob
-  isInit: boolean
-}) => void
+export type Scheduler = (
+  job: SchedulerJob,
+  effect: ReactiveEffect,
+  isInit: boolean,
+) => void
 
-const DEFAULT_SCHEDULER: Scheduler = ({ job }) => job()
+const DEFAULT_SCHEDULER: Scheduler = job => job()
 
 export type HandleError = (err: unknown, type: BaseWatchErrorCodes) => void
 
@@ -306,12 +307,7 @@ export function baseWatch(
   // it is allowed to self-trigger (#1727)
   job.allowRecurse = !!cb
 
-  let effectScheduler: EffectScheduler = () =>
-    scheduler({
-      effect,
-      job,
-      isInit: false,
-    })
+  let effectScheduler: EffectScheduler = () => scheduler(job, effect, false)
 
   effect = new ReactiveEffect(getter, NOOP, effectScheduler)
 
@@ -342,11 +338,7 @@ export function baseWatch(
       oldValue = effect.run()
     }
   } else {
-    scheduler({
-      effect,
-      job,
-      isInit: true,
-    })
+    scheduler(job, effect, true)
   }
 
   return effect

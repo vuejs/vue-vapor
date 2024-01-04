@@ -1,7 +1,7 @@
 import { ErrorCodes, callWithErrorHandling, handleError } from './errorHandling'
 import { type Awaited, NOOP, isArray } from '@vue/shared'
 import { type ComponentInternalInstance, getComponentName } from './component'
-import type { ReactiveEffect } from '@vue/reactivity'
+import type { Scheduler } from '@vue/reactivity'
 
 export interface SchedulerJob extends Function {
   id?: number
@@ -289,17 +289,12 @@ function checkRecursiveUpdates(seen: CountMap, fn: SchedulerJob) {
   }
 }
 
-export type Scheduler = (options: {
-  instance: ComponentInternalInstance | null
-}) => (context: {
-  effect: ReactiveEffect
-  job: SchedulerJob
-  isInit: boolean
-}) => void
+export type CreateScheduler = (
+  instance: ComponentInternalInstance | null,
+) => Scheduler
 
-export const useSyncScheduler: Scheduler =
-  ({ instance }) =>
-  ({ isInit, effect, job }) => {
+export const createSyncScheduler: CreateScheduler =
+  instance => (job, effect, isInit) => {
     if (isInit) {
       effect.run()
     } else {
@@ -307,9 +302,8 @@ export const useSyncScheduler: Scheduler =
     }
   }
 
-export const usePreScheduler: Scheduler =
-  ({ instance }) =>
-  ({ isInit, effect, job }) => {
+export const createPreScheduler: CreateScheduler =
+  instance => (job, effect, isInit) => {
     if (isInit) {
       effect.run()
     } else {
