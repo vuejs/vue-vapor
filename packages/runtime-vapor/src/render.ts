@@ -18,7 +18,6 @@ export type Fragment = { nodes: Block; anchor: Node }
 export type BlockFn = (props: any, ctx: any) => Block
 
 let isRenderingActivity = false
-let ob: MutationObserver
 
 export function getIsRendering() {
   return isRenderingActivity
@@ -73,7 +72,7 @@ export function mountComponent(
     }
     return (instance.block = block)
   })!
-  const { bm, m, bu, u } = instance
+  const { bm, m } = instance
   // hook: beforeMount
   bm && invokeArrayFns(bm)
   invokeDirectiveHook(instance, 'beforeMount')
@@ -84,12 +83,24 @@ export function mountComponent(
   // hook: mounted
   invokeDirectiveHook(instance, 'mounted')
   m && invokeArrayFns(m)
-  const componentUpdate = () => {
-    if (bu) {
-      invokeArrayFns(bu)
-    }
-    if (u) {
-      invokeArrayFns(u)
+  const componentUpdateFn = () => {
+    const { bu, u } = instance
+    if (!instance.isMounted) {
+      const { bm, m } = instance
+      if (bm) {
+        invokeArrayFns(bm)
+      }
+      if (m) {
+        invokeArrayFns(m)
+      }
+      instance.isMountedRef.value = true
+    } else {
+      if (bu) {
+        invokeArrayFns(bu)
+      }
+      if (u) {
+        invokeArrayFns(u)
+      }
     }
   }
   const update: SchedulerJob = (instance.update = () => {
@@ -98,22 +109,21 @@ export function mountComponent(
     }
   })
   const effect = (instance.effect = new ReactiveEffect(
-    componentUpdate,
+    componentUpdateFn,
     NOOP,
     () => queueJob(update),
     instance.scope,
   ))
-  if (!ob) {
-    ob = new MutationObserver(() => {
-      effect.dirty = true
-      update()
-    })
-    ob.observe(instance.container, {
-      childList: true,
-      attributes: true,
-      subtree: true,
-    })
-  }
+  const ob = new MutationObserver(() => {
+    effect.dirty = true
+    update()
+  })
+  ob.observe(instance.container, {
+    childList: true,
+    attributes: true,
+    subtree: true,
+    characterData: true, // watch text change
+  })
   if (__DEV__) {
     effect.onTrack = instance.rtc
       ? (e) => invokeArrayFns(instance.rtc!, e)
