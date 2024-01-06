@@ -211,9 +211,7 @@ function doWatch(
 
   extendOptions.onError = (err: unknown, type: BaseWatchErrorCodes) =>
     handleErrorWithInstance(err, instance, type)
-
-  const scheduler = getScheduler(flush)(instance)
-  extendOptions.scheduler = scheduler
+  extendOptions.scheduler = getScheduler(flush)(instance)
 
   let effect = baseWatch(source, cb, extend({}, options, extendOptions))
 

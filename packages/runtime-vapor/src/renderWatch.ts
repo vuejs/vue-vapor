@@ -16,7 +16,6 @@ export function renderEffect(effect: () => void): WatchStopHandle {
   return doWatch(effect)
 }
 
-// implementation
 export function renderWatch(
   source: any,
   cb: (value: any, oldValue: any) => void,
@@ -39,9 +38,7 @@ function doWatch(source: any, cb?: any): WatchStopHandle {
 
   extendOptions.onError = (err: unknown, type: BaseWatchErrorCodes) =>
     handleErrorWithInstance(err, instance, type)
-
-  const scheduler = createVaporRenderingScheduler(instance)
-  extendOptions.scheduler = scheduler
+  extendOptions.scheduler = createVaporRenderingScheduler(instance)
 
   let effect = baseWatch(source, cb, extendOptions)
 
