@@ -110,16 +110,16 @@ function wrapEffectCallback(callback: (...args: any[]) => any): Function {
       )
 
       if (isFirstEffect) {
-        if (dirs) {
-          queuePostRenderEffect(() => {
-            instance.isUpdating = false
+        queuePostRenderEffect(() => {
+          instance.isUpdating = false
+          if (dirs) {
             invokeDirectiveHook(instance, 'updated')
-          })
-        }
-        // updated hook
-        if (u) {
-          queuePostRenderEffect(u)
-        }
+          }
+          // updated hook
+          if (u) {
+            queuePostRenderEffect(u)
+          }
+        })
       }
     } else {
       // is not mounted
