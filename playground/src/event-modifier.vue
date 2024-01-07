@@ -19,9 +19,7 @@ const event = ref('click')
 
   <div>
     {{ i }}
-    <button @[event].prevent="i++">
-      Add by {{ event }}
-    </button>
+    <button @[event].prevent="i++">Add by {{ event }}</button>
     <button @click="event = event === 'click' ? 'contextmenu' : 'click'">
       Change Event
     </button>

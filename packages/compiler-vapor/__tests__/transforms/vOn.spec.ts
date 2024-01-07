@@ -138,7 +138,7 @@ describe('v-on', () => {
     })
 
     expect(ir.vaporHelpers).contains('on')
-    expect(ir.vaporHelpers).contains('effect')
+    expect(ir.vaporHelpers).contains('renderEffect')
     expect(ir.helpers.size).toBe(0)
     expect(ir.operation).toEqual([])
 

@@ -1,4 +1,4 @@
-import { onCleanup } from './scheduler'
+import { getCurrentEffect, onEffectCleanup } from '@vue/reactivity'
 
 export function on(
   el: HTMLElement,
@@ -7,5 +7,7 @@ export function on(
   options?: AddEventListenerOptions,
 ) {
   el.addEventListener(event, handler, options)
-  onCleanup(() => el.removeEventListener(event, handler, options))
+  if (getCurrentEffect()) {
+    onEffectCleanup(() => el.removeEventListener(event, handler, options))
+  }
 }
