@@ -1,34 +1,34 @@
 import {
+  BindingTypes,
   type CodegenOptions,
   type CodegenResult,
+  NewlineType,
   type Position,
   type SourceLocation,
-  NewlineType,
-  advancePositionWithMutation,
-  locStub,
-  BindingTypes,
-  createSimpleExpression,
-  walkIdentifiers,
   advancePositionWithClone,
-  isSimpleIdentifier,
+  advancePositionWithMutation,
+  createSimpleExpression,
   isMemberExpression,
+  isSimpleIdentifier,
+  locStub,
+  walkIdentifiers,
 } from '@vue/compiler-dom'
 import {
-  type IRDynamicChildren,
-  type RootIRNode,
-  type SetPropIRNode,
-  type IRExpression,
-  type OperationNode,
-  type VaporHelper,
-  type SetEventIRNode,
-  type WithDirectiveIRNode,
-  type SetTextIRNode,
-  type SetHtmlIRNode,
-  type CreateTextNodeIRNode,
-  type InsertNodeIRNode,
-  type PrependNodeIRNode,
   type AppendNodeIRNode,
+  type CreateTextNodeIRNode,
+  type IRDynamicChildren,
+  type IRExpression,
   IRNodeTypes,
+  type InsertNodeIRNode,
+  type OperationNode,
+  type PrependNodeIRNode,
+  type RootIRNode,
+  type SetEventIRNode,
+  type SetHtmlIRNode,
+  type SetPropIRNode,
+  type SetTextIRNode,
+  type VaporHelper,
+  type WithDirectiveIRNode,
 } from './ir'
 import { SourceMapGenerator } from 'source-map-js'
 import { camelize, isGloballyAllowed, isString, makeMap } from '@vue/shared'
@@ -217,7 +217,7 @@ function createCodegenContext(
       generatedLine: context.line,
       generatedColumn: context.column - 1,
       source: filename,
-      // @ts-ignore it is possible to be null
+      // @ts-expect-error it is possible to be null
       name,
     })
   }
@@ -298,7 +298,7 @@ export function generate(
       }
 
       for (const { operations } of ir.effect) {
-        pushNewline(`${vaporHelper('effect')}(() => {`)
+        pushNewline(`${vaporHelper('renderEffect')}(() => {`)
         withIndent(() => {
           for (const operation of operations) {
             genOperation(operation, ctx)

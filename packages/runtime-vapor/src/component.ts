@@ -1,8 +1,8 @@
-import { EffectScope, Ref, ref } from '@vue/reactivity'
+import { EffectScope, type Ref, ref } from '@vue/reactivity'
 
 import { EMPTY_OBJ } from '@vue/shared'
-import { Block } from './render'
-import { type DirectiveBinding } from './directive'
+import type { Block } from './render'
+import type { DirectiveBinding } from './directive'
 import {
   type ComponentPropsOptions,
   type NormalizedPropsOptions,
@@ -10,7 +10,7 @@ import {
 } from './componentProps'
 
 import type { Data } from '@vue/shared'
-import { VaporLifecycleHooks } from './apiLifecycle'
+import { VaporLifecycleHooks } from './enums'
 
 export type Component = FunctionalComponent | ObjectComponent
 
@@ -35,8 +35,7 @@ export interface ComponentInternalInstance {
   component: FunctionalComponent | ObjectComponent
   propsOptions: NormalizedPropsOptions
 
-  // TODO: type
-  proxy: Data | null
+  parent: ComponentInternalInstance | null
 
   // state
   props: Data
@@ -50,7 +49,7 @@ export interface ComponentInternalInstance {
   get isUnmounted(): boolean
   isUnmountedRef: Ref<boolean>
   isMountedRef: Ref<boolean>
-  // TODO: registory of provides, appContext, lifecycles, ...
+  // TODO: registory of provides, lifecycles, ...
   /**
    * @internal
    */
@@ -136,10 +135,12 @@ export const createComponentInstance = (
     scope: new EffectScope(true /* detached */)!,
     component,
 
+    // TODO: registory of parent
+    parent: null,
+
     // resolved props and emits options
     propsOptions: normalizePropsOptions(component),
     // emitsOptions: normalizeEmitsOptions(type, appContext), // TODO:
-    proxy: null,
 
     // state
     props: EMPTY_OBJ,

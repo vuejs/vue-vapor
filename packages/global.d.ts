@@ -17,6 +17,7 @@ declare var __COMPAT__: boolean
 declare var __FEATURE_OPTIONS_API__: boolean
 declare var __FEATURE_PROD_DEVTOOLS__: boolean
 declare var __FEATURE_SUSPENSE__: boolean
+declare var __FEATURE_PROD_HYDRATION_MISMATCH_DETAILS__: boolean
 
 // for tests
 declare namespace jest {
@@ -40,7 +41,7 @@ declare module 'estree-walker' {
       enter?: (node: T, parent: T | undefined) => any
       leave?: (node: T, parent: T | undefined) => any
       exit?: (node: T) => any
-    } & ThisType<{ skip: () => void }>
+    } & ThisType<{ skip: () => void }>,
   )
 }
 

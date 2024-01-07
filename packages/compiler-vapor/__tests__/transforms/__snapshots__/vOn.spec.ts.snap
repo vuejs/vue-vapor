@@ -25,13 +25,13 @@ export function render(_ctx) {
 `;
 
 exports[`v-on > dynamic arg 1`] = `
-"import { template as _template, children as _children, effect as _effect, on as _on } from 'vue/vapor';
+"import { template as _template, children as _children, renderEffect as _renderEffect, on as _on } from 'vue/vapor';
 
 export function render(_ctx) {
   const t0 = _template("<div></div>")
   const n0 = t0()
   const { 0: [n1],} = _children(n0)
-  _effect(() => {
+  _renderEffect(() => {
     _on(n1, _ctx.event, (...args) => (_ctx.handler && _ctx.handler(...args)))
   })
   return n0
@@ -166,7 +166,7 @@ export function render(_ctx) {
   const t0 = _template("<div></div>")
   const n0 = t0()
   const { 0: [n1],} = _children(n0)
-  _on(n1, "click", 
+  _on(n1, "click",
       $event => {
         _ctx.foo($event)
       }
@@ -276,13 +276,13 @@ export function render(_ctx) {
 `;
 
 exports[`v-on > should transform click.middle 2`] = `
-"import { template as _template, children as _children, effect as _effect, on as _on, withModifiers as _withModifiers } from 'vue/vapor';
+"import { template as _template, children as _children, renderEffect as _renderEffect, on as _on, withModifiers as _withModifiers } from 'vue/vapor';
 
 export function render(_ctx) {
   const t0 = _template("<div></div>")
   const n0 = t0()
   const { 0: [n1],} = _children(n0)
-  _effect(() => {
+  _renderEffect(() => {
     _on(n1, (_ctx.event) === "click" ? "mouseup" : (_ctx.event), _withModifiers((...args) => (_ctx.test && _ctx.test(...args)), ["middle"]))
   })
   return n0
@@ -302,40 +302,14 @@ export function render(_ctx) {
 `;
 
 exports[`v-on > should transform click.right 2`] = `
-"import { template as _template, children as _children, effect as _effect, on as _on, withKeys as _withKeys, withModifiers as _withModifiers } from 'vue/vapor';
+"import { template as _template, children as _children, renderEffect as _renderEffect, on as _on, withKeys as _withKeys, withModifiers as _withModifiers } from 'vue/vapor';
 
 export function render(_ctx) {
   const t0 = _template("<div></div>")
   const n0 = t0()
   const { 0: [n1],} = _children(n0)
-  _effect(() => {
+  _renderEffect(() => {
     _on(n1, (_ctx.event) === "click" ? "contextmenu" : (_ctx.event), _withKeys(_withModifiers((...args) => (_ctx.test && _ctx.test(...args)), ["right"]), ["right"]))
-  })
-  return n0
-}"
-`;
-
-exports[`v-on > should wrap as function if expression is inline statement 1`] = `
-"import { template as _template, children as _children, on as _on } from 'vue/vapor';
-
-export function render(_ctx) {
-  const t0 = _template("<div></div>")
-  const n0 = t0()
-  const { 0: [n1],} = _children(n0)
-  _on(n1, "click", $event => (_ctx.i++))
-  return n0
-}"
-`;
-
-exports[`v-on > should wrap both for dynamic key event w/ left/right modifiers 1`] = `
-"import { template as _template, children as _children, effect as _effect, on as _on, withKeys as _withKeys, withModifiers as _withModifiers } from 'vue/vapor';
-
-export function render(_ctx) {
-  const t0 = _template("<div></div>")
-  const n0 = t0()
-  const { 0: [n1],} = _children(n0)
-  _effect(() => {
-    _on(n1, _ctx.e, _withKeys(_withModifiers((...args) => (_ctx.test && _ctx.test(...args)), ["left"]), ["left"]))
   })
   return n0
 }"

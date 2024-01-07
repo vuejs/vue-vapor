@@ -1,11 +1,11 @@
-import { BindingTypes, ErrorCodes, parse, NodeTypes } from '@vue/compiler-dom'
+import { BindingTypes, ErrorCodes, NodeTypes, parse } from '@vue/compiler-dom'
 import {
   type CompilerOptions,
-  compile as _compile,
-  RootIRNode,
-  transform,
-  generate,
   IRNodeTypes,
+  type RootIRNode,
+  compile as _compile,
+  generate,
+  transform,
 } from '../../src'
 
 import { transformVOn } from '../../src/transforms/vOn'
@@ -102,7 +102,7 @@ describe('v-on', () => {
     const { code, ir } = compileWithVOn(`<div v-on:[event]="handler"/>`)
 
     expect(ir.vaporHelpers).contains('on')
-    expect(ir.vaporHelpers).contains('effect')
+    expect(ir.vaporHelpers).contains('renderEffect')
     expect(ir.helpers.size).toBe(0)
     expect(ir.operation).toEqual([])
 

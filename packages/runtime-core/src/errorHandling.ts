@@ -1,18 +1,22 @@
-import { VNode } from './vnode'
-import { ComponentInternalInstance } from './component'
-import { warn, pushWarningContext, popWarningContext } from './warning'
-import { isPromise, isFunction } from '@vue/shared'
+import type { VNode } from './vnode'
+import type { ComponentInternalInstance } from './component'
+import { popWarningContext, pushWarningContext, warn } from './warning'
+import { isFunction, isPromise } from '@vue/shared'
 import { LifecycleHooks } from './enums'
+import { BaseWatchErrorCodes } from '@vue/reactivity'
 
 // contexts where user provided function may be executed, in addition to
 // lifecycle hooks.
 export enum ErrorCodes {
   SETUP_FUNCTION,
   RENDER_FUNCTION,
-  WATCH_GETTER,
-  WATCH_CALLBACK,
-  WATCH_CLEANUP,
-  NATIVE_EVENT_HANDLER,
+  // The error codes for the watch have been transferred to the reactivity
+  // package along with baseWatch to maintain code compatibility. Hence,
+  // it is essential to keep these values unchanged.
+  // WATCH_GETTER,
+  // WATCH_CALLBACK,
+  // WATCH_CLEANUP,
+  NATIVE_EVENT_HANDLER = 5,
   COMPONENT_EVENT_HANDLER,
   VNODE_HOOK,
   DIRECTIVE_HOOK,
@@ -21,10 +25,12 @@ export enum ErrorCodes {
   APP_WARN_HANDLER,
   FUNCTION_REF,
   ASYNC_COMPONENT_LOADER,
-  SCHEDULER
+  SCHEDULER,
 }
 
-export const ErrorTypeStrings: Record<LifecycleHooks | ErrorCodes, string> = {
+export type ErrorTypes = LifecycleHooks | ErrorCodes | BaseWatchErrorCodes
+
+export const ErrorTypeStrings: Record<ErrorTypes, string> = {
   [LifecycleHooks.SERVER_PREFETCH]: 'serverPrefetch hook',
   [LifecycleHooks.BEFORE_CREATE]: 'beforeCreate hook',
   [LifecycleHooks.CREATED]: 'created hook',
@@ -41,9 +47,9 @@ export const ErrorTypeStrings: Record<LifecycleHooks | ErrorCodes, string> = {
   [LifecycleHooks.RENDER_TRIGGERED]: 'renderTriggered hook',
   [ErrorCodes.SETUP_FUNCTION]: 'setup function',
   [ErrorCodes.RENDER_FUNCTION]: 'render function',
-  [ErrorCodes.WATCH_GETTER]: 'watcher getter',
-  [ErrorCodes.WATCH_CALLBACK]: 'watcher callback',
-  [ErrorCodes.WATCH_CLEANUP]: 'watcher cleanup function',
+  [BaseWatchErrorCodes.WATCH_GETTER]: 'watcher getter',
+  [BaseWatchErrorCodes.WATCH_CALLBACK]: 'watcher callback',
+  [BaseWatchErrorCodes.WATCH_CLEANUP]: 'watcher cleanup function',
   [ErrorCodes.NATIVE_EVENT_HANDLER]: 'native event handler',
   [ErrorCodes.COMPONENT_EVENT_HANDLER]: 'component event handler',
   [ErrorCodes.VNODE_HOOK]: 'vnode hook',
@@ -55,16 +61,14 @@ export const ErrorTypeStrings: Record<LifecycleHooks | ErrorCodes, string> = {
   [ErrorCodes.ASYNC_COMPONENT_LOADER]: 'async component loader',
   [ErrorCodes.SCHEDULER]:
     'scheduler flush. This is likely a Vue internals bug. ' +
-    'Please open an issue at https://new-issue.vuejs.org/?repo=vuejs/core'
+    'Please open an issue at https://github.com/vuejs/core .',
 }
-
-export type ErrorTypes = LifecycleHooks | ErrorCodes
 
 export function callWithErrorHandling(
   fn: Function,
   instance: ComponentInternalInstance | null,
   type: ErrorTypes,
-  args?: unknown[]
+  args?: unknown[],
 ) {
   let res
   try {
@@ -79,7 +83,7 @@ export function callWithAsyncErrorHandling(
   fn: Function | Function[],
   instance: ComponentInternalInstance | null,
   type: ErrorTypes,
-  args?: unknown[]
+  args?: unknown[],
 ): any[] {
   if (isFunction(fn)) {
     const res = callWithErrorHandling(fn, instance, type, args)
@@ -102,7 +106,7 @@ export function handleError(
   err: unknown,
   instance: ComponentInternalInstance | null,
   type: ErrorTypes,
-  throwInDev = true
+  throwInDev = true,
 ) {
   const contextVNode = instance ? instance.vnode : null
   if (instance) {
@@ -133,7 +137,7 @@ export function handleError(
         appErrorHandler,
         null,
         ErrorCodes.APP_ERROR_HANDLER,
-        [err, exposedInstance, errorInfo]
+        [err, exposedInstance, errorInfo],
       )
       return
     }
@@ -145,7 +149,7 @@ function logError(
   err: unknown,
   type: ErrorTypes,
   contextVNode: VNode | null,
-  throwInDev = true
+  throwInDev = true,
 ) {
   if (__DEV__) {
     const info = ErrorTypeStrings[type]

@@ -1,14 +1,14 @@
 import { ErrorCodes, NodeTypes } from '@vue/compiler-dom'
 import {
-  type RootIRNode,
   type CompilerOptions,
-  parse,
-  transform,
-  transformVBind,
-  transformElement,
   IRNodeTypes,
+  type RootIRNode,
   compile as _compile,
   generate,
+  parse,
+  transform,
+  transformElement,
+  transformVBind,
 } from '../../src'
 
 function compileWithVBind(
@@ -210,7 +210,7 @@ describe('compiler v-bind', () => {
     })
 
     expect(code).matchSnapshot()
-    expect(code).contains('effect')
+    expect(code).contains('renderEffect')
     expect(code).contains('_setAttr(n1, "fooBar", undefined, _ctx.fooBar)')
   })
 
@@ -230,7 +230,7 @@ describe('compiler v-bind', () => {
     })
 
     expect(code).matchSnapshot()
-    expect(code).contains('effect')
+    expect(code).contains('renderEffect')
     expect(code).contains(
       `_setAttr(n1, _camelize(_ctx.foo), undefined, _ctx.id)`,
     )
