@@ -1,4 +1,10 @@
-import { EffectScope, type Ref, ref } from '@vue/reactivity'
+import {
+  EffectScope,
+  type Ref,
+  pauseTracking,
+  ref,
+  resetTracking,
+} from '@vue/reactivity'
 
 import { EMPTY_OBJ } from '@vue/shared'
 import type { Block } from './render'
@@ -151,10 +157,16 @@ export const createComponentInstance = (
 
     // lifecycle
     get isMounted() {
-      return isMountedRef.value
+      pauseTracking()
+      const value = isMountedRef.value
+      resetTracking()
+      return value
     },
     get isUnmounted() {
-      return isUnmountedRef.value
+      pauseTracking()
+      const value = isUnmountedRef.value
+      resetTracking()
+      return value
     },
     isUpdating: false,
     isMountedRef,
