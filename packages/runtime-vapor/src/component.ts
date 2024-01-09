@@ -14,7 +14,7 @@ import { VaporLifecycleHooks } from './enums'
 
 export type Component = FunctionalComponent | ObjectComponent
 
-export type SetupFn = (props: any, ctx: any) => Block | Data
+export type SetupFn = (props: any, ctx: any) => Block | Data | (() => Block)
 export type FunctionalComponent = SetupFn & {
   props: ComponentPropsOptions
   render(ctx: any): Block

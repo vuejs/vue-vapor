@@ -1,5 +1,5 @@
 import { proxyRefs } from '@vue/reactivity'
-import { type Data, invokeArrayFns } from '@vue/shared'
+import { type Data, invokeArrayFns, isFunction } from '@vue/shared'
 import {
   type Component,
   type ComponentInternalInstance,
@@ -62,6 +62,8 @@ export function mountComponent(
       } finally {
         isRenderingActivity = currentlyRenderingActivity
       }
+    } else if (isFunction(state)) {
+      block = state()
     } else {
       block = state as Block
     }
