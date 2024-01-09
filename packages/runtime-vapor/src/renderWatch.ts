@@ -33,20 +33,6 @@ function doWatch(source: any, cb?: any): WatchStopHandle {
 
   if (__DEV__) extendOptions.onWarn = warn
 
-  // TODO: Life Cycle Hooks
-  // - [x] fix v-show unit test
-  // - [x] Base Implementation
-  // - [x] Determine the trigger time of onCleanup
-  // - [x] Implement onCleanup trigger time after beforeUpdate
-  // - [] Unit Test
-  //   - [] Unit Test for error
-
-  // trigger time:
-  // now: lastTimeCleanup -> beforeUpdate -> renderEffect -> updated
-  // future: beforeUpdate -> lastTimeCleanup -< renderEffect -> updated
-  // The most effective way to determine that is to find a test case that can persuade the adoption of a certain scheme.
-  // It should be guaranteed that there is no update operation on dom beforeUpdate, but the cleanup generally includes the operation on dom.
-
   // TODO: SSR
   // if (__SSR__) {}
 
