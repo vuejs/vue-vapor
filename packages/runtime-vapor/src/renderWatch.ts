@@ -36,16 +36,18 @@ function doWatch(source: any, cb?: any): WatchStopHandle {
   if (__DEV__) extendOptions.onWarn = warn
 
   // TODO: Life Cycle Hooks
+  // - [] Base Implementation
+  // - [] Determine the trigger time of onCleanup
+  // - [] Unit Test
+
+  // trigger time:
+  // now: lastTimeCleanup -> beforeUpdate -> renderEffect -> updated
+  // future: beforeUpdate -> lastTimeCleanup -< renderEffect -> updated
+  // The most effective way to determine that is to find a test case that can persuade the adoption of a certain scheme.
+  // It should be guaranteed that there is no update operation on dom beforeUpdate, but the cleanup generally includes the operation on dom.
 
   // TODO: SSR
   // if (__SSR__) {}
-
-  if (__DEV__ && !currentInstance) {
-    warn(
-      `${cb ? 'renderWatch' : 'renderEffect'}()` +
-        ' is an internal API and it can only be used inside render()',
-    )
-  }
 
   if (cb) {
     // watch
