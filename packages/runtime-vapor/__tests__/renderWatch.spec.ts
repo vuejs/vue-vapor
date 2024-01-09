@@ -1,7 +1,9 @@
 import { defineComponent } from 'vue'
 import {
   nextTick,
+  onBeforeUpdate,
   onEffectCleanup,
+  onUpdated,
   ref,
   render,
   renderEffect,
@@ -63,6 +65,13 @@ describe('renderWatch', () => {
         const change = () => source.value++
         const changeRender = () => renderSource.value++
 
+        onUpdated(() => {
+          calls.push(`updated ${source.value}`)
+        })
+        onBeforeUpdate(() => {
+          calls.push(`beforeUpdate ${source.value}`)
+        })
+
         watchPostEffect(() => {
           const current = source.value
           calls.push(`post ${current}`)
@@ -123,11 +132,13 @@ describe('renderWatch', () => {
     expect(calls).toEqual([
       'pre cleanup 0',
       'pre 1',
+      'beforeUpdate 1',
       'renderEffect cleanup 0',
       'renderEffect 1',
       'renderWatch 1',
       'post cleanup 0',
       'post 1',
+      'updated 1',
     ])
   })
 })

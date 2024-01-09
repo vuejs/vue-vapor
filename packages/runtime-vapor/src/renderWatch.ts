@@ -1,19 +1,17 @@
 import {
-  BaseWatchErrorCodes,
+  type BaseWatchErrorCodes,
+  type BaseWatchMiddleware,
   type BaseWatchOptions,
   baseWatch,
   getCurrentScope,
 } from '@vue/reactivity'
 import { NOOP, invokeArrayFns, remove } from '@vue/shared'
-import { currentInstance } from './component'
+import { type ComponentInternalInstance, currentInstance } from './component'
 import {
   createVaporRenderingScheduler,
   queuePostRenderEffect,
 } from './scheduler'
-import {
-  callWithAsyncErrorHandling,
-  handleError as handleErrorWithInstance,
-} from './errorHandling'
+import { handleError as handleErrorWithInstance } from './errorHandling'
 import { warn } from './warning'
 import { invokeDirectiveHook } from './directive'
 
@@ -36,9 +34,12 @@ function doWatch(source: any, cb?: any): WatchStopHandle {
   if (__DEV__) extendOptions.onWarn = warn
 
   // TODO: Life Cycle Hooks
-  // - [] Base Implementation
-  // - [] Determine the trigger time of onCleanup
+  // - [x] fix v-show unit test
+  // - [x] Base Implementation
+  // - [x] Determine the trigger time of onCleanup
+  // - [x] Implement onCleanup trigger time after beforeUpdate
   // - [] Unit Test
+  //   - [] Unit Test for error
 
   // trigger time:
   // now: lastTimeCleanup -> beforeUpdate -> renderEffect -> updated
@@ -49,25 +50,14 @@ function doWatch(source: any, cb?: any): WatchStopHandle {
   // TODO: SSR
   // if (__SSR__) {}
 
-  if (cb) {
-    // watch
-    cb = wrapEffectCallback(cb)
-  } else {
-    // effect
-    source = wrapEffectCallback(source)
-  }
-
   const instance =
     getCurrentScope() === currentInstance?.scope ? currentInstance : null
 
-  extendOptions.onError = (err: unknown, type: BaseWatchErrorCodes) => {
-    // callback error handling is in wrapEffectCallback
-    if (type === BaseWatchErrorCodes.WATCH_CALLBACK) {
-      throw err
-    }
+  extendOptions.onError = (err: unknown, type: BaseWatchErrorCodes) =>
     handleErrorWithInstance(err, instance, type)
-  }
   extendOptions.scheduler = createVaporRenderingScheduler(instance)
+
+  extendOptions.middleware = createMiddleware(instance)
 
   let effect = baseWatch(source, cb, extendOptions)
 
@@ -83,14 +73,13 @@ function doWatch(source: any, cb?: any): WatchStopHandle {
   return unwatch
 }
 
-function wrapEffectCallback(callback: (...args: any[]) => any): Function {
-  const instance = currentInstance
-
-  return (...args: any[]) => {
+const createMiddleware =
+  (instance: ComponentInternalInstance | null): BaseWatchMiddleware =>
+  (next) => {
+    let value: unknown
     // with lifecycle
     if (instance && instance.isMounted) {
       const { bu, u, dirs } = instance
-      // currentInstance.updating = true
       // beforeUpdate hook
       const isFirstEffect = !instance.isUpdating
       if (isFirstEffect) {
@@ -104,12 +93,7 @@ function wrapEffectCallback(callback: (...args: any[]) => any): Function {
       }
 
       // run callback
-      callWithAsyncErrorHandling(
-        callback,
-        instance,
-        BaseWatchErrorCodes.WATCH_CALLBACK,
-        args,
-      )
+      value = next()
 
       if (isFirstEffect) {
         queuePostRenderEffect(() => {
@@ -125,12 +109,7 @@ function wrapEffectCallback(callback: (...args: any[]) => any): Function {
       }
     } else {
       // is not mounted
-      callWithAsyncErrorHandling(
-        callback,
-        instance,
-        BaseWatchErrorCodes.WATCH_CALLBACK,
-        args,
-      )
+      value = next()
     }
+    return value
   }
-}
