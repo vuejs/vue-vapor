@@ -1,8 +1,8 @@
-import { isFunction } from '@vue/shared'
+import { NOOP, isFunction } from '@vue/shared'
 import { type ComponentInternalInstance, currentInstance } from './component'
-import { watchEffect } from './apiWatch'
 import { pauseTracking, resetTracking } from '@vue/reactivity'
 import { VaporErrorCodes, callWithAsyncErrorHandling } from './errorHandling'
+import { renderWatch } from './renderWatch'
 
 export type DirectiveModifiers<M extends string = string> = Record<M, boolean>
 
@@ -96,6 +96,11 @@ export function withDirectives<T extends Node>(
     bindings.push(binding)
 
     callDirectiveHook(node, binding, instance, 'created')
+
+    // register source
+    if (source) {
+      renderWatch(source, NOOP)
+    }
   }
 
   return node

@@ -82,11 +82,11 @@ function doWatch(source: any, cb?: any): WatchStopHandle {
 }
 
 function wrapEffectCallback(callback: (...args: any[]) => any): Function {
-  const instance = currentInstance!
+  const instance = currentInstance
 
   return (...args: any[]) => {
     // with lifecycle
-    if (instance.isMounted) {
+    if (instance && instance.isMounted) {
       const { bu, u, dirs } = instance
       // currentInstance.updating = true
       // beforeUpdate hook
