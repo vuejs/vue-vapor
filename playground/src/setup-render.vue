@@ -3,14 +3,14 @@ import { defineComponent } from 'vue'
 import { children, ref, setText, template, watchEffect } from 'vue/vapor'
 
 export default defineComponent({
-  setup(){
+  setup() {
     const count = ref(1)
 
     setInterval(() => {
       count.value++
     }, 1000)
 
-    return ()=> {
+    return () => {
       const t0 = template('<p></p>')
       const n0 = t0()
       const {
@@ -21,6 +21,6 @@ export default defineComponent({
       })
       return n0
     }
-  }
+  },
 })
 </script>
