@@ -132,9 +132,6 @@ function callDirectiveHook(
   if (!hook) return
 
   const newValue = binding.source ? binding.source() : undefined
-  if (name === 'updated' && binding.value === newValue) return
-
-  binding.oldValue = binding.value
   binding.value = newValue
   // disable tracking inside all lifecycle hooks
   // since they can potentially be called inside effects.
@@ -144,4 +141,5 @@ function callDirectiveHook(
     binding,
   ])
   resetTracking()
+  if (name !== 'beforeUpdate') binding.oldValue = binding.value
 }
