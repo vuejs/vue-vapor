@@ -34,8 +34,15 @@ const handleClick = () => {
 </script>
 
 <template>
-  <div v-directive:foo.bar="text" v-text="text" v-directive-simple="text" @click="handleClick" />
-  <button @click="counter++">{{ counter }} (Click to Update Other Element)</button>
+  <div
+    v-directive:foo.bar="text"
+    v-text="text"
+    v-directive-simple="text"
+    @click="handleClick"
+  />
+  <button @click="counter++">
+    {{ counter }} (Click to Update Other Element)
+  </button>
 </template>
 
 <style>
