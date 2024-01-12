@@ -1,6 +1,6 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
-import { children, ref, setText, template, watchEffect } from 'vue/vapor'
+import { children, ref, setText, template, renderEffect } from 'vue/vapor'
 
 export default defineComponent({
   setup() {
@@ -16,7 +16,7 @@ export default defineComponent({
       const {
         0: [n1],
       } = children(n0)
-      watchEffect(() => {
+      renderEffect(() => {
         setText(n1, void 0, count.value)
       })
       return n0
