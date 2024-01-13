@@ -529,10 +529,10 @@ function genSetEvent(oper: SetEventIRNode, context: CodegenContext) {
       (() => push(`{ ${options.map((v) => `${v}: true`).join(', ')} }`)),
   )
 
-  function genEventHandler(content: CodegenContext) {
+  function genEventHandler(context: CodegenContext) {
     const exp = oper.value
     if (exp && exp.content.trim()) {
-      const isMemberExp = isMemberExpression(exp.content, content)
+      const isMemberExp = isMemberExpression(exp.content, context)
       const isInlineStatement = !(isMemberExp || fnExpRE.test(exp.content))
       const hasMultipleStatements = exp.content.includes(`;`)
 
