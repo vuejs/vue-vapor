@@ -69,3 +69,13 @@ export {
   onScopeDispose,
 } from './effectScope'
 export { TrackOpTypes, TriggerOpTypes, ReactiveFlags } from './constants'
+export {
+  baseWatch,
+  getCurrentEffect,
+  onEffectCleanup,
+  traverse,
+  BaseWatchErrorCodes,
+  type BaseWatchOptions,
+  type BaseWatchMiddleware,
+  type Scheduler,
+} from './baseWatch'

@@ -29,13 +29,13 @@ export function render(_ctx) {
 `;
 
 exports[`compiler v-bind > .camel modifier 1`] = `
-"import { template as _template, children as _children, watchEffect as _watchEffect, setDynamicProp as _setDynamicProp } from 'vue/vapor';
+"import { template as _template, children as _children, renderEffect as _renderEffect, setDynamicProp as _setDynamicProp } from 'vue/vapor';
 
 export function render(_ctx) {
   const t0 = _template("<div></div>")
   const n0 = t0()
   const { 0: [n1],} = _children(n0)
-  _watchEffect(() => {
+  _renderEffect(() => {
     _setDynamicProp(n1, "fooBar", undefined, _ctx.id)
   })
   return n0
@@ -49,7 +49,7 @@ export function render(_ctx) {
   const t0 = _template("<div></div>")
   const n0 = t0()
   const { 0: [n1],} = _children(n0)
-  _watchEffect(() => {
+  _renderEffect(() => {
     _setDynamicProp(n1, _camelize(_ctx.foo), undefined, _ctx.id)
   })
   return n0
@@ -57,7 +57,7 @@ export function render(_ctx) {
 `;
 
 exports[`compiler v-bind > .camel modifier w/ no expression 1`] = `
-"import { template as _template, children as _children, watchEffect as _watchEffect, setDynamicProp as _setDynamicProp } from 'vue/vapor';
+"import { template as _template, children as _children, renderEffect as _renderEffect, setDynamicProp as _setDynamicProp } from 'vue/vapor';
 
 export function render(_ctx) {
   const t0 = _template("<div></div>")
@@ -91,7 +91,7 @@ export function render(_ctx) {
   const t0 = _template("<div></div>")
   const n0 = t0()
   const { 0: [n1],} = _children(n0)
-  _watchEffect(() => {
+  _renderEffect(() => {
     _setDynamicProp(n1, ".fooBar", undefined, _ctx.id)
   })
   return n0
@@ -141,13 +141,13 @@ export function render(_ctx) {
 `;
 
 exports[`compiler v-bind > basic 1`] = `
-"import { template as _template, children as _children, watchEffect as _watchEffect, setDynamicProp as _setDynamicProp } from 'vue/vapor';
+"import { template as _template, children as _children, renderEffect as _renderEffect, setDynamicProp as _setDynamicProp } from 'vue/vapor';
 
 export function render(_ctx) {
   const t0 = _template("<div></div>")
   const n0 = t0()
   const { 0: [n1],} = _children(n0)
-  _watchEffect(() => {
+  _renderEffect(() => {
     _setDynamicProp(n1, "id", undefined, _ctx.id)
   })
   return n0
@@ -155,13 +155,13 @@ export function render(_ctx) {
 `;
 
 exports[`compiler v-bind > dynamic arg 1`] = `
-"import { template as _template, children as _children, watchEffect as _watchEffect, setDynamicProp as _setDynamicProp } from 'vue/vapor';
+"import { template as _template, children as _children, renderEffect as _renderEffect, setDynamicProp as _setDynamicProp } from 'vue/vapor';
 
 export function render(_ctx) {
   const t0 = _template("<div></div>")
   const n0 = t0()
   const { 0: [n1],} = _children(n0)
-  _watchEffect(() => {
+  _renderEffect(() => {
     _setDynamicProp(n1, _ctx.id, undefined, _ctx.id)
   })
   return n0
@@ -169,13 +169,13 @@ export function render(_ctx) {
 `;
 
 exports[`compiler v-bind > no expression (shorthand) 1`] = `
-"import { template as _template, children as _children, watchEffect as _watchEffect, setDynamicProp as _setDynamicProp } from 'vue/vapor';
+"import { template as _template, children as _children, renderEffect as _renderEffect, setDynamicProp as _setDynamicProp } from 'vue/vapor';
 
 export function render(_ctx) {
   const t0 = _template("<div></div>")
   const n0 = t0()
   const { 0: [n1],} = _children(n0)
-  _watchEffect(() => {
+  _renderEffect(() => {
     _setDynamicProp(n1, "camel-case", undefined, _ctx.camelCase)
   })
   return n0
@@ -183,13 +183,13 @@ export function render(_ctx) {
 `;
 
 exports[`compiler v-bind > no expression 1`] = `
-"import { template as _template, children as _children, watchEffect as _watchEffect, setDynamicProp as _setDynamicProp } from 'vue/vapor';
+"import { template as _template, children as _children, renderEffect as _renderEffect, setDynamicProp as _setDynamicProp } from 'vue/vapor';
 
 export function render(_ctx) {
   const t0 = _template("<div></div>")
   const n0 = t0()
   const { 0: [n1],} = _children(n0)
-  _watchEffect(() => {
+  _renderEffect(() => {
     _setDynamicProp(n1, "id", undefined, _ctx.id)
   })
   return n0

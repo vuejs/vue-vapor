@@ -29,6 +29,8 @@ export {
   // effect
   stop,
   ReactiveEffect,
+  getCurrentEffect,
+  onEffectCleanup,
   // effect scope
   effectScope,
   EffectScope,
@@ -39,6 +41,7 @@ export { withModifiers, withKeys } from '@vue/runtime-dom'
 
 export * from './on'
 export * from './render'
+export * from './renderWatch'
 export * from './template'
 export * from './scheduler'
 export * from './apiWatch'

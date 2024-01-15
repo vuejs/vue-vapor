@@ -1,6 +1,7 @@
 import { ErrorCodes, callWithErrorHandling, handleError } from './errorHandling'
 import { type Awaited, NOOP, isArray } from '@vue/shared'
 import { type ComponentInternalInstance, getComponentName } from './component'
+import type { Scheduler } from '@vue/reactivity'
 
 export interface SchedulerJob extends Function {
   id?: number
@@ -164,7 +165,9 @@ export function flushPreFlushCbs(
 
 export function flushPostFlushCbs(seen?: CountMap) {
   if (pendingPostFlushCbs.length) {
-    const deduped = [...new Set(pendingPostFlushCbs)]
+    const deduped = [...new Set(pendingPostFlushCbs)].sort(
+      (a, b) => getId(a) - getId(b),
+    )
     pendingPostFlushCbs.length = 0
 
     // #1947 already has active queue, nested flushPostFlushCbs call
@@ -177,8 +180,6 @@ export function flushPostFlushCbs(seen?: CountMap) {
     if (__DEV__) {
       seen = seen || new Map()
     }
-
-    activePostFlushCbs.sort((a, b) => getId(a) - getId(b))
 
     for (
       postFlushIndex = 0;
@@ -242,7 +243,6 @@ function flushJobs(seen?: CountMap) {
         if (__DEV__ && check(job)) {
           continue
         }
-        // console.log(`running:`, job.id)
         callWithErrorHandling(job, null, ErrorCodes.SCHEDULER)
       }
     }
@@ -287,3 +287,27 @@ function checkRecursiveUpdates(seen: CountMap, fn: SchedulerJob) {
     }
   }
 }
+
+export type SchedulerFactory = (
+  instance: ComponentInternalInstance | null,
+) => Scheduler
+
+export const createSyncScheduler: SchedulerFactory =
+  instance => (job, effect, isInit) => {
+    if (isInit) {
+      effect.run()
+    } else {
+      job()
+    }
+  }
+
+export const createPreScheduler: SchedulerFactory =
+  instance => (job, effect, isInit) => {
+    if (isInit) {
+      effect.run()
+    } else {
+      job.pre = true
+      if (instance) job.id = instance.uid
+      queueJob(job)
+    }
+  }

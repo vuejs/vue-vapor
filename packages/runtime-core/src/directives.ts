@@ -24,8 +24,7 @@ import { currentRenderingInstance } from './componentRenderContext'
 import { ErrorCodes, callWithAsyncErrorHandling } from './errorHandling'
 import type { ComponentPublicInstance } from './componentPublicInstance'
 import { mapCompatDirectiveHook } from './compat/customDirective'
-import { pauseTracking, resetTracking } from '@vue/reactivity'
-import { traverse } from './apiWatch'
+import { pauseTracking, resetTracking, traverse } from '@vue/reactivity'
 
 export interface DirectiveBinding<V = any> {
   instance: ComponentPublicInstance | null
@@ -89,14 +88,13 @@ export function withDirectives<T extends VNode>(
   vnode: T,
   directives: DirectiveArguments,
 ): T {
-  const internalInstance = currentRenderingInstance
-  if (internalInstance === null) {
+  if (currentRenderingInstance === null) {
     __DEV__ && warn(`withDirectives can only be used inside render functions.`)
     return vnode
   }
   const instance =
-    (getExposeProxy(internalInstance) as ComponentPublicInstance) ||
-    internalInstance.proxy
+    (getExposeProxy(currentRenderingInstance) as ComponentPublicInstance) ||
+    currentRenderingInstance.proxy
   const bindings: DirectiveBinding[] = vnode.dirs || (vnode.dirs = [])
   for (let i = 0; i < directives.length; i++) {
     let [dir, value, arg, modifiers = EMPTY_OBJ] = directives[i]
