@@ -255,7 +255,7 @@ describe('compiler v-bind', () => {
     })
 
     expect(code).matchSnapshot()
-    expect(code).contains('watchEffect')
+    expect(code).contains('renderEffect')
     expect(code).contains('_setDynamicProp(n1, ".fooBar", undefined, _ctx.id)')
   })
 
@@ -274,7 +274,7 @@ describe('compiler v-bind', () => {
     })
 
     expect(code).matchSnapshot()
-    expect(code).contains('watchEffect')
+    expect(code).contains('renderEffect')
     expect(code).contains(
       '_setDynamicProp(n1, ".fooBar", undefined, _ctx.fooBar)',
     )
@@ -295,7 +295,7 @@ describe('compiler v-bind', () => {
     })
 
     expect(code).matchSnapshot()
-    expect(code).contains('watchEffect')
+    expect(code).contains('renderEffect')
     expect(code).contains(
       '_setDynamicProp(n1, `.${_ctx.fooBar}`, undefined, _ctx.id)',
     )
@@ -318,7 +318,7 @@ describe('compiler v-bind', () => {
     })
 
     expect(code).matchSnapshot()
-    expect(code).contains('watchEffect')
+    expect(code).contains('renderEffect')
     expect(code).contains('_setDynamicProp(n1, ".fooBar", undefined, _ctx.id)')
   })
 
@@ -337,7 +337,7 @@ describe('compiler v-bind', () => {
     })
 
     expect(code).matchSnapshot()
-    expect(code).contains('watchEffect')
+    expect(code).contains('renderEffect')
     expect(code).contains(
       '_setDynamicProp(n1, ".fooBar", undefined, _ctx.fooBar)',
     )
@@ -358,7 +358,7 @@ describe('compiler v-bind', () => {
     })
 
     expect(code).matchSnapshot()
-    expect(code).contains('watchEffect')
+    expect(code).contains('renderEffect')
     expect(code).contains('_setDynamicProp(n1, "^foo-bar", undefined, _ctx.id)')
   })
 
@@ -377,7 +377,7 @@ describe('compiler v-bind', () => {
     })
 
     expect(code).matchSnapshot()
-    expect(code).contains('watchEffect')
+    expect(code).contains('renderEffect')
     expect(code).contains(
       '_setDynamicProp(n1, "^foo-bar", undefined, _ctx.fooBar)',
     )
