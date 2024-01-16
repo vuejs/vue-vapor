@@ -82,7 +82,7 @@ export function mountComponent(
   // hook: mounted
   invokeDirectiveHook(instance, 'mounted')
   m && invokeArrayFns(m)
-  reset
+  reset()
 
   return instance
 }
