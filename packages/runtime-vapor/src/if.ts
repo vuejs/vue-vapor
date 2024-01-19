@@ -6,9 +6,8 @@ import { insert, remove } from './dom'
 export const createIf = (
   condition: () => any,
   b1: BlockFn,
-  // 如果是 v-else-if 就把 () => createIf 作为 b2 传入
   b2?: BlockFn,
-  hydrationNode?: Node,
+  // hydrationNode?: Node,
 ): Fragment => {
   let branch: BlockFn | undefined
   let parent: ParentNode | undefined | null
@@ -26,7 +25,7 @@ export const createIf = (
   // }
 
   renderWatch(
-    () => Boolean(condition()),
+    () => !!condition(),
     (value) => {
       parent ||= anchor.parentNode
       if ((branch = value ? b1 : b2)) {
