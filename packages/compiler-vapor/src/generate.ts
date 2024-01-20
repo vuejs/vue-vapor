@@ -8,6 +8,7 @@ import {
   locStub,
 } from '@vue/compiler-dom'
 import {
+  type BlockFunctionIRNode,
   type IRDynamicChildren,
   IRNodeTypes,
   type OperationNode,
@@ -26,6 +27,7 @@ import { genSetRef } from './generators/ref'
 import { genSetModelValue } from './generators/modelValue'
 import { genAppendNode, genInsertNode, genPrependNode } from './generators/dom'
 import { genWithDirective } from './generators/directive'
+import { genIf } from './generators/if'
 
 interface CodegenOptions extends BaseCodegenOptions {
   expressionPlugins?: ParserPlugin[]
@@ -271,41 +273,7 @@ export function generate(
       }
     })
 
-    {
-      pushNewline(`const n${ir.dynamic.id} = t0()`)
-
-      const children = genChildren(ir.dynamic.children)
-      if (children) {
-        pushNewline(
-          `const ${children} = ${vaporHelper('children')}(n${ir.dynamic.id})`,
-        )
-      }
-
-      for (const oper of ir.operation.filter(
-        (oper): oper is WithDirectiveIRNode =>
-          oper.type === IRNodeTypes.WITH_DIRECTIVE,
-      )) {
-        genWithDirective(oper, ctx)
-      }
-
-      for (const operation of ir.operation) {
-        genOperation(operation, ctx)
-      }
-
-      for (const { operations } of ir.effect) {
-        pushNewline(`${vaporHelper('renderEffect')}(() => {`)
-        withIndent(() => {
-          for (const operation of operations) {
-            genOperation(operation, ctx)
-          }
-        })
-        pushNewline('})')
-      }
-
-      // TODO multiple-template
-      // TODO return statement in IR
-      pushNewline(`return n${ir.dynamic.id}`)
-    }
+    genBlockFunctionContent(ir, ctx)
   })
 
   newline()
@@ -386,10 +354,50 @@ function genOperation(oper: OperationNode, context: CodegenContext) {
       return genPrependNode(oper, context)
     case IRNodeTypes.APPEND_NODE:
       return genAppendNode(oper, context)
+    case IRNodeTypes.IF:
+      return genIf(oper, context)
     case IRNodeTypes.WITH_DIRECTIVE:
       // generated, skip
       return
     default:
       return checkNever(oper)
   }
+}
+
+export function genBlockFunctionContent(
+  ir: Omit<BlockFunctionIRNode, 'type'>,
+  ctx: CodegenContext,
+) {
+  const { pushNewline, withIndent, vaporHelper } = ctx
+  pushNewline(`const n${ir.dynamic.id} = t${ir.templateIndex}()`)
+
+  const children = genChildren(ir.dynamic.children)
+  if (children) {
+    pushNewline(
+      `const ${children} = ${vaporHelper('children')}(n${ir.dynamic.id})`,
+    )
+  }
+
+  for (const oper of ir.operation.filter(
+    (oper): oper is WithDirectiveIRNode =>
+      oper.type === IRNodeTypes.WITH_DIRECTIVE,
+  )) {
+    genWithDirective(oper, ctx)
+  }
+
+  for (const operation of ir.operation) {
+    genOperation(operation, ctx)
+  }
+
+  for (const { operations } of ir.effect) {
+    pushNewline(`${vaporHelper('renderEffect')}(() => {`)
+    withIndent(() => {
+      for (const operation of operations) {
+        genOperation(operation, ctx)
+      }
+    })
+    pushNewline('})')
+  }
+
+  pushNewline(`return n${ir.dynamic.id}`)
 }

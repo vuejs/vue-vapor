@@ -5,6 +5,7 @@ import type {
   RootNode,
   SimpleExpressionNode,
   SourceLocation,
+  TemplateChildNode,
 } from '@vue/compiler-dom'
 import type { Prettify } from '@vue/shared'
 import type { DirectiveTransform, NodeTransform } from './transform'
@@ -27,6 +28,9 @@ export enum IRNodeTypes {
   CREATE_TEXT_NODE,
 
   WITH_DIRECTIVE,
+
+  IF,
+  BLOCK_FUNCTION,
 }
 
 export interface BaseIRNode {
@@ -37,16 +41,30 @@ export interface BaseIRNode {
 // TODO refactor
 export type VaporHelper = keyof typeof import('../../runtime-vapor/src')
 
-export interface RootIRNode extends BaseIRNode {
-  type: IRNodeTypes.ROOT
+export interface BlockFunctionIRNode extends BaseIRNode {
+  type: IRNodeTypes.BLOCK_FUNCTION
   source: string
-  node: RootNode
-  template: Array<TemplateFactoryIRNode | FragmentFactoryIRNode>
+  node: RootNode | TemplateChildNode
+  templateIndex: number
   dynamic: IRDynamicInfo
   effect: IREffect[]
   operation: OperationNode[]
+}
+
+export interface RootIRNode extends Omit<BlockFunctionIRNode, 'type'> {
+  type: IRNodeTypes.ROOT
+  node: RootNode
+  template: Array<TemplateFactoryIRNode | FragmentFactoryIRNode>
   helpers: Set<string>
   vaporHelpers: Set<VaporHelper>
+}
+
+export interface IfIRNode extends BaseIRNode {
+  type: IRNodeTypes.IF
+  id: number
+  condition: IRExpression
+  truthyBranch: BlockFunctionIRNode
+  falsyBranch?: BlockFunctionIRNode
 }
 
 export interface TemplateFactoryIRNode extends BaseIRNode {
@@ -160,6 +178,7 @@ export type OperationNode =
   | PrependNodeIRNode
   | AppendNodeIRNode
   | WithDirectiveIRNode
+  | IfIRNode
 
 export interface IRDynamicInfo {
   id: number | null

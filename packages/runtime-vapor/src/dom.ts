@@ -27,7 +27,22 @@ export function prepend(parent: ParentBlock, ...nodes: Node[]) {
   }
 }
 
-export function append(parent: ParentBlock, ...nodes: Node[]) {
+export function append(parent: ParentBlock, ...blocks: Block[]) {
+  const nodes: Node[] = []
+
+  for (const block of blocks) {
+    if (block instanceof Node) {
+      nodes.push(block)
+    } else if (isArray(block)) {
+      append(parent, ...block)
+    } else {
+      append(parent, block.nodes)
+      block.anchor && append(parent, block.anchor)
+    }
+  }
+
+  if (!nodes.length) return
+
   if (parent instanceof Node) {
     // TODO use insertBefore for better performance
     parent.append(...nodes)

@@ -3,14 +3,16 @@ import {
   type TransformOptions as BaseTransformOptions,
   type CompilerCompatOptions,
   type ElementNode,
+  ElementTypes,
   NodeTypes,
   type ParentNode,
   type RootNode,
   type TemplateChildNode,
   defaultOnError,
   defaultOnWarn,
+  isVSlot,
 } from '@vue/compiler-dom'
-import { EMPTY_OBJ, NOOP, extend, isArray } from '@vue/shared'
+import { EMPTY_OBJ, NOOP, extend, isArray, isString } from '@vue/shared'
 import {
   type IRDynamicInfo,
   type IRExpression,
@@ -18,7 +20,12 @@ import {
   type OperationNode,
   type RootIRNode,
 } from './ir'
-import type { HackOptions, VaporDirectiveNode } from './ir'
+import type {
+  BlockFunctionIRNode,
+  HackOptions,
+  TemplateFactoryIRNode,
+  VaporDirectiveNode,
+} from './ir'
 
 export type NodeTransform = (
   node: RootNode | TemplateChildNode,
@@ -31,6 +38,14 @@ export type DirectiveTransform = (
   context: TransformContext<ElementNode>,
 ) => void
 
+// A structural directive transform is technically also a NodeTransform;
+// Only v-if and v-for fall into this category.
+export type StructuralDirectiveTransform = (
+  node: RootNode | TemplateChildNode,
+  dir: VaporDirectiveNode,
+  context: TransformContext<RootNode | TemplateChildNode>,
+) => void | (() => void)
+
 export type TransformOptions = HackOptions<BaseTransformOptions>
 
 export interface TransformContext<T extends AllNode = AllNode> {
@@ -38,6 +53,7 @@ export interface TransformContext<T extends AllNode = AllNode> {
   parent: TransformContext<ParentNode> | null
   root: TransformContext<RootNode>
   index: number
+  blockFnIR: Omit<BlockFunctionIRNode, 'type'>
   options: Required<
     Omit<TransformOptions, 'filename' | keyof CompilerCompatOptions>
   >
@@ -48,9 +64,10 @@ export interface TransformContext<T extends AllNode = AllNode> {
 
   inVOnce: boolean
 
+  replaceBlockFnIR(ir: TransformContext['blockFnIR']): () => void
   reference(): number
   increaseId(): number
-  registerTemplate(): number
+  pushTemplate(): number
   registerEffect(
     expressions: Array<IRExpression | null | undefined>,
     operation: OperationNode[],
@@ -61,18 +78,35 @@ export interface TransformContext<T extends AllNode = AllNode> {
 
 // TODO use class for better perf
 function createRootContext(
-  ir: RootIRNode,
+  rootIR: RootIRNode,
   node: RootNode,
   options: TransformOptions = {},
 ): TransformContext<RootNode> {
   let globalId = 0
-  const { effect, operation: operation, helpers, vaporHelpers } = ir
+  const { helpers, vaporHelpers } = rootIR
 
   const ctx: TransformContext<RootNode> = {
     node,
     parent: null,
     index: 0,
     root: null!, // set later
+    blockFnIR: rootIR,
+    replaceBlockFnIR(ir) {
+      const currentIR = this.blockFnIR
+      const currentTemplate = this.template
+      const currentChildrenTemplate = this.childrenTemplate
+      const currentDynamic = this.dynamic
+      this.blockFnIR = ir
+      this.dynamic = ir.dynamic
+      this.template = ''
+      this.childrenTemplate = []
+      return () => {
+        this.blockFnIR = currentIR
+        this.dynamic = currentDynamic
+        this.template = currentTemplate
+        this.childrenTemplate = currentChildrenTemplate
+      }
+    },
     options: extend(
       {},
       {
@@ -100,7 +134,7 @@ function createRootContext(
       },
       options,
     ),
-    dynamic: ir.dynamic,
+    dynamic: rootIR.dynamic,
     inVOnce: false,
 
     increaseId: () => globalId++,
@@ -116,13 +150,13 @@ function createRootContext(
       ) {
         return this.registerOperation(...operations)
       }
-      const existing = effect.find((e) =>
+      const existing = this.blockFnIR.effect.find((e) =>
         isSameExpression(e.expressions, expressions as IRExpression[]),
       )
       if (existing) {
         existing.operations.push(...operations)
       } else {
-        effect.push({
+        this.blockFnIR.effect.push({
           expressions: expressions as IRExpression[],
           operations,
         })
@@ -142,25 +176,26 @@ function createRootContext(
 
     template: '',
     childrenTemplate: [],
-    registerTemplate() {
-      if (!ctx.template) return -1
+    pushTemplate() {
+      // update template
+      if (this.blockFnIR.templateIndex !== -1) {
+        const templateFactory = rootIR.template[
+          this.blockFnIR.templateIndex
+        ] as TemplateFactoryIRNode
+        templateFactory.template = this.template
+        return this.blockFnIR.templateIndex
+      }
 
-      const idx = ir.template.findIndex(
-        (t) =>
-          t.type === IRNodeTypes.TEMPLATE_FACTORY &&
-          t.template === ctx.template,
-      )
-      if (idx !== -1) return idx
-
-      ir.template.push({
+      // register template
+      rootIR.template.push({
         type: IRNodeTypes.TEMPLATE_FACTORY,
-        template: ctx.template,
+        template: this.template,
         loc: node.loc,
       })
-      return ir.template.length - 1
+      return (this.blockFnIR.templateIndex = rootIR.template.length - 1)
     },
     registerOperation(...node) {
-      operation.push(...node)
+      this.blockFnIR.operation.push(...node)
     },
     // TODO not used yet
     helper(name, vapor = true) {
@@ -207,6 +242,7 @@ export function transform(
     source: root.source,
     loc: root.loc,
     template: [],
+    templateIndex: -1,
     dynamic: {
       id: null,
       referenced: true,
@@ -221,17 +257,22 @@ export function transform(
   }
 
   const ctx = createRootContext(ir, root, options)
-  transformNode(ctx)
 
   if (ctx.node.type === NodeTypes.ROOT) {
-    ctx.registerTemplate()
+    ctx.pushTemplate()
   }
-  if (ir.template.length === 0) {
-    ir.template.push({
-      type: IRNodeTypes.FRAGMENT_FACTORY,
-      loc: root.loc,
-    })
+  transformNode(ctx)
+  if (ctx.node.type === NodeTypes.ROOT) {
+    ctx.pushTemplate()
   }
+  ir.template.forEach((template, index) => {
+    if ('template' in template && template.template === '') {
+      ir.template[index] = {
+        type: IRNodeTypes.FRAGMENT_FACTORY,
+        loc: root.loc,
+      }
+    }
+  })
 
   return ir
 }
@@ -358,6 +399,40 @@ function processDynamicChildren(ctx: TransformContext<RootNode | ElementNode>) {
         elements: prevChildren.map((child) => child.id!),
         parent: ctx.reference(),
       })
+    }
+  }
+}
+
+export function createStructuralDirectiveTransform(
+  name: string | RegExp,
+  fn: StructuralDirectiveTransform,
+): NodeTransform {
+  const matches = isString(name)
+    ? (n: string) => n === name
+    : (n: string) => name.test(n)
+
+  return (node, context) => {
+    if (node.type === NodeTypes.ELEMENT) {
+      const { props } = node
+      // structural directive transforms are not concerned with slots
+      // as they are handled separately in vSlot.ts
+      if (node.tagType === ElementTypes.TEMPLATE && props.some(isVSlot)) {
+        return
+      }
+      const exitFns = []
+      for (let i = 0; i < props.length; i++) {
+        const prop = props[i]
+        if (prop.type === NodeTypes.DIRECTIVE && matches(prop.name)) {
+          // structural directives are removed to avoid infinite recursion
+          // also we remove them *before* applying so that it can further
+          // traverse itself in case it moves the node around
+          props.splice(i, 1)
+          i--
+          const onExit = fn(node, prop as VaporDirectiveNode, context)
+          if (onExit) exitFns.push(onExit)
+        }
+      }
+      return exitFns
     }
   }
 }
