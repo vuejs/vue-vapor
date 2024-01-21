@@ -3,10 +3,13 @@ import {
   type BaseWatchMiddleware,
   type BaseWatchOptions,
   baseWatch,
-  getCurrentScope,
 } from '@vue/reactivity'
-import { NOOP, invokeArrayFns, remove } from '@vue/shared'
-import { type ComponentInternalInstance, currentInstance } from './component'
+import { NOOP, extend, invokeArrayFns, remove } from '@vue/shared'
+import {
+  type ComponentInternalInstance,
+  getCurrentInstance,
+  setCurrentInstance,
+} from './component'
 import {
   createVaporRenderingScheduler,
   queuePostRenderEffect,
@@ -14,6 +17,12 @@ import {
 import { handleError as handleErrorWithInstance } from './errorHandling'
 import { warn } from './warning'
 import { invokeDirectiveHook } from './directive'
+
+interface RenderWatchOptions {
+  immediate?: boolean
+  deep?: boolean
+  once?: boolean
+}
 
 type WatchStopHandle = () => void
 
@@ -24,27 +33,31 @@ export function renderEffect(effect: () => void): WatchStopHandle {
 export function renderWatch(
   source: any,
   cb: (value: any, oldValue: any) => void,
+  options?: RenderWatchOptions,
 ): WatchStopHandle {
-  return doWatch(source as any, cb)
+  return doWatch(source as any, cb, options)
 }
 
-function doWatch(source: any, cb?: any): WatchStopHandle {
-  const extendOptions: BaseWatchOptions = {}
+function doWatch(
+  source: any,
+  cb?: any,
+  options?: RenderWatchOptions,
+): WatchStopHandle {
+  const extendOptions: BaseWatchOptions =
+    cb && options ? extend({}, options) : {}
 
   if (__DEV__) extendOptions.onWarn = warn
 
   // TODO: SSR
   // if (__SSR__) {}
 
-  const instance =
-    getCurrentScope() === currentInstance?.scope ? currentInstance : null
-
-  extendOptions.onError = (err: unknown, type: BaseWatchErrorCodes) =>
-    handleErrorWithInstance(err, instance, type)
-  extendOptions.scheduler = createVaporRenderingScheduler(instance)
-
-  extendOptions.middleware = createMiddleware(instance)
-
+  const instance = getCurrentInstance()
+  extend(extendOptions, {
+    onError: (err: unknown, type: BaseWatchErrorCodes) =>
+      handleErrorWithInstance(err, instance, type),
+    scheduler: createVaporRenderingScheduler(instance),
+    middleware: createMiddleware(instance),
+  })
   let effect = baseWatch(source, cb, extendOptions)
 
   const unwatch = !effect
@@ -78,8 +91,10 @@ const createMiddleware =
         instance.isUpdating = true
       }
 
+      const reset = setCurrentInstance(instance)
       // run callback
       value = next()
+      reset()
 
       if (isFirstEffect) {
         queuePostRenderEffect(() => {
