@@ -1,6 +1,6 @@
 import type { Data } from '@vue/shared'
 import { EMPTY_OBJ } from '@vue/shared'
-import { EffectScope, type Ref, ref } from '@vue/reactivity'
+import { EffectScope } from '@vue/reactivity'
 
 import type { Block } from './render'
 import type { DirectiveBinding } from './directive'
@@ -31,6 +31,10 @@ export interface ObjectComponent {
 
 type LifecycleHook<TFn = Function> = TFn[] | null
 
+export interface ElementMetadata {
+  props: Data
+}
+
 export interface ComponentInternalInstance {
   uid: number
   container: ParentNode
@@ -56,6 +60,8 @@ export interface ComponentInternalInstance {
   setupState: Data
   emit: EmitFn
   emitted: Record<string, boolean> | null
+  refs: Data
+  metadata: WeakMap<Node, ElementMetadata>
 
   /** directives */
   dirs: Map<Node, DirectiveBinding[]>
@@ -63,10 +69,9 @@ export interface ComponentInternalInstance {
   // TODO: registory of provides, appContext, ...
 
   // lifecycle
-  get isMounted(): boolean
-  isMountedRef: Ref<boolean>
-  get isUnmounted(): boolean
-  isUnmountedRef: Ref<boolean>
+  isMounted: boolean
+  isUnmounted: boolean
+  isUpdating: boolean
 
   /**
    * @internal
@@ -133,10 +138,17 @@ export const getCurrentInstance: () => ComponentInternalInstance | null = () =>
   currentInstance
 
 export const setCurrentInstance = (instance: ComponentInternalInstance) => {
+  const prev = currentInstance
   currentInstance = instance
+  instance.scope.on()
+  return () => {
+    instance.scope.off()
+    currentInstance = prev
+  }
 }
 
 export const unsetCurrentInstance = () => {
+  currentInstance?.scope.off()
   currentInstance = null
 }
 
@@ -145,8 +157,6 @@ export const createComponentInstance = (
   component: ObjectComponent | FunctionalComponent,
   rawProps: Data,
 ): ComponentInternalInstance => {
-  const isMountedRef = ref(false)
-  const isUnmountedRef = ref(false)
   const instance: ComponentInternalInstance = {
     uid: uid++,
     block: null,
@@ -173,20 +183,19 @@ export const createComponentInstance = (
     setupState: EMPTY_OBJ,
     emit: null!, // to be set immediately
     emitted: null,
+    refs: EMPTY_OBJ,
+    metadata: new WeakMap(),
 
     dirs: new Map(),
 
     // TODO: registory of provides, appContext, ...
 
     // lifecycle
-    get isMounted() {
-      return isMountedRef.value
-    },
-    get isUnmounted() {
-      return isUnmountedRef.value
-    },
-    isMountedRef,
-    isUnmountedRef,
+
+    isMounted: false,
+    isUnmounted: false,
+    isUpdating: false,
+
     /**
      * @internal
      */

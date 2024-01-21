@@ -14,7 +14,7 @@ import { polyfillNode } from 'esbuild-plugin-polyfill-node'
 const require = createRequire(import.meta.url)
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const args = minimist(process.argv.slice(2))
-const targets = args._ || ['vue']
+const targets = args._.length ? args._ : ['vue']
 const format = args.f || 'global'
 const prod = args.p || false
 const inlineDeps = args.i || args.inline
@@ -120,7 +120,7 @@ for (const target of targets) {
         __GLOBAL__: String(format === 'global'),
         __ESM_BUNDLER__: String(format.includes('esm-bundler')),
         __ESM_BROWSER__: String(format.includes('esm-browser')),
-        __NODE_JS__: String(format === 'cjs'),
+        __CJS__: String(format === 'cjs'),
         __SSR__: String(format === 'cjs' || format.includes('esm-bundler')),
         __COMPAT__: String(target === 'vue-compat'),
         __FEATURE_SUSPENSE__: `true`,
