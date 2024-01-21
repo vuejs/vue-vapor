@@ -1,10 +1,4 @@
-import {
-  EffectScope,
-  type Ref,
-  pauseTracking,
-  ref,
-  resetTracking,
-} from '@vue/reactivity'
+import { EffectScope } from '@vue/reactivity'
 
 import { EMPTY_OBJ } from '@vue/shared'
 import type { Block } from './render'
@@ -33,6 +27,10 @@ export interface ObjectComponent {
 
 type LifecycleHook<TFn = Function> = TFn[] | null
 
+export interface ElementMetadata {
+  props: Data
+}
+
 export interface ComponentInternalInstance {
   uid: number
   container: ParentNode
@@ -46,16 +44,16 @@ export interface ComponentInternalInstance {
   // state
   props: Data
   setupState: Data
+  refs: Data
+  metadata: WeakMap<Node, ElementMetadata>
 
   /** directives */
   dirs: Map<Node, DirectiveBinding[]>
 
   // lifecycle
-  get isMounted(): boolean
-  get isUnmounted(): boolean
+  isMounted: boolean
+  isUnmounted: boolean
   isUpdating: boolean
-  isUnmountedRef: Ref<boolean>
-  isMountedRef: Ref<boolean>
   // TODO: registory of provides, lifecycles, ...
   /**
    * @internal
@@ -122,10 +120,17 @@ export const getCurrentInstance: () => ComponentInternalInstance | null = () =>
   currentInstance
 
 export const setCurrentInstance = (instance: ComponentInternalInstance) => {
+  const prev = currentInstance
   currentInstance = instance
+  instance.scope.on()
+  return () => {
+    instance.scope.off()
+    currentInstance = prev
+  }
 }
 
 export const unsetCurrentInstance = () => {
+  currentInstance?.scope.off()
   currentInstance = null
 }
 
@@ -133,8 +138,6 @@ let uid = 0
 export const createComponentInstance = (
   component: ObjectComponent | FunctionalComponent,
 ): ComponentInternalInstance => {
-  const isMountedRef = ref(false)
-  const isUnmountedRef = ref(false)
   const instance: ComponentInternalInstance = {
     uid: uid++,
     block: null,
@@ -152,25 +155,15 @@ export const createComponentInstance = (
     // state
     props: EMPTY_OBJ,
     setupState: EMPTY_OBJ,
+    refs: EMPTY_OBJ,
+    metadata: new WeakMap(),
 
     dirs: new Map(),
 
     // lifecycle
-    get isMounted() {
-      pauseTracking()
-      const value = isMountedRef.value
-      resetTracking()
-      return value
-    },
-    get isUnmounted() {
-      pauseTracking()
-      const value = isUnmountedRef.value
-      resetTracking()
-      return value
-    },
+    isMounted: false,
+    isUnmounted: false,
     isUpdating: false,
-    isMountedRef,
-    isUnmountedRef,
     // TODO: registory of provides, appContext, lifecycles, ...
     /**
      * @internal

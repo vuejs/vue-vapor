@@ -1,11 +1,22 @@
 import {
   ErrorCodes,
+  type SimpleExpressionNode,
   createCompilerError,
   createSimpleExpression,
-} from '@vue/compiler-core'
-import { camelize } from '@vue/shared'
+} from '@vue/compiler-dom'
+import { camelize, isReservedProp } from '@vue/shared'
 import { IRNodeTypes } from '../ir'
 import type { DirectiveTransform } from '../transform'
+
+export function normalizeBindShorthand(
+  arg: SimpleExpressionNode,
+): SimpleExpressionNode {
+  // shorthand syntax https://github.com/vuejs/core/pull/9451
+  const propName = camelize(arg.content)
+  const exp = createSimpleExpression(propName, false, arg.loc)
+  exp.ast = null
+  return exp
+}
 
 export const transformVBind: DirectiveTransform = (dir, node, context) => {
   let { arg, exp, loc, modifiers } = dir
@@ -14,12 +25,9 @@ export const transformVBind: DirectiveTransform = (dir, node, context) => {
     // TODO support v-bind="{}"
     return
   }
-  if (!exp) {
-    // shorthand syntax https://github.com/vuejs/core/pull/9451
-    const propName = camelize(arg.content)
-    exp = createSimpleExpression(propName, false, arg.loc)
-    exp.ast = null
-  }
+  if (arg.isStatic && isReservedProp(arg.content)) return
+
+  if (!exp) exp = normalizeBindShorthand(arg)
 
   let camel = false
   if (modifiers.includes('camel')) {
@@ -28,6 +36,14 @@ export const transformVBind: DirectiveTransform = (dir, node, context) => {
     } else {
       camel = true
     }
+  }
+
+  let prefix: string | undefined
+  if (modifiers.includes('prop')) {
+    prefix = injectPrefix(arg, '.')
+  }
+  if (modifiers.includes('attr')) {
+    prefix = injectPrefix(arg, '^')
   }
 
   if (!exp.content.trim()) {
@@ -48,7 +64,15 @@ export const transformVBind: DirectiveTransform = (dir, node, context) => {
         key: arg,
         value: exp,
         runtimeCamelize: camel,
+        runtimePrefix: prefix,
       },
     ],
   )
+}
+
+const injectPrefix = (arg: SimpleExpressionNode, prefix: string) => {
+  if (!arg.isStatic) {
+    return prefix
+  }
+  arg.content = prefix + arg.content
 }

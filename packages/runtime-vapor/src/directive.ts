@@ -7,7 +7,7 @@ import { renderWatch } from './renderWatch'
 export type DirectiveModifiers<M extends string = string> = Record<M, boolean>
 
 export interface DirectiveBinding<V = any, M extends string = string> {
-  instance: ComponentInternalInstance | null
+  instance: ComponentInternalInstance
   source?: () => V
   value: V
   oldValue: V | null
@@ -99,6 +99,7 @@ export function withDirectives<T extends Node>(
 
     // register source
     if (source) {
+      // callback will be overridden by middleware
       renderWatch(source, NOOP)
     }
   }
