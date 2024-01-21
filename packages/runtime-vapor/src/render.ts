@@ -1,5 +1,5 @@
 import { proxyRefs } from '@vue/reactivity'
-import { type Data, invokeArrayFns } from '@vue/shared'
+import { type Data, invokeArrayFns, isArray, isObject } from '@vue/shared'
 
 import {
   type Component,
@@ -11,16 +11,12 @@ import {
 import { initProps } from './componentProps'
 import { invokeDirectiveHook } from './directive'
 import { insert, remove } from './dom'
+import { queuePostRenderEffect } from './scheduler'
 
 export type Block = Node | Fragment | Block[]
 export type ParentBlock = ParentNode | Node[]
 export type Fragment = { nodes: Block; anchor: Node }
-export type BlockFn = (props: any, ctx: any) => Block
-
-let isRenderingActivity = false
-export function getIsRendering() {
-  return isRenderingActivity
-}
+export type BlockFn = (props?: any) => Block
 
 export function render(
   comp: Component,
@@ -45,29 +41,32 @@ export function mountComponent(
 ) {
   instance.container = container
 
-  setCurrentInstance(instance)
+  const reset = setCurrentInstance(instance)
   const block = instance.scope.run(() => {
     const { component, props, emit } = instance
     const ctx = { emit, expose: () => {} }
 
     const setupFn =
       typeof component === 'function' ? component : component.setup
-    const state = setupFn && setupFn(props, ctx)
-    let block: Block | null = null
-    if (state && '__isScriptSetup' in state) {
-      instance.setupState = proxyRefs(state)
-      const currentlyRenderingActivity = isRenderingActivity
-      isRenderingActivity = true
-      try {
-        block = component.render(instance.setupState)
-      } finally {
-        isRenderingActivity = currentlyRenderingActivity
-      }
-    } else {
-      block = state as Block
+    const stateOrNode = setupFn && setupFn(props, ctx)
+
+    let block: Block | undefined
+
+    if (stateOrNode instanceof Node) {
+      block = stateOrNode
+    } else if (isObject(stateOrNode) && !isArray(stateOrNode)) {
+      instance.setupState = proxyRefs(stateOrNode)
     }
+    if (!block && component.render) {
+      block = component.render(instance.setupState)
+    }
+
     if (block instanceof DocumentFragment) {
       block = Array.from(block.childNodes)
+    }
+    if (!block) {
+      // TODO: warn no template
+      block = []
     }
     return (instance.block = block)
   })!
@@ -78,12 +77,14 @@ export function mountComponent(
   invokeDirectiveHook(instance, 'beforeMount')
 
   insert(block, instance.container)
-  instance.isMountedRef.value = true
+  instance.isMounted = true
 
   // hook: mounted
-  invokeDirectiveHook(instance, 'mounted')
-  m && invokeArrayFns(m)
-  unsetCurrentInstance()
+  queuePostRenderEffect(() => {
+    invokeDirectiveHook(instance, 'mounted')
+    m && invokeArrayFns(m)
+  })
+  reset()
 
   return instance
 }
@@ -97,8 +98,8 @@ export function unmountComponent(instance: ComponentInternalInstance) {
 
   scope.stop()
   block && remove(block, container)
-  instance.isMountedRef.value = false
-  instance.isUnmountedRef.value = true
+  instance.isMounted = false
+  instance.isUnmounted = true
 
   // hook: unmounted
   invokeDirectiveHook(instance, 'unmounted')

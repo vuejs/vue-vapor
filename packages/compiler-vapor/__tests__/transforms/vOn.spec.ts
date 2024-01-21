@@ -269,25 +269,22 @@ describe('v-on', () => {
     expect(code).contains('_on(n1, "click", $event => _ctx.foo($event))')
   })
 
-  test.fails(
-    'should NOT wrap as function if expression is already function expression (with Typescript)',
-    () => {
-      const { ir, code } = compileWithVOn(
-        `<div @click="(e: any): any => foo(e)"/>`,
-        { expressionPlugins: ['typescript'] },
-      )
+  test('should NOT wrap as function if expression is already function expression (with Typescript)', () => {
+    const { ir, code } = compileWithVOn(
+      `<div @click="(e: any): any => foo(e)"/>`,
+      { expressionPlugins: ['typescript'] },
+    )
 
-      expect(ir.operation).toMatchObject([
-        {
-          type: IRNodeTypes.SET_EVENT,
-          value: { content: '(e: any): any => foo(e)' },
-        },
-      ])
+    expect(ir.operation).toMatchObject([
+      {
+        type: IRNodeTypes.SET_EVENT,
+        value: { content: '(e: any): any => foo(e)' },
+      },
+    ])
 
-      expect(code).matchSnapshot()
-      expect(code).contains('_on(n1, "click", e => _ctx.foo(e))')
-    },
-  )
+    expect(code).matchSnapshot()
+    expect(code).contains('_on(n1, "click", (e: any): any => _ctx.foo(e))')
+  })
 
   test('should NOT wrap as function if expression is already function expression (with newlines)', () => {
     const { ir, code } = compileWithVOn(
@@ -705,6 +702,17 @@ describe('v-on', () => {
     expect(code2).matchSnapshot()
     expect(code2).contains(
       '(_ctx.event) === "click" ? "mouseup" : (_ctx.event)',
+    )
+  })
+
+  test('should not prefix member expression', () => {
+    const { code } = compileWithVOn(`<div @click="foo.bar"/>`, {
+      prefixIdentifiers: true,
+    })
+
+    expect(code).matchSnapshot()
+    expect(code).contains(
+      `_on(n1, "click", (...args) => (_ctx.foo.bar && _ctx.foo.bar(...args)))`,
     )
   })
 })
