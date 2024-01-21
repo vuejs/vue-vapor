@@ -27,6 +27,7 @@ import {
 } from './template/transformSrcset'
 import { generateCodeFrame, isObject } from '@vue/shared'
 import * as CompilerDOM from '@vue/compiler-dom'
+import * as CompilerVapor from '@vue/compiler-vapor'
 import * as CompilerSSR from '@vue/compiler-ssr'
 import consolidate from '@vue/consolidate'
 import { warnOnce } from './warn'
@@ -55,6 +56,7 @@ export interface SFCTemplateCompileOptions {
   scoped?: boolean
   slotted?: boolean
   isProd?: boolean
+  vapor?: boolean
   ssr?: boolean
   ssrCssVars?: string[]
   inMap?: RawSourceMap
@@ -171,6 +173,7 @@ function doCompileTemplate({
   source,
   ast: inAST,
   ssr = false,
+  vapor = false,
   ssrCssVars,
   isProd = false,
   compiler,
@@ -205,7 +208,12 @@ function doCompileTemplate({
   const shortId = id.replace(/^data-v-/, '')
   const longId = `data-v-${shortId}`
 
-  const defaultCompiler = ssr ? (CompilerSSR as TemplateCompiler) : CompilerDOM
+  const defaultCompiler = vapor
+    ? // TODO ssr
+      (CompilerVapor as TemplateCompiler)
+    : ssr
+      ? (CompilerSSR as TemplateCompiler)
+      : CompilerDOM
   compiler = compiler || defaultCompiler
 
   if (compiler !== defaultCompiler) {
@@ -219,6 +227,7 @@ function doCompileTemplate({
     // We need to parse a fresh one. Can't just use `source` here since we need
     // the AST location info to be relative to the entire SFC.
     const newAST = (ssr ? CompilerDOM : compiler).parse(inAST.source, {
+      prefixIdentifiers: true,
       ...compilerOptions,
       parseMode: 'sfc',
       onError: e => errors.push(e),

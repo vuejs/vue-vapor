@@ -1,14 +1,28 @@
 import {
   type BaseWatchErrorCodes,
+  type BaseWatchMiddleware,
   type BaseWatchOptions,
   baseWatch,
-  getCurrentScope,
 } from '@vue/reactivity'
-import { NOOP, remove } from '@vue/shared'
-import { currentInstance } from './component'
-import { createVaporRenderingScheduler } from './scheduler'
+import { NOOP, extend, invokeArrayFns, remove } from '@vue/shared'
+import {
+  type ComponentInternalInstance,
+  getCurrentInstance,
+  setCurrentInstance,
+} from './component'
+import {
+  createVaporRenderingScheduler,
+  queuePostRenderEffect,
+} from './scheduler'
 import { handleError as handleErrorWithInstance } from './errorHandling'
 import { warn } from './warning'
+import { invokeDirectiveHook } from './directive'
+
+interface RenderWatchOptions {
+  immediate?: boolean
+  deep?: boolean
+  once?: boolean
+}
 
 type WatchStopHandle = () => void
 
@@ -19,27 +33,31 @@ export function renderEffect(effect: () => void): WatchStopHandle {
 export function renderWatch(
   source: any,
   cb: (value: any, oldValue: any) => void,
+  options?: RenderWatchOptions,
 ): WatchStopHandle {
-  return doWatch(source as any, cb)
+  return doWatch(source as any, cb, options)
 }
 
-function doWatch(source: any, cb?: any): WatchStopHandle {
-  const extendOptions: BaseWatchOptions = {}
+function doWatch(
+  source: any,
+  cb?: any,
+  options?: RenderWatchOptions,
+): WatchStopHandle {
+  const extendOptions: BaseWatchOptions =
+    cb && options ? extend({}, options) : {}
 
   if (__DEV__) extendOptions.onWarn = warn
-
-  // TODO: Life Cycle Hooks
 
   // TODO: SSR
   // if (__SSR__) {}
 
-  const instance =
-    getCurrentScope() === currentInstance?.scope ? currentInstance : null
-
-  extendOptions.onError = (err: unknown, type: BaseWatchErrorCodes) =>
-    handleErrorWithInstance(err, instance, type)
-  extendOptions.scheduler = createVaporRenderingScheduler(instance)
-
+  const instance = getCurrentInstance()
+  extend(extendOptions, {
+    onError: (err: unknown, type: BaseWatchErrorCodes) =>
+      handleErrorWithInstance(err, instance, type),
+    scheduler: createVaporRenderingScheduler(instance),
+    middleware: createMiddleware(instance),
+  })
   let effect = baseWatch(source, cb, extendOptions)
 
   const unwatch = !effect
@@ -53,3 +71,46 @@ function doWatch(source: any, cb?: any): WatchStopHandle {
 
   return unwatch
 }
+
+const createMiddleware =
+  (instance: ComponentInternalInstance | null): BaseWatchMiddleware =>
+  (next) => {
+    let value: unknown
+    // with lifecycle
+    if (instance && instance.isMounted) {
+      const { bu, u, dirs } = instance
+      // beforeUpdate hook
+      const isFirstEffect = !instance.isUpdating
+      if (isFirstEffect) {
+        if (bu) {
+          invokeArrayFns(bu)
+        }
+        if (dirs) {
+          invokeDirectiveHook(instance, 'beforeUpdate')
+        }
+        instance.isUpdating = true
+      }
+
+      const reset = setCurrentInstance(instance)
+      // run callback
+      value = next()
+      reset()
+
+      if (isFirstEffect) {
+        queuePostRenderEffect(() => {
+          instance.isUpdating = false
+          if (dirs) {
+            invokeDirectiveHook(instance, 'updated')
+          }
+          // updated hook
+          if (u) {
+            queuePostRenderEffect(u)
+          }
+        })
+      }
+    } else {
+      // is not mounted
+      value = next()
+    }
+    return value
+  }
