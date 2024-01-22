@@ -190,7 +190,7 @@ describe('compiler v-bind', () => {
         isStatic: false,
       },
       runtimeCamelize: false,
-      runtimePrefix: undefined,
+      modifier: undefined,
     })
 
     expect(code).matchSnapshot()
@@ -210,7 +210,7 @@ describe('compiler v-bind', () => {
         isStatic: false,
       },
       runtimeCamelize: false,
-      runtimePrefix: undefined,
+      modifier: undefined,
     })
 
     expect(code).matchSnapshot()
@@ -233,7 +233,7 @@ describe('compiler v-bind', () => {
         isStatic: false,
       },
       runtimeCamelize: true,
-      runtimePrefix: undefined,
+      modifier: undefined,
     })
 
     expect(code).matchSnapshot()
@@ -258,7 +258,7 @@ describe('compiler v-bind', () => {
         isStatic: false,
       },
       runtimeCamelize: false,
-      runtimePrefix: '.',
+      modifier: '.',
     })
 
     expect(code).matchSnapshot()
@@ -279,7 +279,7 @@ describe('compiler v-bind', () => {
         isStatic: false,
       },
       runtimeCamelize: false,
-      runtimePrefix: '.',
+      modifier: '.',
     })
 
     expect(code).matchSnapshot()
@@ -300,7 +300,7 @@ describe('compiler v-bind', () => {
         isStatic: false,
       },
       runtimeCamelize: false,
-      runtimePrefix: '.',
+      modifier: '.',
     })
 
     expect(code).matchSnapshot()
@@ -325,7 +325,7 @@ describe('compiler v-bind', () => {
         isStatic: false,
       },
       runtimeCamelize: false,
-      runtimePrefix: '.',
+      modifier: '.',
     })
 
     expect(code).matchSnapshot()
@@ -346,7 +346,7 @@ describe('compiler v-bind', () => {
         isStatic: false,
       },
       runtimeCamelize: false,
-      runtimePrefix: '.',
+      modifier: '.',
     })
 
     expect(code).matchSnapshot()
@@ -367,7 +367,7 @@ describe('compiler v-bind', () => {
         isStatic: false,
       },
       runtimeCamelize: false,
-      runtimePrefix: '^',
+      modifier: '^',
     })
 
     expect(code).matchSnapshot()
@@ -388,7 +388,7 @@ describe('compiler v-bind', () => {
         isStatic: false,
       },
       runtimeCamelize: false,
-      runtimePrefix: '^',
+      modifier: '^',
     })
 
     expect(code).matchSnapshot()

@@ -19,8 +19,8 @@ export function genSetProp(oper: SetPropIRNode, context: CodegenContext) {
       helperName = 'setClass'
     } else if (keyName === 'style') {
       helperName = 'setStyle'
-    } else if (oper.runtimePrefix) {
-      helperName = oper.runtimePrefix === '.' ? 'setDOMProp' : 'setAttr'
+    } else if (oper.modifier) {
+      helperName = oper.modifier === '.' ? 'setDOMProp' : 'setAttr'
     }
 
     if (helperName) {
@@ -49,8 +49,8 @@ export function genSetProp(oper: SetPropIRNode, context: CodegenContext) {
     () => {
       if (oper.runtimeCamelize) {
         pushFnCall(helper('camelize'), () => genExpression(oper.key, context))
-      } else if (oper.runtimePrefix) {
-        pushMulti([`\`${oper.runtimePrefix}\${`, `}\``], () =>
+      } else if (oper.modifier) {
+        pushMulti([`\`${oper.modifier}\${`, `}\``], () =>
           genExpression(oper.key, context),
         )
       } else {

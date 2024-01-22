@@ -56,7 +56,7 @@ export const transformVBind: DirectiveTransform = (dir, node, context) => {
         key: arg,
         value: exp,
         runtimeCamelize: camel,
-        runtimePrefix: modifiers.includes('prop')
+        modifier: modifiers.includes('prop')
           ? '.'
           : modifiers.includes('attr')
             ? '^'
