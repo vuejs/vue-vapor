@@ -189,6 +189,8 @@ describe('compiler v-bind', () => {
         content: `id`,
         isStatic: false,
       },
+      runtimeCamelize: false,
+      runtimePrefix: undefined,
     })
 
     expect(code).matchSnapshot()
@@ -207,6 +209,8 @@ describe('compiler v-bind', () => {
         content: `fooBar`,
         isStatic: false,
       },
+      runtimeCamelize: false,
+      runtimePrefix: undefined,
     })
 
     expect(code).matchSnapshot()
@@ -220,7 +224,6 @@ describe('compiler v-bind', () => {
     const { ir, code } = compileWithVBind(`<div v-bind:[foo].camel="id"/>`)
 
     expect(ir.effect[0].operations[0]).toMatchObject({
-      runtimeCamelize: true,
       key: {
         content: `foo`,
         isStatic: false,
@@ -229,6 +232,8 @@ describe('compiler v-bind', () => {
         content: `id`,
         isStatic: false,
       },
+      runtimeCamelize: true,
+      runtimePrefix: undefined,
     })
 
     expect(code).matchSnapshot()
@@ -252,6 +257,8 @@ describe('compiler v-bind', () => {
         content: `id`,
         isStatic: false,
       },
+      runtimeCamelize: false,
+      runtimePrefix: '.',
     })
 
     expect(code).matchSnapshot()
@@ -271,6 +278,8 @@ describe('compiler v-bind', () => {
         content: `fooBar`,
         isStatic: false,
       },
+      runtimeCamelize: false,
+      runtimePrefix: '.',
     })
 
     expect(code).matchSnapshot()
@@ -290,6 +299,8 @@ describe('compiler v-bind', () => {
         content: `id`,
         isStatic: false,
       },
+      runtimeCamelize: false,
+      runtimePrefix: '.',
     })
 
     expect(code).matchSnapshot()
@@ -313,6 +324,8 @@ describe('compiler v-bind', () => {
         content: `id`,
         isStatic: false,
       },
+      runtimeCamelize: false,
+      runtimePrefix: '.',
     })
 
     expect(code).matchSnapshot()
@@ -332,6 +345,8 @@ describe('compiler v-bind', () => {
         content: `fooBar`,
         isStatic: false,
       },
+      runtimeCamelize: false,
+      runtimePrefix: '.',
     })
 
     expect(code).matchSnapshot()
@@ -351,6 +366,8 @@ describe('compiler v-bind', () => {
         content: `id`,
         isStatic: false,
       },
+      runtimeCamelize: false,
+      runtimePrefix: '^',
     })
 
     expect(code).matchSnapshot()
@@ -370,6 +387,8 @@ describe('compiler v-bind', () => {
         content: `fooBar`,
         isStatic: false,
       },
+      runtimeCamelize: false,
+      runtimePrefix: '^',
     })
 
     expect(code).matchSnapshot()
