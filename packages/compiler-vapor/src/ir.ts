@@ -64,7 +64,7 @@ export interface SetPropIRNode extends BaseIRNode {
   key: IRExpression
   value: IRExpression
   runtimeCamelize: boolean
-  runtimePrefix?: string
+  runtimePrefix?: '.' | '^'
 }
 
 export interface SetTextIRNode extends BaseIRNode {

@@ -8,36 +8,31 @@ export function genSetProp(oper: SetPropIRNode, context: CodegenContext) {
 
   newline()
 
+  const element = `n${oper.element}`
+
+  // fast path for static props
   if (isString(oper.key) || oper.key.isStatic) {
-    let keyName: string = isString(oper.key)
-      ? oper.key
-      : JSON.stringify(oper.key)
+    const keyName = isString(oper.key) ? oper.key : oper.key.content
 
+    let helperName: string | undefined
     if (keyName === 'class') {
-      pushFnCall(vaporHelper('setClass'), `n${oper.element}`, 'undefined', () =>
-        genExpression(oper.value, context),
-      )
-      return
+      helperName = 'setClass'
+    } else if (keyName === 'style') {
+      helperName = 'setStyle'
+    } else if (oper.runtimePrefix) {
+      helperName = oper.runtimePrefix === '.' ? 'setDOMProp' : 'setAttr'
     }
 
-    if (keyName === 'style') {
-      pushFnCall(vaporHelper('setStyle'), `n${oper.element}`, 'undefined', () =>
-        genExpression(oper.value, context),
-      )
-      return
-    }
-
-    if (oper.runtimePrefix) {
+    if (helperName) {
       pushFnCall(
-        vaporHelper(oper.runtimePrefix === '.' ? 'setDOMProp' : 'setAttr'),
-        `n${oper.element}`,
+        vaporHelper(helperName),
+        element,
         () => {
+          const expr = () => genExpression(oper.key, context)
           if (oper.runtimeCamelize) {
-            pushFnCall(helper('camelize'), () =>
-              genExpression(oper.key, context),
-            )
+            pushFnCall(helper('camelize'), expr)
           } else {
-            genExpression(oper.key, context)
+            expr()
           }
         },
         'undefined',
@@ -49,7 +44,7 @@ export function genSetProp(oper: SetPropIRNode, context: CodegenContext) {
 
   pushFnCall(
     vaporHelper('setDynamicProp'),
-    `n${oper.element}`,
+    element,
     // 2. key name
     () => {
       if (oper.runtimeCamelize) {
