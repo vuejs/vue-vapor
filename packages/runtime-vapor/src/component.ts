@@ -63,6 +63,8 @@ export interface ComponentInternalInstance {
   refs: Data
   metadata: WeakMap<Node, ElementMetadata>
 
+  vapor: true
+
   /** directives */
   dirs: Map<Node, DirectiveBinding[]>
 
@@ -185,6 +187,7 @@ export const createComponentInstance = (
     emitted: null,
     refs: EMPTY_OBJ,
     metadata: new WeakMap(),
+    vapor: true,
 
     dirs: new Map(),
 
