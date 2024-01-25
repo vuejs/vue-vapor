@@ -81,8 +81,8 @@ export interface SetPropIRNode extends BaseIRNode {
   element: number
   key: IRExpression
   value: IRExpression
+  modifier?: '.' | '^'
   runtimeCamelize: boolean
-  runtimePrefix?: string
 }
 
 export interface SetTextIRNode extends BaseIRNode {
