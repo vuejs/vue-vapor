@@ -291,7 +291,6 @@ function transformNode(
       node = context.node
     }
   }
-
   switch (node.type) {
     case NodeTypes.ROOT:
     case NodeTypes.ELEMENT: {

@@ -1,4 +1,10 @@
-import type { RootNode, TemplateChildNode } from '@vue/compiler-dom'
+import {
+  ElementTypes,
+  NodeTypes,
+  type RootNode,
+  type TemplateChildNode,
+  type TemplateNode,
+} from '@vue/compiler-dom'
 import {
   type TransformContext,
   createStructuralDirectiveTransform,
@@ -47,6 +53,18 @@ export function createIfBranch(
   dir: VaporDirectiveNode,
   context: TransformContext<RootNode | TemplateChildNode>,
 ): [BlockFunctionIRNode, () => void] {
+  if (
+    node.type === NodeTypes.ELEMENT &&
+    node.tagType !== ElementTypes.TEMPLATE
+  ) {
+    node = extend({} as TemplateNode, node, {
+      tagType: ElementTypes.TEMPLATE,
+      children: [node],
+      codegenNode: undefined,
+    })
+    context.node = node
+  }
+
   const branch: BlockFunctionIRNode = {
     type: IRNodeTypes.BLOCK_FUNCTION,
     loc: dir.loc,
@@ -55,8 +73,8 @@ export function createIfBranch(
     templateIndex: -1,
     dynamic: {
       id: null,
-      referenced: false,
-      ghost: false,
+      referenced: true,
+      ghost: true,
       placeholder: null,
       children: {},
     },
@@ -68,6 +86,7 @@ export function createIfBranch(
   context.reference()
   context.pushTemplate()
   const onExit = () => {
+    context.template += context.childrenTemplate.join('')
     context.pushTemplate()
     reset()
   }
