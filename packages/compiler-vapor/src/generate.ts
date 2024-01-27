@@ -273,10 +273,7 @@ export function generate(
         )
       } else {
         // fragment
-        pushNewline(
-          `const t${i} = ${vaporHelper('fragment')}()\n`,
-          NewlineType.End,
-        )
+        pushNewline(`const t${i} = ${vaporHelper('fragment')}()`)
       }
     })
 
