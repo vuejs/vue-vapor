@@ -1,0 +1,18 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`compiler: v-if > basic v-if 1`] = `
+"import { template as _template, fragment as _fragment, createIf as _createIf, append as _append } from 'vue/vapor';
+
+export function render(_ctx) {
+  const t0 = _template("<div></div>")
+  const t0 = _fragment()
+
+  const n0 = t0()
+  const n1 = _createIf(() => (_ctx.ok), () => {
+    const n2 = t1()
+    return n2
+  })
+  _append(n0, n1)
+  return n0
+}"
+`;

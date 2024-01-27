@@ -24,7 +24,7 @@ import { transformRef } from './transforms/transformRef'
 import { transformInterpolation } from './transforms/transformInterpolation'
 import type { HackOptions } from './ir'
 import { transformVModel } from './transforms/vModel'
-import { transformIf } from './transforms/vIf'
+import { transformVIf } from './transforms/vIf'
 
 export type CompilerOptions = HackOptions<BaseCompilerOptions>
 
@@ -101,7 +101,7 @@ export function getBaseTransformPreset(
       transformOnce,
       transformRef,
       transformInterpolation,
-      transformIf,
+      transformVIf,
       transformElement,
     ],
     {

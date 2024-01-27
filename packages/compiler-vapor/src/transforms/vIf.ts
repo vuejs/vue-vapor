@@ -11,7 +11,7 @@ import {
 } from '../ir'
 import { extend } from '@vue/shared'
 
-export const transformIf = createStructuralDirectiveTransform(
+export const transformVIf = createStructuralDirectiveTransform(
   /^(if|else|else-if)$/,
   processIf,
 )
