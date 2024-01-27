@@ -73,7 +73,30 @@ export interface TransformContext<T extends AllNode = AllNode> {
     operation: OperationNode[],
   ): void
   registerOperation(...operations: OperationNode[]): void
-  helper(name: string): string
+}
+
+const defaultOptions = {
+  filename: '',
+  prefixIdentifiers: false,
+  hoistStatic: false,
+  hmr: false,
+  cacheHandlers: false,
+  nodeTransforms: [],
+  directiveTransforms: {},
+  transformHoist: null,
+  isBuiltInComponent: NOOP,
+  isCustomElement: NOOP,
+  expressionPlugins: [],
+  scopeId: null,
+  slotted: true,
+  ssr: false,
+  inSSR: false,
+  ssrCssVars: ``,
+  bindingMetadata: EMPTY_OBJ,
+  inline: false,
+  isTS: false,
+  onError: defaultOnError,
+  onWarn: defaultOnWarn,
 }
 
 // TODO use class for better perf
@@ -83,7 +106,6 @@ function createRootContext(
   options: TransformOptions = {},
 ): TransformContext<RootNode> {
   let globalId = 0
-  const { helpers, vaporHelpers } = root
 
   const ctx: TransformContext<RootNode> = {
     node,
@@ -107,33 +129,7 @@ function createRootContext(
         this.childrenTemplate = currentChildrenTemplate
       }
     },
-    options: extend(
-      {},
-      {
-        filename: '',
-        prefixIdentifiers: false,
-        hoistStatic: false,
-        hmr: false,
-        cacheHandlers: false,
-        nodeTransforms: [],
-        directiveTransforms: {},
-        transformHoist: null,
-        isBuiltInComponent: NOOP,
-        isCustomElement: NOOP,
-        expressionPlugins: [],
-        scopeId: null,
-        slotted: true,
-        ssr: false,
-        inSSR: false,
-        ssrCssVars: ``,
-        bindingMetadata: EMPTY_OBJ,
-        inline: false,
-        isTS: false,
-        onError: defaultOnError,
-        onWarn: defaultOnWarn,
-      },
-      options,
-    ),
+    options: extend({}, defaultOptions, options),
     dynamic: root.dynamic,
     inVOnce: false,
 
@@ -197,11 +193,6 @@ function createRootContext(
     registerOperation(...node) {
       this.block.operation.push(...node)
     },
-    // TODO not used yet
-    helper(name, vapor = true) {
-      ;(vapor ? vaporHelpers : helpers).add(name)
-      return name
-    },
   }
   ctx.root = ctx
   ctx.reference()
@@ -252,8 +243,6 @@ export function transform(
     },
     effect: [],
     operation: [],
-    helpers: new Set([]),
-    vaporHelpers: new Set([]),
   }
 
   const ctx = createRootContext(ir, root, options)

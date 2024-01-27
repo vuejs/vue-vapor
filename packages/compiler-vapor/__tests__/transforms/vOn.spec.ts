@@ -1,46 +1,27 @@
-import { BindingTypes, ErrorCodes, NodeTypes, parse } from '@vue/compiler-dom'
-import {
-  type CompilerOptions,
-  IRNodeTypes,
-  type RootIRNode,
-  compile as _compile,
-  generate,
-  transform,
-} from '../../src'
+import { BindingTypes, ErrorCodes, NodeTypes } from '@vue/compiler-dom'
+import { IRNodeTypes, transformElement, transformVOn } from '../../src'
+import { makeCompile } from './_utils'
 
-import { transformVOn } from '../../src/transforms/vOn'
-import { transformElement } from '../../src/transforms/transformElement'
-
-function compileWithVOn(
-  template: string,
-  options: CompilerOptions = {},
-): {
-  ir: RootIRNode
-  code: string
-} {
-  const ast = parse(template, { prefixIdentifiers: true, ...options })
-  const ir = transform(ast, {
-    nodeTransforms: [transformElement],
-    directiveTransforms: {
-      on: transformVOn,
-    },
-    prefixIdentifiers: true,
-    ...options,
-  })
-  const { code } = generate(ir, { prefixIdentifiers: true, ...options })
-  return { ir, code }
-}
+const compileWithVOn = makeCompile({
+  nodeTransforms: [transformElement],
+  directiveTransforms: {
+    on: transformVOn,
+  },
+})
 
 describe('v-on', () => {
   test('simple expression', () => {
-    const { code, ir } = compileWithVOn(`<div @click="handleClick"></div>`, {
-      bindingMetadata: {
-        handleClick: BindingTypes.SETUP_CONST,
+    const { code, ir, helpers, vaporHelpers } = compileWithVOn(
+      `<div @click="handleClick"></div>`,
+      {
+        bindingMetadata: {
+          handleClick: BindingTypes.SETUP_CONST,
+        },
       },
-    })
+    )
 
-    expect(ir.vaporHelpers).contains('on')
-    expect(ir.helpers.size).toBe(0)
+    expect(vaporHelpers).contains('on')
+    expect(helpers.size).toBe(0)
     expect(ir.effect).toEqual([])
 
     expect(ir.operation).toMatchObject([
@@ -99,11 +80,13 @@ describe('v-on', () => {
   })
 
   test('dynamic arg', () => {
-    const { code, ir } = compileWithVOn(`<div v-on:[event]="handler"/>`)
+    const { code, ir, helpers, vaporHelpers } = compileWithVOn(
+      `<div v-on:[event]="handler"/>`,
+    )
 
-    expect(ir.vaporHelpers).contains('on')
-    expect(ir.vaporHelpers).contains('renderEffect')
-    expect(ir.helpers.size).toBe(0)
+    expect(vaporHelpers).contains('on')
+    expect(vaporHelpers).contains('renderEffect')
+    expect(helpers.size).toBe(0)
     expect(ir.operation).toEqual([])
 
     expect(ir.effect[0].operations[0]).toMatchObject({
@@ -133,13 +116,16 @@ describe('v-on', () => {
   })
 
   test('dynamic arg with complex exp prefixing', () => {
-    const { ir, code } = compileWithVOn(`<div v-on:[event(foo)]="handler"/>`, {
-      prefixIdentifiers: true,
-    })
+    const { ir, code, helpers, vaporHelpers } = compileWithVOn(
+      `<div v-on:[event(foo)]="handler"/>`,
+      {
+        prefixIdentifiers: true,
+      },
+    )
 
-    expect(ir.vaporHelpers).contains('on')
-    expect(ir.vaporHelpers).contains('renderEffect')
-    expect(ir.helpers.size).toBe(0)
+    expect(vaporHelpers).contains('on')
+    expect(vaporHelpers).contains('renderEffect')
+    expect(helpers.size).toBe(0)
     expect(ir.operation).toEqual([])
 
     expect(ir.effect[0].operations[0]).toMatchObject({
@@ -161,10 +147,11 @@ describe('v-on', () => {
   })
 
   test('should wrap as function if expression is inline statement', () => {
-    const { code, ir } = compileWithVOn(`<div @click="i++"/>`)
+    const { code, ir, helpers, vaporHelpers } =
+      compileWithVOn(`<div @click="i++"/>`)
 
-    expect(ir.vaporHelpers).contains('on')
-    expect(ir.helpers.size).toBe(0)
+    expect(vaporHelpers).contains('on')
+    expect(helpers.size).toBe(0)
     expect(ir.effect).toEqual([])
 
     expect(ir.operation).toMatchObject([
@@ -395,10 +382,12 @@ describe('v-on', () => {
   })
 
   test('case conversion for kebab-case events', () => {
-    const { ir, code } = compileWithVOn(`<div v-on:foo-bar="onMount"/>`)
+    const { ir, code, helpers, vaporHelpers } = compileWithVOn(
+      `<div v-on:foo-bar="onMount"/>`,
+    )
 
-    expect(ir.vaporHelpers).contains('on')
-    expect(ir.helpers.size).toBe(0)
+    expect(vaporHelpers).contains('on')
+    expect(helpers.size).toBe(0)
     expect(ir.effect).toEqual([])
 
     expect(ir.operation).toMatchObject([
@@ -443,15 +432,15 @@ describe('v-on', () => {
   test.todo('vue: prefixed events')
 
   test('should support multiple modifiers and event options w/ prefixIdentifiers: true', () => {
-    const { code, ir } = compileWithVOn(
+    const { code, ir, vaporHelpers } = compileWithVOn(
       `<div @click.stop.prevent.capture.once="test"/>`,
       {
         prefixIdentifiers: true,
       },
     )
 
-    expect(ir.vaporHelpers).contains('on')
-    expect(ir.vaporHelpers).contains('withModifiers')
+    expect(vaporHelpers).contains('on')
+    expect(vaporHelpers).contains('withModifiers')
 
     expect(ir.operation).toMatchObject([
       {

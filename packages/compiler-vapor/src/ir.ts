@@ -55,8 +55,6 @@ export interface RootIRNode extends Omit<BlockFunctionIRNode, 'type'> {
   type: IRNodeTypes.ROOT
   node: RootNode
   template: Array<TemplateFactoryIRNode | FragmentFactoryIRNode>
-  helpers: Set<string>
-  vaporHelpers: Set<VaporHelper>
 }
 
 export interface IfIRNode extends BaseIRNode {

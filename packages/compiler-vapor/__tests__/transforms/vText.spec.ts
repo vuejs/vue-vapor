@@ -1,48 +1,27 @@
-import {
-  BindingTypes,
-  DOMErrorCodes,
-  NodeTypes,
-  parse,
-} from '@vue/compiler-dom'
-import {
-  type CompilerOptions,
-  IRNodeTypes,
-  type RootIRNode,
-  compile as _compile,
-  generate,
-  transform,
-} from '../../src'
-import { getBaseTransformPreset } from '../../src/compile'
+import { BindingTypes, DOMErrorCodes, NodeTypes } from '@vue/compiler-dom'
+import { IRNodeTypes, transformElement, transformVText } from '../../src'
+import { makeCompile } from './_utils'
 
-function compileWithVText(
-  template: string,
-  options: CompilerOptions = {},
-): {
-  ir: RootIRNode
-  code: string
-} {
-  const ast = parse(template, { prefixIdentifiers: true, ...options })
-  const [nodeTransforms, directiveTransforms] = getBaseTransformPreset(true)
-  const ir = transform(ast, {
-    nodeTransforms,
-    directiveTransforms,
-    prefixIdentifiers: true,
-    ...options,
-  })
-  const { code } = generate(ir, { prefixIdentifiers: true, ...options })
-  return { ir, code }
-}
+const compileWithVText = makeCompile({
+  nodeTransforms: [transformElement],
+  directiveTransforms: {
+    text: transformVText,
+  },
+})
 
 describe('v-text', () => {
   test('should convert v-text to textContent', () => {
-    const { code, ir } = compileWithVText(`<div v-text="str"></div>`, {
-      bindingMetadata: {
-        str: BindingTypes.SETUP_REF,
+    const { code, ir, helpers, vaporHelpers } = compileWithVText(
+      `<div v-text="str"></div>`,
+      {
+        bindingMetadata: {
+          str: BindingTypes.SETUP_REF,
+        },
       },
-    })
+    )
 
-    expect(ir.vaporHelpers).contains('setText')
-    expect(ir.helpers.size).toBe(0)
+    expect(vaporHelpers).contains('setText')
+    expect(helpers.size).toBe(0)
 
     expect(ir.operation).toEqual([])
 

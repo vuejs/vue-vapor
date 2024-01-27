@@ -1,48 +1,27 @@
-import {
-  BindingTypes,
-  DOMErrorCodes,
-  NodeTypes,
-  parse,
-} from '@vue/compiler-dom'
-import {
-  type CompilerOptions,
-  IRNodeTypes,
-  type RootIRNode,
-  compile as _compile,
-  generate,
-  transform,
-} from '../../src'
-import { getBaseTransformPreset } from '../../src/compile'
+import { BindingTypes, DOMErrorCodes, NodeTypes } from '@vue/compiler-dom'
+import { IRNodeTypes, transformElement, transformVHtml } from '../../src'
+import { makeCompile } from './_utils'
 
-function compileWithVHtml(
-  template: string,
-  options: CompilerOptions = {},
-): {
-  ir: RootIRNode
-  code: string
-} {
-  const ast = parse(template, { prefixIdentifiers: true, ...options })
-  const [nodeTransforms, directiveTransforms] = getBaseTransformPreset(true)
-  const ir = transform(ast, {
-    nodeTransforms,
-    directiveTransforms,
-    prefixIdentifiers: true,
-    ...options,
-  })
-  const { code } = generate(ir, { prefixIdentifiers: true, ...options })
-  return { ir, code }
-}
+const compileWithVHtml = makeCompile({
+  nodeTransforms: [transformElement],
+  directiveTransforms: {
+    html: transformVHtml,
+  },
+})
 
 describe('v-html', () => {
   test('should convert v-html to innerHTML', () => {
-    const { code, ir } = compileWithVHtml(`<div v-html="code"></div>`, {
-      bindingMetadata: {
-        code: BindingTypes.SETUP_REF,
+    const { code, ir, helpers, vaporHelpers } = compileWithVHtml(
+      `<div v-html="code"></div>`,
+      {
+        bindingMetadata: {
+          code: BindingTypes.SETUP_REF,
+        },
       },
-    })
+    )
 
-    expect(ir.vaporHelpers).contains('setHtml')
-    expect(ir.helpers.size).toBe(0)
+    expect(vaporHelpers).contains('setHtml')
+    expect(helpers.size).toBe(0)
 
     expect(ir.operation).toEqual([])
     expect(ir.effect).toMatchObject([
@@ -73,12 +52,15 @@ describe('v-html', () => {
 
   test('should raise error and ignore children when v-html is present', () => {
     const onError = vi.fn()
-    const { code, ir } = compileWithVHtml(`<div v-html="test">hello</div>`, {
-      onError,
-    })
+    const { code, ir, helpers, vaporHelpers } = compileWithVHtml(
+      `<div v-html="test">hello</div>`,
+      {
+        onError,
+      },
+    )
 
-    expect(ir.vaporHelpers).contains('setHtml')
-    expect(ir.helpers.size).toBe(0)
+    expect(vaporHelpers).contains('setHtml')
+    expect(helpers.size).toBe(0)
 
     // children should have been removed
     expect(ir.template).toMatchObject([{ template: '<div></div>' }])
