@@ -378,11 +378,12 @@ export function genBlockFunctionContent(
     )
   }
 
-  for (const oper of ir.operation.filter(
+  const directiveOps = ir.operation.filter(
     (oper): oper is WithDirectiveIRNode =>
       oper.type === IRNodeTypes.WITH_DIRECTIVE,
-  )) {
-    genWithDirective(oper, ctx)
+  )
+  for (const directives of groupDirective(directiveOps)) {
+    genWithDirective(directives, ctx)
   }
 
   for (const operation of ir.operation) {
@@ -400,4 +401,13 @@ export function genBlockFunctionContent(
   }
 
   pushNewline(`return n${ir.dynamic.id}`)
+}
+
+function groupDirective(ops: WithDirectiveIRNode[]): WithDirectiveIRNode[][] {
+  const directiveMap: Record<number, WithDirectiveIRNode[]> = {}
+  for (const oper of ops) {
+    if (!directiveMap[oper.element]) directiveMap[oper.element] = []
+    directiveMap[oper.element].push(oper)
+  }
+  return Object.values(directiveMap)
 }
