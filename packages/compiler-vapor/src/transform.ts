@@ -21,7 +21,7 @@ import {
   type RootIRNode,
 } from './ir'
 import type {
-  BlockFunctionIRNode,
+  BlockIRNode,
   HackOptions,
   TemplateFactoryIRNode,
   VaporDirectiveNode,
@@ -53,7 +53,7 @@ export interface TransformContext<T extends AllNode = AllNode> {
   parent: TransformContext<ParentNode> | null
   root: TransformContext<RootNode>
   index: number
-  blockFnIR: Omit<BlockFunctionIRNode, 'type'>
+  block: BlockIRNode
   options: Required<
     Omit<TransformOptions, 'filename' | keyof CompilerCompatOptions>
   >
@@ -64,7 +64,7 @@ export interface TransformContext<T extends AllNode = AllNode> {
 
   inVOnce: boolean
 
-  replaceBlockFnIR(ir: TransformContext['blockFnIR']): () => void
+  replaceBlock(ir: TransformContext['block']): () => void
   reference(): number
   increaseId(): number
   pushTemplate(): number
@@ -78,30 +78,30 @@ export interface TransformContext<T extends AllNode = AllNode> {
 
 // TODO use class for better perf
 function createRootContext(
-  rootIR: RootIRNode,
+  root: RootIRNode,
   node: RootNode,
   options: TransformOptions = {},
 ): TransformContext<RootNode> {
   let globalId = 0
-  const { helpers, vaporHelpers } = rootIR
+  const { helpers, vaporHelpers } = root
 
   const ctx: TransformContext<RootNode> = {
     node,
     parent: null,
     index: 0,
     root: null!, // set later
-    blockFnIR: rootIR,
-    replaceBlockFnIR(ir) {
-      const currentIR = this.blockFnIR
+    block: root,
+    replaceBlock(ir) {
+      const currentIR = this.block
       const currentTemplate = this.template
       const currentChildrenTemplate = this.childrenTemplate
       const currentDynamic = this.dynamic
-      this.blockFnIR = ir
+      this.block = ir
       this.dynamic = ir.dynamic
       this.template = ''
       this.childrenTemplate = []
       return () => {
-        this.blockFnIR = currentIR
+        this.block = currentIR
         this.dynamic = currentDynamic
         this.template = currentTemplate
         this.childrenTemplate = currentChildrenTemplate
@@ -134,7 +134,7 @@ function createRootContext(
       },
       options,
     ),
-    dynamic: rootIR.dynamic,
+    dynamic: root.dynamic,
     inVOnce: false,
 
     increaseId: () => globalId++,
@@ -150,13 +150,13 @@ function createRootContext(
       ) {
         return this.registerOperation(...operations)
       }
-      const existing = this.blockFnIR.effect.find((e) =>
+      const existing = this.block.effect.find((e) =>
         isSameExpression(e.expressions, expressions as IRExpression[]),
       )
       if (existing) {
         existing.operations.push(...operations)
       } else {
-        this.blockFnIR.effect.push({
+        this.block.effect.push({
           expressions: expressions as IRExpression[],
           operations,
         })
@@ -178,24 +178,24 @@ function createRootContext(
     childrenTemplate: [],
     pushTemplate() {
       // update template
-      if (this.blockFnIR.templateIndex !== -1) {
-        const templateFactory = rootIR.template[
-          this.blockFnIR.templateIndex
+      if (this.block.templateIndex !== -1) {
+        const templateFactory = root.template[
+          this.block.templateIndex
         ] as TemplateFactoryIRNode
         templateFactory.template = this.template
-        return this.blockFnIR.templateIndex
+        return this.block.templateIndex
       }
 
       // register template
-      rootIR.template.push({
+      root.template.push({
         type: IRNodeTypes.TEMPLATE_FACTORY,
         template: this.template,
         loc: node.loc,
       })
-      return (this.blockFnIR.templateIndex = rootIR.template.length - 1)
+      return (this.block.templateIndex = root.template.length - 1)
     },
     registerOperation(...node) {
-      this.blockFnIR.operation.push(...node)
+      this.block.operation.push(...node)
     },
     // TODO not used yet
     helper(name, vapor = true) {

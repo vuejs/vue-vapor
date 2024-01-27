@@ -23,7 +23,7 @@ export function processIf(
 ) {
   // TODO refactor this
   const parentContext = extend({}, context, {
-    currentScopeIR: context.blockFnIR,
+    currentScopeIR: context.block,
   })
 
   if (dir.name === 'if') {
@@ -35,7 +35,7 @@ export function processIf(
       id,
       loc: dir.loc,
       condition: dir.exp!,
-      truthyBranch: branch,
+      postive: branch,
     }
     parentContext.registerOperation(operation)
     return onExit
@@ -64,7 +64,7 @@ export function createIfBranch(
     operation: [],
   }
 
-  const reset = context.replaceBlockFnIR(branch)
+  const reset = context.replaceBlock(branch)
   context.reference()
   context.pushTemplate()
   const onExit = () => {

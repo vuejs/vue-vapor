@@ -63,8 +63,8 @@ export interface IfIRNode extends BaseIRNode {
   type: IRNodeTypes.IF
   id: number
   condition: IRExpression
-  truthyBranch: BlockFunctionIRNode
-  falsyBranch?: BlockFunctionIRNode
+  postive: BlockFunctionIRNode
+  negative?: BlockFunctionIRNode
 }
 
 export interface TemplateFactoryIRNode extends BaseIRNode {
@@ -179,6 +179,8 @@ export type OperationNode =
   | AppendNodeIRNode
   | WithDirectiveIRNode
   | IfIRNode
+
+export type BlockIRNode = RootIRNode | BlockFunctionIRNode
 
 export interface IRDynamicInfo {
   id: number | null

@@ -365,7 +365,7 @@ function genOperation(oper: OperationNode, context: CodegenContext) {
 }
 
 export function genBlockFunctionContent(
-  ir: Omit<BlockFunctionIRNode, 'type'>,
+  ir: BlockFunctionIRNode | RootIRNode,
   ctx: CodegenContext,
 ) {
   const { pushNewline, withIndent, vaporHelper } = ctx
