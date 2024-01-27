@@ -43,7 +43,6 @@ export type VaporHelper = keyof typeof import('../../runtime-vapor/src')
 
 export interface BlockFunctionIRNode extends BaseIRNode {
   type: IRNodeTypes.BLOCK_FUNCTION
-  source: string
   node: RootNode | TemplateChildNode
   templateIndex: number
   dynamic: IRDynamicInfo
@@ -54,6 +53,7 @@ export interface BlockFunctionIRNode extends BaseIRNode {
 export interface RootIRNode extends Omit<BlockFunctionIRNode, 'type'> {
   type: IRNodeTypes.ROOT
   node: RootNode
+  source: string
   template: Array<TemplateFactoryIRNode | FragmentFactoryIRNode>
 }
 

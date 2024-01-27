@@ -29,8 +29,15 @@ describe('compiler: v-if', () => {
     const { code } = compileWithVIf(
       `<template v-if="ok"><div/>hello<p v-text="msg"/></template>`,
     )
-
     expect(code).matchSnapshot()
+  })
+
+  test('dedupe same template', () => {
+    const { code, ir } = compileWithVIf(
+      `<div v-if="ok">hello</div><div v-if="ok">hello</div>`,
+    )
+    expect(code).matchSnapshot()
+    expect(ir.template).lengthOf(2)
   })
 
   test.todo('v-if with v-once')

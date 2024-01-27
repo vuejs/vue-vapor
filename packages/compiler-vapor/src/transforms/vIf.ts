@@ -57,18 +57,16 @@ export function createIfBranch(
     node.type === NodeTypes.ELEMENT &&
     node.tagType !== ElementTypes.TEMPLATE
   ) {
-    node = extend({} as TemplateNode, node, {
+    node = extend({}, node, {
       tagType: ElementTypes.TEMPLATE,
       children: [node],
-      codegenNode: undefined,
-    })
+    } as TemplateNode)
     context.node = node
   }
 
   const branch: BlockFunctionIRNode = {
     type: IRNodeTypes.BLOCK_FUNCTION,
     loc: dir.loc,
-    source: (node as any)?.source || '',
     node: node,
     templateIndex: -1,
     dynamic: {
@@ -82,12 +80,11 @@ export function createIfBranch(
     operation: [],
   }
 
-  const reset = context.replaceBlock(branch)
+  const reset = context.enterBlock(branch)
   context.reference()
-  context.pushTemplate()
   const onExit = () => {
     context.template += context.childrenTemplate.join('')
-    context.pushTemplate()
+    context.registerTemplate()
     reset()
   }
   return [branch, onExit]

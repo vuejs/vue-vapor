@@ -22,6 +22,7 @@ import {
 } from './ir'
 import type {
   BlockIRNode,
+  FragmentFactoryIRNode,
   HackOptions,
   TemplateFactoryIRNode,
   VaporDirectiveNode,
@@ -64,10 +65,10 @@ export interface TransformContext<T extends AllNode = AllNode> {
 
   inVOnce: boolean
 
-  replaceBlock(ir: TransformContext['block']): () => void
+  enterBlock(ir: TransformContext['block']): () => void
   reference(): number
   increaseId(): number
-  pushTemplate(): number
+  registerTemplate(): number
   registerEffect(
     expressions: Array<IRExpression | null | undefined>,
     operation: OperationNode[],
@@ -113,20 +114,18 @@ function createRootContext(
     index: 0,
     root: null!, // set later
     block: root,
-    replaceBlock(ir) {
-      const currentIR = this.block
-      const currentTemplate = this.template
-      const currentChildrenTemplate = this.childrenTemplate
-      const currentDynamic = this.dynamic
+    enterBlock(ir) {
+      const { block, template, dynamic, childrenTemplate } = this
       this.block = ir
       this.dynamic = ir.dynamic
       this.template = ''
       this.childrenTemplate = []
       return () => {
-        this.block = currentIR
-        this.dynamic = currentDynamic
-        this.template = currentTemplate
-        this.childrenTemplate = currentChildrenTemplate
+        // exit
+        this.block = block
+        this.template = template
+        this.dynamic = dynamic
+        this.childrenTemplate = childrenTemplate
       }
     },
     options: extend({}, defaultOptions, options),
@@ -172,22 +171,31 @@ function createRootContext(
 
     template: '',
     childrenTemplate: [],
-    pushTemplate() {
-      // update template
-      if (this.block.templateIndex !== -1) {
-        const templateFactory = root.template[
-          this.block.templateIndex
-        ] as TemplateFactoryIRNode
-        templateFactory.template = this.template
-        return this.block.templateIndex
-      }
+    registerTemplate() {
+      let templateNode: TemplateFactoryIRNode | FragmentFactoryIRNode
 
-      // register template
-      root.template.push({
-        type: IRNodeTypes.TEMPLATE_FACTORY,
-        template: this.template,
-        loc: node.loc,
-      })
+      if (this.template) {
+        const idx = root.template.findIndex(
+          (t) =>
+            t.type === IRNodeTypes.TEMPLATE_FACTORY &&
+            t.template === this.template,
+        )
+        if (idx !== -1) {
+          return (this.block.templateIndex = idx)
+        }
+
+        templateNode = {
+          type: IRNodeTypes.TEMPLATE_FACTORY,
+          template: this.template,
+          loc: node.loc,
+        }
+      } else {
+        templateNode = {
+          type: IRNodeTypes.FRAGMENT_FACTORY,
+          loc: node.loc,
+        }
+      }
+      root.template.push(templateNode)
       return (this.block.templateIndex = root.template.length - 1)
     },
     registerOperation(...node) {
@@ -247,21 +255,8 @@ export function transform(
 
   const ctx = createRootContext(ir, root, options)
 
-  if (ctx.node.type === NodeTypes.ROOT) {
-    ctx.pushTemplate()
-  }
   transformNode(ctx)
-  if (ctx.node.type === NodeTypes.ROOT) {
-    ctx.pushTemplate()
-  }
-  ir.template.forEach((template, index) => {
-    if ('template' in template && template.template === '') {
-      ir.template[index] = {
-        type: IRNodeTypes.FRAGMENT_FACTORY,
-        loc: root.loc,
-      }
-    }
-  })
+  ctx.registerTemplate()
 
   return ir
 }
