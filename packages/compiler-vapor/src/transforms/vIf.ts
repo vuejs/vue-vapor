@@ -35,7 +35,7 @@ export function processIf(
       id,
       loc: dir.loc,
       condition: dir.exp!,
-      postive: branch,
+      positive: branch,
     }
     parentContext.registerOperation(operation)
     return onExit

@@ -4,7 +4,7 @@ import { genExpression } from './expression'
 
 export function genIf(oper: IfIRNode, context: CodegenContext) {
   const { pushFnCall, vaporHelper, pushNewline, push, withIndent } = context
-  const { condition, postive, negative } = oper
+  const { condition, positive, negative } = oper
 
   pushNewline(`const n${oper.id} = `)
   pushFnCall(
@@ -14,7 +14,7 @@ export function genIf(oper: IfIRNode, context: CodegenContext) {
       genExpression(condition, context)
       push(')')
     },
-    () => genBlockFunction(postive),
+    () => genBlockFunction(positive),
     !!negative && (() => genBlockFunction(negative!)),
   )
 

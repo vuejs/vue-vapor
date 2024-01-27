@@ -61,7 +61,7 @@ export interface IfIRNode extends BaseIRNode {
   type: IRNodeTypes.IF
   id: number
   condition: IRExpression
-  postive: BlockFunctionIRNode
+  positive: BlockFunctionIRNode
   negative?: BlockFunctionIRNode
 }
 
