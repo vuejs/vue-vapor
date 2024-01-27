@@ -1,7 +1,7 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`compiler: v-if > basic v-if 1`] = `
-"import { fragment as _fragment, template as _template, createIf as _createIf, append as _append } from 'vue/vapor';
+"import { fragment as _fragment, template as _template, createIf as _createIf, children as _children, renderEffect as _renderEffect, setText as _setText, append as _append } from 'vue/vapor';
 
 export function render(_ctx) {
   const t0 = _fragment()
@@ -9,6 +9,30 @@ export function render(_ctx) {
   const n0 = t0()
   const n1 = _createIf(() => (_ctx.ok), () => {
     const n2 = t1()
+    const { 0: [n3],} = _children(n2)
+    _renderEffect(() => {
+      _setText(n3, _ctx.msg)
+    })
+    return n2
+  })
+  _append(n0, n1)
+  return n0
+}"
+`;
+
+exports[`compiler: v-if > template v-if 1`] = `
+"import { fragment as _fragment, template as _template, createIf as _createIf, children as _children, renderEffect as _renderEffect, setText as _setText, append as _append } from 'vue/vapor';
+
+export function render(_ctx) {
+  const t0 = _fragment()
+  const t1 = _template("<div></div>hello<p></p>")
+  const n0 = t0()
+  const n1 = _createIf(() => (_ctx.ok), () => {
+    const n2 = t1()
+    const { 2: [n3],} = _children(n2)
+    _renderEffect(() => {
+      _setText(n3, _ctx.msg)
+    })
     return n2
   })
   _append(n0, n1)
