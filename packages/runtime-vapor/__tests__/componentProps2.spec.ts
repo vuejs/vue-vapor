@@ -1,8 +1,10 @@
-import { defineComponent } from 'vue'
+import { defineComponent, watchEffect } from 'vue'
 
 import type { FunctionalComponent } from '../src/component'
 import { getCurrentInstance } from '../src/component'
 import { render } from '../src/render'
+import { template } from '../src/template'
+import { children, setText } from '../src/dom'
 
 let host: HTMLElement
 const initHost = () => {
@@ -278,4 +280,72 @@ describe('component props (vapor)', () => {
     expect(props.bar).toEqual({ b: 4 })
     // expect(defaultFn).toHaveBeenCalledTimes(1) // FIXME: failed
   })
+
+  test('using inject in default value factory', () => {
+    // FIXME: is it necessary?
+  })
+
+  test('props type support BigInt', () => {
+    const Comp = {
+      props: {
+        foo: BigInt,
+      },
+      render() {
+        const instance = getCurrentInstance()!
+        const t0 = template('<div></div>')
+        const n0 = t0()
+        const {
+          0: [n1],
+        } = children(n0)
+        watchEffect(() => {
+          setText(n1, instance.props.foo)
+        })
+        return n0
+      },
+    }
+
+    render(
+      Comp as any,
+      {
+        get foo() {
+          return (
+            BigInt(BigInt(100000111)) + BigInt(2000000000) * BigInt(30000000)
+          )
+        },
+      },
+      '#host',
+    )
+    expect(host.innerHTML).toBe('<div>60000000100000111</div>')
+  })
+
+  // #3288
+  test('declared prop key should be present even if not passed', async () => {
+    // TODO:
+  })
+
+  // #3371
+  test(`avoid double-setting props when casting`, async () => {
+    // TODO:
+  })
+
+  test('support null in required + multiple-type declarations', () => {
+    // TODO:
+  })
+
+  // #5016
+  test('handling attr with undefined value', () => {
+    // TODO: attrs
+  })
+
+  // #691ef
+  test('should not mutate original props long-form definition object', () => {
+    // TODO:
+  })
+
+  // NOTE: not supported
+  // optimized props update
+  // mixins
+  // validator
+  // warn
+  // caching
 })
