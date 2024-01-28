@@ -205,7 +205,56 @@ describe('compiler: v-if', () => {
       },
     ])
   })
-  test.todo('v-if + v-else-if + v-else')
+  test('v-if + v-else-if + v-else', () => {
+    const { code, ir } = compileWithVIf(
+      `<div v-if="ok"/><p v-else-if="orNot"/><template v-else>fine</template>`,
+    )
+    expect(code).matchSnapshot()
+    expect(ir.template).lengthOf(4)
+    expect(ir.template).toMatchObject([
+      {
+        template: '<div></div>',
+        type: IRNodeTypes.TEMPLATE_FACTORY,
+      },
+      {
+        template: '<p></p>',
+        type: IRNodeTypes.TEMPLATE_FACTORY,
+      },
+      {
+        template: 'fine',
+        type: IRNodeTypes.TEMPLATE_FACTORY,
+      },
+      { type: IRNodeTypes.FRAGMENT_FACTORY },
+    ])
+
+    expect(ir.operation).toMatchObject([
+      {
+        type: IRNodeTypes.IF,
+        id: 1,
+        positive: {
+          type: IRNodeTypes.BLOCK_FUNCTION,
+          templateIndex: 0,
+        },
+        negative: {
+          type: IRNodeTypes.IF,
+          positive: {
+            type: IRNodeTypes.BLOCK_FUNCTION,
+            templateIndex: 1,
+          },
+          negative: {
+            type: IRNodeTypes.BLOCK_FUNCTION,
+            templateIndex: 2,
+          },
+        },
+      },
+      {
+        type: IRNodeTypes.APPEND_NODE,
+        elements: [1],
+        parent: 0,
+      },
+    ])
+  })
+
   test.todo('comment between branches')
   describe.todo('errors')
   describe.todo('codegen')

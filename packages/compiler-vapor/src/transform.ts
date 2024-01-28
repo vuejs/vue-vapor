@@ -222,29 +222,18 @@ function createRootContext(
       if (!node || (node as unknown) === this.node) {
         // TODO remove current node
         // this.node = null
+        this.onNodeRemoved()
       } else {
         // sibling node removed
         if (this.index > removalIndex) {
           this.index--
+          this.onNodeRemoved()
         }
       }
 
-      // Note: will not remove effects and operations
-      this.childrenTemplate.splice(removalIndex, 1)
+      // Note: will not remove dynamic, effects and operations
+      this.parent!.childrenTemplate.splice(removalIndex, 1)
       this.parent!.node.children.splice(removalIndex, 1)
-      delete this.dynamic.children[removalIndex]
-
-      const dynamicChildrenkeys = Object.keys(this.dynamic.children).map(Number)
-      if (dynamicChildrenkeys.some((key) => key > removalIndex)) {
-        this.dynamic.children = dynamicChildrenkeys.reduce((res, index) => {
-          if (index > removalIndex) {
-            res[index - 1] = this.dynamic.children[index]
-          } else {
-            res[index] = this.dynamic.children[index]
-          }
-          return res
-        }, {} as any)
-      }
     },
     onNodeRemoved: NOOP,
   }
