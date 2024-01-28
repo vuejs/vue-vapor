@@ -187,7 +187,7 @@ function packTemplateNode(node: ElementNode) {
     children: [
       extend({}, node, {
         props: node.props.filter(
-          (p) => p.type !== NodeTypes.DIRECTIVE && p.name !== 'if',
+          p => p.type !== NodeTypes.DIRECTIVE && p.name !== 'if',
         ),
       } as TemplateChildNode),
     ],
