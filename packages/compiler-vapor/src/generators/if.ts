@@ -18,7 +18,7 @@ export function genIf(
       negativeArg = () => genBlockFunction(negative, context)
     } else {
       negativeArg = () => {
-        push('() =>')
+        push('() => ')
         genIf(negative!, context, true)
       }
     }
