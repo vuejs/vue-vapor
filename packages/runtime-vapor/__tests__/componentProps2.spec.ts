@@ -1,3 +1,5 @@
+// NOTE: This test is implemented based on the case of `runtime-core/__test__/componentProps.spec.ts`.
+
 import { defineComponent, watchEffect } from 'vue'
 
 import type { FunctionalComponent } from '../src/component'
