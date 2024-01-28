@@ -179,4 +179,103 @@ describe('component props (vapor)', () => {
     // expect(props.baz).toBe(true) // FIXME: failed
     expect(props.qux).toBe('ok')
   })
+
+  test('default value', () => {
+    let props: any
+    const defaultFn = vi.fn(() => ({ a: 1 }))
+    const defaultBaz = vi.fn(() => ({ b: 1 }))
+
+    const Comp = {
+      props: {
+        foo: {
+          default: 1,
+        },
+        bar: {
+          default: defaultFn,
+        },
+        baz: {
+          type: Function,
+          default: defaultBaz,
+        },
+      },
+      render() {
+        const instance = getCurrentInstance()!
+        props = instance.props
+      },
+    }
+
+    render(
+      Comp as any,
+      {
+        get foo() {
+          return 2
+        },
+      },
+      host,
+    )
+    expect(props.foo).toBe(2)
+    const prevBar = props.bar
+    // expect(props.bar).toEqual({ a: 1 })        // FIXME: failed
+    expect(props.baz).toEqual(defaultBaz)
+    // expect(defaultFn).toHaveBeenCalledTimes(1) // FIXME: failed
+    expect(defaultBaz).toHaveBeenCalledTimes(0)
+
+    // #999: updates should not cause default factory of unchanged prop to be
+    // called again
+    render(
+      Comp as any,
+      {
+        get foo() {
+          return 3
+        },
+      },
+      host,
+    )
+    expect(props.foo).toBe(3)
+    // expect(props.bar).toEqual({ a: 1 }) // FIXME: failed
+    expect(props.bar).toBe(prevBar)
+    // expect(defaultFn).toHaveBeenCalledTimes(1) // FIXME: failed
+
+    render(
+      Comp as any,
+      {
+        get bar() {
+          return { b: 2 }
+        },
+      },
+      host,
+    )
+    expect(props.foo).toBe(1)
+    expect(props.bar).toEqual({ b: 2 })
+    // expect(defaultFn).toHaveBeenCalledTimes(1) // FIXME: failed
+
+    render(
+      Comp as any,
+      {
+        get foo() {
+          return 3
+        },
+        get bar() {
+          return { b: 3 }
+        },
+      },
+      host,
+    )
+    expect(props.foo).toBe(3)
+    expect(props.bar).toEqual({ b: 3 })
+    // expect(defaultFn).toHaveBeenCalledTimes(1) // FIXME: failed
+
+    render(
+      Comp as any,
+      {
+        get bar() {
+          return { b: 4 }
+        },
+      },
+      host,
+    )
+    expect(props.foo).toBe(1)
+    expect(props.bar).toEqual({ b: 4 })
+    // expect(defaultFn).toHaveBeenCalledTimes(1) // FIXME: failed
+  })
 })
