@@ -59,3 +59,19 @@ export function render(_ctx) {
   return n0
 }"
 `;
+
+exports[`compiler: v-if > v-if + v-else 1`] = `
+"import { template as _template, createIf as _createIf, prepend as _prepend } from 'vue/vapor';
+
+export function render(_ctx) {
+  const t0 = _template("<div></div>")
+  const t1 = _template("<p></p>")
+  const n0 = t1()
+  const n1 = _createIf(() => (_ctx.ok), () => {
+    const n2 = t0()
+    return n2
+  })
+  _prepend(n0, n1)
+  return n0
+}"
+`;
