@@ -147,6 +147,11 @@ describe('compiler: v-if', () => {
       {
         type: IRNodeTypes.IF,
         id: 1,
+        condition: {
+          type: NodeTypes.SIMPLE_EXPRESSION,
+          content: 'ok',
+          isStatic: false,
+        },
         positive: {
           type: IRNodeTypes.BLOCK_FUNCTION,
           templateIndex: 0,
@@ -186,12 +191,22 @@ describe('compiler: v-if', () => {
       {
         type: IRNodeTypes.IF,
         id: 1,
+        condition: {
+          type: NodeTypes.SIMPLE_EXPRESSION,
+          content: 'ok',
+          isStatic: false,
+        },
         positive: {
           type: IRNodeTypes.BLOCK_FUNCTION,
           templateIndex: 0,
         },
         negative: {
           type: IRNodeTypes.IF,
+          condition: {
+            type: NodeTypes.SIMPLE_EXPRESSION,
+            content: 'orNot',
+            isStatic: false,
+          },
           positive: {
             type: IRNodeTypes.BLOCK_FUNCTION,
             templateIndex: 1,
@@ -255,7 +270,33 @@ describe('compiler: v-if', () => {
     ])
   })
 
-  test.todo('comment between branches')
+  test('comment between branches', () => {
+    const { code, ir } = compileWithVIf(`
+      <div v-if="ok"/>
+      <!--foo-->
+      <p v-else-if="orNot"/>
+      <!--bar-->
+      <template v-else>fine</template>
+    `)
+    expect(code).matchSnapshot()
+    expect(ir.template).lengthOf(4)
+    expect(ir.template).toMatchObject([
+      {
+        template: '<div></div>',
+        type: IRNodeTypes.TEMPLATE_FACTORY,
+      },
+      {
+        template: '<!--foo--><p></p>',
+        type: IRNodeTypes.TEMPLATE_FACTORY,
+      },
+      {
+        template: '<!--bar-->fine',
+        type: IRNodeTypes.TEMPLATE_FACTORY,
+      },
+      { type: IRNodeTypes.FRAGMENT_FACTORY },
+    ])
+  })
+
   describe.todo('errors')
   describe.todo('codegen')
   test.todo('v-on with v-if')
