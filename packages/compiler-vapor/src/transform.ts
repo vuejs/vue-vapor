@@ -58,7 +58,6 @@ export interface TransformContext<T extends AllNode = AllNode> {
   options: Required<
     Omit<TransformOptions, 'filename' | keyof CompilerCompatOptions>
   >
-  ignore: Set<AllNode>
 
   template: string
   childrenTemplate: (string | null)[]
@@ -115,7 +114,6 @@ function createRootContext(
     index: 0,
     root: null!, // set later
     block: root,
-    ignore: new Set(),
     enterBlock(ir) {
       const { block, template, dynamic, childrenTemplate } = this
       this.block = ir
