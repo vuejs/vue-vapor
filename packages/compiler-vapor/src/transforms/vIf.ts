@@ -58,7 +58,7 @@ export function processIf(
     // check the adjacent v-if
     const parent = context.parent!
     const siblings = parent.node.children
-    const siblingTemplates = parent.childrenTemplate
+    const templates = parent.childrenTemplate
 
     const comments = []
     let sibling: TemplateChildNode | undefined
@@ -69,13 +69,13 @@ export function processIf(
       if (sibling) {
         if (sibling.type === NodeTypes.COMMENT) {
           __DEV__ && comments.unshift(sibling)
-          siblingTemplates[i] = null
+          templates[i] = null
           continue
         } else if (
           sibling.type === NodeTypes.TEXT &&
           !sibling.content.trim().length
         ) {
-          siblingTemplates[i] = null
+          templates[i] = null
           continue
         }
       }
@@ -115,9 +115,7 @@ export function processIf(
 
     // TODO ignore comments if the v-if is direct child of <transition> (PR #3622)
     if (__DEV__ && comments.length) {
-      if (node.tagType !== ElementTypes.TEMPLATE) {
-        node = packTemplateNode(node)
-      }
+      node = wrapTemplate(node)
       context.node = node = extend({}, node, {
         children: [...comments, ...node.children],
       })
@@ -142,15 +140,10 @@ export function processIf(
 }
 
 export function createIfBranch(
-  node: RootNode | TemplateChildNode,
+  node: ElementNode,
   context: TransformContext<RootNode | TemplateChildNode>,
 ): [BlockFunctionIRNode, () => void] {
-  if (
-    node.type === NodeTypes.ELEMENT &&
-    node.tagType !== ElementTypes.TEMPLATE
-  ) {
-    context.node = node = packTemplateNode(node)
-  }
+  context.node = node = wrapTemplate(node)
 
   const branch: BlockFunctionIRNode = {
     type: IRNodeTypes.BLOCK_FUNCTION,
@@ -178,7 +171,10 @@ export function createIfBranch(
   return [branch, onExit]
 }
 
-function packTemplateNode(node: ElementNode) {
+function wrapTemplate(node: ElementNode): TemplateNode {
+  if (node.tagType === ElementTypes.TEMPLATE) {
+    return node
+  }
   return extend({}, node, {
     type: NodeTypes.ELEMENT,
     tag: 'template',
