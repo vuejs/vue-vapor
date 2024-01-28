@@ -58,9 +58,10 @@ export interface TransformContext<T extends AllNode = AllNode> {
   options: Required<
     Omit<TransformOptions, 'filename' | keyof CompilerCompatOptions>
   >
+  ignore: Set<AllNode>
 
   template: string
-  childrenTemplate: string[]
+  childrenTemplate: (string | null)[]
   dynamic: IRDynamicInfo
 
   inVOnce: boolean
@@ -74,8 +75,6 @@ export interface TransformContext<T extends AllNode = AllNode> {
     operation: OperationNode[],
   ): void
   registerOperation(...operations: OperationNode[]): void
-  removeNode(node?: TemplateChildNode): void
-  onNodeRemoved(): void
 }
 
 const defaultOptions = {
@@ -116,6 +115,7 @@ function createRootContext(
     index: 0,
     root: null!, // set later
     block: root,
+    ignore: new Set(),
     enterBlock(ir) {
       const { block, template, dynamic, childrenTemplate } = this
       this.block = ir
@@ -204,38 +204,6 @@ function createRootContext(
     registerOperation(...node) {
       this.block.operation.push(...node)
     },
-
-    removeNode(node) {
-      if (__DEV__ && !this.parent?.node) {
-        throw new Error(`Cannot remove root node.`)
-      }
-      const list = this.parent!.node.children
-      const removalIndex = node
-        ? list.indexOf(node)
-        : this.node
-          ? this.index
-          : -1
-      /* istanbul ignore if */
-      if (__DEV__ && removalIndex < 0) {
-        throw new Error(`node being removed is not a child of current parent`)
-      }
-      if (!node || (node as unknown) === this.node) {
-        // TODO remove current node
-        // this.node = null
-        this.onNodeRemoved()
-      } else {
-        // sibling node removed
-        if (this.index > removalIndex) {
-          this.index--
-          this.onNodeRemoved()
-        }
-      }
-
-      // Note: will not remove dynamic, effects and operations
-      this.parent!.childrenTemplate.splice(removalIndex, 1)
-      this.parent!.node.children.splice(removalIndex, 1)
-    },
-    onNodeRemoved: NOOP,
   }
   ctx.root = ctx
   ctx.reference()
@@ -345,19 +313,15 @@ function transformNode(
   }
 
   if (context.node.type === NodeTypes.ROOT)
-    context.template += context.childrenTemplate.join('')
+    context.template += context.childrenTemplate.filter(Boolean).join('')
 }
 
 function transformChildren(ctx: TransformContext<RootNode | ElementNode>) {
   const { children } = ctx.node
   let i = 0
-  const nodeRemoved = () => {
-    i--
-  }
   for (; i < children.length; i++) {
     const child = children[i]
     const childContext = createContext(child, ctx, i)
-    childContext.onNodeRemoved = nodeRemoved
     transformNode(childContext)
     ctx.childrenTemplate.push(childContext.template)
     if (

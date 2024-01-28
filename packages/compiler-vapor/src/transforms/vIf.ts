@@ -56,43 +56,45 @@ export function processIf(
     }
   } else {
     // check the adjacent v-if
-    const siblings = context.parent!.node.children
+    const parent = context.parent!
+    const siblings = parent.node.children
+    const siblingTemplates = parent.childrenTemplate
+
     const comments = []
     let sibling: TemplateChildNode | undefined
     let i = siblings.indexOf(node)
     while (i-- >= -1) {
       sibling = siblings[i]
 
-      if (sibling && sibling.type === NodeTypes.COMMENT) {
-        context.removeNode(sibling)
-        __DEV__ && comments.unshift(sibling)
-        continue
+      if (sibling) {
+        if (sibling.type === NodeTypes.COMMENT) {
+          __DEV__ && comments.unshift(sibling)
+          siblingTemplates[i] = null
+          continue
+        } else if (
+          sibling.type === NodeTypes.TEXT &&
+          !sibling.content.trim().length
+        ) {
+          siblingTemplates[i] = null
+          continue
+        }
       }
-
-      if (
-        sibling &&
-        sibling.type === NodeTypes.TEXT &&
-        !sibling.content.trim().length
-      ) {
-        context.removeNode(sibling)
-        continue
-      }
-
       break
     }
 
     const { operation } = context.block
-    let rootIfNode: OperationNode
+    let lastIfNode: OperationNode
     if (
       // check if v-if is the sibling node
       !sibling ||
       sibling.type !== NodeTypes.ELEMENT ||
       !sibling.props.some(
-        ({ type, name }) => type === NodeTypes.DIRECTIVE && name === 'if',
+        ({ type, name }) =>
+          type === NodeTypes.DIRECTIVE && ['if', 'else-if'].includes(name),
       ) ||
       // check if IFNode is the last operation and get the root IFNode
-      !(rootIfNode = operation[operation.length - 1]) ||
-      rootIfNode.type !== IRNodeTypes.IF
+      !(lastIfNode = operation[operation.length - 1]) ||
+      lastIfNode.type !== IRNodeTypes.IF
     ) {
       context.options.onError(
         createCompilerError(ErrorCodes.X_V_ELSE_NO_ADJACENT_IF, node.loc),
@@ -100,8 +102,7 @@ export function processIf(
       return
     }
 
-    let lastIfNode = rootIfNode
-    while (lastIfNode.negative?.type === IRNodeTypes.IF) {
+    while (lastIfNode.negative && lastIfNode.negative.type === IRNodeTypes.IF) {
       lastIfNode = lastIfNode.negative
     }
 
@@ -136,10 +137,7 @@ export function processIf(
       }
     }
 
-    return () => {
-      onExit()
-      context.removeNode()
-    }
+    return () => onExit()
   }
 }
 

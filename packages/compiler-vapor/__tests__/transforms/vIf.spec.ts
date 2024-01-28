@@ -138,11 +138,9 @@ describe('compiler: v-if', () => {
       },
     ])
 
-    expect(ir.effect).toEqual([])
-
     expect(vaporHelpers).contains('createIf')
-    expect(helpers.size).toBe(0)
-
+    expect(ir.effect).lengthOf(0)
+    expect(helpers).lengthOf(0)
     expect(ir.operation).toMatchObject([
       {
         type: IRNodeTypes.IF,
@@ -162,7 +160,7 @@ describe('compiler: v-if', () => {
         },
       },
       {
-        type: IRNodeTypes.APPEND_NODE,
+        type: IRNodeTypes.PREPEND_NODE,
         elements: [1],
         parent: 0,
       },
@@ -214,12 +212,13 @@ describe('compiler: v-if', () => {
         },
       },
       {
-        type: IRNodeTypes.APPEND_NODE,
+        type: IRNodeTypes.PREPEND_NODE,
         elements: [1],
         parent: 0,
       },
     ])
   })
+
   test('v-if + v-else-if + v-else', () => {
     const { code, ir } = compileWithVIf(
       `<div v-if="ok"/><p v-else-if="orNot"/><template v-else>fine</template>`,
@@ -263,7 +262,7 @@ describe('compiler: v-if', () => {
         },
       },
       {
-        type: IRNodeTypes.APPEND_NODE,
+        type: IRNodeTypes.PREPEND_NODE,
         elements: [1],
         parent: 0,
       },
