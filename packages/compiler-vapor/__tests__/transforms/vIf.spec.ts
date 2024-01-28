@@ -118,7 +118,7 @@ describe('compiler: v-if', () => {
   test.todo('v-if with v-once')
   test.todo('component v-if')
 
-  test.fails('v-if + v-else', () => {
+  test('v-if + v-else', () => {
     const { code, ir, vaporHelpers, helpers } = compileWithVIf(
       `<div v-if="ok"/><p v-else/>`,
     )
@@ -155,6 +155,11 @@ describe('compiler: v-if', () => {
           type: IRNodeTypes.BLOCK_FUNCTION,
           templateIndex: 1,
         },
+      },
+      {
+        type: IRNodeTypes.APPEND_NODE,
+        elements: [1],
+        parent: 0,
       },
     ])
   })

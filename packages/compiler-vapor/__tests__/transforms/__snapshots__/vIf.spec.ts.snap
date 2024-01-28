@@ -61,17 +61,21 @@ export function render(_ctx) {
 `;
 
 exports[`compiler: v-if > v-if + v-else 1`] = `
-"import { template as _template, createIf as _createIf, prepend as _prepend } from 'vue/vapor';
+"import { template as _template, fragment as _fragment, createIf as _createIf, append as _append } from 'vue/vapor';
 
 export function render(_ctx) {
   const t0 = _template("<div></div>")
   const t1 = _template("<p></p>")
-  const n0 = t1()
+  const t2 = _fragment()
+  const n0 = t2()
   const n1 = _createIf(() => (_ctx.ok), () => {
     const n2 = t0()
     return n2
+  }, () => {
+    const n3 = t1()
+    return n3
   })
-  _prepend(n0, n1)
+  _append(n0, n1)
   return n0
 }"
 `;

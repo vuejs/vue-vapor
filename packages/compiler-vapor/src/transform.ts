@@ -42,9 +42,9 @@ export type DirectiveTransform = (
 // A structural directive transform is technically also a NodeTransform;
 // Only v-if and v-for fall into this category.
 export type StructuralDirectiveTransform = (
-  node: RootNode | TemplateChildNode,
+  node: ElementNode,
   dir: VaporDirectiveNode,
-  context: TransformContext<RootNode | TemplateChildNode>,
+  context: TransformContext<ElementNode>,
 ) => void | (() => void)
 
 export type TransformOptions = HackOptions<BaseTransformOptions>
@@ -74,6 +74,8 @@ export interface TransformContext<T extends AllNode = AllNode> {
     operation: OperationNode[],
   ): void
   registerOperation(...operations: OperationNode[]): void
+  removeNode(node?: TemplateChildNode): void
+  onNodeRemoved(): void
 }
 
 const defaultOptions = {
@@ -202,6 +204,49 @@ function createRootContext(
     registerOperation(...node) {
       this.block.operation.push(...node)
     },
+
+    removeNode(node) {
+      if (__DEV__ && !this.parent?.node) {
+        throw new Error(`Cannot remove root node.`)
+      }
+      const list = this.parent!.node.children
+      const removalIndex = node
+        ? list.indexOf(node)
+        : this.node
+          ? this.index
+          : -1
+      /* istanbul ignore if */
+      if (__DEV__ && removalIndex < 0) {
+        throw new Error(`node being removed is not a child of current parent`)
+      }
+      if (!node || (node as unknown) === this.node) {
+        // TODO remove current node
+        // this.node = null
+      } else {
+        // sibling node removed
+        if (this.index > removalIndex) {
+          this.index--
+        }
+      }
+
+      // Note: will not remove effects and operations
+      this.childrenTemplate.splice(removalIndex, 1)
+      this.parent!.node.children.splice(removalIndex, 1)
+      delete this.dynamic.children[removalIndex]
+
+      const dynamicChildrenkeys = Object.keys(this.dynamic.children).map(Number)
+      if (dynamicChildrenkeys.some((key) => key > removalIndex)) {
+        this.dynamic.children = dynamicChildrenkeys.reduce((res, index) => {
+          if (index > removalIndex) {
+            res[index - 1] = this.dynamic.children[index]
+          } else {
+            res[index] = this.dynamic.children[index]
+          }
+          return res
+        }, {} as any)
+      }
+    },
+    onNodeRemoved: NOOP,
   }
   ctx.root = ctx
   ctx.reference()
@@ -317,12 +362,13 @@ function transformNode(
 function transformChildren(ctx: TransformContext<RootNode | ElementNode>) {
   const { children } = ctx.node
   let i = 0
-  // const nodeRemoved = () => {
-  //   i--
-  // }
+  const nodeRemoved = () => {
+    i--
+  }
   for (; i < children.length; i++) {
     const child = children[i]
     const childContext = createContext(child, ctx, i)
+    childContext.onNodeRemoved = nodeRemoved
     transformNode(childContext)
     ctx.childrenTemplate.push(childContext.template)
     if (
@@ -405,7 +451,11 @@ export function createStructuralDirectiveTransform(
       const exitFns = []
       for (const prop of props) {
         if (prop.type === NodeTypes.DIRECTIVE && matches(prop.name)) {
-          const onExit = fn(node, prop as VaporDirectiveNode, context)
+          const onExit = fn(
+            node,
+            prop as VaporDirectiveNode,
+            context as TransformContext<ElementNode>,
+          )
           if (onExit) exitFns.push(onExit)
         }
       }

@@ -1,4 +1,5 @@
 import {
+  type ElementNode,
   ElementTypes,
   ErrorCodes,
   NodeTypes,
@@ -15,6 +16,7 @@ import {
 import {
   type BlockFunctionIRNode,
   IRNodeTypes,
+  type OperationNode,
   type VaporDirectiveNode,
 } from '../ir'
 import { extend } from '@vue/shared'
@@ -25,7 +27,7 @@ export const transformVIf = createStructuralDirectiveTransform(
 )
 
 export function processIf(
-  node: RootNode | TemplateChildNode,
+  node: ElementNode,
   dir: VaporDirectiveNode,
   context: TransformContext<RootNode | TemplateChildNode>,
 ) {
@@ -40,7 +42,7 @@ export function processIf(
   if (dir.name === 'if') {
     const id = context.reference()
     context.dynamic.ghost = true
-    const [branch, onExit] = createIfBranch(node, dir, context)
+    const [branch, onExit] = createIfBranch(node, context)
 
     return () => {
       onExit()
@@ -52,37 +54,109 @@ export function processIf(
         positive: branch,
       })
     }
+  } else {
+    // check the adjacent v-if
+    const siblings = context.parent!.node.children
+    const comments = []
+    let sibling: TemplateChildNode | undefined
+    let i = siblings.indexOf(node)
+    while (i-- >= -1) {
+      sibling = siblings[i]
+
+      if (sibling && sibling.type === NodeTypes.COMMENT) {
+        context.removeNode(sibling)
+        __DEV__ && comments.unshift(sibling)
+        continue
+      }
+
+      if (
+        sibling &&
+        sibling.type === NodeTypes.TEXT &&
+        !sibling.content.trim().length
+      ) {
+        context.removeNode(sibling)
+        continue
+      }
+
+      break
+    }
+
+    const { operation } = context.block
+    let rootIfNode: OperationNode
+    if (
+      // check if v-if is the sibling node
+      !sibling ||
+      sibling.type !== NodeTypes.ELEMENT ||
+      !sibling.props.some(
+        ({ type, name }) => type === NodeTypes.DIRECTIVE && name === 'if',
+      ) ||
+      // check if IFNode is the last operation and get the root IFNode
+      !(rootIfNode = operation[operation.length - 1]) ||
+      rootIfNode.type !== IRNodeTypes.IF
+    ) {
+      context.options.onError(
+        createCompilerError(ErrorCodes.X_V_ELSE_NO_ADJACENT_IF, node.loc),
+      )
+      return
+    }
+
+    let lastIfNode = rootIfNode
+    while (lastIfNode.negative?.type === IRNodeTypes.IF) {
+      lastIfNode = lastIfNode.negative
+    }
+
+    // Check if v-else was followed by v-else-if
+    if (dir.name === 'else-if' && lastIfNode.negative) {
+      context.options.onError(
+        createCompilerError(ErrorCodes.X_V_ELSE_NO_ADJACENT_IF, node.loc),
+      )
+    }
+
+    // TODO ignore comments if the v-if is direct child of <transition> (PR #3622)
+    if (__DEV__ && comments.length) {
+      if (node.tagType !== ElementTypes.TEMPLATE) {
+        node = packTemplateNode(node)
+      }
+      context.node = node = extend({}, node, {
+        children: [...comments, ...node.children],
+      })
+    }
+
+    const [branch, onExit] = createIfBranch(node, context)
+
+    if (dir.name === 'else') {
+      lastIfNode.negative = branch
+    } else {
+      lastIfNode.negative = {
+        type: IRNodeTypes.IF,
+        id: -1,
+        loc: dir.loc,
+        condition: dir.exp!,
+        positive: branch,
+      }
+    }
+
+    return () => {
+      onExit()
+      context.removeNode()
+    }
   }
 }
 
 export function createIfBranch(
   node: RootNode | TemplateChildNode,
-  dir: VaporDirectiveNode,
   context: TransformContext<RootNode | TemplateChildNode>,
 ): [BlockFunctionIRNode, () => void] {
   if (
     node.type === NodeTypes.ELEMENT &&
     node.tagType !== ElementTypes.TEMPLATE
   ) {
-    node = extend({}, node, {
-      type: NodeTypes.ELEMENT,
-      tag: 'template',
-      props: [],
-      tagType: ElementTypes.TEMPLATE,
-      children: [
-        extend({}, node, {
-          props: node.props.filter(
-            (p) => p.type !== NodeTypes.DIRECTIVE && p.name !== 'if',
-          ),
-        } as TemplateChildNode),
-      ],
-    } as Partial<TemplateNode>)
-    context.node = node
+    context.node = node = packTemplateNode(node)
   }
 
   const branch: BlockFunctionIRNode = {
     type: IRNodeTypes.BLOCK_FUNCTION,
-    loc: dir.loc,
+    loc: node.loc,
     node,
     templateIndex: -1,
     dynamic: {
@@ -104,4 +178,20 @@ export function createIfBranch(
     exitBlock()
   }
   return [branch, onExit]
+}
+
+function packTemplateNode(node: ElementNode) {
+  return extend({}, node, {
+    type: NodeTypes.ELEMENT,
+    tag: 'template',
+    props: [],
+    tagType: ElementTypes.TEMPLATE,
+    children: [
+      extend({}, node, {
+        props: node.props.filter(
+          (p) => p.type !== NodeTypes.DIRECTIVE && p.name !== 'if',
+        ),
+      } as TemplateChildNode),
+    ],
+  } as Partial<TemplateNode>)
 }
