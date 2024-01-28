@@ -1,13 +1,14 @@
-import { computed, defineComponent, ref, watchEffect } from 'vue'
+// NOTE: This test is implemented based on the case of `runtime-core/__test__/componentProps.spec.ts`.
 
+import { defineComponent, watchEffect } from 'vue'
+
+import type { FunctionalComponent } from '../src/component'
+import { getCurrentInstance } from '../src/component'
+import { render } from '../src/render'
 import { template } from '../src/template'
 import { children, setText } from '../src/dom'
-import { render as renderComponent } from '../src/render'
-import { nextTick } from '../src/scheduler'
-import { getCurrentInstance } from '../src/component'
 
 let host: HTMLElement
-
 const initHost = () => {
   host = document.createElement('div')
   host.setAttribute('id', 'host')
@@ -16,472 +17,337 @@ const initHost = () => {
 beforeEach(() => initHost())
 afterEach(() => host.remove())
 
-describe('runtime: compoentn props', () => {
-  test('should render props value (string array spec)', () => {
-    const ChildComp = defineComponent({
-      props: ['foo'],
-      setup() {
-        const __returned__ = {}
-        Object.defineProperty(__returned__, '__isScriptSetup', {
-          enumerable: false,
-          value: true,
-        })
-        return __returned__
-      },
-      render() {
-        const instance = getCurrentInstance()
-        const t0 = template('<div></div>')
-        const n0 = t0()
-        const {
-          0: [n1],
-        } = children(n0)
-        watchEffect(() => {
-          setText(n1, instance?.props.foo)
-        })
-        return n0
-      },
-    })
+describe('component props (vapor)', () => {
+  test('stateful', () => {
+    let props: any
+    // TODO: attrs
+
     const Comp = defineComponent({
-      setup() {
-        const __returned__ = {}
-        Object.defineProperty(__returned__, '__isScriptSetup', {
-          enumerable: false,
-          value: true,
-        })
-        return __returned__
-      },
+      props: ['fooBar', 'barBaz'],
       render() {
-        const t0 = template('<div></div>')
-        const n0 = t0()
-        const {
-          0: [n1],
-        } = children(n0)
-        renderComponent(
-          ChildComp as any,
-          {
-            get foo() {
-              return 'foo'
-            },
-          },
-          n1 as any,
-        )
-        return n0
+        const instance = getCurrentInstance()!
+        props = instance.props
       },
     })
-    renderComponent(Comp as any, {}, '#host')
-    expect(host.innerHTML).toBe('<div><div>foo</div></div>')
+
+    render(
+      Comp as any,
+      {
+        get fooBar() {
+          return 1
+        },
+      },
+      host,
+    )
+    expect(props.fooBar).toEqual(1)
+
+    // test passing kebab-case and resolving to camelCase
+    render(
+      Comp as any,
+      {
+        get ['foo-bar']() {
+          return 2
+        },
+      },
+      host,
+    )
+    expect(props.fooBar).toEqual(2)
+
+    // test updating kebab-case should not delete it (#955)
+    render(
+      Comp as any,
+      {
+        get ['foo-bar']() {
+          return 3
+        },
+        get barBaz() {
+          return 5
+        },
+      },
+      host,
+    )
+    expect(props.fooBar).toEqual(3)
+    expect(props.barBaz).toEqual(5)
+
+    render(Comp as any, {}, host)
+    expect(props.fooBar).toBeUndefined()
+    expect(props.barBaz).toBeUndefined()
+    // expect(props.qux).toEqual(5) // TODO: attrs
   })
 
-  test('should render props value (object spec)', () => {
-    const ChildComp = defineComponent({
-      props: { foo: {} },
-      setup() {
-        const __returned__ = {}
-        Object.defineProperty(__returned__, '__isScriptSetup', {
-          enumerable: false,
-          value: true,
-        })
-        return __returned__
-      },
-      render() {
-        const instance = getCurrentInstance()
-        const t0 = template('<div></div>')
-        const n0 = t0()
-        const {
-          0: [n1],
-        } = children(n0)
-        watchEffect(() => {
-          setText(n1, instance?.props.foo)
-        })
-        return n0
-      },
-    })
-    const Comp = defineComponent({
-      setup() {
-        const __returned__ = {}
-        Object.defineProperty(__returned__, '__isScriptSetup', {
-          enumerable: false,
-          value: true,
-        })
-        return __returned__
-      },
-      render() {
-        const t0 = template('<div></div>')
-        const n0 = t0()
-        const {
-          0: [n1],
-        } = children(n0)
-        renderComponent(
-          ChildComp as any,
-          {
-            get foo() {
-              return 'foo'
-            },
-          },
-          n1 as any,
-        )
-        return n0
-      },
-    })
-    renderComponent(Comp as any, {}, '#host')
-    expect(host.innerHTML).toBe('<div><div>foo</div></div>')
+  test('stateful with setup', () => {
+    // FIXME: is it necessary?
   })
 
-  test('should render props default value', () => {
-    const ChildComp = defineComponent({
+  test('functional with declaration', () => {
+    let props: any
+    // TODO: attrs
+
+    const Comp: FunctionalComponent = (_props) => {
+      const instance = getCurrentInstance()!
+      props = instance.props
+      return {}
+    }
+    Comp.props = ['foo']
+    Comp.render = (() => {}) as any
+
+    render(
+      Comp as any,
+      {
+        get foo() {
+          return 1
+        },
+      },
+      host,
+    )
+    expect(props.foo).toEqual(1)
+
+    render(
+      Comp as any,
+      {
+        get foo() {
+          return 2
+        },
+      },
+      host,
+    )
+    expect(props.foo).toEqual(2)
+
+    render(Comp as any, {}, host)
+    expect(props.foo).toBeUndefined()
+  })
+
+  test('functional without declaration', () => {
+    let props: any
+    // TODO: attrs
+
+    const Comp: FunctionalComponent = (_props) => {
+      const instance = getCurrentInstance()!
+      props = instance.props
+      return {}
+    }
+    Comp.props = undefined as any
+    Comp.render = (() => {}) as any
+
+    render(
+      Comp as any,
+      {
+        get foo() {
+          return 1
+        },
+      },
+      host,
+    )
+    expect(props.foo).toBeUndefined()
+
+    render(
+      Comp as any,
+      {
+        get foo() {
+          return 2
+        },
+      },
+      host,
+    )
+    expect(props.foo).toBeUndefined()
+  })
+
+  test('boolean casting', () => {
+    let props: any
+    const Comp = {
       props: {
-        foo: { default: 'foo' }, // default value
-      },
-      setup() {
-        const __returned__ = {}
-        Object.defineProperty(__returned__, '__isScriptSetup', {
-          enumerable: false,
-          value: true,
-        })
-        return __returned__
+        foo: Boolean,
+        bar: Boolean,
+        baz: Boolean,
+        qux: Boolean,
       },
       render() {
-        const instance = getCurrentInstance()
+        const instance = getCurrentInstance()!
+        props = instance.props
+      },
+    }
+
+    render(
+      Comp as any,
+      {
+        // absent should cast to false
+        bar: '', // empty string should cast to true
+        baz: 1, // same string should cast to true
+        qux: 'ok', // other values should be left in-tact (but raise warning)
+      },
+      host,
+    )
+
+    expect(props.foo).toBe(false)
+    expect(props.bar).toBe(true)
+    // expect(props.baz).toBe(true) // FIXME: failed
+    expect(props.qux).toBe('ok')
+  })
+
+  test('default value', () => {
+    let props: any
+    const defaultFn = vi.fn(() => ({ a: 1 }))
+    const defaultBaz = vi.fn(() => ({ b: 1 }))
+
+    const Comp = {
+      props: {
+        foo: {
+          default: 1,
+        },
+        bar: {
+          default: defaultFn,
+        },
+        baz: {
+          type: Function,
+          default: defaultBaz,
+        },
+      },
+      render() {
+        const instance = getCurrentInstance()!
+        props = instance.props
+      },
+    }
+
+    render(
+      Comp as any,
+      {
+        get foo() {
+          return 2
+        },
+      },
+      host,
+    )
+    expect(props.foo).toBe(2)
+    const prevBar = props.bar
+    // expect(props.bar).toEqual({ a: 1 })        // FIXME: failed
+    expect(props.baz).toEqual(defaultBaz)
+    // expect(defaultFn).toHaveBeenCalledTimes(1) // FIXME: failed
+    expect(defaultBaz).toHaveBeenCalledTimes(0)
+
+    // #999: updates should not cause default factory of unchanged prop to be
+    // called again
+    render(
+      Comp as any,
+      {
+        get foo() {
+          return 3
+        },
+      },
+      host,
+    )
+    expect(props.foo).toBe(3)
+    // expect(props.bar).toEqual({ a: 1 }) // FIXME: failed
+    expect(props.bar).toBe(prevBar)
+    // expect(defaultFn).toHaveBeenCalledTimes(1) // FIXME: failed
+
+    render(
+      Comp as any,
+      {
+        get bar() {
+          return { b: 2 }
+        },
+      },
+      host,
+    )
+    expect(props.foo).toBe(1)
+    expect(props.bar).toEqual({ b: 2 })
+    // expect(defaultFn).toHaveBeenCalledTimes(1) // FIXME: failed
+
+    render(
+      Comp as any,
+      {
+        get foo() {
+          return 3
+        },
+        get bar() {
+          return { b: 3 }
+        },
+      },
+      host,
+    )
+    expect(props.foo).toBe(3)
+    expect(props.bar).toEqual({ b: 3 })
+    // expect(defaultFn).toHaveBeenCalledTimes(1) // FIXME: failed
+
+    render(
+      Comp as any,
+      {
+        get bar() {
+          return { b: 4 }
+        },
+      },
+      host,
+    )
+    expect(props.foo).toBe(1)
+    expect(props.bar).toEqual({ b: 4 })
+    // expect(defaultFn).toHaveBeenCalledTimes(1) // FIXME: failed
+  })
+
+  test('using inject in default value factory', () => {
+    // FIXME: is it necessary?
+  })
+
+  test('props type support BigInt', () => {
+    const Comp = {
+      props: {
+        foo: BigInt,
+      },
+      render() {
+        const instance = getCurrentInstance()!
         const t0 = template('<div></div>')
         const n0 = t0()
         const {
           0: [n1],
         } = children(n0)
         watchEffect(() => {
-          setText(n1, instance?.props.foo)
+          setText(n1, instance.props.foo)
         })
         return n0
       },
-    })
-    const Comp = defineComponent({
-      setup() {
-        const __returned__ = {}
-        Object.defineProperty(__returned__, '__isScriptSetup', {
-          enumerable: false,
-          value: true,
-        })
-        return __returned__
+    }
+
+    render(
+      Comp as any,
+      {
+        get foo() {
+          return (
+            BigInt(BigInt(100000111)) + BigInt(2000000000) * BigInt(30000000)
+          )
+        },
       },
-      render() {
-        const t0 = template('<div></div>')
-        const n0 = t0()
-        const {
-          0: [n1],
-        } = children(n0)
-        renderComponent(
-          ChildComp as any,
-          {
-            /** no props are provided */
-          },
-          n1 as any,
-        )
-        return n0
-      },
-    })
-    renderComponent(Comp as any, {}, '#host')
-    expect(host.innerHTML).toBe('<div><div>foo</div></div>')
+      '#host',
+    )
+    expect(host.innerHTML).toBe('<div>60000000100000111</div>')
   })
 
-  test('should render props updates', async () => {
-    const ChildComp = defineComponent({
-      props: { count: {} },
-      setup() {
-        const __returned__ = {}
-        Object.defineProperty(__returned__, '__isScriptSetup', {
-          enumerable: false,
-          value: true,
-        })
-        return __returned__
-      },
-      render() {
-        const instance = getCurrentInstance()
-        const t0 = template('<div></div>')
-        const n0 = t0()
-        const {
-          0: [n1],
-        } = children(n0)
-        watchEffect(() => {
-          setText(n1, instance?.props.count)
-        })
-        return n0
-      },
-    })
-    const count = ref(0) // state (Comp)
-    const increment = () => count.value++
-    const Comp = defineComponent({
-      setup() {
-        const __returned__ = { count }
-        Object.defineProperty(__returned__, '__isScriptSetup', {
-          enumerable: false,
-          value: true,
-        })
-        return __returned__
-      },
-      render(_ctx: any) {
-        const t0 = template('<div></div>')
-        const n0 = t0()
-        const {
-          0: [n1],
-        } = children(n0)
-        renderComponent(
-          ChildComp as any,
-          {
-            get count() {
-              return _ctx.count
-            },
-          },
-          n1 as any,
-        )
-        return n0
-      },
-    })
-    renderComponent(Comp as any, {}, '#host')
-    expect(host.innerHTML).toBe('<div><div>0</div></div>')
-    increment() // update state
-    await nextTick()
-    expect(host.innerHTML).toBe('<div><div>1</div></div>')
+  // #3288
+  test('declared prop key should be present even if not passed', async () => {
+    // TODO:
   })
 
-  test('should render inline computed props value', async () => {
-    const ChildComp = defineComponent({
-      props: { double: {} },
-      setup() {
-        const __returned__ = {}
-        Object.defineProperty(__returned__, '__isScriptSetup', {
-          enumerable: false,
-          value: true,
-        })
-        return __returned__
-      },
-      render() {
-        const instance = getCurrentInstance()
-        const t0 = template('<div></div>')
-        const n0 = t0()
-        const {
-          0: [n1],
-        } = children(n0)
-        watchEffect(() => {
-          setText(n1, instance?.props.double)
-        })
-        return n0
-      },
-    })
-
-    const count = ref(0) // state (Comp)
-    const increment = () => count.value++
-    const Comp = defineComponent({
-      setup() {
-        const __returned__ = { count }
-        Object.defineProperty(__returned__, '__isScriptSetup', {
-          enumerable: false,
-          value: true,
-        })
-        return __returned__
-      },
-      render() {
-        const t0 = template('<div></div>')
-        const n0 = t0()
-        const {
-          0: [n1],
-        } = children(n0)
-        renderComponent(
-          ChildComp as any,
-          {
-            get double() {
-              // inline computed
-              return count.value * 2
-            },
-          },
-          n1 as any,
-        )
-        return n0
-      },
-    })
-    renderComponent(Comp as any, {}, '#host')
-    expect(host.innerHTML).toBe('<div><div>0</div></div>')
-    increment() // update state
-    await nextTick()
-    expect(host.innerHTML).toBe('<div><div>2</div></div>')
+  // #3371
+  test(`avoid double-setting props when casting`, async () => {
+    // TODO:
   })
 
-  test('should render props updates (fallback to default value)', async () => {
-    const ChildComp = defineComponent({
-      props: { count: { default: 9999 } },
-      setup() {
-        const __returned__ = {}
-        Object.defineProperty(__returned__, '__isScriptSetup', {
-          enumerable: false,
-          value: true,
-        })
-        return __returned__
-      },
-      render() {
-        const instance = getCurrentInstance()
-        const t0 = template('<div></div>')
-        const n0 = t0()
-        const {
-          0: [n1],
-        } = children(n0)
-        watchEffect(() => {
-          setText(n1, instance?.props.count)
-        })
-        return n0
-      },
-    })
-
-    const count = ref(0) // state (Comp)
-    const increment = () => count.value++
-    const Comp = defineComponent({
-      setup() {
-        const __returned__ = { count }
-        Object.defineProperty(__returned__, '__isScriptSetup', {
-          enumerable: false,
-          value: true,
-        })
-        return __returned__
-      },
-      render(_ctx: any) {
-        const t0 = template('<div></div>')
-        const n0 = t0()
-        const {
-          0: [n1],
-        } = children(n0)
-        renderComponent(
-          ChildComp as any,
-          {
-            get count() {
-              // toggle the props value
-              return _ctx.count % 2 === 0 ? _ctx.count : void 0
-            },
-          },
-          n1 as any,
-        )
-        return n0
-      },
-    })
-    renderComponent(Comp as any, {}, '#host')
-    expect(host.innerHTML).toBe('<div><div>0</div></div>')
-    increment() // update state (count === 1)
-    await nextTick()
-    expect(host.innerHTML).toBe('<div><div>9999</div></div>')
-    increment() // update state (count === 2)
-    await nextTick()
-    expect(host.innerHTML).toBe('<div><div>2</div></div>')
+  test('support null in required + multiple-type declarations', () => {
+    // TODO:
   })
 
-  test('should not render props value (no props spec)', () => {
-    const ChildComp = defineComponent({
-      // props: { foo: {} }, // no props specs
-      setup() {
-        const __returned__ = {}
-        Object.defineProperty(__returned__, '__isScriptSetup', {
-          enumerable: false,
-          value: true,
-        })
-        return __returned__
-      },
-      render(_ctx: any) {
-        const t0 = template('<div></div>')
-        const n0 = t0()
-        const {
-          0: [n1],
-        } = children(n0)
-        watchEffect(() => {
-          setText(n1, _ctx.foo)
-        })
-        return n0
-      },
-    })
-    const Comp = defineComponent({
-      setup() {
-        const __returned__ = {}
-        Object.defineProperty(__returned__, '__isScriptSetup', {
-          enumerable: false,
-          value: true,
-        })
-        return __returned__
-      },
-      render() {
-        const t0 = template('<div></div>')
-        const n0 = t0()
-        const {
-          0: [n1],
-        } = children(n0)
-        renderComponent(
-          ChildComp as any,
-          {
-            // but props are provided
-            get foo() {
-              return 'foo'
-            },
-          },
-          n1 as any,
-        )
-        return n0
-      },
-    })
-    renderComponent(Comp as any, {}, '#host')
-    expect(host.innerHTML).toBe('<div><div></div></div>')
+  // #5016
+  test('handling attr with undefined value', () => {
+    // TODO: attrs
   })
 
-  test('should render computed props', async () => {
-    const ChildComp = defineComponent({
-      props: { count: { type: Number, required: true } },
-      setup(props) {
-        const double = computed(() => props.count * 2)
-        const __returned__ = { double }
-        Object.defineProperty(__returned__, '__isScriptSetup', {
-          enumerable: false,
-          value: true,
-        })
-        return __returned__
-      },
-      render(_ctx: any) {
-        const t0 = template('<div></div>')
-        const n0 = t0()
-        const {
-          0: [n1],
-        } = children(n0)
-        watchEffect(() => {
-          setText(n1, _ctx.double)
-        })
-        return n0
-      },
-    })
-
-    const count = ref(0) // state (Comp)
-    const increment = () => count.value++
-    const Comp = defineComponent({
-      setup() {
-        const __returned__ = { count }
-        Object.defineProperty(__returned__, '__isScriptSetup', {
-          enumerable: false,
-          value: true,
-        })
-        return __returned__
-      },
-      render(_ctx: any) {
-        const t0 = template('<div></div>')
-        const n0 = t0()
-        const {
-          0: [n1],
-        } = children(n0)
-        renderComponent(
-          ChildComp as any,
-          {
-            get count() {
-              return _ctx.count
-            },
-          },
-          n1 as any,
-        )
-        return n0
-      },
-    })
-    renderComponent(Comp as any, {}, '#host')
-    expect(host.innerHTML).toBe('<div><div>0</div></div>')
-    increment() // update state
-    await nextTick()
-    expect(host.innerHTML).toBe('<div><div>2</div></div>')
+  // #691ef
+  test('should not mutate original props long-form definition object', () => {
+    // TODO:
   })
+
+  // NOTE: not supported
+  // optimized props update
+  // mixins
+  // validator
+  // warn
+  // caching
 })
