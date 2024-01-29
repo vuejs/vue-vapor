@@ -78,11 +78,13 @@ export function remove(block: Block, parent: ParentNode) {
 }
 
 type Children = Record<number, [ChildNode, Children]>
-export function children(n: Node): Children {
+export function children(nodes: ChildNode | ChildNode[]): Children {
   const result: Children = {}
-  const array = Array.from(n.childNodes)
-  for (let i = 0; i < array.length; i++) {
-    const n = array[i]
+  if (!isArray(nodes)) {
+    nodes = Array.from(nodes.childNodes)
+  }
+  for (let i = 0; i < nodes.length; i++) {
+    const n = nodes[i]
     result[i] = [n, children(n)]
   }
   return result
