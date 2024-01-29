@@ -321,35 +321,35 @@ describe('component props (vapor)', () => {
   })
 
   // #3288
-  test('declared prop key should be present even if not passed', async () => {
-    // let initialKeys: string[] = []
-    // const changeSpy = vi.fn()
-    // const passFoo = ref(false)
-    // const Comp = {
-    //   props: ['foo'],
-    //   setup() {
-    //     const instance = getCurrentInstance()!
-    //     initialKeys = Object.keys(instance.props)
-    //     watchEffect(changeSpy)
-    //     return {}
-    //   },
-    //   render() {
-    //     return {}
-    //   },
-    // }
-    // const Parent = createIf(
-    //   () => passFoo.value,
-    //   () => {
-    //     return render(Comp as any, { foo: 1 }, host) // TODO: createComponent fn
-    //   },
-    // )
-    // // expect(changeSpy).toHaveBeenCalledTimes(1)
-  })
+  // test('declared prop key should be present even if not passed', async () => {
+  // let initialKeys: string[] = []
+  // const changeSpy = vi.fn()
+  // const passFoo = ref(false)
+  // const Comp = {
+  //   props: ['foo'],
+  //   setup() {
+  //     const instance = getCurrentInstance()!
+  //     initialKeys = Object.keys(instance.props)
+  //     watchEffect(changeSpy)
+  //     return {}
+  //   },
+  //   render() {
+  //     return {}
+  //   },
+  // }
+  // const Parent = createIf(
+  //   () => passFoo.value,
+  //   () => {
+  //     return render(Comp as any, { foo: 1 }, host) // TODO: createComponent fn
+  //   },
+  // )
+  // // expect(changeSpy).toHaveBeenCalledTimes(1)
+  // })
 
   // #3371
-  test(`avoid double-setting props when casting`, async () => {
-    // TODO: proide, slots
-  })
+  // test(`avoid double-setting props when casting`, async () => {
+  //   // TODO: proide, slots
+  // })
 
   test('support null in required + multiple-type declarations', () => {
     const Comp = {
@@ -368,10 +368,10 @@ describe('component props (vapor)', () => {
     }).not.toThrow()
   })
 
-  // #5016
-  test('handling attr with undefined value', () => {
-    // TODO: attrs
-  })
+  // // #5016
+  // test('handling attr with undefined value', () => {
+  //   // TODO: attrs
+  // })
 
   // #691ef
   test('should not mutate original props long-form definition object', () => {
