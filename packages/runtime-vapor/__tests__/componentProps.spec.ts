@@ -1,14 +1,12 @@
 // NOTE: This test is implemented based on the case of `runtime-core/__test__/componentProps.spec.ts`.
 
-import { defineComponent, ref, watchEffect } from 'vue'
+import { defineComponent, watchEffect } from 'vue'
 
 import type { FunctionalComponent } from '../src/component'
 import { getCurrentInstance } from '../src/component'
 import { render } from '../src/render'
 import { template } from '../src/template'
 import { children, setText } from '../src/dom'
-import { nextTick } from '../src/scheduler'
-import { createIf } from '../src/if'
 
 let host: HTMLElement
 const initHost = () => {
