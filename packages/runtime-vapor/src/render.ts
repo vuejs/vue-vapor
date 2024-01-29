@@ -21,7 +21,6 @@ export type Fragment = {
   anchor?: Node
   [fragmentKey]: true
 }
-export type BlockFn = (props?: any) => Block
 
 export function render(
   comp: Component,

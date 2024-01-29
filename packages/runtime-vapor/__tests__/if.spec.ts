@@ -12,7 +12,6 @@ import {
   setText,
   template,
 } from '../src'
-import { NOOP } from '@vue/shared'
 import type { Mock } from 'vitest'
 
 let host: HTMLElement
@@ -112,8 +111,8 @@ describe('createIf', () => {
     //    Hello <template v-if="ok2">Vapor</template>
     //  </template>
 
-    let setOk1: (v: boolean) => void = NOOP
-    let setOk2: (v: boolean) => void = NOOP
+    const ok1 = ref(true)
+    const ok2 = ref(true)
 
     const t0 = template('Vapor')
     const t1 = template('Hello ')
@@ -121,11 +120,6 @@ describe('createIf', () => {
     render(
       defineComponent({
         setup() {
-          const ok1 = ref(true)
-          const ok2 = ref(true)
-          setOk1 = (newValue: boolean) => (ok1.value = newValue)
-          setOk2 = (newValue: boolean) => (ok2.value = newValue)
-
           // render
           return (() => {
             const n0 = t2()
@@ -155,19 +149,19 @@ describe('createIf', () => {
     )
     expect(host.innerHTML).toBe('Hello Vapor<!--if--><!--if-->')
 
-    setOk1(false)
+    ok1.value = false
     await nextTick()
     expect(host.innerHTML).toBe('<!--if-->')
 
-    setOk1(true)
+    ok1.value = true
     await nextTick()
     expect(host.innerHTML).toBe('Hello Vapor<!--if--><!--if-->')
 
-    setOk2(false)
+    ok2.value = false
     await nextTick()
     expect(host.innerHTML).toBe('Hello <!--if--><!--if-->')
 
-    setOk1(false)
+    ok1.value = false
     await nextTick()
     expect(host.innerHTML).toBe('<!--if-->')
   })

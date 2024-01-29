@@ -1,7 +1,9 @@
 import { renderWatch } from './renderWatch'
-import { type Block, type BlockFn, type Fragment, fragmentKey } from './render'
+import { type Block, type Fragment, fragmentKey } from './render'
 import { type EffectScope, effectScope } from '@vue/reactivity'
 import { createComment, createTextNode, insert, remove } from './dom'
+
+type BlockFn = () => Block
 
 export const createIf = (
   condition: () => any,
@@ -14,7 +16,11 @@ export const createIf = (
   let block: Block | undefined
   let scope: EffectScope | undefined
   const anchor = __DEV__ ? createComment('if') : createTextNode('')
-  const fragment: Fragment = { nodes: [], anchor, [fragmentKey]: true }
+  const fragment: Fragment = {
+    nodes: [],
+    anchor,
+    [fragmentKey]: true,
+  }
 
   // TODO: SSR
   // if (isHydrating) {
@@ -32,10 +38,7 @@ export const createIf = (
       }
       if ((branch = value ? b1 : b2)) {
         scope = effectScope()
-        block = scope.run(branch)!
-
-        fragment.nodes = block
-
+        fragment.nodes = block = scope.run(branch)!
         parent && insert(block, parent, anchor)
       } else {
         scope = block = undefined

@@ -5,9 +5,22 @@ export * from './dom/patchProp'
 export * from './dom/templateRef'
 export * from './dom/on'
 
+function normalizeBlock(block: Block): Node[] {
+  const nodes: Node[] = []
+  if (block instanceof Node) {
+    nodes.push(block)
+  } else if (isArray(block)) {
+    block.forEach(child => nodes.push(...normalizeBlock(child)))
+  } else if (block) {
+    nodes.push(...normalizeBlock(block.nodes))
+    block.anchor && nodes.push(block.anchor)
+  }
+  return nodes
+}
+
 export function insert(
   block: Block,
-  parent: Node | Block[],
+  parent: ParentBlock,
   anchor: Node | null = null,
 ) {
   if (isArray(parent)) {
@@ -17,65 +30,25 @@ export function insert(
     } else {
       parent.push(block)
     }
-    return
-  }
-
-  if (block instanceof Node) {
-    parent.insertBefore(block, anchor)
-  } else if (isArray(block)) {
-    for (const child of block) insert(child, parent, anchor)
   } else {
-    insert(block.nodes, parent, anchor)
-    block.anchor && parent.insertBefore(block.anchor, anchor)
+    normalizeBlock(block).forEach(node => parent.insertBefore(node, anchor))
   }
 }
 
 export function prepend(parent: ParentBlock, ...blocks: Block[]) {
   if (isArray(parent)) {
     parent.unshift(...blocks)
-    return
+  } else {
+    parent.prepend(...normalizeBlock(blocks))
   }
-
-  const nodes: Node[] = []
-  for (const block of blocks) {
-    if (block instanceof Node) {
-      nodes.push(block)
-    } else if (isArray(block)) {
-      prepend(parent, ...block)
-    } else {
-      prepend(parent, block.nodes)
-      block.anchor && prepend(parent, block.anchor)
-    }
-  }
-  if (!nodes.length) {
-    return
-  }
-  // TODO use insertBefore for better performance https://jsbench.me/rolpg250hh/1
-  parent.prepend(...nodes)
 }
 
 export function append(parent: ParentBlock, ...blocks: Block[]) {
   if (isArray(parent)) {
     parent.push(...blocks)
-    return
+  } else {
+    parent.append(...normalizeBlock(blocks))
   }
-
-  const nodes: Node[] = []
-  for (const block of blocks) {
-    if (block instanceof Node) {
-      nodes.push(block)
-    } else if (isArray(block)) {
-      append(parent, ...block)
-    } else {
-      append(parent, block.nodes)
-      block.anchor && append(parent, block.anchor)
-    }
-  }
-  if (!nodes.length) {
-    return
-  }
-  // TODO use insertBefore for better performance
-  parent.append(...nodes)
 }
 
 export function remove(block: Block, parent: ParentBlock) {
@@ -84,30 +57,17 @@ export function remove(block: Block, parent: ParentBlock) {
     if (index > -1) {
       parent.splice(index, 1)
     }
-    return
-  }
-
-  if (block instanceof DocumentFragment) {
-    remove(Array.from(block.childNodes), parent)
-  } else if (block instanceof Node) {
-    parent.removeChild(block)
-  } else if (isArray(block)) {
-    for (const child of block) remove(child, parent)
   } else {
-    remove(block.nodes, parent)
-    block.anchor && parent.removeChild(block.anchor)
+    normalizeBlock(block).forEach(node => parent.removeChild(node))
   }
 }
 
 type Children = Record<number, [ChildNode, Children]>
-export function children(nodes: ChildNode | ChildNode[]): Children {
+export function children(nodes: ChildNode[]): Children {
   const result: Children = {}
-  if (!isArray(nodes)) {
-    nodes = Array.from(nodes.childNodes)
-  }
   for (let i = 0; i < nodes.length; i++) {
     const n = nodes[i]
-    result[i] = [n, children(n)]
+    result[i] = [n, children(Array.from(n.childNodes))]
   }
   return result
 }
