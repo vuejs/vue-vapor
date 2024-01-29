@@ -5,7 +5,21 @@ export * from './dom/patchProp'
 export * from './dom/templateRef'
 export * from './dom/on'
 
-export function insert(block: Block, parent: Node, anchor: Node | null = null) {
+export function insert(
+  block: Block,
+  parent: Node | Block[],
+  anchor: Node | null = null,
+) {
+  if (isArray(parent)) {
+    const index = anchor ? parent.indexOf(anchor) : -1
+    if (index > -1) {
+      parent.splice(index, 0, block)
+    } else {
+      parent.push(block)
+    }
+    return
+  }
+
   if (block instanceof Node) {
     parent.insertBefore(block, anchor)
   } else if (isArray(block)) {
@@ -17,8 +31,12 @@ export function insert(block: Block, parent: Node, anchor: Node | null = null) {
 }
 
 export function prepend(parent: ParentBlock, ...blocks: Block[]) {
-  const nodes: Node[] = []
+  if (isArray(parent)) {
+    parent.unshift(...blocks)
+    return
+  }
 
+  const nodes: Node[] = []
   for (const block of blocks) {
     if (block instanceof Node) {
       nodes.push(block)
@@ -29,20 +47,20 @@ export function prepend(parent: ParentBlock, ...blocks: Block[]) {
       block.anchor && prepend(parent, block.anchor)
     }
   }
-
-  if (!nodes.length) return
-
-  if (parent instanceof Node) {
-    // TODO use insertBefore for better performance https://jsbench.me/rolpg250hh/1
-    parent.prepend(...nodes)
-  } else if (isArray(parent)) {
-    parent.unshift(...nodes)
+  if (!nodes.length) {
+    return
   }
+  // TODO use insertBefore for better performance https://jsbench.me/rolpg250hh/1
+  parent.prepend(...nodes)
 }
 
 export function append(parent: ParentBlock, ...blocks: Block[]) {
-  const nodes: Node[] = []
+  if (isArray(parent)) {
+    parent.push(...blocks)
+    return
+  }
 
+  const nodes: Node[] = []
   for (const block of blocks) {
     if (block instanceof Node) {
       nodes.push(block)
@@ -53,18 +71,22 @@ export function append(parent: ParentBlock, ...blocks: Block[]) {
       block.anchor && append(parent, block.anchor)
     }
   }
-
-  if (!nodes.length) return
-
-  if (parent instanceof Node) {
-    // TODO use insertBefore for better performance
-    parent.append(...nodes)
-  } else if (isArray(parent)) {
-    parent.push(...nodes)
+  if (!nodes.length) {
+    return
   }
+  // TODO use insertBefore for better performance
+  parent.append(...nodes)
 }
 
-export function remove(block: Block, parent: ParentNode) {
+export function remove(block: Block, parent: ParentBlock) {
+  if (isArray(parent)) {
+    const index = parent.indexOf(block)
+    if (index > -1) {
+      parent.splice(index, 1)
+    }
+    return
+  }
+
   if (block instanceof DocumentFragment) {
     remove(Array.from(block.childNodes), parent)
   } else if (block instanceof Node) {

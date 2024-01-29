@@ -15,7 +15,7 @@ import { queuePostRenderEffect } from './scheduler'
 export const fragmentKey = Symbol('fragment')
 
 export type Block = Node | Fragment | Block[]
-export type ParentBlock = ParentNode | Node[]
+export type ParentBlock = ParentNode | Block[]
 export type Fragment = {
   nodes: Block
   anchor?: Node
