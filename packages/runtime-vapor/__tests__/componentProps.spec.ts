@@ -377,7 +377,19 @@ describe('component props (vapor)', () => {
 
   // #691ef
   test('should not mutate original props long-form definition object', () => {
-    // TODO:
+    const props = {
+      msg: {
+        type: String,
+      },
+    }
+    const Comp = defineComponent({
+      props,
+      render() {},
+    })
+
+    render(Comp as any, { msg: 'test' }, host)
+
+    expect(Object.keys(props.msg).length).toBe(1)
   })
 
   // NOTE: not supported
