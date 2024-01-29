@@ -1,7 +1,9 @@
 import { defineComponent } from 'vue'
 import {
+  append,
   children,
   createIf,
+  fragment,
   insert,
   nextTick,
   ref,
@@ -108,5 +110,71 @@ describe('createIf', () => {
     expect(host.innerHTML).toBe('<div><p>zero</p><!--if--></div>')
     expect(spyIfFn!).toHaveBeenCalledTimes(1)
     expect(spyElseFn!).toHaveBeenCalledTimes(2)
+  })
+
+  test.fails('should handle nested template', async () => {
+    // mock this template:
+    //  <template v-if="ok1">
+    //    Hello <template v-if="ok2">Vapor</template>
+    //  </template>
+
+    let setOk1: (v: boolean) => void = NOOP
+    let setOk2: (v: boolean) => void = NOOP
+
+    const t0 = template('Vapor')
+    const t1 = template('Hello ')
+    const t2 = fragment()
+    render(
+      defineComponent({
+        setup() {
+          const ok1 = ref(true)
+          const ok2 = ref(true)
+          setOk1 = (newValue: boolean) => (ok1.value = newValue)
+          setOk2 = (newValue: boolean) => (ok2.value = newValue)
+
+          // render
+          return (() => {
+            const n0 = t2()
+            append(
+              n0,
+              createIf(
+                () => ok1.value,
+                () => {
+                  const n2 = t1()
+                  append(
+                    n2,
+                    createIf(
+                      () => ok2.value,
+                      () => t0(),
+                    ),
+                  )
+                  return n2
+                },
+              ),
+            )
+            return n0
+          })()
+        },
+      }) as any,
+      {},
+      '#host',
+    )
+    expect(host.innerHTML).toBe('Hello Vapor<!--if--><!--if-->')
+
+    setOk1(false)
+    await nextTick()
+    expect(host.innerHTML).toBe('<!--if-->')
+
+    setOk1(true)
+    await nextTick()
+    expect(host.innerHTML).toBe('Hello Vapor<!--if--><!--if-->')
+
+    setOk2(false)
+    await nextTick()
+    expect(host.innerHTML).toBe('Hello <!--if--><!--if-->')
+
+    setOk1(false)
+    await nextTick()
+    expect(host.innerHTML).toBe('<!--if-->')
   })
 })
