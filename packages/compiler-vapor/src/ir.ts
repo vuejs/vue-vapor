@@ -199,10 +199,9 @@ export enum DynamicFlag {
 export interface IRDynamicInfo {
   id: number | null
   dynamicFlags: DynamicFlag
-  placeholder: number | null
-  children: IRDynamicChildren
+  anchor: number | null
+  children: IRDynamicInfo[]
 }
-export type IRDynamicChildren = Record<number, IRDynamicInfo>
 
 export type IRExpression = SimpleExpressionNode | string
 export interface IREffect {
