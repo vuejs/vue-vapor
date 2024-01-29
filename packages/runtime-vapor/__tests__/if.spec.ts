@@ -112,7 +112,7 @@ describe('createIf', () => {
     expect(spyElseFn!).toHaveBeenCalledTimes(2)
   })
 
-  test.fails('should handle nested template', async () => {
+  test('should handle nested template', async () => {
     // mock this template:
     //  <template v-if="ok1">
     //    Hello <template v-if="ok2">Vapor</template>
