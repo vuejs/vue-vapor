@@ -24,6 +24,7 @@ import { genSetRef } from './generators/ref'
 import { genSetModelValue } from './generators/modelValue'
 import { genAppendNode, genInsertNode, genPrependNode } from './generators/dom'
 import { genIf } from './generators/if'
+import { genFor } from './generators/for'
 import { genTemplate } from './generators/template'
 import { genBlockFunctionContent } from './generators/block'
 
@@ -301,7 +302,10 @@ export function genOperation(
       return genAppendNode(oper, context)
     case IRNodeTypes.IF:
       return genIf(oper, context)
+    case IRNodeTypes.FOR:
+      return genFor(oper, context)
     case IRNodeTypes.WITH_DIRECTIVE:
+      // TODO remove this after remove checkNever
       // generated, skip
       break
     default:

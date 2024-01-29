@@ -17,10 +17,13 @@ import { genWithDirective } from './directive'
 export function genBlockFunction(
   oper: BlockFunctionIRNode,
   context: CodegenContext,
+  args: CodeFragment[] = [],
 ): CodeFragment[] {
   const { newline, withIndent } = context
   return [
-    '() => {',
+    '(',
+    ...args,
+    ') => {',
     ...withIndent(() => genBlockFunctionContent(oper, context)),
     newline(),
     '}',

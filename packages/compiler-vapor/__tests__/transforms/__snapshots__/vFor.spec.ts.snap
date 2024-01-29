@@ -1,0 +1,20 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`compiler: v-for > basic v-for 1`] = `
+"import { template as _template, fragment as _fragment, children as _children, createFor as _createFor, renderEffect as _renderEffect, setText as _setText } from 'vue/vapor';
+
+export function render(_ctx) {
+  const t0 = _template("<div></div>")
+  const t1 = _fragment()
+  const n0 = t1()
+  const { 0: [n1],} = _children(n0)
+  const n1 = _createFor(() => _ctx.items, (item) => {
+    const n2 = t0()
+    _renderEffect(() => {
+      _setText(n2, _ctx.item)
+    })
+    return n2
+  })
+  return n0
+}"
+`;
