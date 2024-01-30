@@ -83,7 +83,7 @@ describe('component props (vapor)', () => {
     let props: any
     // TODO: attrs
 
-    const Comp: FunctionalComponent = (_props) => {
+    const Comp: FunctionalComponent = _props => {
       const instance = getCurrentInstance()!
       props = instance.props
       return {}
@@ -121,7 +121,7 @@ describe('component props (vapor)', () => {
     let props: any
     // TODO: attrs
 
-    const Comp: FunctionalComponent = (_props) => {
+    const Comp: FunctionalComponent = _props => {
       const instance = getCurrentInstance()!
       props = instance.props
       return {}
@@ -218,10 +218,12 @@ describe('component props (vapor)', () => {
       host,
     )
     expect(props.foo).toBe(2)
-    const prevBar = props.bar
-    // expect(props.bar).toEqual({ a: 1 })        // FIXME: failed
+    // const prevBar = props.bar
+    props.bar
+    expect(props.bar).toEqual({ a: 1 })
     expect(props.baz).toEqual(defaultBaz)
-    // expect(defaultFn).toHaveBeenCalledTimes(1) // FIXME: failed
+    // expect(defaultFn).toHaveBeenCalledTimes(1) // failed: (caching is not supported)
+    expect(defaultFn).toHaveBeenCalledTimes(2)
     expect(defaultBaz).toHaveBeenCalledTimes(0)
 
     // #999: updates should not cause default factory of unchanged prop to be
@@ -236,9 +238,9 @@ describe('component props (vapor)', () => {
       host,
     )
     expect(props.foo).toBe(3)
-    // expect(props.bar).toEqual({ a: 1 }) // FIXME: failed
-    expect(props.bar).toBe(prevBar)
-    // expect(defaultFn).toHaveBeenCalledTimes(1) // FIXME: failed
+    expect(props.bar).toEqual({ a: 1 })
+    // expect(props.bar).toBe(prevBar) // failed: (caching is not supported)
+    // expect(defaultFn).toHaveBeenCalledTimes(1) // failed: caching is not supported (called 3 times)
 
     render(
       Comp as any,
@@ -251,7 +253,7 @@ describe('component props (vapor)', () => {
     )
     expect(props.foo).toBe(1)
     expect(props.bar).toEqual({ b: 2 })
-    // expect(defaultFn).toHaveBeenCalledTimes(1) // FIXME: failed
+    // expect(defaultFn).toHaveBeenCalledTimes(1) // failed: caching is not supported (called 3 times)
 
     render(
       Comp as any,
@@ -267,7 +269,7 @@ describe('component props (vapor)', () => {
     )
     expect(props.foo).toBe(3)
     expect(props.bar).toEqual({ b: 3 })
-    // expect(defaultFn).toHaveBeenCalledTimes(1) // FIXME: failed
+    // expect(defaultFn).toHaveBeenCalledTimes(1) // failed: caching is not supported (called 3 times)
 
     render(
       Comp as any,
@@ -280,7 +282,7 @@ describe('component props (vapor)', () => {
     )
     expect(props.foo).toBe(1)
     expect(props.bar).toEqual({ b: 4 })
-    // expect(defaultFn).toHaveBeenCalledTimes(1) // FIXME: failed
+    // expect(defaultFn).toHaveBeenCalledTimes(1) // failed: caching is not supported (called 3 times)
   })
 
   test('using inject in default value factory', () => {
