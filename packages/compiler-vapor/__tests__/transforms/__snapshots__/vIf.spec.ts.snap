@@ -7,7 +7,7 @@ export function render(_ctx) {
   const t0 = _template("<div></div>")
   const t1 = _fragment()
   const n0 = t1()
-  const n1 = _createIf(() => _ctx.ok, () => {
+  const n1 = _createIf(() => (_ctx.ok), () => {
     const n2 = t0()
     const { 0: [n3],} = _children(n2)
     _renderEffect(() => {
@@ -30,10 +30,10 @@ export function render(_ctx) {
   const t3 = _template("<input>")
   const n0 = t3()
   const { 0: [n5],} = _children(n0)
-  const n1 = _createIf(() => _ctx.ok, () => {
+  const n1 = _createIf(() => (_ctx.ok), () => {
     const n2 = t0()
     return n2
-  }, () => _createIf(() => _ctx.orNot, () => {
+  }, () => _createIf(() => (_ctx.orNot), () => {
     const n3 = t1()
     return n3
   }, () => {
@@ -55,11 +55,11 @@ export function render(_ctx) {
   const t0 = _template("<div>hello</div>")
   const t1 = _fragment()
   const n0 = t1()
-  const n1 = _createIf(() => _ctx.ok, () => {
+  const n1 = _createIf(() => (_ctx.ok), () => {
     const n2 = t0()
     return n2
   })
-  const n3 = _createIf(() => _ctx.ok, () => {
+  const n3 = _createIf(() => (_ctx.ok), () => {
     const n4 = t0()
     return n4
   })
@@ -75,7 +75,7 @@ export function render(_ctx) {
   const t0 = _template("<div></div>hello<p></p>")
   const t1 = _fragment()
   const n0 = t1()
-  const n1 = _createIf(() => _ctx.ok, () => {
+  const n1 = _createIf(() => (_ctx.ok), () => {
     const n2 = t0()
     const { 2: [n3],} = _children(n2)
     _renderEffect(() => {
@@ -96,7 +96,7 @@ export function render(_ctx) {
   const t1 = _template("<p></p>")
   const t2 = _fragment()
   const n0 = t2()
-  const n1 = _createIf(() => _ctx.ok, () => {
+  const n1 = _createIf(() => (_ctx.ok), () => {
     const n2 = t0()
     return n2
   }, () => {
@@ -117,10 +117,10 @@ export function render(_ctx) {
   const t2 = _template("fine")
   const t3 = _fragment()
   const n0 = t3()
-  const n1 = _createIf(() => _ctx.ok, () => {
+  const n1 = _createIf(() => (_ctx.ok), () => {
     const n2 = t0()
     return n2
-  }, () => _createIf(() => _ctx.orNot, () => {
+  }, () => _createIf(() => (_ctx.orNot), () => {
     const n3 = t1()
     return n3
   }, () => {
@@ -140,10 +140,10 @@ export function render(_ctx) {
   const t1 = _template("<p></p>")
   const t2 = _fragment()
   const n0 = t2()
-  const n1 = _createIf(() => _ctx.ok, () => {
+  const n1 = _createIf(() => (_ctx.ok), () => {
     const n2 = t0()
     return n2
-  }, () => _createIf(() => _ctx.orNot, () => {
+  }, () => _createIf(() => (_ctx.orNot), () => {
     const n3 = t1()
     return n3
   }))
