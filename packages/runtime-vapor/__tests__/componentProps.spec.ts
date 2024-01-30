@@ -172,7 +172,7 @@ describe('component props (vapor)', () => {
       {
         // absent should cast to false
         bar: '', // empty string should cast to true
-        baz: 1, // same string should cast to true
+        baz: 'baz', // same string should cast to true
         qux: 'ok', // other values should be left in-tact (but raise warning)
       },
       host,
@@ -180,7 +180,7 @@ describe('component props (vapor)', () => {
 
     expect(props.foo).toBe(false)
     expect(props.bar).toBe(true)
-    // expect(props.baz).toBe(true) // FIXME: failed
+    expect(props.baz).toBe(true)
     expect(props.qux).toBe('ok')
   })
 
