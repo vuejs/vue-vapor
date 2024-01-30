@@ -1,7 +1,9 @@
 import { defineComponent } from 'vue'
 import {
+  append,
   children,
   createIf,
+  fragment,
   insert,
   nextTick,
   ref,
@@ -10,7 +12,6 @@ import {
   setText,
   template,
 } from '../src'
-import { NOOP } from '@vue/shared'
 import type { Mock } from 'vitest'
 
 let host: HTMLElement
@@ -37,9 +38,7 @@ describe('createIf', () => {
 
     let spyIfFn: Mock<any, any>
     let spyElseFn: Mock<any, any>
-
-    let add = NOOP
-    let reset = NOOP
+    const count = ref(0)
 
     // templates can be reused through caching.
     const t0 = template('<div></div>')
@@ -48,10 +47,6 @@ describe('createIf', () => {
 
     const component = defineComponent({
       setup() {
-        const counter = ref(0)
-        add = () => counter.value++
-        reset = () => (counter.value = 0)
-
         // render
         return (() => {
           const n0 = t0()
@@ -61,7 +56,7 @@ describe('createIf', () => {
 
           insert(
             createIf(
-              () => counter.value,
+              () => count.value,
               // v-if
               (spyIfFn ||= vi.fn(() => {
                 const n2 = t1()
@@ -69,7 +64,7 @@ describe('createIf', () => {
                   0: [n3],
                 } = children(n2)
                 renderEffect(() => {
-                  setText(n3, counter.value)
+                  setText(n3, count.value)
                 })
                 return n2
               })),
@@ -79,7 +74,7 @@ describe('createIf', () => {
                 return n4
               })),
             ),
-            n1,
+            n1 as any as ParentNode,
           )
           return n0
         })()
@@ -91,22 +86,83 @@ describe('createIf', () => {
     expect(spyIfFn!).toHaveBeenCalledTimes(0)
     expect(spyElseFn!).toHaveBeenCalledTimes(1)
 
-    add()
+    count.value++
     await nextTick()
     expect(host.innerHTML).toBe('<div><p>1</p><!--if--></div>')
     expect(spyIfFn!).toHaveBeenCalledTimes(1)
     expect(spyElseFn!).toHaveBeenCalledTimes(1)
 
-    add()
+    count.value++
     await nextTick()
     expect(host.innerHTML).toBe('<div><p>2</p><!--if--></div>')
     expect(spyIfFn!).toHaveBeenCalledTimes(1)
     expect(spyElseFn!).toHaveBeenCalledTimes(1)
 
-    reset()
+    count.value = 0
     await nextTick()
     expect(host.innerHTML).toBe('<div><p>zero</p><!--if--></div>')
     expect(spyIfFn!).toHaveBeenCalledTimes(1)
     expect(spyElseFn!).toHaveBeenCalledTimes(2)
+  })
+
+  test('should handle nested template', async () => {
+    // mock this template:
+    //  <template v-if="ok1">
+    //    Hello <template v-if="ok2">Vapor</template>
+    //  </template>
+
+    const ok1 = ref(true)
+    const ok2 = ref(true)
+
+    const t0 = template('Vapor')
+    const t1 = template('Hello ')
+    const t2 = fragment()
+    render(
+      defineComponent({
+        setup() {
+          // render
+          return (() => {
+            const n0 = t2()
+            append(
+              n0,
+              createIf(
+                () => ok1.value,
+                () => {
+                  const n2 = t1()
+                  append(
+                    n2,
+                    createIf(
+                      () => ok2.value,
+                      () => t0(),
+                    ),
+                  )
+                  return n2
+                },
+              ),
+            )
+            return n0
+          })()
+        },
+      }) as any,
+      {},
+      '#host',
+    )
+    expect(host.innerHTML).toBe('Hello Vapor<!--if--><!--if-->')
+
+    ok1.value = false
+    await nextTick()
+    expect(host.innerHTML).toBe('<!--if-->')
+
+    ok1.value = true
+    await nextTick()
+    expect(host.innerHTML).toBe('Hello Vapor<!--if--><!--if-->')
+
+    ok2.value = false
+    await nextTick()
+    expect(host.innerHTML).toBe('Hello <!--if--><!--if-->')
+
+    ok1.value = false
+    await nextTick()
+    expect(host.innerHTML).toBe('<!--if-->')
   })
 })

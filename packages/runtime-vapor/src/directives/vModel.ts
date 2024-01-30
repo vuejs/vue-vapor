@@ -11,7 +11,7 @@ function getModelAssigner(
 ): AssignerFn {
   const metadata = instance.metadata.get(el)!
   const fn: any = metadata.props['onUpdate:modelValue']
-  return isArray(fn) ? (value) => invokeArrayFns(fn, value) : fn
+  return isArray(fn) ? value => invokeArrayFns(fn, value) : fn
 }
 
 function onCompositionStart(e: Event) {
@@ -38,7 +38,7 @@ export const vModelText: ObjectDirective<
     assignKeyMap.set(el, assigner)
 
     const castToNumber = number // || (vnode.props && vnode.props.type === 'number')
-    on(el, lazy ? 'change' : 'input', (e) => {
+    on(el, lazy ? 'change' : 'input', e => {
       if ((e.target as any).composing) return
       let domValue: string | number = el.value
       if (trim) {
@@ -98,3 +98,9 @@ export const vModelText: ObjectDirective<
     el.value = newValue
   },
 }
+
+// TODO
+export const vModelDynamic = {}
+export const vModelRadio = {}
+export const vModelCheckbox = {}
+export const vModelSelect = {}

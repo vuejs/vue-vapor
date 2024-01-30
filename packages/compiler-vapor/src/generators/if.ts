@@ -1,28 +1,55 @@
-import { type CodegenContext, genBlockFunctionContent } from '../generate'
-import type { BlockFunctionIRNode, IfIRNode } from '../ir'
+import {
+  type CodeFragment,
+  type CodegenContext,
+  buildCodeFragment,
+  genBlockFunctionContent,
+} from '../generate'
+import { type BlockFunctionIRNode, IRNodeTypes, type IfIRNode } from '../ir'
 import { genExpression } from './expression'
 
-export function genIf(oper: IfIRNode, context: CodegenContext) {
-  const { pushFnCall, vaporHelper, pushNewline, push, withIndent } = context
+export function genIf(
+  oper: IfIRNode,
+  context: CodegenContext,
+  isNested = false,
+): CodeFragment[] {
+  const { call, vaporHelper, newline } = context
   const { condition, positive, negative } = oper
+  const [frag, push] = buildCodeFragment()
 
-  pushNewline(`const n${oper.id} = `)
-  pushFnCall(
-    vaporHelper('createIf'),
-    () => {
-      push('() => (')
-      genExpression(condition, context)
-      push(')')
-    },
-    () => genBlockFunction(positive),
-    !!negative && (() => genBlockFunction(negative!)),
+  const conditionExpr: CodeFragment[] = [
+    '() => (',
+    ...genExpression(condition, context),
+    ')',
+  ]
+
+  let positiveArg = genBlockFunction(positive, context)
+  let negativeArg: false | CodeFragment[] = false
+
+  if (negative) {
+    if (negative.type === IRNodeTypes.BLOCK_FUNCTION) {
+      negativeArg = genBlockFunction(negative, context)
+    } else {
+      negativeArg = ['() => ', ...genIf(negative!, context, true)]
+    }
+  }
+
+  if (!isNested) push(newline(), `const n${oper.id} = `)
+  push(
+    ...call(vaporHelper('createIf'), conditionExpr, positiveArg, negativeArg),
   )
 
-  function genBlockFunction(oper: BlockFunctionIRNode) {
-    push('() => {')
-    withIndent(() => {
-      genBlockFunctionContent(oper, context)
-    })
-    pushNewline('}')
-  }
+  return frag
+}
+
+function genBlockFunction(
+  oper: BlockFunctionIRNode,
+  context: CodegenContext,
+): CodeFragment[] {
+  const { newline, withIndent } = context
+  return [
+    '() => {',
+    ...withIndent(() => genBlockFunctionContent(oper, context)),
+    newline(),
+    '}',
+  ]
 }

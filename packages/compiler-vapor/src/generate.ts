@@ -9,7 +9,8 @@ import {
 } from '@vue/compiler-dom'
 import {
   type BlockFunctionIRNode,
-  type IRDynamicChildren,
+  DynamicFlag,
+  type IRDynamicInfo,
   IRNodeTypes,
   type OperationNode,
   type RootIRNode,
@@ -17,7 +18,7 @@ import {
   type WithDirectiveIRNode,
 } from './ir'
 import { SourceMapGenerator } from 'source-map-js'
-import { isString } from '@vue/shared'
+import { extend, isString } from '@vue/shared'
 import type { ParserPlugin } from '@babel/parser'
 import { genSetProp } from './generators/prop'
 import { genCreateTextNode, genSetText } from './generators/text'
@@ -28,6 +29,7 @@ import { genSetModelValue } from './generators/modelValue'
 import { genAppendNode, genInsertNode, genPrependNode } from './generators/dom'
 import { genWithDirective } from './generators/directive'
 import { genIf } from './generators/if'
+import { genTemplate } from './generators/template'
 
 interface CodegenOptions extends BaseCodegenOptions {
   expressionPlugins?: ParserPlugin[]
@@ -37,85 +39,65 @@ interface CodegenOptions extends BaseCodegenOptions {
 // @ts-expect-error
 function checkNever(x: never): never {}
 
-export interface CodegenContext extends Required<CodegenOptions> {
+export type CodeFragment =
+  | string
+  | [code: string, newlineIndex?: number, loc?: SourceLocation, name?: string]
+  | undefined
+
+export interface CodegenContext {
+  options: Required<CodegenOptions>
+
   source: string
-  code: string
-  line: number
-  column: number
-  offset: number
+  code: CodeFragment[]
   indentLevel: number
   map?: SourceMapGenerator
 
-  push(
-    code: string,
-    newlineIndex?: number,
-    loc?: SourceLocation,
-    name?: string,
-  ): void
-  pushNewline(
-    code: string,
-    newlineIndex?: number,
-    loc?: SourceLocation,
-    name?: string,
-  ): void
-  pushMulti(
-    codes: [left: string, right: string, segment?: string],
-    ...fn: Array<false | string | (() => void)>
-  ): void
-  pushFnCall(name: string, ...args: Array<false | string | (() => void)>): void
-  withIndent(fn: () => void): void
-  newline(): void
+  push(...args: CodeFragment[]): void
+  newline(): CodeFragment
+  multi(
+    codes: [left: string, right: string, segment: string],
+    ...fn: Array<false | string | CodeFragment[]>
+  ): CodeFragment[]
+  call(
+    name: string,
+    ...args: Array<false | string | CodeFragment[]>
+  ): CodeFragment[]
+  withIndent<T>(fn: () => T): T
 
   helpers: Set<string>
   vaporHelpers: Set<string>
   helper(name: string): string
-  vaporHelper(name: string): string
+  vaporHelper(name: VaporHelper): string
 }
 
-function createCodegenContext(
-  ir: RootIRNode,
-  {
-    mode = 'function',
-    prefixIdentifiers = mode === 'module',
-    sourceMap = false,
-    filename = `template.vue.html`,
-    scopeId = null,
-    optimizeImports = false,
-    runtimeGlobalName = `Vue`,
-    runtimeModuleName = `vue`,
-    ssrRuntimeModuleName = 'vue/server-renderer',
-    ssr = false,
-    isTS = false,
-    inSSR = false,
-    inline = false,
-    bindingMetadata = {},
-    expressionPlugins = [],
-  }: CodegenOptions,
-) {
+function createCodegenContext(ir: RootIRNode, options: CodegenOptions) {
   const helpers = new Set<string>([])
   const vaporHelpers = new Set<string>([])
+  const [code, push] = buildCodeFragment()
   const context: CodegenContext = {
-    mode,
-    prefixIdentifiers,
-    sourceMap,
-    filename,
-    scopeId,
-    optimizeImports,
-    runtimeGlobalName,
-    runtimeModuleName,
-    ssrRuntimeModuleName,
-    ssr,
-    isTS,
-    inSSR,
-    bindingMetadata,
-    expressionPlugins,
-    inline,
+    options: extend(
+      {
+        mode: 'function',
+        prefixIdentifiers: options.mode === 'module',
+        sourceMap: false,
+        filename: `template.vue.html`,
+        scopeId: null,
+        optimizeImports: false,
+        runtimeGlobalName: `Vue`,
+        runtimeModuleName: `vue`,
+        ssrRuntimeModuleName: 'vue/server-renderer',
+        ssr: false,
+        isTS: false,
+        inSSR: false,
+        inline: false,
+        bindingMetadata: {},
+        expressionPlugins: [],
+      },
+      options,
+    ),
 
     source: ir.source,
-    code: ``,
-    column: 1,
-    line: 1,
-    offset: 0,
+    code,
     indentLevel: 0,
 
     helpers,
@@ -128,99 +110,38 @@ function createCodegenContext(
       vaporHelpers.add(name)
       return `_${name}`
     },
-    push(code, newlineIndex = NewlineType.None, loc, name) {
-      context.code += code
-      if (!__BROWSER__ && context.map) {
-        if (loc) addMapping(loc.start, name)
 
-        if (newlineIndex === NewlineType.Unknown) {
-          // multiple newlines, full iteration
-          advancePositionWithMutation(context, code)
-        } else {
-          // fast paths
-          context.offset += code.length
-          if (newlineIndex === NewlineType.None) {
-            // no newlines; fast path to avoid newline detection
-            if (__TEST__ && code.includes('\n')) {
-              throw new Error(
-                `CodegenContext.push() called newlineIndex: none, but contains` +
-                  `newlines: ${code.replace(/\n/g, '\\n')}`,
-              )
-            }
-            context.column += code.length
-          } else {
-            // single newline at known index
-            if (newlineIndex === NewlineType.End) {
-              newlineIndex = code.length - 1
-            }
-            if (
-              __TEST__ &&
-              (code.charAt(newlineIndex) !== '\n' ||
-                code.slice(0, newlineIndex).includes('\n') ||
-                code.slice(newlineIndex + 1).includes('\n'))
-            ) {
-              throw new Error(
-                `CodegenContext.push() called with newlineIndex: ${newlineIndex} ` +
-                  `but does not conform: ${code.replace(/\n/g, '\\n')}`,
-              )
-            }
-            context.line++
-            context.column = code.length - newlineIndex
-          }
-        }
-        if (loc && loc !== locStub) {
-          addMapping(loc.end)
-        }
-      }
+    push,
+    newline() {
+      return [`\n${`  `.repeat(context.indentLevel)}`, NewlineType.Start]
     },
-    pushNewline(code, newlineIndex, node) {
-      context.newline()
-      context.push(code, newlineIndex, node)
-    },
-    pushMulti([left, right, seg], ...fns) {
+    multi([left, right, seg], ...fns) {
+      const frag: CodeFragment[] = []
       fns = fns.filter(Boolean)
-      context.push(left)
-      for (let i = 0; i < fns.length; i++) {
-        const fn = fns[i] as string | (() => void)
-
-        if (isString(fn)) context.push(fn)
-        else fn()
-        if (seg && i < fns.length - 1) context.push(seg)
+      frag.push(left)
+      for (let [i, fn] of fns.entries()) {
+        if (fn) {
+          if (isString(fn)) fn = [fn]
+          frag.push(...fn)
+          if (i < fns.length - 1) frag.push(seg)
+        }
       }
-      context.push(right)
+      frag.push(right)
+      return frag
     },
-    pushFnCall(name, ...args) {
-      context.push(name)
-      context.pushMulti(['(', ')', ', '], ...args)
+    call(name, ...args) {
+      return [name, ...context.multi(['(', ')', ', '], ...args)]
     },
     withIndent(fn) {
       ++context.indentLevel
-      fn()
+      const ret = fn()
       --context.indentLevel
-    },
-    newline() {
-      context.push(`\n${`  `.repeat(context.indentLevel)}`, NewlineType.Start)
+      return ret
     },
   }
 
-  function addMapping(loc: Position, name: string | null = null) {
-    // we use the private property to directly add the mapping
-    // because the addMapping() implementation in source-map-js has a bunch of
-    // unnecessary arg and validation checks that are pure overhead in our case.
-    const { _names, _mappings } = context.map!
-    if (name !== null && !_names.has(name)) _names.add(name)
-    _mappings.add({
-      originalLine: loc.line,
-      originalColumn: loc.column - 1, // source-map column is 0 based
-      generatedLine: context.line,
-      generatedColumn: context.column - 1,
-      source: filename,
-      // @ts-expect-error it is possible to be null
-      name,
-    })
-  }
-
-  if (!__BROWSER__ && sourceMap) {
+  const filename = context.options.filename
+  if (!__BROWSER__ && context.options.sourceMap) {
     // lazy require source-map implementation, only in non-browser builds
     context.map = new SourceMapGenerator()
     context.map.setSourceContent(filename, context.source)
@@ -242,45 +163,27 @@ export function generate(
   options: CodegenOptions = {},
 ): VaporCodegenResult {
   const ctx = createCodegenContext(ir, options)
-  const {
-    push,
-    pushNewline,
-    withIndent,
-    newline,
-    helpers,
-    vaporHelper,
-    vaporHelpers,
-  } = ctx
+  const { push, withIndent, newline, helpers, vaporHelpers } = ctx
 
   const functionName = 'render'
   const isSetupInlined = !!options.inline
   if (isSetupInlined) {
     push(`(() => {`)
   } else {
-    // placeholder for preamble
-    newline()
-    pushNewline(`export function ${functionName}(_ctx) {`)
+    push(
+      // placeholder for preamble
+      newline(),
+      newline(),
+      `export function ${functionName}(_ctx) {`,
+    )
   }
 
   withIndent(() => {
-    ir.template.forEach((template, i) => {
-      if (template.type === IRNodeTypes.TEMPLATE_FACTORY) {
-        // TODO source map?
-        pushNewline(
-          `const t${i} = ${vaporHelper('template')}(${JSON.stringify(
-            template.template,
-          )})`,
-        )
-      } else {
-        // fragment
-        pushNewline(`const t${i} = ${vaporHelper('fragment')}()`)
-      }
-    })
-
-    genBlockFunctionContent(ir, ctx)
+    ir.template.forEach((template, i) => push(...genTemplate(template, i, ctx)))
+    push(...genBlockFunctionContent(ir, ctx))
   })
 
-  newline()
+  push(newline())
   if (isSetupInlined) {
     push('})()')
   } else {
@@ -291,19 +194,20 @@ export function generate(
   if (vaporHelpers.size)
     // TODO: extract import codegen
     preamble = `import { ${[...vaporHelpers]
-      .map((h) => `${h} as _${h}`)
+      .map(h => `${h} as _${h}`)
       .join(', ')} } from 'vue/vapor';`
   if (helpers.size)
     preamble = `import { ${[...helpers]
-      .map((h) => `${h} as _${h}`)
+      .map(h => `${h} as _${h}`)
       .join(', ')} } from 'vue';`
 
+  let codegen = genCodeFragment(ctx)
   if (!isSetupInlined) {
-    ctx.code = preamble + ctx.code
+    codegen = preamble + codegen
   }
 
   return {
-    code: ctx.code,
+    code: codegen,
     ast: ir,
     preamble,
     map: ctx.map ? ctx.map.toJSON() : undefined,
@@ -312,32 +216,116 @@ export function generate(
   }
 }
 
-function genChildren(children: IRDynamicChildren) {
+function genCodeFragment(context: CodegenContext) {
+  let codegen = ''
+  let line = 1
+  let column = 1
+  let offset = 0
+
+  for (let frag of context.code) {
+    if (!frag) continue
+    if (isString(frag)) frag = [frag]
+
+    let [code, newlineIndex = NewlineType.None, loc, name] = frag
+    codegen += code
+
+    if (!__BROWSER__ && context.map) {
+      if (loc) addMapping(loc.start, name)
+      if (newlineIndex === NewlineType.Unknown) {
+        // multiple newlines, full iteration
+        advancePositionWithMutation({ line, column, offset }, code)
+      } else {
+        // fast paths
+        offset += code.length
+        if (newlineIndex === NewlineType.None) {
+          // no newlines; fast path to avoid newline detection
+          if (__TEST__ && code.includes('\n')) {
+            throw new Error(
+              `CodegenContext.push() called newlineIndex: none, but contains` +
+                `newlines: ${code.replace(/\n/g, '\\n')}`,
+            )
+          }
+          column += code.length
+        } else {
+          // single newline at known index
+          if (newlineIndex === NewlineType.End) {
+            newlineIndex = code.length - 1
+          }
+          if (
+            __TEST__ &&
+            (code.charAt(newlineIndex) !== '\n' ||
+              code.slice(0, newlineIndex).includes('\n') ||
+              code.slice(newlineIndex + 1).includes('\n'))
+          ) {
+            throw new Error(
+              `CodegenContext.push() called with newlineIndex: ${newlineIndex} ` +
+                `but does not conform: ${code.replace(/\n/g, '\\n')}`,
+            )
+          }
+          line++
+          column = code.length - newlineIndex
+        }
+      }
+      if (loc && loc !== locStub) {
+        addMapping(loc.end)
+      }
+    }
+  }
+
+  return codegen
+
+  function addMapping(loc: Position, name: string | null = null) {
+    // we use the private property to directly add the mapping
+    // because the addMapping() implementation in source-map-js has a bunch of
+    // unnecessary arg and validation checks that are pure overhead in our case.
+    const { _names, _mappings } = context.map!
+    if (name !== null && !_names.has(name)) _names.add(name)
+    _mappings.add({
+      originalLine: loc.line,
+      originalColumn: loc.column - 1, // source-map column is 0 based
+      generatedLine: line,
+      generatedColumn: column - 1,
+      source: context.options.filename,
+      // @ts-expect-error it is possible to be null
+      name,
+    })
+  }
+}
+
+function genChildren(children: IRDynamicInfo[]) {
   let code = ''
   let offset = 0
-  for (const [index, child] of Object.entries(children)) {
-    const childrenLength = Object.keys(child.children).length
-    if (child.ghost && child.placeholder === null && childrenLength === 0) {
+
+  for (const [index, child] of children.entries()) {
+    if (child.dynamicFlags & DynamicFlag.NON_TEMPLATE) {
       offset--
-      continue
     }
 
-    code += ` ${Number(index) + offset}: [`
+    const idx = Number(index) + offset
+    const id =
+      child.dynamicFlags & DynamicFlag.REFERENCED
+        ? child.dynamicFlags & DynamicFlag.INSERT
+          ? child.anchor
+          : child.id
+        : null
+    const childrenString = genChildren(child.children)
 
-    const id = child.ghost ? child.placeholder : child.id
-    if (id !== null) code += `n${id}`
-
-    const childrenString = childrenLength && genChildren(child.children)
-    if (childrenString) code += `, ${childrenString}`
-
-    code += '],'
+    if (id !== null || childrenString) {
+      code += ` ${idx}: [`
+      if (id !== null) code += `n${id}`
+      if (childrenString) code += `, ${childrenString}`
+      code += '],'
+    }
   }
 
   if (!code) return ''
   return `{${code}}`
 }
 
-function genOperation(oper: OperationNode, context: CodegenContext) {
+function genOperation(
+  oper: OperationNode,
+  context: CodegenContext,
+): CodeFragment[] {
   // TODO: cache old value
   switch (oper.type) {
     case IRNodeTypes.SET_PROP:
@@ -364,22 +352,33 @@ function genOperation(oper: OperationNode, context: CodegenContext) {
       return genIf(oper, context)
     case IRNodeTypes.WITH_DIRECTIVE:
       // generated, skip
-      return
+      break
     default:
       return checkNever(oper)
   }
+
+  return []
+}
+
+export function buildCodeFragment() {
+  const frag: CodeFragment[] = []
+  const push = frag.push.bind(frag)
+  return [frag, push] as const
 }
 
 export function genBlockFunctionContent(
   ir: BlockFunctionIRNode | RootIRNode,
   ctx: CodegenContext,
-) {
-  const { pushNewline, withIndent, vaporHelper } = ctx
-  pushNewline(`const n${ir.dynamic.id} = t${ir.templateIndex}()`)
+): CodeFragment[] {
+  const { newline, withIndent, vaporHelper } = ctx
+  const [frag, push] = buildCodeFragment()
+
+  push(newline(), `const n${ir.dynamic.id} = t${ir.templateIndex}()`)
 
   const children = genChildren(ir.dynamic.children)
   if (children) {
-    pushNewline(
+    push(
+      newline(),
       `const ${children} = ${vaporHelper('children')}(n${ir.dynamic.id})`,
     )
   }
@@ -389,24 +388,24 @@ export function genBlockFunctionContent(
       oper.type === IRNodeTypes.WITH_DIRECTIVE,
   )
   for (const directives of groupDirective(directiveOps)) {
-    genWithDirective(directives, ctx)
+    push(...genWithDirective(directives, ctx))
   }
 
   for (const operation of ir.operation) {
-    genOperation(operation, ctx)
+    push(...genOperation(operation, ctx))
   }
 
   for (const { operations } of ir.effect) {
-    pushNewline(`${vaporHelper('renderEffect')}(() => {`)
+    push(newline(), `${vaporHelper('renderEffect')}(() => {`)
     withIndent(() => {
-      for (const operation of operations) {
-        genOperation(operation, ctx)
-      }
+      operations.forEach(op => push(...genOperation(op, ctx)))
     })
-    pushNewline('})')
+    push(newline(), '})')
   }
 
-  pushNewline(`return n${ir.dynamic.id}`)
+  push(newline(), `return n${ir.dynamic.id}`)
+
+  return frag
 }
 
 function groupDirective(ops: WithDirectiveIRNode[]): WithDirectiveIRNode[][] {

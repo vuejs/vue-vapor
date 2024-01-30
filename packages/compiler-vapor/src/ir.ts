@@ -62,7 +62,7 @@ export interface IfIRNode extends BaseIRNode {
   id: number
   condition: IRExpression
   positive: BlockFunctionIRNode
-  negative?: BlockFunctionIRNode
+  negative?: BlockFunctionIRNode | IfIRNode
 }
 
 export interface TemplateFactoryIRNode extends BaseIRNode {
@@ -156,7 +156,7 @@ export interface WithDirectiveIRNode extends BaseIRNode {
   type: IRNodeTypes.WITH_DIRECTIVE
   element: number
   dir: VaporDirectiveNode
-  builtin?: string
+  builtin?: VaporHelper
 }
 
 export type IRNode =
@@ -180,15 +180,28 @@ export type OperationNode =
 
 export type BlockIRNode = RootIRNode | BlockFunctionIRNode
 
+export enum DynamicFlag {
+  NONE = 0,
+  /**
+   * This node is referenced and needs to be saved as a variable.
+   */
+  REFERENCED = 1,
+  /**
+   * This node is not generated from template, but is generated dynamically.
+   */
+  NON_TEMPLATE = 1 << 1,
+  /**
+   * This node needs to be inserted back into the template.
+   */
+  INSERT = 1 << 2,
+}
+
 export interface IRDynamicInfo {
   id: number | null
-  referenced: boolean
-  /** created by DOM API */
-  ghost: boolean
-  placeholder: number | null
-  children: IRDynamicChildren
+  dynamicFlags: DynamicFlag
+  anchor: number | null
+  children: IRDynamicInfo[]
 }
-export type IRDynamicChildren = Record<number, IRDynamicInfo>
 
 export type IRExpression = SimpleExpressionNode | string
 export interface IREffect {
