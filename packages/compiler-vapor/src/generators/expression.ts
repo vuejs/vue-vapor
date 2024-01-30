@@ -17,7 +17,6 @@ import {
 export function genExpression(
   node: IRExpression,
   context: CodegenContext,
-  knownIds: Record<string, number> = Object.create(null),
 ): CodeFragment[] {
   const {
     options: { prefixIdentifiers },
@@ -43,7 +42,12 @@ export function genExpression(
 
   if (ast === null) {
     // the expression is a simple identifier
-    return [genIdentifier(rawExpr, context, loc)]
+    const isScopeVarReference = context.identifiers[rawExpr]
+    if (isScopeVarReference) {
+      return [[rawExpr, NewlineType.None, loc]]
+    } else {
+      return [genIdentifier(rawExpr, context, loc)]
+    }
   }
 
   const ids: Identifier[] = []
@@ -55,7 +59,7 @@ export function genExpression(
     },
     false,
     [],
-    knownIds,
+    context.identifiers,
   )
   if (ids.length) {
     ids.sort((a, b) => a.start! - b.start!)

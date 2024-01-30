@@ -17,9 +17,13 @@ export function genFor(
     ...call(
       vaporHelper('createFor'),
       ['() => ', ...genExpression(source, context)],
-      genBlockFunction(render, context, [
-        [value.content, NewlineType.None, value.loc],
-      ]),
+      context.withId(
+        () =>
+          genBlockFunction(render, context, [
+            [value.content, NewlineType.None, value.loc],
+          ]),
+        value.content,
+      ),
     ),
   ]
 }

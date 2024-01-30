@@ -11,7 +11,7 @@ export function render(_ctx) {
   const n1 = _createFor(() => _ctx.items, (item) => {
     const n2 = t0()
     _renderEffect(() => {
-      _setText(n2, _ctx.item)
+      _setText(n2, item)
     })
     return n2
   })

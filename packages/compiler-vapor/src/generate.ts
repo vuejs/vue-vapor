@@ -90,6 +90,21 @@ export class CodegenContext {
     return `_${name}`
   }
 
+  identifiers: Record<string, number> = Object.create(null)
+
+  withId = <T>(fn: () => T, ...ids: string[]): T => {
+    const { identifiers } = this
+    for (const id of ids) {
+      if (identifiers[id] === undefined) identifiers[id] = 0
+      identifiers[id]!++
+    }
+
+    const ret = fn()
+    ids.forEach(id => identifiers[id]!--)
+
+    return ret
+  }
+
   constructor(ir: RootIRNode, options: CodegenOptions) {
     const defaultOptions = {
       mode: 'function',
