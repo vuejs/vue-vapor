@@ -8,6 +8,12 @@ import {
   type NormalizedPropsOptions,
   normalizePropsOptions,
 } from './componentProps'
+import {
+  type EmitFn,
+  type EmitsOptions,
+  type ObjectEmitsOptions,
+  normalizeEmitsOptions,
+} from './componentEmits'
 
 import type { Data } from '@vue/shared'
 import { VaporLifecycleHooks } from './enums'
@@ -17,10 +23,12 @@ export type Component = FunctionalComponent | ObjectComponent
 export type SetupFn = (props: any, ctx: any) => Block | Data
 export type FunctionalComponent = SetupFn & {
   props: ComponentPropsOptions
+  emits: EmitsOptions
   render(ctx: any): Block
 }
 export interface ObjectComponent {
   props: ComponentPropsOptions
+  emits: EmitsOptions
   setup?: SetupFn
   render(ctx: any): Block
 }
@@ -37,13 +45,19 @@ export interface ComponentInternalInstance {
   block: Block | null
   scope: EffectScope
   component: FunctionalComponent | ObjectComponent
+  rawProps: Data
+
+  // normalized options
   propsOptions: NormalizedPropsOptions
+  emitsOptions: ObjectEmitsOptions | null
 
   parent: ComponentInternalInstance | null
 
   // state
   props: Data
   setupState: Data
+  emit: EmitFn
+  emitted: Record<string, boolean> | null
   refs: Data
   metadata: WeakMap<Node, ElementMetadata>
 
@@ -139,6 +153,7 @@ export const unsetCurrentInstance = () => {
 let uid = 0
 export const createComponentInstance = (
   component: ObjectComponent | FunctionalComponent,
+  rawProps: Data,
 ): ComponentInternalInstance => {
   const instance: ComponentInternalInstance = {
     uid: uid++,
@@ -146,13 +161,18 @@ export const createComponentInstance = (
     container: null!, // set on mountComponent
     scope: new EffectScope(true /* detached */)!,
     component,
+    rawProps,
 
     // TODO: registory of parent
     parent: null,
 
     // resolved props and emits options
     propsOptions: normalizePropsOptions(component),
-    // emitsOptions: normalizeEmitsOptions(type, appContext), // TODO:
+    emitsOptions: normalizeEmitsOptions(component),
+
+    // emit
+    emit: null!, // to be set immediately
+    emitted: null,
 
     // state
     props: EMPTY_OBJ,
