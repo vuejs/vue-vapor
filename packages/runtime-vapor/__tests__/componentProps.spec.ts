@@ -1,5 +1,9 @@
 // NOTE: This test is implemented based on the case of `runtime-core/__test__/componentProps.spec.ts`.
 
+// NOTE: not supported
+// mixins
+// caching
+
 import { defineComponent } from '../src/apiDefineComponent'
 
 import type { FunctionalComponent } from '../src/component'
@@ -77,7 +81,7 @@ describe('component props (vapor)', () => {
   })
 
   test('stateful with setup', () => {
-    // FIXME: is it necessary?
+    // TODO:
   })
 
   test('functional with declaration', () => {
@@ -287,7 +291,34 @@ describe('component props (vapor)', () => {
   })
 
   test('using inject in default value factory', () => {
-    // FIXME: is it necessary?
+    // TODO: impl inject
+  })
+
+  // NOTE: maybe it's unnecessary
+  // https://github.com/vuejs/core-vapor/pull/99#discussion_r1472647377
+  test('optimized props updates', async () => {
+    // TODO:
+  })
+
+  describe('validator', () => {
+    // TODO: impl validator
+  })
+
+  test('warn props mutation', () => {
+    // TODO: impl warn
+  })
+
+  test('warn absent required props', () => {
+    // TODO: impl warn
+  })
+
+  test('warn on type mismatch', () => {
+    // TODO: impl warn
+  })
+
+  // #3495
+  test('should not warn required props using kebab-case', async () => {
+    // TODO: impl warn
   })
 
   test('props type support BigInt', () => {
@@ -324,35 +355,35 @@ describe('component props (vapor)', () => {
   })
 
   // #3288
-  // test('declared prop key should be present even if not passed', async () => {
-  // let initialKeys: string[] = []
-  // const changeSpy = vi.fn()
-  // const passFoo = ref(false)
-  // const Comp = {
-  //   props: ['foo'],
-  //   setup() {
-  //     const instance = getCurrentInstance()!
-  //     initialKeys = Object.keys(instance.props)
-  //     watchEffect(changeSpy)
-  //     return {}
-  //   },
-  //   render() {
-  //     return {}
-  //   },
-  // }
-  // const Parent = createIf(
-  //   () => passFoo.value,
-  //   () => {
-  //     return render(Comp , { foo: 1 }, host) // TODO: createComponent fn
-  //   },
-  // )
-  // // expect(changeSpy).toHaveBeenCalledTimes(1)
-  // })
+  test('declared prop key should be present even if not passed', async () => {
+    // let initialKeys: string[] = []
+    // const changeSpy = vi.fn()
+    // const passFoo = ref(false)
+    // const Comp = {
+    //   props: ['foo'],
+    //   setup() {
+    //     const instance = getCurrentInstance()!
+    //     initialKeys = Object.keys(instance.props)
+    //     watchEffect(changeSpy)
+    //     return {}
+    //   },
+    //   render() {
+    //     return {}
+    //   },
+    // }
+    // const Parent = createIf(
+    //   () => passFoo.value,
+    //   () => {
+    //     return render(Comp , { foo: 1 }, host) // TODO: createComponent fn
+    //   },
+    // )
+    // // expect(changeSpy).toHaveBeenCalledTimes(1)
+  })
 
   // #3371
-  // test(`avoid double-setting props when casting`, async () => {
-  //   // TODO: proide, slots
-  // })
+  test(`avoid double-setting props when casting`, async () => {
+    // TODO: proide, slots
+  })
 
   test('support null in required + multiple-type declarations', () => {
     const Comp = defineComponent({
@@ -371,10 +402,10 @@ describe('component props (vapor)', () => {
     }).not.toThrow()
   })
 
-  // // #5016
-  // test('handling attr with undefined value', () => {
-  //   // TODO: attrs
-  // })
+  // #5016
+  test('handling attr with undefined value', () => {
+    // TODO: attrs
+  })
 
   // #691ef
   test('should not mutate original props long-form definition object', () => {
@@ -392,11 +423,4 @@ describe('component props (vapor)', () => {
 
     expect(Object.keys(props.msg).length).toBe(1)
   })
-
-  // NOTE: not supported
-  // optimized props update
-  // mixins
-  // validator
-  // warn
-  // caching
 })
