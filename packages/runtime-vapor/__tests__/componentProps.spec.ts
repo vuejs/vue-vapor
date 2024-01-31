@@ -84,7 +84,7 @@ describe('component props (vapor)', () => {
     // expect(props.qux).toEqual(5) // TODO: attrs
   })
 
-  test('stateful with setup', () => {
+  test.todo('stateful with setup', () => {
     // TODO:
   })
 
@@ -294,7 +294,7 @@ describe('component props (vapor)', () => {
     // expect(defaultFn).toHaveBeenCalledTimes(1) // failed: caching is not supported (called 3 times)
   })
 
-  test('using inject in default value factory', () => {
+  test.todo('using inject in default value factory', () => {
     // TODO: impl inject
   })
 
@@ -356,24 +356,24 @@ describe('component props (vapor)', () => {
     // expect(host.innerHTML).toBe('<div id="b">2</div>') // TODO: Fallthrough Attributes
   })
 
-  test('validator', () => {
+  test.todo('validator', () => {
     // TODO: impl validator
   })
 
-  test('warn props mutation', () => {
+  test.todo('warn props mutation', () => {
     // TODO: impl warn
   })
 
-  test('warn absent required props', () => {
+  test.todo('warn absent required props', () => {
     // TODO: impl warn
   })
 
-  test('warn on type mismatch', () => {
+  test.todo('warn on type mismatch', () => {
     // TODO: impl warn
   })
 
   // #3495
-  test('should not warn required props using kebab-case', async () => {
+  test.todo('should not warn required props using kebab-case', async () => {
     // TODO: impl warn
   })
 
@@ -411,33 +411,36 @@ describe('component props (vapor)', () => {
   })
 
   // #3288
-  test('declared prop key should be present even if not passed', async () => {
-    // let initialKeys: string[] = []
-    // const changeSpy = vi.fn()
-    // const passFoo = ref(false)
-    // const Comp = {
-    //   props: ['foo'],
-    //   setup() {
-    //     const instance = getCurrentInstance()!
-    //     initialKeys = Object.keys(instance.props)
-    //     watchEffect(changeSpy)
-    //     return {}
-    //   },
-    //   render() {
-    //     return {}
-    //   },
-    // }
-    // const Parent = createIf(
-    //   () => passFoo.value,
-    //   () => {
-    //     return render(Comp , { foo: 1 }, host) // TODO: createComponent fn
-    //   },
-    // )
-    // // expect(changeSpy).toHaveBeenCalledTimes(1)
-  })
+  test.todo(
+    'declared prop key should be present even if not passed',
+    async () => {
+      // let initialKeys: string[] = []
+      // const changeSpy = vi.fn()
+      // const passFoo = ref(false)
+      // const Comp = {
+      //   props: ['foo'],
+      //   setup() {
+      //     const instance = getCurrentInstance()!
+      //     initialKeys = Object.keys(instance.props)
+      //     watchEffect(changeSpy)
+      //     return {}
+      //   },
+      //   render() {
+      //     return {}
+      //   },
+      // }
+      // const Parent = createIf(
+      //   () => passFoo.value,
+      //   () => {
+      //     return render(Comp , { foo: 1 }, host) // TODO: createComponent fn
+      //   },
+      // )
+      // // expect(changeSpy).toHaveBeenCalledTimes(1)
+    },
+  )
 
   // #3371
-  test(`avoid double-setting props when casting`, async () => {
+  test.todo(`avoid double-setting props when casting`, async () => {
     // TODO: proide, slots
   })
 
@@ -459,7 +462,7 @@ describe('component props (vapor)', () => {
   })
 
   // #5016
-  test('handling attr with undefined value', () => {
+  test.todo('handling attr with undefined value', () => {
     // TODO: attrs
   })
 
