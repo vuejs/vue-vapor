@@ -7,23 +7,10 @@ import {
   advancePositionWithMutation,
   locStub,
 } from '@vue/compiler-dom'
-import {
-  IRNodeTypes,
-  type OperationNode,
-  type RootIRNode,
-  type VaporHelper,
-} from './ir'
+import type { IREffect, RootIRNode, VaporHelper } from './ir'
 import { SourceMapGenerator } from 'source-map-js'
-import { extend, isString } from '@vue/shared'
+import { extend, isString, remove } from '@vue/shared'
 import type { ParserPlugin } from '@babel/parser'
-import { genSetProp } from './generators/prop'
-import { genCreateTextNode, genSetText } from './generators/text'
-import { genSetEvent } from './generators/event'
-import { genSetHtml } from './generators/html'
-import { genSetRef } from './generators/ref'
-import { genSetModelValue } from './generators/modelValue'
-import { genAppendNode, genInsertNode, genPrependNode } from './generators/dom'
-import { genIf } from './generators/if'
 import { genTemplate } from './generators/template'
 import { genBlockFunctionContent } from './generators/block'
 
@@ -32,6 +19,10 @@ interface CodegenOptions extends BaseCodegenOptions {
 }
 
 export type CodeFragment =
+  | typeof NEWLINE
+  | typeof LF
+  | typeof INDENT_START
+  | typeof INDENT_END
   | string
   | [code: string, newlineIndex?: number, loc?: SourceLocation, name?: string]
   | undefined
@@ -39,15 +30,10 @@ export type CodeFragment =
 export class CodegenContext {
   options: Required<CodegenOptions>
 
-  source: string
   code: CodeFragment[]
-  indentLevel: number = 0
   map?: SourceMapGenerator
 
   push: (...args: CodeFragment[]) => void
-  newline = (): CodeFragment => {
-    return [`\n${`  `.repeat(this.indentLevel)}`, NewlineType.Start]
-  }
   multi = (
     [left, right, seg]: [left: string, right: string, segment: string],
     ...fns: Array<false | string | CodeFragment[]>
@@ -71,12 +57,6 @@ export class CodegenContext {
   ): CodeFragment[] => {
     return [name, ...this.multi(['(', ')', ', '], ...args)]
   }
-  withIndent = <T>(fn: () => T): T => {
-    ++this.indentLevel
-    const ret = fn()
-    --this.indentLevel
-    return ret
-  }
 
   helpers = new Set<string>([])
   vaporHelpers = new Set<string>([])
@@ -89,7 +69,27 @@ export class CodegenContext {
     return `_${name}`
   }
 
-  constructor(ir: RootIRNode, options: CodegenOptions) {
+  identifiers: Record<string, string[]> = Object.create(null)
+  withId = <T>(fn: () => T, map: Record<string, string | null>): T => {
+    const { identifiers } = this
+    const ids = Object.keys(map)
+
+    for (const id of ids) {
+      identifiers[id] ||= []
+      identifiers[id].unshift(map[id] || id)
+    }
+
+    const ret = fn()
+    ids.forEach(id => remove(identifiers[id], map[id] || id))
+
+    return ret
+  }
+  genEffect?: (effects: IREffect[]) => CodeFragment[]
+
+  constructor(
+    public ir: RootIRNode,
+    options: CodegenOptions,
+  ) {
     const defaultOptions = {
       mode: 'function',
       prefixIdentifiers: options.mode === 'module',
@@ -108,7 +108,6 @@ export class CodegenContext {
       expressionPlugins: [],
     }
     this.options = extend(defaultOptions, options)
-    this.source = ir.source
 
     const [code, push] = buildCodeFragment()
     this.code = code
@@ -120,7 +119,7 @@ export class CodegenContext {
     if (!__BROWSER__ && sourceMap) {
       // lazy require source-map implementation, only in non-browser builds
       this.map = new SourceMapGenerator()
-      this.map.setSourceContent(filename, this.source)
+      this.map.setSourceContent(filename, ir.source)
       this.map._sources.add(filename)
     }
   }
@@ -132,51 +131,44 @@ export interface VaporCodegenResult extends BaseCodegenResult {
   vaporHelpers: Set<string>
 }
 
+export const NEWLINE = Symbol(__DEV__ ? `newline` : ``)
+/** increase offset but don't push actual code */
+export const LF = Symbol(__DEV__ ? `line feed` : ``)
+export const INDENT_START = Symbol(__DEV__ ? `indent start` : ``)
+export const INDENT_END = Symbol(__DEV__ ? `indent end` : ``)
+
 // IR -> JS codegen
 export function generate(
   ir: RootIRNode,
   options: CodegenOptions = {},
 ): VaporCodegenResult {
-  const ctx = new CodegenContext(ir, options)
-  const { push, withIndent, newline, helpers, vaporHelpers } = ctx
+  const context = new CodegenContext(ir, options)
+  const { push, helpers, vaporHelpers } = context
 
   const functionName = 'render'
   const isSetupInlined = !!options.inline
   if (isSetupInlined) {
     push(`(() => {`)
   } else {
-    push(
-      // placeholder for preamble
-      newline(),
-      newline(),
-      `export function ${functionName}(_ctx) {`,
-    )
+    push(NEWLINE, `export function ${functionName}(_ctx) {`)
   }
 
-  withIndent(() => {
-    ir.template.forEach((template, i) => push(...genTemplate(template, i, ctx)))
-    push(...genBlockFunctionContent(ir, ctx))
-  })
+  push(INDENT_START)
+  ir.template.forEach((template, i) =>
+    push(...genTemplate(template, i, context)),
+  )
+  push(...genBlockFunctionContent(ir, context))
+  push(INDENT_END, NEWLINE)
 
-  push(newline())
   if (isSetupInlined) {
     push('})()')
   } else {
     push('}')
   }
 
-  let preamble = ''
-  if (vaporHelpers.size)
-    // TODO: extract import codegen
-    preamble = `import { ${[...vaporHelpers]
-      .map(h => `${h} as _${h}`)
-      .join(', ')} } from 'vue/vapor';`
-  if (helpers.size)
-    preamble = `import { ${[...helpers]
-      .map(h => `${h} as _${h}`)
-      .join(', ')} } from 'vue';`
+  const preamble = genHelperImports(context)
+  let codegen = genCodeFragment(context)
 
-  let codegen = genCodeFragment(ctx)
   if (!isSetupInlined) {
     codegen = preamble + codegen
   }
@@ -185,7 +177,7 @@ export function generate(
     code: codegen,
     ast: ir,
     preamble,
-    map: ctx.map ? ctx.map.toJSON() : undefined,
+    map: context.map ? context.map.toJSON() : undefined,
     helpers,
     vaporHelpers,
   }
@@ -193,12 +185,27 @@ export function generate(
 
 function genCodeFragment(context: CodegenContext) {
   let codegen = ''
-  let line = 1
-  let column = 1
-  let offset = 0
+  const pos = { line: 1, column: 1, offset: 0 }
+  let indentLevel = 0
 
   for (let frag of context.code) {
     if (!frag) continue
+
+    if (frag === NEWLINE) {
+      frag = [`\n${`  `.repeat(indentLevel)}`, NewlineType.Start]
+    } else if (frag === INDENT_START) {
+      indentLevel++
+      continue
+    } else if (frag === INDENT_END) {
+      indentLevel--
+      continue
+    } else if (frag === LF) {
+      pos.line++
+      pos.column = 0
+      pos.offset++
+      continue
+    }
+
     if (isString(frag)) frag = [frag]
 
     let [code, newlineIndex = NewlineType.None, loc, name] = frag
@@ -208,10 +215,10 @@ function genCodeFragment(context: CodegenContext) {
       if (loc) addMapping(loc.start, name)
       if (newlineIndex === NewlineType.Unknown) {
         // multiple newlines, full iteration
-        advancePositionWithMutation({ line, column, offset }, code)
+        advancePositionWithMutation(pos, code)
       } else {
         // fast paths
-        offset += code.length
+        pos.offset += code.length
         if (newlineIndex === NewlineType.None) {
           // no newlines; fast path to avoid newline detection
           if (__TEST__ && code.includes('\n')) {
@@ -220,7 +227,7 @@ function genCodeFragment(context: CodegenContext) {
                 `newlines: ${code.replace(/\n/g, '\\n')}`,
             )
           }
-          column += code.length
+          pos.column += code.length
         } else {
           // single newline at known index
           if (newlineIndex === NewlineType.End) {
@@ -237,8 +244,8 @@ function genCodeFragment(context: CodegenContext) {
                 `but does not conform: ${code.replace(/\n/g, '\\n')}`,
             )
           }
-          line++
-          column = code.length - newlineIndex
+          pos.line++
+          pos.column = code.length - newlineIndex
         }
       }
       if (loc && loc !== locStub) {
@@ -258,8 +265,8 @@ function genCodeFragment(context: CodegenContext) {
     _mappings.add({
       originalLine: loc.line,
       originalColumn: loc.column - 1, // source-map column is 0 based
-      generatedLine: line,
-      generatedColumn: column - 1,
+      generatedLine: pos.line,
+      generatedColumn: pos.column - 1,
       source: context.options.filename,
       // @ts-expect-error it is possible to be null
       name,
@@ -267,50 +274,24 @@ function genCodeFragment(context: CodegenContext) {
   }
 }
 
-export function buildCodeFragment() {
-  const frag: CodeFragment[] = []
+export function buildCodeFragment(...frag: CodeFragment[]) {
   const push = frag.push.bind(frag)
   return [frag, push] as const
 }
 
-export function genOperation(
-  oper: OperationNode,
-  context: CodegenContext,
-): CodeFragment[] {
-  // TODO: cache old value
-  switch (oper.type) {
-    case IRNodeTypes.SET_PROP:
-      return genSetProp(oper, context)
-    case IRNodeTypes.SET_TEXT:
-      return genSetText(oper, context)
-    case IRNodeTypes.SET_EVENT:
-      return genSetEvent(oper, context)
-    case IRNodeTypes.SET_HTML:
-      return genSetHtml(oper, context)
-    case IRNodeTypes.SET_REF:
-      return genSetRef(oper, context)
-    case IRNodeTypes.SET_MODEL_VALUE:
-      return genSetModelValue(oper, context)
-    case IRNodeTypes.CREATE_TEXT_NODE:
-      return genCreateTextNode(oper, context)
-    case IRNodeTypes.INSERT_NODE:
-      return genInsertNode(oper, context)
-    case IRNodeTypes.PREPEND_NODE:
-      return genPrependNode(oper, context)
-    case IRNodeTypes.APPEND_NODE:
-      return genAppendNode(oper, context)
-    case IRNodeTypes.IF:
-      return genIf(oper, context)
-    case IRNodeTypes.WITH_DIRECTIVE:
-      // generated, skip
-      break
-    default:
-      return checkNever(oper)
+function genHelperImports({ helpers, vaporHelpers, code }: CodegenContext) {
+  let imports = ''
+  if (helpers.size) {
+    code.unshift(LF)
+    imports += `import { ${[...helpers]
+      .map(h => `${h} as _${h}`)
+      .join(', ')} } from 'vue';\n`
   }
-
-  return []
+  if (vaporHelpers.size) {
+    code.unshift(LF)
+    imports += `import { ${[...vaporHelpers]
+      .map(h => `${h} as _${h}`)
+      .join(', ')} } from 'vue/vapor';\n`
+  }
+  return imports
 }
-
-// remove when stable
-// @ts-expect-error
-function checkNever(x: never): never {}

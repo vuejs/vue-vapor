@@ -1,13 +1,16 @@
 import {
   type AllNode,
+  type AttributeNode,
   type TransformOptions as BaseTransformOptions,
   type CompilerCompatOptions,
+  type DirectiveNode,
   type ElementNode,
   ElementTypes,
   NodeTypes,
   type ParentNode,
   type RootNode,
   type TemplateChildNode,
+  type TemplateNode,
   defaultOnError,
   defaultOnWarn,
   isVSlot,
@@ -114,7 +117,7 @@ function createRootContext(
 ): TransformContext<RootNode> {
   let globalId = 0
 
-  const ctx: TransformContext<RootNode> = {
+  const context: TransformContext<RootNode> = {
     node,
     parent: null,
     index: 0,
@@ -194,12 +197,10 @@ function createRootContext(
         templateNode = {
           type: IRNodeTypes.TEMPLATE_FACTORY,
           template: this.template,
-          loc: node.loc,
         }
       } else {
         templateNode = {
           type: IRNodeTypes.FRAGMENT_FACTORY,
-          loc: node.loc,
         }
       }
       root.template.push(templateNode)
@@ -209,9 +210,9 @@ function createRootContext(
       this.block.operation.push(...node)
     },
   }
-  ctx.root = ctx
-  ctx.reference()
-  return ctx
+  context.root = context
+  context.reference()
+  return context
 }
 
 function createContext<T extends TemplateChildNode>(
@@ -219,7 +220,7 @@ function createContext<T extends TemplateChildNode>(
   parent: TransformContext<ParentNode>,
   index: number,
 ): TransformContext<T> {
-  const ctx: TransformContext<T> = extend({}, parent, {
+  return extend({}, parent, {
     node,
     parent,
     index,
@@ -227,8 +228,7 @@ function createContext<T extends TemplateChildNode>(
     template: '',
     childrenTemplate: [],
     dynamic: genDefaultDynamic(),
-  } satisfies Partial<TransformContext<T>>)
-  return ctx
+  } satisfies Partial<TransformContext<T>>) satisfies TransformContext<T>
 }
 
 // AST -> IR
@@ -240,7 +240,6 @@ export function transform(
     type: IRNodeTypes.ROOT,
     node: root,
     source: root.source,
-    loc: root.loc,
     template: [],
     templateIndex: -1,
     dynamic: extend(genDefaultDynamic(), {
@@ -250,10 +249,10 @@ export function transform(
     operation: [],
   }
 
-  const ctx = createRootContext(ir, root, options)
+  const context = createRootContext(ir, root, options)
 
-  transformNode(ctx)
-  ctx.registerTemplate()
+  transformNode(context)
+  context.registerTemplate()
 
   return ir
 }
@@ -311,47 +310,45 @@ function transformNode(
     context.template += context.childrenTemplate.filter(Boolean).join('')
 }
 
-function transformChildren(ctx: TransformContext<RootNode | ElementNode>) {
-  const { children } = ctx.node
+function transformChildren(context: TransformContext<RootNode | ElementNode>) {
+  const { children } = context.node
 
   for (const [i, child] of children.entries()) {
-    const childContext = createContext(child, ctx, i)
+    const childContext = createContext(child, context, i)
     transformNode(childContext)
-    ctx.childrenTemplate.push(childContext.template)
-    ctx.dynamic.children[i] = childContext.dynamic
+    context.childrenTemplate.push(childContext.template)
+    context.dynamic.children[i] = childContext.dynamic
   }
 
-  processDynamicChildren(ctx)
+  processDynamicChildren(context)
 }
 
-function processDynamicChildren(ctx: TransformContext<RootNode | ElementNode>) {
-  const { node } = ctx
-
+function processDynamicChildren(
+  context: TransformContext<RootNode | ElementNode>,
+) {
   let prevChildren: IRDynamicInfo[] = []
   let hasStatic = false
 
-  for (const [index, child] of ctx.dynamic.children.entries()) {
+  for (const [index, child] of context.dynamic.children.entries()) {
     if (!child || !(child.flags & DynamicFlag.INSERT)) {
       if (prevChildren.length) {
         if (hasStatic) {
-          ctx.childrenTemplate[index - prevChildren.length] = `<!>`
+          context.childrenTemplate[index - prevChildren.length] = `<!>`
 
           prevChildren[0].flags -= DynamicFlag.NON_TEMPLATE
-          const anchor = (prevChildren[0].anchor = ctx.increaseId())
+          const anchor = (prevChildren[0].anchor = context.increaseId())
 
-          ctx.registerOperation({
+          context.registerOperation({
             type: IRNodeTypes.INSERT_NODE,
-            loc: node.loc,
             element: prevChildren.map(child => child.id!),
-            parent: ctx.reference(),
+            parent: context.reference(),
             anchor,
           })
         } else {
-          ctx.registerOperation({
+          context.registerOperation({
             type: IRNodeTypes.PREPEND_NODE,
-            loc: node.loc,
             elements: prevChildren.map(child => child.id!),
-            parent: ctx.reference(),
+            parent: context.reference(),
           })
         }
       }
@@ -362,12 +359,11 @@ function processDynamicChildren(ctx: TransformContext<RootNode | ElementNode>) {
 
     prevChildren.push(child)
 
-    if (index === ctx.dynamic.children.length - 1) {
-      ctx.registerOperation({
+    if (index === context.dynamic.children.length - 1) {
+      context.registerOperation({
         type: IRNodeTypes.APPEND_NODE,
-        loc: node.loc,
         elements: prevChildren.map(child => child.id!),
-        parent: ctx.reference(),
+        parent: context.reference(),
       })
     }
   }
@@ -402,4 +398,28 @@ export function createStructuralDirectiveTransform(
       return exitFns
     }
   }
+}
+
+export function wrapTemplate(node: ElementNode, dirs: string[]): TemplateNode {
+  if (node.tagType === ElementTypes.TEMPLATE) {
+    return node
+  }
+
+  const reserved: Array<AttributeNode | DirectiveNode> = []
+  const pass: Array<AttributeNode | DirectiveNode> = []
+  node.props.forEach(prop => {
+    if (prop.type === NodeTypes.DIRECTIVE && dirs.includes(prop.name)) {
+      reserved.push(prop)
+    } else {
+      pass.push(prop)
+    }
+  })
+
+  return extend({}, node, {
+    type: NodeTypes.ELEMENT,
+    tag: 'template',
+    props: reserved,
+    tagType: ElementTypes.TEMPLATE,
+    children: [extend({}, node, { props: pass } as TemplateChildNode)],
+  } as Partial<TemplateNode>)
 }

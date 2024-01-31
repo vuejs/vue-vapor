@@ -9,37 +9,47 @@ import {
 import {
   type CodeFragment,
   type CodegenContext,
+  INDENT_END,
+  INDENT_START,
+  NEWLINE,
   buildCodeFragment,
-  genOperation,
 } from '../generate'
 import { genWithDirective } from './directive'
+import { genEffects, genOperations } from './operation'
 
 export function genBlockFunction(
   oper: BlockFunctionIRNode,
   context: CodegenContext,
+  args: CodeFragment[] = [],
+  returnValue?: () => CodeFragment[],
 ): CodeFragment[] {
-  const { newline, withIndent } = context
   return [
-    '() => {',
-    ...withIndent(() => genBlockFunctionContent(oper, context)),
-    newline(),
+    '(',
+    ...args,
+    ') => {',
+    INDENT_START,
+    ...genBlockFunctionContent(oper, context, returnValue),
+    INDENT_END,
+    NEWLINE,
     '}',
   ]
 }
 
 export function genBlockFunctionContent(
   ir: BlockFunctionIRNode | RootIRNode,
-  ctx: CodegenContext,
+  context: CodegenContext,
+  returnValue?: () => CodeFragment[],
 ): CodeFragment[] {
-  const { newline, withIndent, vaporHelper } = ctx
-  const [frag, push] = buildCodeFragment()
-
-  push(newline(), `const n${ir.dynamic.id} = t${ir.templateIndex}()`)
+  const { vaporHelper } = context
+  const [frag, push] = buildCodeFragment(
+    NEWLINE,
+    `const n${ir.dynamic.id} = t${ir.templateIndex}()`,
+  )
 
   const children = genChildren(ir.dynamic.children)
   if (children) {
     push(
-      newline(),
+      NEWLINE,
       `const ${children} = ${vaporHelper('children')}(n${ir.dynamic.id})`,
     )
   }
@@ -49,22 +59,17 @@ export function genBlockFunctionContent(
       oper.type === IRNodeTypes.WITH_DIRECTIVE,
   )
   for (const directives of groupDirective(directiveOps)) {
-    push(...genWithDirective(directives, ctx))
+    push(...genWithDirective(directives, context))
   }
 
-  for (const operation of ir.operation) {
-    push(...genOperation(operation, ctx))
-  }
+  push(...genOperations(ir.operation, context))
+  push(...genEffects(ir.effect, context))
 
-  for (const { operations } of ir.effect) {
-    push(newline(), `${vaporHelper('renderEffect')}(() => {`)
-    withIndent(() => {
-      operations.forEach(op => push(...genOperation(op, ctx)))
-    })
-    push(newline(), '})')
-  }
-
-  push(newline(), `return n${ir.dynamic.id}`)
+  push(
+    NEWLINE,
+    'return ',
+    ...(returnValue ? returnValue() : [`n${ir.dynamic.id}`]),
+  )
 
   return frag
 }

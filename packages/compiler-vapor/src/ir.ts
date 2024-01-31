@@ -4,7 +4,6 @@ import type {
   DirectiveNode,
   RootNode,
   SimpleExpressionNode,
-  SourceLocation,
   TemplateChildNode,
 } from '@vue/compiler-dom'
 import type { Prettify } from '@vue/shared'
@@ -12,6 +11,8 @@ import type { DirectiveTransform, NodeTransform } from './transform'
 
 export enum IRNodeTypes {
   ROOT,
+  BLOCK_FUNCTION,
+
   TEMPLATE_FACTORY,
   FRAGMENT_FACTORY,
 
@@ -30,16 +31,14 @@ export enum IRNodeTypes {
   WITH_DIRECTIVE,
 
   IF,
-  BLOCK_FUNCTION,
+  FOR,
 }
 
 export interface BaseIRNode {
   type: IRNodeTypes
-  loc: SourceLocation
 }
 
-// TODO refactor
-export type VaporHelper = keyof typeof import('../../runtime-vapor/src')
+export type VaporHelper = keyof typeof import('@vue/runtime-vapor')
 
 export interface BlockFunctionIRNode extends BaseIRNode {
   type: IRNodeTypes.BLOCK_FUNCTION
@@ -63,6 +62,16 @@ export interface IfIRNode extends BaseIRNode {
   condition: IRExpression
   positive: BlockFunctionIRNode
   negative?: BlockFunctionIRNode | IfIRNode
+}
+
+export interface ForIRNode extends BaseIRNode {
+  type: IRNodeTypes.FOR
+  id: number
+  source: IRExpression
+  value?: SimpleExpressionNode
+  key?: SimpleExpressionNode
+  index?: SimpleExpressionNode
+  render: BlockFunctionIRNode
 }
 
 export interface TemplateFactoryIRNode extends BaseIRNode {
@@ -130,7 +139,6 @@ export interface SetModelValueIRNode extends BaseIRNode {
 export interface CreateTextNodeIRNode extends BaseIRNode {
   type: IRNodeTypes.CREATE_TEXT_NODE
   id: number
-  value: IRExpression
 }
 
 export interface InsertNodeIRNode extends BaseIRNode {
@@ -177,6 +185,7 @@ export type OperationNode =
   | AppendNodeIRNode
   | WithDirectiveIRNode
   | IfIRNode
+  | ForIRNode
 
 export type BlockIRNode = RootIRNode | BlockFunctionIRNode
 
