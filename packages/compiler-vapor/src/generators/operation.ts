@@ -26,7 +26,6 @@ function genOperation(
   oper: OperationNode,
   context: CodegenContext,
 ): CodeFragment[] {
-  // TODO: cache old value
   switch (oper.type) {
     case IRNodeTypes.SET_PROP:
       return genSetProp(oper, context)
