@@ -5,7 +5,9 @@ import {
   setAttr,
   setClass,
   setDOMProp,
+  setHtml,
   setStyle,
+  setText,
 } from '../../src'
 import {
   createComponentInstance,
@@ -210,5 +212,25 @@ describe('patchProp', () => {
     })
 
     test.todo('should be able to set something on SVG')
+  })
+
+  describe('setText', () => {
+    test('should set textContent', () => {
+      const el = document.createElement('div')
+      setText(el, 'foo')
+      expect(el.textContent).toBe('foo')
+      setText(el, 'bar')
+      expect(el.textContent).toBe('bar')
+    })
+  })
+
+  describe('setHtml', () => {
+    test('should set innerHTML', () => {
+      const el = document.createElement('div')
+      setHtml(el, '<p>foo</p>')
+      expect(el.innerHTML).toBe('<p>foo</p>')
+      setHtml(el, '<p>bar</p>')
+      expect(el.innerHTML).toBe('<p>bar</p>')
+    })
   })
 })
