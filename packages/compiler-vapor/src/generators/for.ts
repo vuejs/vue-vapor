@@ -5,7 +5,7 @@ import {
   type CodegenContext,
   buildCodeFragment,
 } from '../generate'
-import type { ForIRNode } from '../ir'
+import type { ForIRNode, IREffect } from '../ir'
 import { genOperations } from './operation'
 import { NewlineType } from '@vue/compiler-dom'
 
@@ -16,27 +16,68 @@ export function genFor(
   const { newline, call, vaporHelper } = context
   const { source, value, key, render } = oper
 
-  const sourceExpr = ['() => (', ...genExpression(source, context), ')']
+  const rawValue = value && value.content
+  const rawKey = key && key.content
 
+  const sourceExpr = ['() => (', ...genExpression(source, context), ')']
   const updateFn = '_updateEffect'
   const destructure: CodeFragment[] | undefined = (value || key) && [
     '[',
-    value && [value.content, NewlineType.None, value.loc],
-    key && ', ',
-    key && [key.content, NewlineType.None, key.loc],
+    rawValue && [rawValue, NewlineType.None, value.loc],
+    rawKey && ', ',
+    rawKey && [rawKey, NewlineType.None, key.loc],
     '] = _block.s',
   ]
+  const blockRet: CodeFragment[] = [
+    '[',
+    `n${render.dynamic.id!}`,
+    `, ${updateFn}]`,
+  ]
 
-  context.effectOverride = effects => {
+  context.effectOverride = genEffectInFor
+
+  const idMap: Record<string, string> = {}
+  if (rawValue) idMap[rawValue] = `_block.s[0]`
+  if (rawKey) idMap[rawKey] = `_block.s[1]`
+
+  const blockFn = context.withId(
+    () =>
+      genBlockFunction(
+        render,
+        context,
+        ['_block, ', ...(destructure || [])],
+        blockRet,
+      ),
+    idMap,
+  )
+
+  context.effectOverride = undefined
+
+  return [
+    newline(),
+    `const n${oper.id} = `,
+    ...call(vaporHelper('createFor'), sourceExpr, blockFn),
+  ]
+
+  function genEffectInFor(effects: IREffect[]) {
     const [frag, push] = buildCodeFragment()
+
     context.withIndent(() => {
       if (destructure) {
         push(newline(), 'const ', ...destructure)
       }
-      effects.forEach(effect =>
-        push(...genOperations(effect.operations, context)),
-      )
+
+      const idMap: Record<string, string | null> = {}
+      if (value) idMap[value.content] = null
+      if (key) idMap[key.content] = null
+
+      context.withId(() => {
+        effects.forEach(effect =>
+          push(...genOperations(effect.operations, context)),
+        )
+      }, idMap)
     })
+
     return [
       newline(),
       `const ${updateFn} = () => {`,
@@ -47,31 +88,4 @@ export function genFor(
       `${vaporHelper('renderEffect')}(${updateFn})`,
     ]
   }
-
-  const blockRet: CodeFragment[] = [
-    '[',
-    `n${render.dynamic.id!}`,
-    `, ${updateFn}]`,
-  ]
-  const ids = [value && value.content, key && key.content].filter(
-    Boolean,
-  ) as string[]
-  const blockFn = context.withId(
-    () =>
-      genBlockFunction(
-        render,
-        context,
-        ['_block, ', ...(destructure || [])],
-        blockRet,
-      ),
-    ids,
-  )
-
-  context.effectOverride = undefined
-
-  return [
-    newline(),
-    `const n${oper.id} = `,
-    ...call(vaporHelper('createFor'), sourceExpr, blockFn),
-  ]
 }

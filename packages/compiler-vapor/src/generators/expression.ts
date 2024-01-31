@@ -40,27 +40,13 @@ export function genExpression(
     return [[rawExpr, NewlineType.None, loc]]
   }
 
+  // the expression is a simple identifier
   if (ast === null) {
-    // the expression is a simple identifier
-    const isScopeVarReference = context.identifiers[rawExpr]
-    if (isScopeVarReference) {
-      return [[rawExpr, NewlineType.None, loc]]
-    } else {
-      return [genIdentifier(rawExpr, context, loc)]
-    }
+    return [genIdentifier(rawExpr, context, loc)]
   }
 
   const ids: Identifier[] = []
-  walkIdentifiers(
-    ast!,
-    (id, parent, parentStack, isReference, isLocal) => {
-      if (isLocal) return
-      ids.push(id)
-    },
-    false,
-    [],
-    context.identifiers,
-  )
+  walkIdentifiers(ast!, id => ids.push(id))
   if (ids.length) {
     ids.sort((a, b) => a.start! - b.start!)
     const [frag, push] = buildCodeFragment()
@@ -96,11 +82,17 @@ const isLiteralWhitelisted = /*#__PURE__*/ makeMap('true,false,null,this')
 
 function genIdentifier(
   id: string,
-  { options, vaporHelper }: CodegenContext,
+  { options, vaporHelper, identifiers }: CodegenContext,
   loc?: SourceLocation,
 ): CodeFragment {
   const { inline, bindingMetadata } = options
   let name: string | undefined = id
+
+  const idMap = identifiers[id]
+  if (idMap && idMap.length) {
+    return [idMap[0], NewlineType.None, loc]
+  }
+
   if (inline) {
     switch (bindingMetadata[id]) {
       case BindingTypes.SETUP_REF:
