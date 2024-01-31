@@ -7,6 +7,22 @@ import {
 } from '@vue/shared'
 import { currentInstance } from '../component'
 
+export function recordPropMetadata(el: Node, key: string, value: any): any {
+  if (currentInstance) {
+    let metadata = currentInstance.metadata.get(el)
+    if (!metadata) {
+      currentInstance.metadata.set(el, (metadata = { props: {} }))
+    }
+    const prev = metadata.props[key]
+    metadata.props[key] = value
+    return prev
+  } else {
+    // Return NaN because NaN !== NaN,
+    // so it can ensure that an update will be triggered every time.
+    return NaN
+  }
+}
+
 export function setClass(el: Element, value: any) {
   const prev = recordPropMetadata(el, 'class', (value = normalizeClass(value)))
   if (value !== prev && (value || prev)) {
@@ -62,18 +78,6 @@ export function setDynamicProp(el: Element, key: string, value: any) {
   } else {
     // TODO special case for <input v-model type="checkbox">
     setAttr(el, key, value)
-  }
-}
-
-export function recordPropMetadata(el: Node, key: string, value: any): any {
-  if (currentInstance) {
-    let metadata = currentInstance.metadata.get(el)
-    if (!metadata) {
-      currentInstance.metadata.set(el, (metadata = { props: {} }))
-    }
-    const prev = metadata.props[key]
-    metadata.props[key] = value
-    return prev
   }
 }
 
