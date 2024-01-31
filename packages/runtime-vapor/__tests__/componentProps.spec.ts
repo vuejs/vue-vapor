@@ -4,14 +4,18 @@
 // mixins
 // caching
 
-import { defineComponent } from '../src/apiDefineComponent'
-
 import type { FunctionalComponent } from '../src/component'
-import { getCurrentInstance } from '../src/component'
-import { render } from '../src/render'
-import { template } from '../src/template'
-import { children, setText } from '../src/dom'
-import { watchEffect } from '../src/apiWatch'
+import {
+  children,
+  defineComponent,
+  getCurrentInstance,
+  nextTick,
+  ref,
+  render,
+  setText,
+  template,
+  watchEffect,
+} from '../src'
 
 let host: HTMLElement
 const initHost = () => {
@@ -297,10 +301,62 @@ describe('component props (vapor)', () => {
   // NOTE: maybe it's unnecessary
   // https://github.com/vuejs/core-vapor/pull/99#discussion_r1472647377
   test('optimized props updates', async () => {
-    // TODO:
+    const Child = defineComponent({
+      props: ['foo'],
+      render() {
+        const instance = getCurrentInstance()!
+        const t0 = template('<div><!></div>')
+        const n0 = t0()
+        const {
+          0: [n1],
+        } = children(n0)
+        watchEffect(() => {
+          setText(n1, instance.props.foo)
+        })
+        return n0
+      },
+    })
+
+    const foo = ref(1)
+    const id = ref('a')
+    const Comp = defineComponent({
+      setup() {
+        return { foo, id }
+      },
+      render(_ctx: Record<string, any>) {
+        const t0 = template('')
+        const n0 = t0()
+        render(
+          Child,
+          {
+            get foo() {
+              return _ctx.foo
+            },
+            get id() {
+              return _ctx.id
+            },
+          },
+          n0 as any, // TODO: type
+        )
+        return n0
+      },
+    })
+
+    render(Comp, {}, host)
+    // expect(host.innerHTML).toBe('<div id="a">1</div>') // TODO: Fallthrough Attributes
+    expect(host.innerHTML).toBe('<div>1</div>')
+
+    foo.value++
+    await nextTick()
+    // expect(host.innerHTML).toBe('<div id="a">2</div>') // TODO: Fallthrough Attributes
+    expect(host.innerHTML).toBe('<div>2</div>')
+
+    // id.value = 'b'
+    // await nextTick()
+    // expect(host.innerHTML).toBe('<div id="b">2</div>') // TODO: Fallthrough Attributes
   })
 
-  describe('validator', () => {
+  test('validator', () => {
     // TODO: impl validator
   })
 
