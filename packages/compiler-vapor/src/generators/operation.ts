@@ -64,8 +64,8 @@ function genOperation(
 }
 
 export function genEffects(effects: IREffect[], context: CodegenContext) {
-  if (context.effectOverride) {
-    return context.effectOverride(effects)
+  if (context.genEffect) {
+    return context.genEffect(effects)
   }
   const [frag, push] = buildCodeFragment()
   for (const effect of effects) {

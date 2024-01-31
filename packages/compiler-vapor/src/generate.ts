@@ -91,7 +91,7 @@ export class CodegenContext {
 
     return ret
   }
-  effectOverride?: (effects: IREffect[]) => CodeFragment[]
+  genEffect?: (effects: IREffect[]) => CodeFragment[]
 
   constructor(ir: RootIRNode, options: CodegenOptions) {
     const defaultOptions = {

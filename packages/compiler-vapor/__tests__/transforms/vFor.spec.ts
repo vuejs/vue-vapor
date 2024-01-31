@@ -33,8 +33,6 @@ describe('compiler: v-for', () => {
         type: IRNodeTypes.FRAGMENT_FACTORY,
       },
     ])
-    console.log(ir.operation)
-
     expect(ir.operation).toMatchObject([
       {
         type: IRNodeTypes.FOR,
@@ -60,12 +58,16 @@ describe('compiler: v-for', () => {
         parent: 0,
       },
     ])
-
     expect(ir.dynamic).toMatchObject({
       id: 0,
       children: { 0: { id: 1 } },
     })
     expect(ir.effect).toEqual([])
     expect((ir.operation[0] as ForIRNode).render.effect).lengthOf(1)
+  })
+
+  test('basic v-for', () => {
+    const { code } = compileWithVFor(`<div v-for=" of items">item</div>`)
+    expect(code).matchSnapshot()
   })
 })

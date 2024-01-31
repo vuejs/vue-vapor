@@ -18,7 +18,7 @@ export function genBlockFunction(
   oper: BlockFunctionIRNode,
   context: CodegenContext,
   args: CodeFragment[] = [],
-  returnValue?: CodeFragment[],
+  returnValue?: () => CodeFragment[],
 ): CodeFragment[] {
   const { newline, withIndent } = context
   return [
@@ -34,7 +34,7 @@ export function genBlockFunction(
 export function genBlockFunctionContent(
   ir: BlockFunctionIRNode | RootIRNode,
   ctx: CodegenContext,
-  returnValue?: CodeFragment[],
+  returnValue?: () => CodeFragment[],
 ): CodeFragment[] {
   const { newline, vaporHelper } = ctx
   const [frag, push] = buildCodeFragment()
@@ -60,7 +60,11 @@ export function genBlockFunctionContent(
   push(...genOperations(ir.operation, ctx))
   push(...genEffects(ir.effect, ctx))
 
-  push(newline(), 'return ', ...(returnValue || [`n${ir.dynamic.id}`]))
+  push(
+    newline(),
+    'return ',
+    ...(returnValue ? returnValue() : [`n${ir.dynamic.id}`]),
+  )
 
   return frag
 }

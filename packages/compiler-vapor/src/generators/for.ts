@@ -20,38 +20,23 @@ export function genFor(
   const rawKey = key && key.content
 
   const sourceExpr = ['() => (', ...genExpression(source, context), ')']
-  const updateFn = '_updateEffect'
-  const destructure: CodeFragment[] | undefined = (value || key) && [
-    '[',
-    rawValue && [rawValue, NewlineType.None, value.loc],
-    rawKey && ', ',
-    rawKey && [rawKey, NewlineType.None, key.loc],
-    '] = _block.s',
-  ]
-  const blockRet: CodeFragment[] = [
-    '[',
-    `n${render.dynamic.id!}`,
-    `, ${updateFn}]`,
-  ]
-
-  context.effectOverride = genEffectInFor
+  let updateFn = '_updateEffect'
+  context.genEffect = genEffectInFor
 
   const idMap: Record<string, string> = {}
   if (rawValue) idMap[rawValue] = `_block.s[0]`
   if (rawKey) idMap[rawKey] = `_block.s[1]`
 
+  const blockRet = (): CodeFragment[] => [
+    `[n${render.dynamic.id!}, ${updateFn}]`,
+  ]
+
   const blockFn = context.withId(
-    () =>
-      genBlockFunction(
-        render,
-        context,
-        ['_block, ', ...(destructure || [])],
-        blockRet,
-      ),
+    () => genBlockFunction(render, context, ['_block'], blockRet),
     idMap,
   )
 
-  context.effectOverride = undefined
+  context.genEffect = undefined
 
   return [
     newline(),
@@ -60,11 +45,24 @@ export function genFor(
   ]
 
   function genEffectInFor(effects: IREffect[]) {
+    if (!effects.length) {
+      updateFn = '() => {}'
+      return []
+    }
+
     const [frag, push] = buildCodeFragment()
 
     context.withIndent(() => {
-      if (destructure) {
-        push(newline(), 'const ', ...destructure)
+      if (rawValue || rawKey) {
+        push(
+          newline(),
+          'const ',
+          '[',
+          rawValue && [rawValue, NewlineType.None, value.loc],
+          rawKey && ', ',
+          rawKey && [rawKey, NewlineType.None, key.loc],
+          '] = _block.s',
+        )
       }
 
       const idMap: Record<string, string | null> = {}
