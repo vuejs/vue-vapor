@@ -1,4 +1,4 @@
-import type { CodeFragment, CodegenContext } from '../generate'
+import { type CodeFragment, type CodegenContext, NEWLINE } from '../generate'
 import type { SetPropIRNode, VaporHelper } from '../ir'
 import { genExpression } from './expression'
 import { isString } from '@vue/shared'
@@ -7,10 +7,11 @@ export function genSetProp(
   oper: SetPropIRNode,
   context: CodegenContext,
 ): CodeFragment[] {
-  const { call, newline, vaporHelper, helper } = context
+  const { call, vaporHelper, helper } = context
 
   const element = `n${oper.element}`
-  const expr = genExpression(oper.key, context)
+  const key = genExpression(oper.key, context)
+  const value = genExpression(oper.value, context)
 
   // fast path for static props
   if (isString(oper.key) || oper.key.isStatic) {
@@ -30,34 +31,24 @@ export function genSetProp(
 
     if (helperName) {
       return [
-        newline(),
-        ...call(
-          vaporHelper(helperName),
-          element,
-          omitKey ? false : expr,
-          genExpression(oper.value, context),
-        ),
+        NEWLINE,
+        ...call(vaporHelper(helperName), element, omitKey ? false : key, value),
       ]
     }
   }
 
   return [
-    newline(),
-    ...call(
-      vaporHelper('setDynamicProp'),
-      element,
-      genDynamicKey(),
-      genExpression(oper.value, context),
-    ),
+    NEWLINE,
+    ...call(vaporHelper('setDynamicProp'), element, genDynamicKey(), value),
   ]
 
   function genDynamicKey(): CodeFragment[] {
     if (oper.runtimeCamelize) {
-      return call(helper('camelize'), expr)
+      return call(helper('camelize'), key)
     } else if (oper.modifier) {
-      return [`\`${oper.modifier}\${`, ...expr, `}\``]
+      return [`\`${oper.modifier}\${`, ...key, `}\``]
     } else {
-      return expr
+      return key
     }
   }
 }

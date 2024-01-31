@@ -1,10 +1,11 @@
 import {
   type CodeFragment,
   type CodegenContext,
+  NEWLINE,
   buildCodeFragment,
-  genBlockFunctionContent,
 } from '../generate'
-import { type BlockFunctionIRNode, IRNodeTypes, type IfIRNode } from '../ir'
+import { IRNodeTypes, type IfIRNode } from '../ir'
+import { genBlockFunction } from './block'
 import { genExpression } from './expression'
 
 export function genIf(
@@ -12,7 +13,7 @@ export function genIf(
   context: CodegenContext,
   isNested = false,
 ): CodeFragment[] {
-  const { call, vaporHelper, newline } = context
+  const { call, vaporHelper } = context
   const { condition, positive, negative } = oper
   const [frag, push] = buildCodeFragment()
 
@@ -33,23 +34,10 @@ export function genIf(
     }
   }
 
-  if (!isNested) push(newline(), `const n${oper.id} = `)
+  if (!isNested) push(NEWLINE, `const n${oper.id} = `)
   push(
     ...call(vaporHelper('createIf'), conditionExpr, positiveArg, negativeArg),
   )
 
   return frag
-}
-
-function genBlockFunction(
-  oper: BlockFunctionIRNode,
-  context: CodegenContext,
-): CodeFragment[] {
-  const { newline, withIndent } = context
-  return [
-    '() => {',
-    ...withIndent(() => genBlockFunctionContent(oper, context)),
-    newline(),
-    '}',
-  ]
 }

@@ -1,11 +1,8 @@
 import {
   type ElementNode,
-  ElementTypes,
   ErrorCodes,
   NodeTypes,
-  type RootNode,
   type TemplateChildNode,
-  type TemplateNode,
   createCompilerError,
   createSimpleExpression,
 } from '@vue/compiler-dom'
@@ -13,6 +10,7 @@ import {
   type TransformContext,
   createStructuralDirectiveTransform,
   genDefaultDynamic,
+  wrapTemplate,
 } from '../transform'
 import {
   type BlockFunctionIRNode,
@@ -32,7 +30,7 @@ export const transformVIf = createStructuralDirectiveTransform(
 export function processIf(
   node: ElementNode,
   dir: VaporDirectiveNode,
-  context: TransformContext<RootNode | TemplateChildNode>,
+  context: TransformContext<ElementNode>,
 ) {
   if (dir.name !== 'else' && (!dir.exp || !dir.exp.content.trim())) {
     const loc = dir.exp ? dir.exp.loc : node.loc
@@ -42,10 +40,10 @@ export function processIf(
     dir.exp = createSimpleExpression(`true`, false, loc)
   }
 
-  context.dynamic.dynamicFlags |= DynamicFlag.NON_TEMPLATE
+  context.dynamic.flags |= DynamicFlag.NON_TEMPLATE
   if (dir.name === 'if') {
     const id = context.reference()
-    context.dynamic.dynamicFlags |= DynamicFlag.INSERT
+    context.dynamic.flags |= DynamicFlag.INSERT
     const [branch, onExit] = createIfBranch(node, context)
 
     return () => {
@@ -53,7 +51,6 @@ export function processIf(
       context.registerOperation({
         type: IRNodeTypes.IF,
         id,
-        loc: dir.loc,
         condition: dir.exp!,
         positive: branch,
       })
@@ -78,7 +75,7 @@ export function processIf(
       ) {
         if (__DEV__ && sibling.type === NodeTypes.COMMENT)
           comments.unshift(sibling)
-        siblingsDynamic[i].dynamicFlags |= DynamicFlag.NON_TEMPLATE
+        siblingsDynamic[i].flags |= DynamicFlag.NON_TEMPLATE
         templates[i] = null
       } else {
         break
@@ -118,7 +115,7 @@ export function processIf(
 
     // TODO ignore comments if the v-if is direct child of <transition> (PR #3622)
     if (__DEV__ && comments.length) {
-      node = wrapTemplate(node)
+      node = wrapTemplate(node, ['else-if', 'else'])
       context.node = node = extend({}, node, {
         children: [...comments, ...node.children],
       })
@@ -132,7 +129,6 @@ export function processIf(
       lastIfNode.negative = {
         type: IRNodeTypes.IF,
         id: -1,
-        loc: dir.loc,
         condition: dir.exp!,
         positive: branch,
       }
@@ -144,17 +140,16 @@ export function processIf(
 
 export function createIfBranch(
   node: ElementNode,
-  context: TransformContext<RootNode | TemplateChildNode>,
+  context: TransformContext<ElementNode>,
 ): [BlockFunctionIRNode, () => void] {
-  context.node = node = wrapTemplate(node)
+  context.node = node = wrapTemplate(node, ['if', 'else-if', 'else'])
 
   const branch: BlockFunctionIRNode = {
     type: IRNodeTypes.BLOCK_FUNCTION,
-    loc: node.loc,
     node,
     templateIndex: -1,
     dynamic: extend(genDefaultDynamic(), {
-      dynamicFlags: DynamicFlag.REFERENCED,
+      flags: DynamicFlag.REFERENCED,
     } satisfies Partial<IRDynamicInfo>),
     effect: [],
     operation: [],
@@ -168,23 +163,4 @@ export function createIfBranch(
     exitBlock()
   }
   return [branch, onExit]
-}
-
-function wrapTemplate(node: ElementNode): TemplateNode {
-  if (node.tagType === ElementTypes.TEMPLATE) {
-    return node
-  }
-  return extend({}, node, {
-    type: NodeTypes.ELEMENT,
-    tag: 'template',
-    props: [],
-    tagType: ElementTypes.TEMPLATE,
-    children: [
-      extend({}, node, {
-        props: node.props.filter(
-          p => p.type !== NodeTypes.DIRECTIVE && p.name !== 'if',
-        ),
-      } as TemplateChildNode),
-    ],
-  } as Partial<TemplateNode>)
 }
