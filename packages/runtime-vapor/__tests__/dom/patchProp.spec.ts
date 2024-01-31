@@ -1,5 +1,12 @@
 import { NOOP } from '@vue/shared'
-import { recordPropMetadata, setAttr, setClass, setStyle } from '../../src'
+import {
+  setDynamicProp as _setDynamicProp,
+  recordPropMetadata,
+  setAttr,
+  setClass,
+  setDOMProp,
+  setStyle,
+} from '../../src'
 import {
   createComponentInstance,
   currentInstance,
@@ -132,5 +139,76 @@ describe('patchProp', () => {
       setAttr(el, 'disabled', false)
       expect(el.getAttribute('disabled')).toBe('false')
     })
+  })
+
+  describe('setDOMProp', () => {
+    test('should set DOM property', () => {
+      const el = document.createElement('div')
+      setDOMProp(el, 'textContent', 'foo')
+      expect(el.textContent).toBe('foo')
+      setDOMProp(el, 'innerHTML', '<p>bar</p>')
+      expect(el.innerHTML).toBe('<p>bar</p>')
+    })
+  })
+
+  describe('setDynamicProp', () => {
+    const element = document.createElement('div')
+    function setDynamicProp(
+      key: string,
+      value: any,
+      el = element.cloneNode(true) as HTMLElement,
+    ) {
+      _setDynamicProp(el, key, value)
+      return el
+    }
+
+    test('should be able to set id', () => {
+      let res = setDynamicProp('id', 'bar')
+      expect(res.id).toBe('bar')
+    })
+
+    test('should be able to set class', () => {
+      let res = setDynamicProp('class', 'foo')
+      expect(res.className).toBe('foo')
+    })
+
+    test('should be able to set style', () => {
+      let res = setDynamicProp('style', 'color: red')
+      expect(res.style.cssText).toBe('color: red;')
+    })
+
+    test('should be able to set .prop', () => {
+      let res = setDynamicProp('.foo', 'bar')
+      expect((res as any)['foo']).toBe('bar')
+      expect(res.getAttribute('foo')).toBeNull()
+    })
+
+    test('should be able to set ^attr', () => {
+      let res = setDynamicProp('^foo', 'bar')
+      expect(res.getAttribute('foo')).toBe('bar')
+      expect((res as any)['foo']).toBeUndefined()
+    })
+
+    test('should be able to set boolean prop', () => {
+      let res = setDynamicProp(
+        'disabled',
+        true,
+        document.createElement('button'),
+      )
+      expect(res.getAttribute('disabled')).toBe('')
+      setDynamicProp('disabled', false, res)
+      expect(res.getAttribute('disabled')).toBeNull()
+    })
+
+    // The function shouldSetAsProp has complete tests elsewhere,
+    // so here we only do a simple test.
+    test('should be able to set innerHTML and textContent', () => {
+      let res = setDynamicProp('innerHTML', '<p>bar</p>')
+      expect(res.innerHTML).toBe('<p>bar</p>')
+      res = setDynamicProp('textContent', 'foo')
+      expect(res.textContent).toBe('foo')
+    })
+
+    test.todo('should be able to set something on SVG')
   })
 })
