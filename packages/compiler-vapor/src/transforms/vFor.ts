@@ -8,6 +8,7 @@ import {
   type TransformContext,
   createStructuralDirectiveTransform,
   genDefaultDynamic,
+  wrapTemplate,
 } from '../transform'
 import {
   type BlockFunctionIRNode,
@@ -42,9 +43,10 @@ export function processFor(
     return
   }
 
-  const { source, value /*, key, index */ } = parseResult
+  const { source, value, key, index } = parseResult
 
-  context.dynamic.dynamicFlags |= DynamicFlag.NON_TEMPLATE | DynamicFlag.INSERT
+  context.node = node = wrapTemplate(node, ['for'])
+  context.dynamic.flags |= DynamicFlag.NON_TEMPLATE | DynamicFlag.INSERT
   const id = context.reference()
   const render: BlockFunctionIRNode = {
     type: IRNodeTypes.BLOCK_FUNCTION,
@@ -52,7 +54,7 @@ export function processFor(
     node,
     templateIndex: -1,
     dynamic: extend(genDefaultDynamic(), {
-      dynamicFlags: DynamicFlag.REFERENCED,
+      flags: DynamicFlag.REFERENCED,
     } satisfies Partial<IRDynamicInfo>),
     effect: [],
     operation: [],
@@ -69,7 +71,9 @@ export function processFor(
       id,
       loc: dir.loc,
       source: source as SimpleExpressionNode,
-      value: value as SimpleExpressionNode,
+      value: value as SimpleExpressionNode | undefined,
+      key: key as SimpleExpressionNode | undefined,
+      index: index as SimpleExpressionNode | undefined,
       render,
     })
   }

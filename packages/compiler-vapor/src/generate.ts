@@ -7,24 +7,10 @@ import {
   advancePositionWithMutation,
   locStub,
 } from '@vue/compiler-dom'
-import {
-  IRNodeTypes,
-  type OperationNode,
-  type RootIRNode,
-  type VaporHelper,
-} from './ir'
+import type { IREffect, IRNodeTypes, RootIRNode, VaporHelper } from './ir'
 import { SourceMapGenerator } from 'source-map-js'
 import { extend, isString } from '@vue/shared'
 import type { ParserPlugin } from '@babel/parser'
-import { genSetProp } from './generators/prop'
-import { genCreateTextNode, genSetText } from './generators/text'
-import { genSetEvent } from './generators/event'
-import { genSetHtml } from './generators/html'
-import { genSetRef } from './generators/ref'
-import { genSetModelValue } from './generators/modelValue'
-import { genAppendNode, genInsertNode, genPrependNode } from './generators/dom'
-import { genIf } from './generators/if'
-import { genFor } from './generators/for'
 import { genTemplate } from './generators/template'
 import { genBlockFunctionContent } from './generators/block'
 
@@ -91,8 +77,7 @@ export class CodegenContext {
   }
 
   identifiers: Record<string, number> = Object.create(null)
-
-  withId = <T>(fn: () => T, ...ids: string[]): T => {
+  withId = <T>(fn: () => T, ids: string[]): T => {
     const { identifiers } = this
     for (const id of ids) {
       if (identifiers[id] === undefined) identifiers[id] = 0
@@ -104,6 +89,7 @@ export class CodegenContext {
 
     return ret
   }
+  effectOverride?: (effects: IREffect[]) => CodeFragment[]
 
   constructor(ir: RootIRNode, options: CodegenOptions) {
     const defaultOptions = {
@@ -288,48 +274,3 @@ export function buildCodeFragment() {
   const push = frag.push.bind(frag)
   return [frag, push] as const
 }
-
-export function genOperation(
-  oper: OperationNode,
-  context: CodegenContext,
-): CodeFragment[] {
-  // TODO: cache old value
-  switch (oper.type) {
-    case IRNodeTypes.SET_PROP:
-      return genSetProp(oper, context)
-    case IRNodeTypes.SET_TEXT:
-      return genSetText(oper, context)
-    case IRNodeTypes.SET_EVENT:
-      return genSetEvent(oper, context)
-    case IRNodeTypes.SET_HTML:
-      return genSetHtml(oper, context)
-    case IRNodeTypes.SET_REF:
-      return genSetRef(oper, context)
-    case IRNodeTypes.SET_MODEL_VALUE:
-      return genSetModelValue(oper, context)
-    case IRNodeTypes.CREATE_TEXT_NODE:
-      return genCreateTextNode(oper, context)
-    case IRNodeTypes.INSERT_NODE:
-      return genInsertNode(oper, context)
-    case IRNodeTypes.PREPEND_NODE:
-      return genPrependNode(oper, context)
-    case IRNodeTypes.APPEND_NODE:
-      return genAppendNode(oper, context)
-    case IRNodeTypes.IF:
-      return genIf(oper, context)
-    case IRNodeTypes.FOR:
-      return genFor(oper, context)
-    case IRNodeTypes.WITH_DIRECTIVE:
-      // TODO remove this after remove checkNever
-      // generated, skip
-      break
-    default:
-      return checkNever(oper)
-  }
-
-  return []
-}
-
-// remove when stable
-// @ts-expect-error
-function checkNever(x: never): never {}

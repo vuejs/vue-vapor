@@ -12,7 +12,7 @@ const compileWithVFor = makeCompile({
 describe('compiler: v-for', () => {
   test('basic v-for', () => {
     const { code, vaporHelpers, helpers } = compileWithVFor(
-      `<div v-for="item of items">{{item}}</div>`,
+      `<div v-for="item of items" @click="remove(item)">{{ item }}</div>`,
     )
 
     expect(code).matchSnapshot()

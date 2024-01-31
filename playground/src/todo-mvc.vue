@@ -34,7 +34,8 @@ function handleClearAll() {
   tasks.value = []
 }
 
-function handleRemove(idx: number) {
+function handleRemove(idx: number, task: Task) {
+  console.log(task)
   tasks.value.splice(idx, 1)
 }
 </script>
@@ -43,7 +44,7 @@ function handleRemove(idx: number) {
   <h1>todos</h1>
   <ul>
     <li
-      v-for="(task, key, index) of tasks"
+      v-for="(task, index) of tasks"
       :key="index"
       :class="{ del: task.completed }"
     >
@@ -53,7 +54,7 @@ function handleRemove(idx: number) {
         @change="handleComplete(index, $event)"
       />
       {{ task.title }}
-      <button @click="handleRemove(index)">x</button>
+      <button @click="handleRemove(index, task)">x</button>
     </li>
   </ul>
   <p>

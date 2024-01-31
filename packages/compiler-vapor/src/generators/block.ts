@@ -10,21 +10,22 @@ import {
   type CodeFragment,
   type CodegenContext,
   buildCodeFragment,
-  genOperation,
 } from '../generate'
 import { genWithDirective } from './directive'
+import { genEffects, genOperations } from './operation'
 
 export function genBlockFunction(
   oper: BlockFunctionIRNode,
   context: CodegenContext,
   args: CodeFragment[] = [],
+  returnValue?: CodeFragment[],
 ): CodeFragment[] {
   const { newline, withIndent } = context
   return [
     '(',
     ...args,
     ') => {',
-    ...withIndent(() => genBlockFunctionContent(oper, context)),
+    ...withIndent(() => genBlockFunctionContent(oper, context, returnValue)),
     newline(),
     '}',
   ]
@@ -33,8 +34,9 @@ export function genBlockFunction(
 export function genBlockFunctionContent(
   ir: BlockFunctionIRNode | RootIRNode,
   ctx: CodegenContext,
+  returnValue?: CodeFragment[],
 ): CodeFragment[] {
-  const { newline, withIndent, vaporHelper } = ctx
+  const { newline, vaporHelper } = ctx
   const [frag, push] = buildCodeFragment()
 
   push(newline(), `const n${ir.dynamic.id} = t${ir.templateIndex}()`)
@@ -55,19 +57,10 @@ export function genBlockFunctionContent(
     push(...genWithDirective(directives, ctx))
   }
 
-  for (const operation of ir.operation) {
-    push(...genOperation(operation, ctx))
-  }
+  push(...genOperations(ir.operation, ctx))
+  push(...genEffects(ir.effect, ctx))
 
-  for (const { operations } of ir.effect) {
-    push(newline(), `${vaporHelper('renderEffect')}(() => {`)
-    withIndent(() => {
-      operations.forEach(op => push(...genOperation(op, ctx)))
-    })
-    push(newline(), '})')
-  }
-
-  push(newline(), `return n${ir.dynamic.id}`)
+  push(newline(), 'return ', ...(returnValue || [`n${ir.dynamic.id}`]))
 
   return frag
 }

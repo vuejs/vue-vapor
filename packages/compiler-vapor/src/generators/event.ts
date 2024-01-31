@@ -45,7 +45,10 @@ export function genSetEvent(
       const hasMultipleStatements = exp.content.includes(`;`)
 
       if (isInlineStatement) {
-        const expr = context.withId(() => genExpression(exp, context), '$event')
+        const expr = context.withId(
+          () => genExpression(exp, context),
+          ['$event'],
+        )
         return [
           '$event => ',
           hasMultipleStatements ? '{' : '(',
