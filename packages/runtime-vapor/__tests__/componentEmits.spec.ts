@@ -49,7 +49,26 @@ describe('component: emit', () => {
     expect(onBaz).toHaveBeenCalled()
   })
 
-  test.todo('trigger camelCase handler', () => {})
+  test('trigger camelCase handler', () => {
+    const Foo = defineComponent({
+      render() {},
+      setup(_: any, { emit }: any) {
+        emit('test-event')
+      },
+    })
+
+    const fooSpy = vi.fn()
+    render(
+      Foo,
+      {
+        get onTestEvent() {
+          return fooSpy
+        },
+      },
+      '#host',
+    )
+    expect(fooSpy).toHaveBeenCalled()
+  })
 
   test.todo('trigger kebab-case handler', () => {})
 
