@@ -386,10 +386,32 @@ describe('component: emit', () => {
     expect(fn2).toHaveBeenCalledWith(1)
   })
 
-  test.todo(
-    'only trim string parameter when work with v-model on component',
-    () => {},
-  )
+  test('only trim string parameter when work with v-model on component', () => {
+    const Foo = defineComponent({
+      render() {},
+      setup(_: any, { emit }: any) {
+        emit('update:modelValue', ' foo ', { bar: ' bar ' })
+      },
+    })
+    const fn = vi.fn()
+    render(
+      Foo,
+      {
+        get modelValue() {
+          return null
+        },
+        get modelModifiers() {
+          return { trim: true }
+        },
+        get ['onUpdate:modelValue']() {
+          return fn
+        },
+      },
+      '#host',
+    )
+    expect(fn).toHaveBeenCalledTimes(1)
+    expect(fn).toHaveBeenCalledWith('foo', { bar: ' bar ' })
+  })
 
   test.todo('isEmitListener', () => {})
 
