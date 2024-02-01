@@ -94,16 +94,13 @@ export function emit(
     } else if (instance.emitted[handlerName]) {
       return
     }
-
-    if (isFunction(onceHandler)) {
-      instance.emitted[handlerName] = true
-      callWithAsyncErrorHandling(
-        handler,
-        instance,
-        VaporErrorCodes.COMPONENT_EVENT_HANDLER,
-        args,
-      )
-    }
+    instance.emitted[handlerName] = true
+    callWithAsyncErrorHandling(
+      onceHandler,
+      instance,
+      VaporErrorCodes.COMPONENT_EVENT_HANDLER,
+      args,
+    )
   }
 }
 

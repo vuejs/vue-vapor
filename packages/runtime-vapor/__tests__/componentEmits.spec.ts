@@ -196,15 +196,46 @@ describe('component: emit', () => {
 
   test.todo('validator warning', () => {})
 
-  test.todo('merging from mixins', () => {})
+  // NOTE: not supported mixins
+  // test.todo('merging from mixins', () => {})
 
   // #2651
-  test.todo(
-    'should not attach normalized object when mixins do not contain emits',
-    () => {},
-  )
+  // test.todo(
+  //   'should not attach normalized object when mixins do not contain emits',
+  //   () => {},
+  // )
 
-  test.todo('.once', () => {})
+  test('.once', () => {
+    const Foo = defineComponent({
+      render() {},
+      emits: {
+        foo: null,
+        bar: null,
+      },
+      setup(_: any, { emit }: any) {
+        emit('foo')
+        emit('foo')
+        emit('bar')
+        emit('bar')
+      },
+    })
+    const fn = vi.fn()
+    const barFn = vi.fn()
+    render(
+      Foo,
+      {
+        get onFooOnce() {
+          return fn
+        },
+        get onBarOnce() {
+          return barFn
+        },
+      },
+      '#host',
+    )
+    expect(fn).toHaveBeenCalledTimes(1)
+    expect(barFn).toHaveBeenCalledTimes(1)
+  })
 
   test.todo('.once with normal listener of the same name', () => {})
 
