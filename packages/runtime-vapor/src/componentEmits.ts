@@ -7,7 +7,6 @@ import {
   extend,
   hyphenate,
   isArray,
-  isFunction,
   isString,
   looseToNumber,
   toHandlerKey,
