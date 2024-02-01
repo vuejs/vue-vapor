@@ -3,7 +3,13 @@
 // Note: emits and listener fallthrough is tested in
 // ./rendererAttrsFallthrough.spec.ts.
 
-import { defineComponent, render } from '../src'
+import {
+  defineComponent,
+  nextTick,
+  onBeforeUnmount,
+  render,
+  unmountComponent,
+} from '../src'
 import { isEmitListener } from '../src/componentEmits'
 
 let host: HTMLElement
@@ -443,7 +449,32 @@ describe('component: emit', () => {
     expect(isEmitListener(options, 'onFooBaz')).toBe(true)
   })
 
-  test.todo('does not emit after unmount', async () => {})
+  test('does not emit after unmount', async () => {
+    const fn = vi.fn()
+    const Foo = defineComponent({
+      emits: ['closing'],
+      setup(_: any, { emit }: any) {
+        onBeforeUnmount(async () => {
+          await nextTick()
+          emit('closing', true)
+        })
+      },
+      render() {},
+    })
+    const i = render(
+      Foo,
+      {
+        get onClosing() {
+          return fn
+        },
+      },
+      '#host',
+    )
+    await nextTick()
+    unmountComponent(i)
+    await nextTick()
+    expect(fn).not.toHaveBeenCalled()
+  })
 
   test.todo('merge string array emits', async () => {})
 
