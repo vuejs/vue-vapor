@@ -4,6 +4,7 @@
 // ./rendererAttrsFallthrough.spec.ts.
 
 import { defineComponent, render } from '../src'
+import { isEmitListener } from '../src/componentEmits'
 
 let host: HTMLElement
 
@@ -413,7 +414,34 @@ describe('component: emit', () => {
     expect(fn).toHaveBeenCalledWith('foo', { bar: ' bar ' })
   })
 
-  test.todo('isEmitListener', () => {})
+  test('isEmitListener', () => {
+    const options = {
+      get click() {
+        return null
+      },
+      get 'test-event'() {
+        return null
+      },
+      get fooBar() {
+        return null
+      },
+      get FooBaz() {
+        return null
+      },
+    }
+    expect(isEmitListener(options, 'onClick')).toBe(true)
+    expect(isEmitListener(options, 'onclick')).toBe(false)
+    expect(isEmitListener(options, 'onBlick')).toBe(false)
+    // .once listeners
+    expect(isEmitListener(options, 'onClickOnce')).toBe(true)
+    expect(isEmitListener(options, 'onclickOnce')).toBe(false)
+    // kebab-case option
+    expect(isEmitListener(options, 'onTestEvent')).toBe(true)
+    // camelCase option
+    expect(isEmitListener(options, 'onFooBar')).toBe(true)
+    // PascalCase option
+    expect(isEmitListener(options, 'onFooBaz')).toBe(true)
+  })
 
   test.todo('does not emit after unmount', async () => {})
 
