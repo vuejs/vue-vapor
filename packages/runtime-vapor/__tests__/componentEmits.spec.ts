@@ -182,9 +182,13 @@ describe('component: emit', () => {
     expect(fn2).toHaveBeenCalledWith(1)
   })
 
-  test.todo('warning for undeclared event (array)', () => {})
+  test.todo('warning for undeclared event (array)', () => {
+    // TODO: warning
+  })
 
-  test.todo('warning for undeclared event (object)', () => {})
+  test.todo('warning for undeclared event (object)', () => {
+    // TODO: warning
+  })
 
   test('should not warn if has equivalent onXXX prop', () => {
     const Foo = defineComponent({
@@ -201,7 +205,9 @@ describe('component: emit', () => {
     ).not.toHaveBeenWarned()
   })
 
-  test.todo('validator warning', () => {})
+  test.todo('validator warning', () => {
+    // TODO: warning validator
+  })
 
   // NOTE: not supported mixins
   // test.todo('merging from mixins', () => {})
@@ -476,7 +482,7 @@ describe('component: emit', () => {
     expect(fn).not.toHaveBeenCalled()
   })
 
-  test.todo('merge string array emits', async () => {})
-
-  test.todo('merge object emits', async () => {})
+  // NOTE: not supported mixins
+  // test.todo('merge string array emits', async () => {})
+  // test.todo('merge object emits', async () => {})
 })
