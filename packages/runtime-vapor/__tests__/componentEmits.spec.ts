@@ -3,8 +3,51 @@
 // Note: emits and listener fallthrough is tested in
 // ./rendererAttrsFallthrough.spec.ts.
 
+import { defineComponent, render } from '../src'
+
+let host: HTMLElement
+
+const initHost = () => {
+  host = document.createElement('div')
+  host.setAttribute('id', 'host')
+  document.body.appendChild(host)
+}
+beforeEach(() => initHost())
+afterEach(() => host.remove())
+
 describe('component: emit', () => {
-  test.todo('trigger handlers', () => {})
+  test('trigger handlers', () => {
+    const Foo = defineComponent({
+      render() {},
+      setup(_: any, { emit }: any) {
+        emit('foo')
+        emit('bar')
+        emit('!baz')
+      },
+    })
+    const onfoo = vi.fn()
+    const onBar = vi.fn()
+    const onBaz = vi.fn()
+    render(
+      Foo,
+      {
+        get onfoo() {
+          return onfoo
+        },
+        get onBar() {
+          return onBar
+        },
+        get ['on!baz']() {
+          return onBaz
+        },
+      },
+      '#host',
+    )
+
+    expect(onfoo).not.toHaveBeenCalled()
+    expect(onBar).toHaveBeenCalled()
+    expect(onBaz).toHaveBeenCalled()
+  })
 
   test.todo('trigger camelCase handler', () => {})
 
