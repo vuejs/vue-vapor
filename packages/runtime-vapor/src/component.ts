@@ -12,6 +12,7 @@ import {
   type EmitFn,
   type EmitsOptions,
   type ObjectEmitsOptions,
+  emit,
   normalizeEmitsOptions,
 } from './componentEmits'
 
@@ -245,5 +246,8 @@ export const createComponentInstance = (
      */
     // [VaporLifecycleHooks.SERVER_PREFETCH]: null,
   }
+
+  instance.emit = emit.bind(null, instance)
+
   return instance
 }
