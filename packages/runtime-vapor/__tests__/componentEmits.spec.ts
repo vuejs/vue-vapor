@@ -70,7 +70,26 @@ describe('component: emit', () => {
     expect(fooSpy).toHaveBeenCalled()
   })
 
-  test.todo('trigger kebab-case handler', () => {})
+  test('trigger kebab-case handler', () => {
+    const Foo = defineComponent({
+      render() {},
+      setup(_: any, { emit }: any) {
+        emit('test-event')
+      },
+    })
+
+    const fooSpy = vi.fn()
+    render(
+      Foo,
+      {
+        get ['onTest-event']() {
+          return fooSpy
+        },
+      },
+      '#host',
+    )
+    expect(fooSpy).toHaveBeenCalledTimes(1)
+  })
 
   // #3527
   test.todo('trigger mixed case handlers', () => {})
