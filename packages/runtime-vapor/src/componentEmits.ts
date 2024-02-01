@@ -13,6 +13,7 @@ import {
   toHandlerKey,
 } from '@vue/shared'
 import type { Component, ComponentInternalInstance } from './component'
+import { VaporErrorCodes, callWithAsyncErrorHandling } from './errorHandling'
 
 export type ObjectEmitsOptions = Record<
   string,
@@ -77,9 +78,13 @@ export function emit(
     handler = props[(handlerName = toHandlerKey(hyphenate(event)))]
   }
 
-  if (handler && isFunction(handler)) {
-    // TODO: callWithAsyncErrorHandling
-    handler(...args)
+  if (handler) {
+    callWithAsyncErrorHandling(
+      handler,
+      instance,
+      VaporErrorCodes.COMPONENT_EVENT_HANDLER,
+      args,
+    )
   }
 
   const onceHandler = props[handlerName + `Once`]
@@ -92,8 +97,12 @@ export function emit(
 
     if (isFunction(onceHandler)) {
       instance.emitted[handlerName] = true
-      // TODO: callWithAsyncErrorHandling
-      onceHandler(...args)
+      callWithAsyncErrorHandling(
+        handler,
+        instance,
+        VaporErrorCodes.COMPONENT_EVENT_HANDLER,
+        args,
+      )
     }
   }
 }
