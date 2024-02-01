@@ -237,7 +237,34 @@ describe('component: emit', () => {
     expect(barFn).toHaveBeenCalledTimes(1)
   })
 
-  test.todo('.once with normal listener of the same name', () => {})
+  test('.once with normal listener of the same name', () => {
+    const Foo = defineComponent({
+      render() {},
+      emits: {
+        foo: null,
+      },
+      setup(_: any, { emit }: any) {
+        emit('foo')
+        emit('foo')
+      },
+    })
+    const onFoo = vi.fn()
+    const onFooOnce = vi.fn()
+    render(
+      Foo,
+      {
+        get onFoo() {
+          return onFoo
+        },
+        get onFooOnce() {
+          return onFooOnce
+        },
+      },
+      '#host',
+    )
+    expect(onFoo).toHaveBeenCalledTimes(2)
+    expect(onFooOnce).toHaveBeenCalledTimes(1)
+  })
 
   test.todo('.number modifier should work with v-model on component', () => {})
 
