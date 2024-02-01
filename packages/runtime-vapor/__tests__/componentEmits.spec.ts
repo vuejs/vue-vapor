@@ -179,7 +179,20 @@ describe('component: emit', () => {
 
   test.todo('warning for undeclared event (object)', () => {})
 
-  test.todo('should not warn if has equivalent onXXX prop', () => {})
+  test('should not warn if has equivalent onXXX prop', () => {
+    const Foo = defineComponent({
+      props: ['onFoo'],
+      emits: [],
+      render() {},
+      setup(_: any, { emit }: any) {
+        emit('foo')
+      },
+    })
+    render(Foo, {}, '#host')
+    expect(
+      `Component emitted event "foo" but it is neither declared`,
+    ).not.toHaveBeenWarned()
+  })
 
   test.todo('validator warning', () => {})
 
