@@ -121,7 +121,33 @@ describe('component: emit', () => {
   })
 
   // for v-model:foo-bar usage in DOM templates
-  test.todo('trigger hyphenated events for update:xxx events', () => {})
+  test('trigger hyphenated events for update:xxx events', () => {
+    const Foo = defineComponent({
+      render() {},
+      setup(_: any, { emit }: any) {
+        emit('update:fooProp')
+        emit('update:barProp')
+      },
+    })
+
+    const fooSpy = vi.fn()
+    const barSpy = vi.fn()
+    render(
+      Foo,
+      {
+        get ['onUpdate:fooProp']() {
+          return fooSpy
+        },
+        get ['onUpdate:bar-prop']() {
+          return barSpy
+        },
+      },
+      '#host',
+    )
+
+    expect(fooSpy).toHaveBeenCalled()
+    expect(barSpy).toHaveBeenCalled()
+  })
 
   test.todo('should trigger array of listeners', async () => {})
 

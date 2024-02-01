@@ -1,11 +1,15 @@
 // NOTE: runtime-core/src/componentEmits.ts
 
 import {
+  EMPTY_OBJ,
   type UnionToIntersection,
   camelize,
   extend,
+  hyphenate,
   isArray,
   isFunction,
+  isString,
+  looseToNumber,
   toHandlerKey,
 } from '@vue/shared'
 import type { Component, ComponentInternalInstance } from './component'
@@ -42,8 +46,25 @@ export function emit(
   const props = instance.rawProps
 
   let args = rawArgs
+  const isModelListener = event.startsWith('update:')
 
-  // TODO: modelListener
+  // for v-model update:xxx events, apply modifiers on args
+  const modelArg = isModelListener && event.slice(7)
+
+  if (modelArg && modelArg in props) {
+    const modifiersKey = `${
+      modelArg === 'modelValue' ? 'model' : modelArg
+    }Modifiers`
+    const { number, trim } = props[modifiersKey] || EMPTY_OBJ
+    if (trim) {
+      args = rawArgs.map(a => (isString(a) ? a.trim() : a))
+    }
+    if (number) {
+      args = rawArgs.map(looseToNumber)
+    }
+  }
+
+  // TODO: warn
 
   let handlerName
   let handler =
@@ -52,9 +73,9 @@ export function emit(
     props[(handlerName = toHandlerKey(camelize(event)))]
   // for v-model update:xxx events, also trigger kebab-case equivalent
   // for props passed via kebab-case
-  // if (!handler && isModelListener) {
-  //   handler = props[(handlerName = toHandlerKey(hyphenate(event)))]
-  // }
+  if (!handler && isModelListener) {
+    handler = props[(handlerName = toHandlerKey(hyphenate(event)))]
+  }
 
   if (handler && isFunction(handler)) {
     // TODO: callWithAsyncErrorHandling
