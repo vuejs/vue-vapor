@@ -92,7 +92,33 @@ describe('component: emit', () => {
   })
 
   // #3527
-  test.todo('trigger mixed case handlers', () => {})
+  test.todo('trigger mixed case handlers', () => {
+    const Foo = defineComponent({
+      render() {},
+      setup(_: any, { emit }: any) {
+        emit('test-event')
+        emit('testEvent')
+      },
+    })
+
+    const fooSpy = vi.fn()
+    const barSpy = vi.fn()
+    render(
+      Foo,
+      // TODO: impl `toHandlers`
+      {
+        get ['onTest-Event']() {
+          return fooSpy
+        },
+        get onTestEvent() {
+          return barSpy
+        },
+      },
+      '#host',
+    )
+    expect(fooSpy).toHaveBeenCalledTimes(1)
+    expect(barSpy).toHaveBeenCalledTimes(1)
+  })
 
   // for v-model:foo-bar usage in DOM templates
   test.todo('trigger hyphenated events for update:xxx events', () => {})
