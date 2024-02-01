@@ -149,7 +149,31 @@ describe('component: emit', () => {
     expect(barSpy).toHaveBeenCalled()
   })
 
-  test.todo('should trigger array of listeners', async () => {})
+  test('should trigger array of listeners', async () => {
+    const App = defineComponent({
+      render() {},
+      setup(_: any, { emit }: any) {
+        emit('foo', 1)
+      },
+    })
+
+    const fn1 = vi.fn()
+    const fn2 = vi.fn()
+
+    render(
+      App,
+      {
+        get onFoo() {
+          return [fn1, fn2]
+        },
+      },
+      '#host',
+    )
+    expect(fn1).toHaveBeenCalledTimes(1)
+    expect(fn1).toHaveBeenCalledWith(1)
+    expect(fn2).toHaveBeenCalledTimes(1)
+    expect(fn2).toHaveBeenCalledWith(1)
+  })
 
   test.todo('warning for undeclared event (array)', () => {})
 
