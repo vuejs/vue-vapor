@@ -4,7 +4,6 @@ import {
   type UnionToIntersection,
   camelize,
   extend,
-  hyphenate,
   isArray,
   isFunction,
   toHandlerKey,
@@ -40,7 +39,7 @@ export function emit(
   ...rawArgs: any[]
 ) {
   if (instance.isUnmounted) return
-  const props = instance.rawProps // TODO: raw props
+  const props = instance.rawProps
 
   let args = rawArgs
 
@@ -53,9 +52,9 @@ export function emit(
     props[(handlerName = toHandlerKey(camelize(event)))]
   // for v-model update:xxx events, also trigger kebab-case equivalent
   // for props passed via kebab-case
-  if (!handler) {
-    handler = props[(handlerName = toHandlerKey(hyphenate(event)))]
-  }
+  // if (!handler && isModelListener) {
+  //   handler = props[(handlerName = toHandlerKey(hyphenate(event)))]
+  // }
 
   if (handler && isFunction(handler)) {
     // TODO: callWithAsyncErrorHandling
