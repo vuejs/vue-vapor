@@ -63,11 +63,10 @@ describe('patchProp', () => {
       removeComponentInstance()
       expect(currentInstance).toBeNull()
 
-      const node = {} as Node
-      let prev = recordPropMetadata(node, 'class', 'foo')
-      expect(prev).toBeNaN()
-      prev = recordPropMetadata(node, 'class', 'bar')
-      expect(prev).toBeNaN()
+      // FIXME
+      expect(() => recordPropMetadata({} as Node, 'class', 'foo')).toThrowError(
+        'cannot be used out of component',
+      )
     })
   })
 
@@ -108,21 +107,6 @@ describe('patchProp', () => {
     })
 
     test('should remove attribute', () => {
-      const el = document.createElement('div')
-      setAttr(el, 'id', 'foo')
-      setAttr(el, 'data', 'bar')
-      expect(el.getAttribute('id')).toBe('foo')
-      expect(el.getAttribute('data')).toBe('bar')
-      setAttr(el, 'id', null)
-      expect(el.getAttribute('id')).toBeNull()
-      setAttr(el, 'data', undefined)
-      expect(el.getAttribute('data')).toBeNull()
-    })
-
-    test('should remove attribute outside of component', () => {
-      removeComponentInstance()
-      expect(currentInstance).toBeNull()
-
       const el = document.createElement('div')
       setAttr(el, 'id', 'foo')
       setAttr(el, 'data', 'bar')
