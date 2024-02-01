@@ -306,7 +306,45 @@ describe('component: emit', () => {
     expect(fn2).toHaveBeenCalledWith(2)
   })
 
-  test.todo('.trim modifier should work with v-model on component', () => {})
+  test('.trim modifier should work with v-model on component', () => {
+    const Foo = defineComponent({
+      render() {},
+      setup(_: any, { emit }: any) {
+        emit('update:modelValue', ' one ')
+        emit('update:foo', '  two  ')
+      },
+    })
+    const fn1 = vi.fn()
+    const fn2 = vi.fn()
+    render(
+      Foo,
+      {
+        get modelValue() {
+          return null
+        },
+        get modelModifiers() {
+          return { trim: true }
+        },
+        get ['onUpdate:modelValue']() {
+          return fn1
+        },
+        get foo() {
+          return null
+        },
+        get fooModifiers() {
+          return { trim: true }
+        },
+        get 'onUpdate:foo'() {
+          return fn2
+        },
+      },
+      '#host',
+    )
+    expect(fn1).toHaveBeenCalledTimes(1)
+    expect(fn1).toHaveBeenCalledWith('one')
+    expect(fn2).toHaveBeenCalledTimes(1)
+    expect(fn2).toHaveBeenCalledWith('two')
+  })
 
   test.todo(
     '.trim and .number modifiers should work with v-model on component',
