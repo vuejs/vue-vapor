@@ -80,10 +80,12 @@ function genLiteralObjectProp(
   const properties: ObjectExpression['properties'] = []
 
   for (const { key, value, runtimeCamelize, modifier } of prop) {
-    if (runtimeCamelize) {
-      key.content = `${helper('camelize')}(${key.content})`
-    } else if (modifier) {
-      key.content = `${modifier}${key.content}`
+    if (!key.isStatic) {
+      if (runtimeCamelize) {
+        key.content = `${helper('camelize')}(${key.content})`
+      } else if (modifier) {
+        key.content = `${modifier}${key.content}`
+      }
     }
     properties.push(createObjectProperty(key, value))
   }

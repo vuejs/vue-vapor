@@ -43,17 +43,21 @@ describe('compiler: v-once', () => {
       },
       {
         element: 2,
-        key: {
-          type: NodeTypes.SIMPLE_EXPRESSION,
-          content: 'class',
-          isStatic: true,
-        },
         type: IRNodeTypes.SET_PROPS,
-        value: {
-          type: NodeTypes.SIMPLE_EXPRESSION,
-          content: 'clz',
-          isStatic: false,
-        },
+        value: [
+          {
+            key: {
+              type: NodeTypes.SIMPLE_EXPRESSION,
+              content: 'class',
+              isStatic: true,
+            },
+            value: {
+              type: NodeTypes.SIMPLE_EXPRESSION,
+              content: 'clz',
+              isStatic: false,
+            },
+          },
+        ],
       },
       {
         type: IRNodeTypes.PREPEND_NODE,
@@ -73,16 +77,20 @@ describe('compiler: v-once', () => {
       {
         type: IRNodeTypes.SET_PROPS,
         element: 1,
-        key: {
-          type: NodeTypes.SIMPLE_EXPRESSION,
-          content: 'id',
-          isStatic: true,
-        },
-        value: {
-          type: NodeTypes.SIMPLE_EXPRESSION,
-          content: 'foo',
-          isStatic: false,
-        },
+        value: [
+          {
+            key: {
+              type: NodeTypes.SIMPLE_EXPRESSION,
+              content: 'id',
+              isStatic: true,
+            },
+            value: {
+              type: NodeTypes.SIMPLE_EXPRESSION,
+              content: 'foo',
+              isStatic: false,
+            },
+          },
+        ],
       },
     ])
     expect(code).not.contains('effect')
@@ -100,17 +108,21 @@ describe('compiler: v-once', () => {
       {
         type: IRNodeTypes.SET_PROPS,
         element: 1,
-        runtimeCamelize: false,
-        key: {
-          type: NodeTypes.SIMPLE_EXPRESSION,
-          content: 'id',
-          isStatic: true,
-        },
-        value: {
-          type: NodeTypes.SIMPLE_EXPRESSION,
-          content: 'foo',
-          isStatic: false,
-        },
+        value: [
+          {
+            runtimeCamelize: false,
+            key: {
+              type: NodeTypes.SIMPLE_EXPRESSION,
+              content: 'id',
+              isStatic: true,
+            },
+            value: {
+              type: NodeTypes.SIMPLE_EXPRESSION,
+              content: 'foo',
+              isStatic: false,
+            },
+          },
+        ],
       },
     ])
   })

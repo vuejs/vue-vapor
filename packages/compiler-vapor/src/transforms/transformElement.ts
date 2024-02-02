@@ -102,7 +102,6 @@ function buildProps(
       node,
       context,
     )
-    // the prop need to be merged
     if (result) {
       expressions.push(result.key, result.value)
       transformResults.push(result)

@@ -207,6 +207,8 @@ export function render(_ctx) {
     _setText(n1, _ctx.count)
     _setText(n2, _ctx.count)
     _setText(n3, _ctx.count)
+  })
+  _renderEffect(() => {
     _setDynamicProp(n4, "id", _ctx.count)
   })
   return n0
@@ -232,7 +234,7 @@ exports[`compile > expression parsing > v-bind 1`] = `
   const n0 = t0()
   const { 0: [n1],} = _children(n0)
   _renderEffect(() => {
-    _setDynamicProp(n1, key.value+1, _unref(foo)[key.value+1]())
+    _setMergeProps(n1, { [key.value+1]: _unref(foo)[key.value+1]() })
   })
   return n0
 })()"
