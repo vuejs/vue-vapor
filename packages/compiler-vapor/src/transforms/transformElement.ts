@@ -140,9 +140,9 @@ function buildProps(
     } else {
       context.registerEffect(expressions, [
         {
-          type: IRNodeTypes.SET_DYNAMIC_PROPS,
+          type: IRNodeTypes.SET_MERGE_PROPS,
           element: context.reference(),
-          value: transformResults,
+          value: [transformResults],
         },
       ])
     }

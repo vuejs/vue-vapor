@@ -4,12 +4,7 @@ import {
   NEWLINE,
   buildCodeFragment,
 } from '../generate'
-import type {
-  SetDynamicPropsIRNode,
-  SetMergePropsIRNode,
-  SetPropsIRNode,
-  VaporHelper,
-} from '../ir'
+import type { SetMergePropsIRNode, SetPropsIRNode, VaporHelper } from '../ir'
 import { genExpression } from './expression'
 import { isString } from '@vue/shared'
 import type { DirectiveTransformResult } from '../transform'
@@ -30,7 +25,7 @@ export function genSetProps(
   oper.value.forEach(({ key, value, modifier }) => {
     const keyName = isString(key) ? key : key.content
 
-    let helperName: VaporHelper | undefined
+    let helperName: VaporHelper
     let omitKey = false
     if (keyName === 'class') {
       helperName = 'setClass'
@@ -40,36 +35,22 @@ export function genSetProps(
       omitKey = true
     } else if (modifier) {
       helperName = modifier === '.' ? 'setDOMProp' : 'setAttr'
+    } else {
+      helperName = 'setDynamicProp'
     }
 
-    helperName &&
-      push(
-        NEWLINE,
-        ...call(
-          vaporHelper(helperName),
-          `n${oper.element}`,
-          omitKey ? false : genExpression(key, context),
-          genExpression(value, context),
-        ),
-      )
+    push(
+      NEWLINE,
+      ...call(
+        vaporHelper(helperName),
+        `n${oper.element}`,
+        omitKey ? false : genExpression(key, context),
+        genExpression(value, context),
+      ),
+    )
   })
 
   return frag
-}
-
-export function genSetDynamicProps(
-  oper: SetDynamicPropsIRNode,
-  context: CodegenContext,
-): CodeFragment[] {
-  const { call, vaporHelper } = context
-  return [
-    NEWLINE,
-    ...call(
-      vaporHelper('setDynamicProps'),
-      `n${oper.element}`,
-      genLiteralObjectProp(oper.value, context),
-    ),
-  ]
 }
 
 export function genSetMergeProps(
