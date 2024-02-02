@@ -1,11 +1,15 @@
 import {
+  type Data,
+  isArray,
   isFunction,
+  isOn,
   isString,
   normalizeClass,
   normalizeStyle,
   toDisplayString,
 } from '@vue/shared'
 import { currentInstance } from '../component'
+import type { VNodeProps } from '@vue/runtime-core'
 
 export function recordPropMetadata(el: Node, key: string, value: any): any {
   if (!currentInstance) {
@@ -78,6 +82,51 @@ export function setDynamicProp(el: Element, key: string, value: any) {
     // TODO special case for <input v-model type="checkbox">
     setAttr(el, key, value)
   }
+}
+
+export function setDynamicProps(el: Element, value: any) {
+  // TODO remove all of old props before set new props since there is containing dynamic key
+  for (const key in value) {
+    setDynamicProp(el, key, value[key])
+  }
+}
+
+export function setMergeProps(el: Element, ...args: any) {
+  args.length > 1
+    ? setDynamicProps(el, mergeProps(...args))
+    : setDynamicProps(el, args[0])
+}
+
+// TODO copied from runtime-core
+function mergeProps(...args: (Data & VNodeProps)[]) {
+  const ret: Data = {}
+  for (let i = 0; i < args.length; i++) {
+    const toMerge = args[i]
+    for (const key in toMerge) {
+      if (key === 'class') {
+        if (ret.class !== toMerge.class) {
+          ret.class = normalizeClass([ret.class, toMerge.class])
+        }
+      } else if (key === 'style') {
+        ret.style = normalizeStyle([ret.style, toMerge.style])
+      } else if (isOn(key)) {
+        const existing = ret[key]
+        const incoming = toMerge[key]
+        if (
+          incoming &&
+          existing !== incoming &&
+          !(isArray(existing) && existing.includes(incoming))
+        ) {
+          ret[key] = existing
+            ? [].concat(existing as any, incoming as any)
+            : incoming
+        }
+      } else if (key !== '') {
+        ret[key] = toMerge[key]
+      }
+    }
+  }
+  return ret
 }
 
 export function setText(el: Node, value: any) {

@@ -48,7 +48,7 @@ describe('compiler: v-once', () => {
           content: 'class',
           isStatic: true,
         },
-        type: IRNodeTypes.SET_PROP,
+        type: IRNodeTypes.SET_PROPS,
         value: {
           type: NodeTypes.SIMPLE_EXPRESSION,
           content: 'clz',
@@ -71,7 +71,7 @@ describe('compiler: v-once', () => {
     expect(ir.effect).lengthOf(0)
     expect(ir.operation).toMatchObject([
       {
-        type: IRNodeTypes.SET_PROP,
+        type: IRNodeTypes.SET_PROPS,
         element: 1,
         key: {
           type: NodeTypes.SIMPLE_EXPRESSION,
@@ -98,7 +98,7 @@ describe('compiler: v-once', () => {
     expect(ir.effect).lengthOf(0)
     expect(ir.operation).toMatchObject([
       {
-        type: IRNodeTypes.SET_PROP,
+        type: IRNodeTypes.SET_PROPS,
         element: 1,
         runtimeCamelize: false,
         key: {

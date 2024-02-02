@@ -39,7 +39,7 @@ describe('compiler v-bind', () => {
       ],
       operations: [
         {
-          type: IRNodeTypes.SET_PROP,
+          type: IRNodeTypes.SET_PROPS,
           element: 1,
           key: {
             type: NodeTypes.SIMPLE_EXPRESSION,
@@ -73,7 +73,7 @@ describe('compiler v-bind', () => {
     const { ir, code } = compileWithVBind(`<div v-bind:id />`)
 
     expect(ir.effect[0].operations[0]).toMatchObject({
-      type: IRNodeTypes.SET_PROP,
+      type: IRNodeTypes.SET_PROPS,
       key: {
         content: `id`,
         isStatic: true,
@@ -100,7 +100,7 @@ describe('compiler v-bind', () => {
     const { ir, code } = compileWithVBind(`<div :camel-case />`)
 
     expect(ir.effect[0].operations[0]).toMatchObject({
-      type: IRNodeTypes.SET_PROP,
+      type: IRNodeTypes.SET_PROPS,
       key: {
         content: `camel-case`,
         isStatic: true,
@@ -118,7 +118,7 @@ describe('compiler v-bind', () => {
   test('dynamic arg', () => {
     const { ir, code } = compileWithVBind(`<div v-bind:[id]="id"/>`)
     expect(ir.effect[0].operations[0]).toMatchObject({
-      type: IRNodeTypes.SET_PROP,
+      type: IRNodeTypes.SET_PROPS,
       element: 1,
       key: {
         type: NodeTypes.SIMPLE_EXPRESSION,

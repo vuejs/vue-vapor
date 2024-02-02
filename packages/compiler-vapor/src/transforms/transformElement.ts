@@ -2,11 +2,28 @@ import {
   type AttributeNode,
   type ElementNode,
   ElementTypes,
+  ErrorCodes,
   NodeTypes,
+  type SimpleExpressionNode,
+  createCompilerError,
 } from '@vue/compiler-dom'
-import { isBuiltInDirective, isReservedProp, isVoidTag } from '@vue/shared'
-import type { NodeTransform, TransformContext } from '../transform'
-import { IRNodeTypes, type VaporDirectiveNode } from '../ir'
+import {
+  isBuiltInDirective,
+  isReservedProp,
+  isString,
+  isVoidTag,
+} from '@vue/shared'
+import type {
+  DirectiveTransformResult,
+  NodeTransform,
+  TransformContext,
+} from '../transform'
+import {
+  type IRExpression,
+  IRNodeTypes,
+  type PropsExpression,
+  type VaporDirectiveNode,
+} from '../ir'
 
 export const transformElement: NodeTransform = (node, context) => {
   return function postTransformElement() {
@@ -49,8 +66,86 @@ function buildProps(
   props: ElementNode['props'] = node.props,
   isComponent: boolean,
 ) {
+  const expressions: IRExpression[] = []
+  let transformResults: DirectiveTransformResult[] = []
+  const mergeArgs: PropsExpression[] = []
+
+  const pushMergeArg = () => {
+    if (transformResults.length) {
+      // TODO dedupe
+      mergeArgs.push(transformResults)
+      transformResults = []
+    }
+  }
+
   for (const prop of props) {
-    transformProp(prop as VaporDirectiveNode | AttributeNode, node, context)
+    if (prop.type === NodeTypes.DIRECTIVE) {
+      const isVBind = prop.name === 'bind'
+      if (!prop.arg && isVBind) {
+        if (prop.exp) {
+          if (isVBind) {
+            pushMergeArg()
+            expressions.push(prop.exp as SimpleExpressionNode)
+            mergeArgs.push(prop.exp as SimpleExpressionNode)
+          }
+        } else {
+          context.options.onError(
+            createCompilerError(ErrorCodes.X_V_BIND_NO_EXPRESSION, prop.loc),
+          )
+        }
+        continue
+      }
+    }
+
+    const result = transformProp(
+      prop as VaporDirectiveNode | AttributeNode,
+      node,
+      context,
+    )
+    // the prop need to be merged
+    if (result) {
+      expressions.push(result.key, result.value)
+      transformResults.push(result)
+    }
+  }
+
+  if (mergeArgs.length) {
+    pushMergeArg()
+    context.registerEffect(expressions, [
+      {
+        type: IRNodeTypes.SET_MERGE_PROPS,
+        element: context.reference(),
+        value: mergeArgs,
+      },
+    ])
+  } else if (transformResults.length) {
+    let hasDynamicKey = false
+    for (let i = 0; i < transformResults.length; i++) {
+      const key = transformResults[i].key
+      if (isString(key) || key.isStatic) {
+        // TODO
+      } else if (!key.isHandlerKey) {
+        hasDynamicKey = true
+      }
+    }
+    if (!hasDynamicKey) {
+      // TODO handle class/style prop
+      context.registerEffect(expressions, [
+        {
+          type: IRNodeTypes.SET_PROPS,
+          element: context.reference(),
+          value: transformResults,
+        },
+      ])
+    } else {
+      context.registerEffect(expressions, [
+        {
+          type: IRNodeTypes.SET_DYNAMIC_PROPS,
+          element: context.reference(),
+          value: transformResults,
+        },
+      ])
+    }
   }
 }
 
@@ -58,7 +153,7 @@ function transformProp(
   prop: VaporDirectiveNode | AttributeNode,
   node: ElementNode,
   context: TransformContext<ElementNode>,
-): void {
+): void | DirectiveTransformResult {
   const { name } = prop
   if (isReservedProp(name)) return
 
@@ -70,7 +165,7 @@ function transformProp(
 
   const directiveTransform = context.options.directiveTransforms[name]
   if (directiveTransform) {
-    directiveTransform(prop, node, context)
+    return directiveTransform(prop, node, context)
   } else if (!isBuiltInDirective(name)) {
     context.registerOperation({
       type: IRNodeTypes.WITH_DIRECTIVE,
