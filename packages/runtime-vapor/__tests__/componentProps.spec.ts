@@ -4,7 +4,7 @@
 // mixins
 // caching
 
-import type { FunctionalComponent } from '../src/component'
+import { type FunctionalComponent, setCurrentInstance } from '../src/component'
 import {
   children,
   defineComponent,
@@ -342,7 +342,8 @@ describe('component props (vapor)', () => {
       },
     })
 
-    render(Comp, {}, host)
+    const instace = render(Comp, {}, host)
+    const reset = setCurrentInstance(instace)
     // expect(host.innerHTML).toBe('<div id="a">1</div>') // TODO: Fallthrough Attributes
     expect(host.innerHTML).toBe('<div>1</div>')
 
@@ -354,6 +355,7 @@ describe('component props (vapor)', () => {
     // id.value = 'b'
     // await nextTick()
     // expect(host.innerHTML).toBe('<div id="b">2</div>') // TODO: Fallthrough Attributes
+    reset()
   })
 
   test.todo('validator', () => {
