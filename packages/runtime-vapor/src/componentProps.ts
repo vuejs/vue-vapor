@@ -10,9 +10,11 @@ import {
   hyphenate,
   isArray,
   isFunction,
+  isObject,
   isReservedProp,
+  makeMap,
 } from '@vue/shared'
-import { shallowReactive, toRaw } from '@vue/reactivity'
+import { shallowReactive, shallowReadonly, toRaw } from '@vue/reactivity'
 import type { Component, ComponentInternalInstance } from './component'
 
 export type ComponentPropsOptions<P = Data> =
@@ -31,7 +33,7 @@ export interface PropOptions<T = any, D = T> {
   type?: PropType<T> | true | null
   required?: boolean
   default?: D | DefaultFactory<D> | null | undefined | object
-  validator?(value: unknown): boolean
+  validator?(value: unknown, props: Data): boolean
   /**
    * @internal
    */
@@ -136,6 +138,11 @@ export function initProps(
         },
       })
     }
+  }
+
+  // validation
+  if (__DEV__) {
+    validateProps(rawProps || {}, props, instance)
   }
 
   instance.props = shallowReactive(props)
@@ -264,4 +271,109 @@ function getTypeIndex(
     return isSameType(expectedTypes, type) ? 0 : -1
   }
   return -1
+}
+
+/**
+ * dev only
+ */
+function validateProps(
+  rawProps: Data,
+  props: Data,
+  instance: ComponentInternalInstance,
+) {
+  const resolvedValues = toRaw(props)
+  const options = instance.propsOptions[0]
+  for (const key in options) {
+    let opt = options[key]
+    if (opt == null) continue
+    validateProp(
+      key,
+      resolvedValues[key],
+      opt,
+      __DEV__ ? shallowReadonly(resolvedValues) : resolvedValues,
+      !hasOwn(rawProps, key) && !hasOwn(rawProps, hyphenate(key)),
+    )
+  }
+}
+
+/**
+ * dev only
+ */
+function validateProp(
+  name: string,
+  value: unknown,
+  prop: PropOptions,
+  props: Data,
+  isAbsent: boolean,
+) {
+  const { type, required, validator } = prop
+  // required!
+  if (required && isAbsent) {
+    // TODO: warn
+    // warn('Missing required prop: "' + name + '"')
+    return
+  }
+  // missing but optional
+  if (value == null && !required) {
+    return
+  }
+  // type check
+  if (type != null && type !== true) {
+    let isValid = false
+    const types = isArray(type) ? type : [type]
+    const expectedTypes = []
+    // value is valid as long as one of the specified types match
+    for (let i = 0; i < types.length && !isValid; i++) {
+      const { valid, expectedType } = assertType(value, types[i])
+      expectedTypes.push(expectedType || '')
+      isValid = valid
+    }
+    if (!isValid) {
+      // TODO: warn
+      // warn(getInvalidTypeMessage(name, value, expectedTypes))
+      return
+    }
+  }
+  // custom validator
+  if (validator && !validator(value, props)) {
+    // TODO: warn
+    // warn('Invalid prop: custom validator check failed for prop "' + name + '".')
+  }
+}
+
+const isSimpleType = /*#__PURE__*/ makeMap(
+  'String,Number,Boolean,Function,Symbol,BigInt',
+)
+
+type AssertionResult = {
+  valid: boolean
+  expectedType: string
+}
+
+/**
+ * dev only
+ */
+function assertType(value: unknown, type: PropConstructor): AssertionResult {
+  let valid
+  const expectedType = getType(type)
+  if (isSimpleType(expectedType)) {
+    const t = typeof value
+    valid = t === expectedType.toLowerCase()
+    // for primitive wrapper objects
+    if (!valid && t === 'object') {
+      valid = value instanceof type
+    }
+  } else if (expectedType === 'Object') {
+    valid = isObject(value)
+  } else if (expectedType === 'Array') {
+    valid = isArray(value)
+  } else if (expectedType === 'null') {
+    valid = value === null
+  } else {
+    valid = value instanceof type
+  }
+  return {
+    valid,
+    expectedType,
+  }
 }
