@@ -5,16 +5,12 @@ import {
   EMPTY_ARR,
   EMPTY_OBJ,
   camelize,
-  capitalize,
   extend,
   hasOwn,
   hyphenate,
   isArray,
   isFunction,
-  isObject,
   isReservedProp,
-  makeMap,
-  toRawType,
 } from '@vue/shared'
 import { shallowReactive, shallowReadonly, toRaw } from '@vue/reactivity'
 import type { Component, ComponentInternalInstance } from './component'
