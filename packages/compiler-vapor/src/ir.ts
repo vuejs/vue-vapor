@@ -91,15 +91,15 @@ export interface FragmentFactoryIRNode extends BaseIRNode {
 export interface SetPropsIRNode extends BaseIRNode {
   type: IRNodeTypes.SET_PROPS
   element: number
-  value: DirectiveTransformResult[]
+  props: DirectiveTransformResult[]
 }
 
-export type PropsExpression = DirectiveTransformResult[] | IRExpression
+export type PropsExpression = DirectiveTransformResult[] | SimpleExpressionNode
 
 export interface SetMergePropsIRNode extends BaseIRNode {
   type: IRNodeTypes.SET_MERGE_PROPS
   element: number
-  value: PropsExpression[]
+  props: PropsExpression[]
 }
 
 export interface SetTextIRNode extends BaseIRNode {

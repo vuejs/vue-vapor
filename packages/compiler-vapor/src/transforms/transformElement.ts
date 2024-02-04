@@ -7,19 +7,13 @@ import {
   type SimpleExpressionNode,
   createCompilerError,
 } from '@vue/compiler-dom'
-import {
-  isBuiltInDirective,
-  isReservedProp,
-  isString,
-  isVoidTag,
-} from '@vue/shared'
+import { isBuiltInDirective, isReservedProp, isVoidTag } from '@vue/shared'
 import type {
   DirectiveTransformResult,
   NodeTransform,
   TransformContext,
 } from '../transform'
 import {
-  type IRExpression,
   IRNodeTypes,
   type PropsExpression,
   type VaporDirectiveNode,
@@ -66,7 +60,7 @@ function buildProps(
   props: ElementNode['props'] = node.props,
   isComponent: boolean,
 ) {
-  const expressions: IRExpression[] = []
+  const expressions: SimpleExpressionNode[] = []
   const mergeArgs: PropsExpression[] = []
   const transformResults: DirectiveTransformResult[] = []
 
@@ -115,7 +109,7 @@ function buildProps(
       {
         type: IRNodeTypes.SET_MERGE_PROPS,
         element: context.reference(),
-        value: mergeArgs,
+        props: mergeArgs,
       },
     ])
   } else if (transformResults.length) {
@@ -126,7 +120,7 @@ function buildProps(
         {
           type: IRNodeTypes.SET_MERGE_PROPS,
           element: context.reference(),
-          value: [transformResults],
+          props: [transformResults],
         },
       ])
     } else {
@@ -135,7 +129,7 @@ function buildProps(
         {
           type: IRNodeTypes.SET_PROPS,
           element: context.reference(),
-          value: transformResults,
+          props: transformResults,
         },
       ])
     }

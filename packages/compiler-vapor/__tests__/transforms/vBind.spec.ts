@@ -41,7 +41,7 @@ describe('compiler v-bind', () => {
         {
           type: IRNodeTypes.SET_PROPS,
           element: 1,
-          value: [
+          props: [
             {
               key: {
                 type: NodeTypes.SIMPLE_EXPRESSION,
@@ -84,7 +84,7 @@ describe('compiler v-bind', () => {
 
     expect(ir.effect[0].operations[0]).toMatchObject({
       type: IRNodeTypes.SET_PROPS,
-      value: [
+      props: [
         {
           key: {
             content: `id`,
@@ -115,7 +115,7 @@ describe('compiler v-bind', () => {
 
     expect(ir.effect[0].operations[0]).toMatchObject({
       type: IRNodeTypes.SET_PROPS,
-      value: [
+      props: [
         {
           key: {
             content: `camel-case`,
@@ -134,11 +134,14 @@ describe('compiler v-bind', () => {
   })
 
   test('dynamic arg', () => {
-    const { ir, code } = compileWithVBind(`<div v-bind:[id]="id"/>`)
+    const { ir, code } = compileWithVBind(
+      `<div v-bind:[id]="id" v-bind:[title]="title" />`,
+    )
+    expect(code).matchSnapshot()
     expect(ir.effect[0].operations[0]).toMatchObject({
       type: IRNodeTypes.SET_MERGE_PROPS,
       element: 1,
-      value: [
+      props: [
         [
           {
             key: {
@@ -152,12 +155,24 @@ describe('compiler v-bind', () => {
               isStatic: false,
             },
           },
+          {
+            key: {
+              type: NodeTypes.SIMPLE_EXPRESSION,
+              content: 'title',
+              isStatic: false,
+            },
+            value: {
+              type: NodeTypes.SIMPLE_EXPRESSION,
+              content: 'title',
+              isStatic: false,
+            },
+          },
         ],
       ],
     })
-
-    expect(code).matchSnapshot()
-    expect(code).contains('_setMergeProps(n1, { [_ctx.id]: _ctx.id })')
+    expect(code).contains(
+      '_setMergeProps(n1, { [_ctx.id]: _ctx.id, [_ctx.title]: _ctx.title })',
+    )
   })
 
   test('should error if empty expression', () => {
@@ -186,7 +201,7 @@ describe('compiler v-bind', () => {
     const { ir, code } = compileWithVBind(`<div v-bind:foo-bar.camel="id"/>`)
 
     expect(ir.effect[0].operations[0]).toMatchObject({
-      value: [
+      props: [
         {
           key: {
             content: `fooBar`,
@@ -210,7 +225,7 @@ describe('compiler v-bind', () => {
     const { ir, code } = compileWithVBind(`<div v-bind:foo-bar.camel />`)
 
     expect(ir.effect[0].operations[0]).toMatchObject({
-      value: [
+      props: [
         {
           key: {
             content: `fooBar`,
@@ -236,7 +251,7 @@ describe('compiler v-bind', () => {
 
     expect(ir.effect[0].operations[0]).toMatchObject({
       type: IRNodeTypes.SET_MERGE_PROPS,
-      value: [
+      props: [
         [
           {
             key: {
@@ -267,7 +282,7 @@ describe('compiler v-bind', () => {
     const { ir, code } = compileWithVBind(`<div v-bind:fooBar.prop="id"/>`)
 
     expect(ir.effect[0].operations[0]).toMatchObject({
-      value: [
+      props: [
         {
           key: {
             content: `fooBar`,
@@ -292,7 +307,7 @@ describe('compiler v-bind', () => {
     const { ir, code } = compileWithVBind(`<div v-bind:fooBar.prop />`)
 
     expect(ir.effect[0].operations[0]).toMatchObject({
-      value: [
+      props: [
         {
           key: {
             content: `fooBar`,
@@ -318,7 +333,7 @@ describe('compiler v-bind', () => {
 
     expect(ir.effect[0].operations[0]).toMatchObject({
       type: IRNodeTypes.SET_MERGE_PROPS,
-      value: [
+      props: [
         [
           {
             key: {
@@ -349,7 +364,7 @@ describe('compiler v-bind', () => {
     const { ir, code } = compileWithVBind(`<div .fooBar="id"/>`)
 
     expect(ir.effect[0].operations[0]).toMatchObject({
-      value: [
+      props: [
         {
           key: {
             content: `fooBar`,
@@ -374,7 +389,7 @@ describe('compiler v-bind', () => {
     const { ir, code } = compileWithVBind(`<div .fooBar />`)
 
     expect(ir.effect[0].operations[0]).toMatchObject({
-      value: [
+      props: [
         {
           key: {
             content: `fooBar`,
@@ -399,7 +414,7 @@ describe('compiler v-bind', () => {
     const { ir, code } = compileWithVBind(`<div v-bind:foo-bar.attr="id"/>`)
 
     expect(ir.effect[0].operations[0]).toMatchObject({
-      value: [
+      props: [
         {
           key: {
             content: `foo-bar`,
@@ -424,7 +439,7 @@ describe('compiler v-bind', () => {
     const { ir, code } = compileWithVBind(`<div v-bind:foo-bar.attr />`)
 
     expect(ir.effect[0].operations[0]).toMatchObject({
-      value: [
+      props: [
         {
           key: {
             content: `foo-bar`,

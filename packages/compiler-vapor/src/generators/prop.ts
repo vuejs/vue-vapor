@@ -6,7 +6,6 @@ import {
 } from '../generate'
 import type { SetMergePropsIRNode, SetPropsIRNode, VaporHelper } from '../ir'
 import { genExpression } from './expression'
-import { isString } from '@vue/shared'
 import type { DirectiveTransformResult } from '../transform'
 import { isSimpleIdentifier } from '@vue/compiler-core'
 
@@ -18,8 +17,8 @@ export function genSetProps(
   const { call, vaporHelper } = context
   const [frag, push] = buildCodeFragment()
 
-  oper.value.forEach(({ key, value, modifier }) => {
-    const keyName = isString(key) ? key : key.content
+  oper.props.forEach(({ key, value, modifier }) => {
+    const keyName = key.content
 
     let helperName: VaporHelper
     let omitKey = false
@@ -61,7 +60,7 @@ export function genSetMergeProps(
     ...call(
       vaporHelper('setMergeProps'),
       `n${oper.element}`,
-      ...oper.value.map(
+      ...oper.props.map(
         props =>
           Array.isArray(props)
             ? genLiteralObjectProps(props, context) // static and dynamic arg props
@@ -75,25 +74,15 @@ function genLiteralObjectProps(
   props: DirectiveTransformResult[],
   context: CodegenContext,
 ): CodeFragment[] {
-  const [frag, push] = buildCodeFragment()
-  const multilines = props.length > 1
-
-  push(multilines ? `{` : `{ `)
-  props.forEach((prop, i) => {
-    const { value } = prop
-    // key
-    push(...genPropertyKey(prop, context))
-    push(`: `)
-    // value
-    push(...genExpression(value, context))
-    if (i < props.length - 1) {
-      // will only reach this if it's multilines
-      push(`,`, NEWLINE)
-    }
-  })
-  push(multilines ? `}` : ` }`)
-
-  return frag
+  const { multi } = context
+  return multi(
+    ['{ ', ' }', ', '],
+    ...props.map(prop => [
+      ...genPropertyKey(prop, context),
+      `: `,
+      ...genExpression(prop.value, context),
+    ]),
+  )
 }
 
 function genPropertyKey(
@@ -103,9 +92,9 @@ function genPropertyKey(
   const { call, helper } = context
 
   // static arg was transformed by v-bind transformer
-  if (isString(node) || node.isStatic) {
+  if (node.isStatic) {
     // only quote keys if necessary
-    const keyName = isString(node) ? node : node.content
+    const keyName = node.content
     return [isSimpleIdentifier(keyName) ? keyName : JSON.stringify(keyName)]
   }
 

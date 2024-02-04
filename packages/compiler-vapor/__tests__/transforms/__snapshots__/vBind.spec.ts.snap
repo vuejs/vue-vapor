@@ -163,7 +163,7 @@ export function render(_ctx) {
   const n0 = t0()
   const { 0: [n1],} = _children(n0)
   _renderEffect(() => {
-    _setMergeProps(n1, { [_ctx.id]: _ctx.id })
+    _setMergeProps(n1, { [_ctx.id]: _ctx.id, [_ctx.title]: _ctx.title })
   })
   return n0
 }"
