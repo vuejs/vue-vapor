@@ -9,7 +9,6 @@ import {
   toDisplayString,
 } from '@vue/shared'
 import { currentInstance } from '../component'
-import type { VNodeProps } from '@vue/runtime-core'
 
 export function recordPropMetadata(el: Node, key: string, value: any): any {
   if (!currentInstance) {
@@ -94,7 +93,7 @@ export function setMergeProps(el: Element, ...args: any) {
 }
 
 // TODO copied from runtime-core
-function mergeProps(...args: (Data & VNodeProps)[]) {
+function mergeProps(...args: Data[]) {
   const ret: Data = {}
   for (let i = 0; i < args.length; i++) {
     const toMerge = args[i]
