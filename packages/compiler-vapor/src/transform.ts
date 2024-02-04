@@ -41,7 +41,7 @@ export type DirectiveTransform = (
   dir: VaporDirectiveNode,
   node: ElementNode,
   context: TransformContext<ElementNode>,
-) => undefined | DirectiveTransformResult
+) => DirectiveTransformResult | void
 
 export interface DirectiveTransformResult {
   key: SimpleExpressionNode

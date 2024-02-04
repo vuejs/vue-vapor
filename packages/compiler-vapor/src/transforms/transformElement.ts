@@ -140,7 +140,7 @@ function transformProp(
   prop: VaporDirectiveNode | AttributeNode,
   node: ElementNode,
   context: TransformContext<ElementNode>,
-): DirectiveTransformResult | undefined {
+): DirectiveTransformResult | void {
   const { name } = prop
   if (isReservedProp(name)) return
 
