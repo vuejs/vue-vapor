@@ -25,7 +25,7 @@ export function genOperations(opers: OperationNode[], context: CodegenContext) {
   return frag
 }
 
-function genOperation(
+export function genOperation(
   oper: OperationNode,
   context: CodegenContext,
 ): CodeFragment[] {
@@ -62,9 +62,6 @@ function genOperation(
 }
 
 export function genEffects(effects: IREffect[], context: CodegenContext) {
-  if (context.genEffect) {
-    return context.genEffect(effects)
-  }
   const [frag, push] = buildCodeFragment()
   for (const effect of effects) {
     push(...genEffect(effect, context))
@@ -72,7 +69,7 @@ export function genEffects(effects: IREffect[], context: CodegenContext) {
   return frag
 }
 
-function genEffect({ operations }: IREffect, context: CodegenContext) {
+export function genEffect({ operations }: IREffect, context: CodegenContext) {
   const { vaporHelper } = context
   const [frag, push] = buildCodeFragment(
     NEWLINE,
