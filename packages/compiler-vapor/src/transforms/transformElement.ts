@@ -107,7 +107,7 @@ function buildProps(
     pushMergeArg()
     context.registerEffect(expressions, [
       {
-        type: IRNodeTypes.SET_MERGE_PROPS,
+        type: IRNodeTypes.SET_DYNAMIC_PROPS,
         element: context.reference(),
         props: mergeArgs,
       },
@@ -118,7 +118,7 @@ function buildProps(
     if (hasDynamicKey) {
       context.registerEffect(expressions, [
         {
-          type: IRNodeTypes.SET_MERGE_PROPS,
+          type: IRNodeTypes.SET_DYNAMIC_PROPS,
           element: context.reference(),
           props: [transformResults],
         },

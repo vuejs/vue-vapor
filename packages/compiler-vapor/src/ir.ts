@@ -21,7 +21,7 @@ export enum IRNodeTypes {
   FRAGMENT_FACTORY,
 
   SET_PROPS,
-  SET_MERGE_PROPS,
+  SET_DYNAMIC_PROPS,
   SET_TEXT,
   SET_EVENT,
   SET_HTML,
@@ -96,8 +96,8 @@ export interface SetPropsIRNode extends BaseIRNode {
 
 export type PropsExpression = DirectiveTransformResult[] | SimpleExpressionNode
 
-export interface SetMergePropsIRNode extends BaseIRNode {
-  type: IRNodeTypes.SET_MERGE_PROPS
+export interface SetDynamicPropsIRNode extends BaseIRNode {
+  type: IRNodeTypes.SET_DYNAMIC_PROPS
   element: number
   props: PropsExpression[]
 }
@@ -184,7 +184,7 @@ export type IRNode =
   | FragmentFactoryIRNode
 export type OperationNode =
   | SetPropsIRNode
-  | SetMergePropsIRNode
+  | SetDynamicPropsIRNode
   | SetTextIRNode
   | SetEventIRNode
   | SetHtmlIRNode

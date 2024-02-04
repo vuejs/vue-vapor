@@ -44,7 +44,7 @@ describe('compiler: v-once', () => {
       {
         element: 2,
         type: IRNodeTypes.SET_PROPS,
-        value: [
+        props: [
           {
             key: {
               type: NodeTypes.SIMPLE_EXPRESSION,
@@ -77,7 +77,7 @@ describe('compiler: v-once', () => {
       {
         type: IRNodeTypes.SET_PROPS,
         element: 1,
-        value: [
+        props: [
           {
             key: {
               type: NodeTypes.SIMPLE_EXPRESSION,
@@ -108,7 +108,7 @@ describe('compiler: v-once', () => {
       {
         type: IRNodeTypes.SET_PROPS,
         element: 1,
-        value: [
+        props: [
           {
             runtimeCamelize: false,
             key: {

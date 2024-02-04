@@ -4,7 +4,7 @@ import {
   NEWLINE,
   buildCodeFragment,
 } from '../generate'
-import type { SetMergePropsIRNode, SetPropsIRNode, VaporHelper } from '../ir'
+import type { SetDynamicPropsIRNode, SetPropsIRNode, VaporHelper } from '../ir'
 import { genExpression } from './expression'
 import type { DirectiveTransformResult } from '../transform'
 import { isSimpleIdentifier } from '@vue/compiler-core'
@@ -49,8 +49,8 @@ export function genSetProps(
 }
 
 // dynamic arg props and v-bind="{}" will reach here
-export function genSetMergeProps(
-  oper: SetMergePropsIRNode,
+export function genDynamicProps(
+  oper: SetDynamicPropsIRNode,
   context: CodegenContext,
 ): CodeFragment[] {
   const { call, vaporHelper } = context
@@ -58,7 +58,7 @@ export function genSetMergeProps(
   return [
     NEWLINE,
     ...call(
-      vaporHelper('setMergeProps'),
+      vaporHelper('setDynamicProps'),
       `n${oper.element}`,
       ...oper.props.map(
         props =>

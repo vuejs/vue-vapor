@@ -83,7 +83,7 @@ export function setDynamicProp(el: Element, key: string, value: any) {
   }
 }
 
-export function setMergeProps(el: Element, ...args: any) {
+export function setDynamicProps(el: Element, ...args: any) {
   const props = args.length > 1 ? mergeProps(...args) : args[0]
 
   // TODO remove all of old props before set new props since there is containing dynamic key

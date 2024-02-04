@@ -139,7 +139,7 @@ describe('compiler v-bind', () => {
     )
     expect(code).matchSnapshot()
     expect(ir.effect[0].operations[0]).toMatchObject({
-      type: IRNodeTypes.SET_MERGE_PROPS,
+      type: IRNodeTypes.SET_DYNAMIC_PROPS,
       element: 1,
       props: [
         [
@@ -171,7 +171,7 @@ describe('compiler v-bind', () => {
       ],
     })
     expect(code).contains(
-      '_setMergeProps(n1, { [_ctx.id]: _ctx.id, [_ctx.title]: _ctx.title })',
+      '_setDynamicProps(n1, { [_ctx.id]: _ctx.id, [_ctx.title]: _ctx.title })',
     )
   })
 
@@ -250,7 +250,7 @@ describe('compiler v-bind', () => {
     const { ir, code } = compileWithVBind(`<div v-bind:[foo].camel="id"/>`)
 
     expect(ir.effect[0].operations[0]).toMatchObject({
-      type: IRNodeTypes.SET_MERGE_PROPS,
+      type: IRNodeTypes.SET_DYNAMIC_PROPS,
       props: [
         [
           {
@@ -272,7 +272,7 @@ describe('compiler v-bind', () => {
     expect(code).matchSnapshot()
     expect(code).contains('renderEffect')
     expect(code).contains(
-      `_setMergeProps(n1, { [_camelize(_ctx.foo)]: _ctx.id })`,
+      `_setDynamicProps(n1, { [_camelize(_ctx.foo)]: _ctx.id })`,
     )
   })
 
@@ -332,7 +332,7 @@ describe('compiler v-bind', () => {
     const { ir, code } = compileWithVBind(`<div v-bind:[fooBar].prop="id"/>`)
 
     expect(ir.effect[0].operations[0]).toMatchObject({
-      type: IRNodeTypes.SET_MERGE_PROPS,
+      type: IRNodeTypes.SET_DYNAMIC_PROPS,
       props: [
         [
           {
@@ -354,7 +354,7 @@ describe('compiler v-bind', () => {
     expect(code).matchSnapshot()
     expect(code).contains('renderEffect')
     expect(code).contains(
-      '_setMergeProps(n1, { [`.${_ctx.fooBar}`]: _ctx.id })',
+      '_setDynamicProps(n1, { [`.${_ctx.fooBar}`]: _ctx.id })',
     )
   })
 
