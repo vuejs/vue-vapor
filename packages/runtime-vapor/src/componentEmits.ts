@@ -45,7 +45,7 @@ export function emit(
   ...rawArgs: any[]
 ) {
   if (instance.isUnmounted) return
-  const props = instance.rawProps
+  const { rawProps } = instance
 
   let args = rawArgs
   const isModelListener = event.startsWith('update:')
@@ -53,11 +53,11 @@ export function emit(
   // for v-model update:xxx events, apply modifiers on args
   const modelArg = isModelListener && event.slice(7)
 
-  if (modelArg && modelArg in props) {
+  if (modelArg && modelArg in rawProps) {
     const modifiersKey = `${
       modelArg === 'modelValue' ? 'model' : modelArg
     }Modifiers`
-    const { number, trim } = props[modifiersKey] || EMPTY_OBJ
+    const { number, trim } = rawProps[modifiersKey] || EMPTY_OBJ
     if (trim) {
       args = rawArgs.map(a => (isString(a) ? a.trim() : a))
     }
@@ -70,13 +70,13 @@ export function emit(
 
   let handlerName
   let handler =
-    props[(handlerName = toHandlerKey(event))] ||
+    rawProps[(handlerName = toHandlerKey(event))] ||
     // also try camelCase event handler (#2249)
-    props[(handlerName = toHandlerKey(camelize(event)))]
+    rawProps[(handlerName = toHandlerKey(camelize(event)))]
   // for v-model update:xxx events, also trigger kebab-case equivalent
   // for props passed via kebab-case
   if (!handler && isModelListener) {
-    handler = props[(handlerName = toHandlerKey(hyphenate(event)))]
+    handler = rawProps[(handlerName = toHandlerKey(hyphenate(event)))]
   }
 
   if (handler) {
@@ -88,7 +88,7 @@ export function emit(
     )
   }
 
-  const onceHandler = props[handlerName + `Once`]
+  const onceHandler = rawProps[`${handlerName}Once`]
   if (onceHandler) {
     if (!instance.emitted) {
       instance.emitted = {}

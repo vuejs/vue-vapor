@@ -47,7 +47,7 @@ export interface ComponentInternalInstance {
   scope: EffectScope
   component: FunctionalComponent | ObjectComponent
 
-  // TODO: VNodeProps & ExtraProps (key, ref, ...)
+  // TODO: ExtraProps: key, ref, ...
   rawProps: { [key: string]: any }
 
   // normalized options
