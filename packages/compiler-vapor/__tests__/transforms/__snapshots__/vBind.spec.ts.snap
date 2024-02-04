@@ -51,7 +51,7 @@ export function render(_ctx) {
   const n0 = t0()
   const { 0: [n1],} = _children(n0)
   _renderEffect(() => {
-    _setMergeProps(n1, { [_ctx._camelize(foo)]: _ctx.id })
+    _setMergeProps(n1, { [_camelize(_ctx.foo)]: _ctx.id })
   })
   return n0
 }"
@@ -121,7 +121,7 @@ export function render(_ctx) {
   const n0 = t0()
   const { 0: [n1],} = _children(n0)
   _renderEffect(() => {
-    _setMergeProps(n1, { [_ctx..fooBar]: _ctx.id })
+    _setMergeProps(n1, { [\`.\${_ctx.fooBar}\`]: _ctx.id })
   })
   return n0
 }"

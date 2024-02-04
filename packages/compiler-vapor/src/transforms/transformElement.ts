@@ -67,6 +67,15 @@ function buildProps(
   isComponent: boolean,
 ) {
   const expressions: IRExpression[] = []
+
+  const pushExpressions = (...args: IRExpression[]) => {
+    args.forEach(expr => {
+      if (!(isString(expr) || expr.isStatic)) {
+        expressions.push(expr)
+      }
+    })
+  }
+
   let transformResults: DirectiveTransformResult[] = []
   const mergeArgs: PropsExpression[] = []
 
@@ -84,8 +93,8 @@ function buildProps(
       if (!prop.arg && isVBind) {
         if (prop.exp) {
           if (isVBind) {
+            pushExpressions(prop.exp as SimpleExpressionNode)
             pushMergeArg()
-            expressions.push(prop.exp as SimpleExpressionNode)
             mergeArgs.push(prop.exp as SimpleExpressionNode)
           }
         } else {
@@ -103,11 +112,12 @@ function buildProps(
       context,
     )
     if (result) {
-      expressions.push(result.key, result.value)
+      pushExpressions(result.key, result.value)
       transformResults.push(result)
     }
   }
 
+  // has v-bind="{}"
   if (mergeArgs.length) {
     pushMergeArg()
     context.registerEffect(expressions, [
@@ -127,21 +137,22 @@ function buildProps(
         hasDynamicKey = true
       }
     }
-    if (!hasDynamicKey) {
+    // has dynamic key
+    if (hasDynamicKey) {
+      context.registerEffect(expressions, [
+        {
+          type: IRNodeTypes.SET_MERGE_PROPS,
+          element: context.reference(),
+          value: [transformResults],
+        },
+      ])
+    } else {
       // TODO handle class/style prop
       context.registerEffect(expressions, [
         {
           type: IRNodeTypes.SET_PROPS,
           element: context.reference(),
           value: transformResults,
-        },
-      ])
-    } else {
-      context.registerEffect(expressions, [
-        {
-          type: IRNodeTypes.SET_MERGE_PROPS,
-          element: context.reference(),
-          value: [transformResults],
         },
       ])
     }

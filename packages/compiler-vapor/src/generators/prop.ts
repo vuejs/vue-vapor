@@ -8,13 +8,9 @@ import type { SetMergePropsIRNode, SetPropsIRNode, VaporHelper } from '../ir'
 import { genExpression } from './expression'
 import { isString } from '@vue/shared'
 import type { DirectiveTransformResult } from '../transform'
-import {
-  type ObjectExpression,
-  createObjectExpression,
-  createObjectProperty,
-} from '@vue/compiler-core'
-import { genObjectExpression } from './objectExpression'
+import { isSimpleIdentifier } from '@vue/compiler-core'
 
+// only the static arg props will reach here
 export function genSetProps(
   oper: SetPropsIRNode,
   context: CodegenContext,
@@ -53,42 +49,78 @@ export function genSetProps(
   return frag
 }
 
+// dynamic arg props and v-bind="{}" will reach here
 export function genSetMergeProps(
   oper: SetMergePropsIRNode,
   context: CodegenContext,
 ): CodeFragment[] {
   const { call, vaporHelper } = context
+
   return [
     NEWLINE,
     ...call(
       vaporHelper('setMergeProps'),
       `n${oper.element}`,
-      ...oper.value.map(prop =>
-        Array.isArray(prop)
-          ? genLiteralObjectProp(prop, context)
-          : genExpression(prop, context),
+      ...oper.value.map(
+        props =>
+          Array.isArray(props)
+            ? genLiteralObjectProps(props, context) // static and dynamic arg props
+            : genExpression(props, context), // v-bind="{}"
       ),
     ),
   ]
 }
 
-function genLiteralObjectProp(
-  prop: DirectiveTransformResult[],
+function genLiteralObjectProps(
+  props: DirectiveTransformResult[],
   context: CodegenContext,
 ): CodeFragment[] {
-  const { helper } = context
-  const properties: ObjectExpression['properties'] = []
+  const [frag, push] = buildCodeFragment()
+  const multilines = props.length > 1
 
-  for (const { key, value, runtimeCamelize, modifier } of prop) {
-    if (!key.isStatic) {
-      if (runtimeCamelize) {
-        key.content = `${helper('camelize')}(${key.content})`
-      } else if (modifier) {
-        key.content = `${modifier}${key.content}`
-      }
+  push(multilines ? `{` : `{ `)
+  props.forEach((prop, i) => {
+    const { value } = prop
+    // key
+    push(...genPropertyKey(prop, context))
+    push(`: `)
+    // value
+    push(...genExpression(value, context))
+    if (i < props.length - 1) {
+      // will only reach this if it's multilines
+      push(`,`, NEWLINE)
     }
-    properties.push(createObjectProperty(key, value))
+  })
+  push(multilines ? `}` : ` }`)
+
+  return frag
+}
+
+function genPropertyKey(
+  { key: node, runtimeCamelize, modifier }: DirectiveTransformResult,
+  context: CodegenContext,
+): CodeFragment[] {
+  const { call, helper } = context
+
+  // static arg was transformed by v-bind transformer
+  if (isString(node) || node.isStatic) {
+    // only quote keys if necessary
+    const keyName = isString(node) ? node : node.content
+    return [isSimpleIdentifier(keyName) ? keyName : JSON.stringify(keyName)]
   }
 
-  return genObjectExpression(createObjectExpression(properties), context)
+  const key = genExpression(node, context)
+  if (runtimeCamelize && modifier) {
+    return [`[\`${modifier}\${`, ...call(helper('camelize'), key), `}\`]`]
+  }
+
+  if (runtimeCamelize) {
+    return [`[`, ...call(helper('camelize'), key), `]`]
+  }
+
+  if (modifier) {
+    return [`[\`${modifier}\${`, ...key, `}\`]`]
+  }
+
+  return [`[`, ...key, `]`]
 }

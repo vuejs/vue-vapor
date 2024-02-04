@@ -27,15 +27,10 @@ describe('compiler v-bind', () => {
       template: '<div></div>',
     })
     expect(ir.effect).lengthOf(1)
-    expect(ir.effect[0].expressions).lengthOf(2)
+    expect(ir.effect[0].expressions).lengthOf(1)
     expect(ir.effect[0].operations).lengthOf(1)
     expect(ir.effect[0]).toMatchObject({
       expressions: [
-        {
-          type: NodeTypes.SIMPLE_EXPRESSION,
-          content: 'id',
-          isStatic: true,
-        },
         {
           type: NodeTypes.SIMPLE_EXPRESSION,
           content: 'id',
@@ -245,7 +240,7 @@ describe('compiler v-bind', () => {
         [
           {
             key: {
-              content: `_camelize(foo)`,
+              content: `foo`,
               isStatic: false,
             },
             value: {
@@ -262,7 +257,7 @@ describe('compiler v-bind', () => {
     expect(code).matchSnapshot()
     expect(code).contains('renderEffect')
     expect(code).contains(
-      `_setMergeProps(n1, { [_ctx._camelize(foo)]: _ctx.id })`,
+      `_setMergeProps(n1, { [_camelize(_ctx.foo)]: _ctx.id })`,
     )
   })
 
@@ -327,7 +322,7 @@ describe('compiler v-bind', () => {
         [
           {
             key: {
-              content: `.fooBar`,
+              content: `fooBar`,
               isStatic: false,
             },
             value: {
@@ -343,7 +338,9 @@ describe('compiler v-bind', () => {
 
     expect(code).matchSnapshot()
     expect(code).contains('renderEffect')
-    expect(code).contains('_setMergeProps(n1, { [_ctx..fooBar]: _ctx.id })')
+    expect(code).contains(
+      '_setMergeProps(n1, { [`.${_ctx.fooBar}`]: _ctx.id })',
+    )
   })
 
   test.todo('.prop modifier w/ dynamic arg + prefixIdentifiers')

@@ -207,8 +207,6 @@ export function render(_ctx) {
     _setText(n1, _ctx.count)
     _setText(n2, _ctx.count)
     _setText(n3, _ctx.count)
-  })
-  _renderEffect(() => {
     _setDynamicProp(n4, "id", _ctx.count)
   })
   return n0
