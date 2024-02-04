@@ -68,45 +68,40 @@ function buildProps(
 ) {
   const expressions: IRExpression[] = []
   const mergeArgs: PropsExpression[] = []
-  const pushExpressions = (...args: IRExpression[]) => {
-    args.forEach(expr => {
-      if (!(isString(expr) || expr.isStatic)) {
-        expressions.push(expr)
-      }
-    })
+  const transformResults: DirectiveTransformResult[] = []
+
+  function pushExpressions(...exprs: SimpleExpressionNode[]) {
+    for (const expr of exprs) {
+      if (!expr.isStatic) expressions.push(expr)
+    }
   }
-  const pushMergeArg = () => {
+  function pushMergeArg() {
     if (transformResults.length) {
       // TODO dedupe
       mergeArgs.push(transformResults)
-      transformResults = []
+      transformResults.length = 0
     }
   }
 
-  let transformResults: DirectiveTransformResult[] = []
-
-  for (const prop of props) {
-    if (prop.type === NodeTypes.DIRECTIVE) {
-      const isVBind = prop.name === 'bind'
-      if (isVBind && !prop.arg) {
-        if (prop.exp) {
-          pushExpressions(prop.exp as SimpleExpressionNode)
-          pushMergeArg()
-          mergeArgs.push(prop.exp as SimpleExpressionNode)
-        } else {
-          context.options.onError(
-            createCompilerError(ErrorCodes.X_V_BIND_NO_EXPRESSION, prop.loc),
-          )
-        }
-        continue
+  for (const prop of props as (VaporDirectiveNode | AttributeNode)[]) {
+    if (
+      prop.type === NodeTypes.DIRECTIVE &&
+      prop.name === 'bind' &&
+      !prop.arg
+    ) {
+      if (prop.exp) {
+        pushExpressions(prop.exp)
+        pushMergeArg()
+        mergeArgs.push(prop.exp)
+      } else {
+        context.options.onError(
+          createCompilerError(ErrorCodes.X_V_BIND_NO_EXPRESSION, prop.loc),
+        )
       }
+      continue
     }
 
-    const result = transformProp(
-      prop as VaporDirectiveNode | AttributeNode,
-      node,
-      context,
-    )
+    const result = transformProp(prop, node, context)
     if (result) {
       pushExpressions(result.key, result.value)
       transformResults.push(result)
@@ -124,15 +119,7 @@ function buildProps(
       },
     ])
   } else if (transformResults.length) {
-    let hasDynamicKey = false
-    for (let i = 0; i < transformResults.length; i++) {
-      const key = transformResults[i].key
-      if (isString(key) || key.isStatic) {
-        // TODO
-      } else if (!key.isHandlerKey) {
-        hasDynamicKey = true
-      }
-    }
+    const hasDynamicKey = transformResults.some(({ key }) => !key.isStatic)
     // has dynamic key
     if (hasDynamicKey) {
       context.registerEffect(expressions, [

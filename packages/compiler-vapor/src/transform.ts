@@ -9,6 +9,7 @@ import {
   NodeTypes,
   type ParentNode,
   type RootNode,
+  type SimpleExpressionNode,
   type SourceLocation,
   type TemplateChildNode,
   type TemplateNode,
@@ -43,8 +44,8 @@ export type DirectiveTransform = (
 ) => undefined | DirectiveTransformResult
 
 export interface DirectiveTransformResult {
-  key: IRExpression
-  value: IRExpression
+  key: SimpleExpressionNode
+  value: SimpleExpressionNode
   loc: SourceLocation
   modifier?: '.' | '^'
   runtimeCamelize?: boolean
