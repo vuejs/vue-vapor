@@ -67,7 +67,7 @@ function buildProps(
   isComponent: boolean,
 ) {
   const expressions: IRExpression[] = []
-
+  const mergeArgs: PropsExpression[] = []
   const pushExpressions = (...args: IRExpression[]) => {
     args.forEach(expr => {
       if (!(isString(expr) || expr.isStatic)) {
@@ -75,10 +75,6 @@ function buildProps(
       }
     })
   }
-
-  let transformResults: DirectiveTransformResult[] = []
-  const mergeArgs: PropsExpression[] = []
-
   const pushMergeArg = () => {
     if (transformResults.length) {
       // TODO dedupe
@@ -87,16 +83,16 @@ function buildProps(
     }
   }
 
+  let transformResults: DirectiveTransformResult[] = []
+
   for (const prop of props) {
     if (prop.type === NodeTypes.DIRECTIVE) {
       const isVBind = prop.name === 'bind'
-      if (!prop.arg && isVBind) {
+      if (isVBind && !prop.arg) {
         if (prop.exp) {
-          if (isVBind) {
-            pushExpressions(prop.exp as SimpleExpressionNode)
-            pushMergeArg()
-            mergeArgs.push(prop.exp as SimpleExpressionNode)
-          }
+          pushExpressions(prop.exp as SimpleExpressionNode)
+          pushMergeArg()
+          mergeArgs.push(prop.exp as SimpleExpressionNode)
         } else {
           context.options.onError(
             createCompilerError(ErrorCodes.X_V_BIND_NO_EXPRESSION, prop.loc),
@@ -163,7 +159,7 @@ function transformProp(
   prop: VaporDirectiveNode | AttributeNode,
   node: ElementNode,
   context: TransformContext<ElementNode>,
-): void | DirectiveTransformResult {
+): DirectiveTransformResult | undefined {
   const { name } = prop
   if (isReservedProp(name)) return
 
