@@ -13,7 +13,7 @@ import { genFor } from './for'
 import { genSetHtml } from './html'
 import { genIf } from './if'
 import { genSetModelValue } from './modelValue'
-import { genDynamicProps, genSetProps } from './prop'
+import { genDynamicProps, genSetProp } from './prop'
 import { genSetRef } from './ref'
 import { genCreateTextNode, genSetText } from './text'
 
@@ -30,8 +30,8 @@ export function genOperation(
   context: CodegenContext,
 ): CodeFragment[] {
   switch (oper.type) {
-    case IRNodeTypes.SET_PROPS:
-      return genSetProps(oper, context)
+    case IRNodeTypes.SET_PROP:
+      return genSetProp(oper, context)
     case IRNodeTypes.SET_DYNAMIC_PROPS:
       return genDynamicProps(oper, context)
     case IRNodeTypes.SET_TEXT:

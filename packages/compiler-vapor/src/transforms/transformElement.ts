@@ -60,20 +60,20 @@ function buildProps(
   props: ElementNode['props'] = node.props,
   isComponent: boolean,
 ) {
-  const expressions: SimpleExpressionNode[] = []
-  const mergeArgs: PropsExpression[] = []
-  let transformResults: DirectiveTransformResult[] = []
+  const dynamicArgs: PropsExpression[] = []
+  const dynamicExpr: SimpleExpressionNode[] = []
+  let results: DirectiveTransformResult[] = []
 
   function pushExpressions(...exprs: SimpleExpressionNode[]) {
     for (const expr of exprs) {
-      if (!expr.isStatic) expressions.push(expr)
+      if (!expr.isStatic) dynamicExpr.push(expr)
     }
   }
+
   function pushMergeArg() {
-    if (transformResults.length) {
-      // TODO dedupe
-      mergeArgs.push(transformResults)
-      transformResults = []
+    if (results.length) {
+      dynamicArgs.push(results)
+      results = []
     }
   }
 
@@ -86,7 +86,7 @@ function buildProps(
       if (prop.exp) {
         pushExpressions(prop.exp)
         pushMergeArg()
-        mergeArgs.push(prop.exp)
+        dynamicArgs.push(prop.exp)
       } else {
         context.options.onError(
           createCompilerError(ErrorCodes.X_V_BIND_NO_EXPRESSION, prop.loc),
@@ -97,41 +97,37 @@ function buildProps(
 
     const result = transformProp(prop, node, context)
     if (result) {
+      results.push(result)
       pushExpressions(result.key, result.value)
-      transformResults.push(result)
     }
   }
 
-  // has dynamic key or v-bind="{}"
-  if (mergeArgs.length) {
+  // take rest of props as dynamic props
+  if (dynamicArgs.length || results.some(({ key }) => !key.isStatic)) {
     pushMergeArg()
-    context.registerEffect(expressions, [
+  }
+
+  // has dynamic key or v-bind="{}"
+  if (dynamicArgs.length) {
+    context.registerEffect(dynamicExpr, [
       {
         type: IRNodeTypes.SET_DYNAMIC_PROPS,
         element: context.reference(),
-        props: mergeArgs,
+        props: dynamicArgs,
       },
     ])
-  } else if (transformResults.length) {
-    const hasDynamicKey = transformResults.some(({ key }) => !key.isStatic)
-    // has dynamic key
-    if (hasDynamicKey) {
-      context.registerEffect(expressions, [
-        {
-          type: IRNodeTypes.SET_DYNAMIC_PROPS,
-          element: context.reference(),
-          props: [transformResults],
-        },
-      ])
-    } else {
-      // TODO handle class/style prop
-      context.registerEffect(expressions, [
-        {
-          type: IRNodeTypes.SET_PROPS,
-          element: context.reference(),
-          props: transformResults,
-        },
-      ])
+  } else {
+    for (const result of results) {
+      context.registerEffect(
+        [result.value],
+        [
+          {
+            type: IRNodeTypes.SET_PROP,
+            element: context.reference(),
+            prop: result,
+          },
+        ],
+      )
     }
   }
 }

@@ -43,21 +43,19 @@ describe('compiler: v-once', () => {
       },
       {
         element: 2,
-        type: IRNodeTypes.SET_PROPS,
-        props: [
-          {
-            key: {
-              type: NodeTypes.SIMPLE_EXPRESSION,
-              content: 'class',
-              isStatic: true,
-            },
-            value: {
-              type: NodeTypes.SIMPLE_EXPRESSION,
-              content: 'clz',
-              isStatic: false,
-            },
+        type: IRNodeTypes.SET_PROP,
+        prop: {
+          key: {
+            type: NodeTypes.SIMPLE_EXPRESSION,
+            content: 'class',
+            isStatic: true,
           },
-        ],
+          value: {
+            type: NodeTypes.SIMPLE_EXPRESSION,
+            content: 'clz',
+            isStatic: false,
+          },
+        },
       },
       {
         type: IRNodeTypes.PREPEND_NODE,
@@ -75,22 +73,20 @@ describe('compiler: v-once', () => {
     expect(ir.effect).lengthOf(0)
     expect(ir.operation).toMatchObject([
       {
-        type: IRNodeTypes.SET_PROPS,
+        type: IRNodeTypes.SET_PROP,
         element: 1,
-        props: [
-          {
-            key: {
-              type: NodeTypes.SIMPLE_EXPRESSION,
-              content: 'id',
-              isStatic: true,
-            },
-            value: {
-              type: NodeTypes.SIMPLE_EXPRESSION,
-              content: 'foo',
-              isStatic: false,
-            },
+        prop: {
+          key: {
+            type: NodeTypes.SIMPLE_EXPRESSION,
+            content: 'id',
+            isStatic: true,
           },
-        ],
+          value: {
+            type: NodeTypes.SIMPLE_EXPRESSION,
+            content: 'foo',
+            isStatic: false,
+          },
+        },
       },
     ])
     expect(code).not.contains('effect')
@@ -106,23 +102,21 @@ describe('compiler: v-once', () => {
     expect(ir.effect).lengthOf(0)
     expect(ir.operation).toMatchObject([
       {
-        type: IRNodeTypes.SET_PROPS,
+        type: IRNodeTypes.SET_PROP,
         element: 1,
-        props: [
-          {
-            runtimeCamelize: false,
-            key: {
-              type: NodeTypes.SIMPLE_EXPRESSION,
-              content: 'id',
-              isStatic: true,
-            },
-            value: {
-              type: NodeTypes.SIMPLE_EXPRESSION,
-              content: 'foo',
-              isStatic: false,
-            },
+        prop: {
+          runtimeCamelize: false,
+          key: {
+            type: NodeTypes.SIMPLE_EXPRESSION,
+            content: 'id',
+            isStatic: true,
           },
-        ],
+          value: {
+            type: NodeTypes.SIMPLE_EXPRESSION,
+            content: 'foo',
+            isStatic: false,
+          },
+        },
       },
     ])
   })

@@ -1,51 +1,44 @@
-import {
-  type CodeFragment,
-  type CodegenContext,
-  NEWLINE,
-  buildCodeFragment,
-} from '../generate'
-import type { SetDynamicPropsIRNode, SetPropsIRNode, VaporHelper } from '../ir'
+import { type CodeFragment, type CodegenContext, NEWLINE } from '../generate'
+import type { SetDynamicPropsIRNode, SetPropIRNode, VaporHelper } from '../ir'
 import { genExpression } from './expression'
 import type { DirectiveTransformResult } from '../transform'
 import { isSimpleIdentifier } from '@vue/compiler-core'
 
-// only the static key props will reach here
-export function genSetProps(
-  oper: SetPropsIRNode,
+// only the static key prop will reach here
+export function genSetProp(
+  oper: SetPropIRNode,
   context: CodegenContext,
 ): CodeFragment[] {
   const { call, vaporHelper } = context
-  const [frag, push] = buildCodeFragment()
+  const {
+    prop: { key, value, modifier },
+  } = oper
 
-  oper.props.forEach(({ key, value, modifier }) => {
-    const keyName = key.content
+  const keyName = key.content
 
-    let helperName: VaporHelper
-    let omitKey = false
-    if (keyName === 'class') {
-      helperName = 'setClass'
-      omitKey = true
-    } else if (keyName === 'style') {
-      helperName = 'setStyle'
-      omitKey = true
-    } else if (modifier) {
-      helperName = modifier === '.' ? 'setDOMProp' : 'setAttr'
-    } else {
-      helperName = 'setDynamicProp'
-    }
+  let helperName: VaporHelper
+  let omitKey = false
+  if (keyName === 'class') {
+    helperName = 'setClass'
+    omitKey = true
+  } else if (keyName === 'style') {
+    helperName = 'setStyle'
+    omitKey = true
+  } else if (modifier) {
+    helperName = modifier === '.' ? 'setDOMProp' : 'setAttr'
+  } else {
+    helperName = 'setDynamicProp'
+  }
 
-    push(
-      NEWLINE,
-      ...call(
-        vaporHelper(helperName),
-        `n${oper.element}`,
-        omitKey ? false : genExpression(key, context),
-        genExpression(value, context),
-      ),
-    )
-  })
-
-  return frag
+  return [
+    NEWLINE,
+    ...call(
+      vaporHelper(helperName),
+      `n${oper.element}`,
+      omitKey ? false : genExpression(key, context),
+      genExpression(value, context),
+    ),
+  ]
 }
 
 // dynamic key props and v-bind="{}" will reach here

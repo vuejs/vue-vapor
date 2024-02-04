@@ -35,6 +35,9 @@ export function render(_ctx) {
     _renderEffect(() => {
       const [item, index] = _block.s
       _setDynamicProp(n3, "item", item)
+    })
+    _renderEffect(() => {
+      const [item, index] = _block.s
       _setDynamicProp(n3, "index", index)
     })
     return n2
