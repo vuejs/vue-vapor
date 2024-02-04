@@ -9,7 +9,7 @@ import { genExpression } from './expression'
 import type { DirectiveTransformResult } from '../transform'
 import { isSimpleIdentifier } from '@vue/compiler-core'
 
-// only the static arg props will reach here
+// only the static key props will reach here
 export function genSetProps(
   oper: SetPropsIRNode,
   context: CodegenContext,
@@ -48,13 +48,12 @@ export function genSetProps(
   return frag
 }
 
-// dynamic arg props and v-bind="{}" will reach here
+// dynamic key props and v-bind="{}" will reach here
 export function genDynamicProps(
   oper: SetDynamicPropsIRNode,
   context: CodegenContext,
 ): CodeFragment[] {
   const { call, vaporHelper } = context
-
   return [
     NEWLINE,
     ...call(

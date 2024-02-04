@@ -62,7 +62,7 @@ function buildProps(
 ) {
   const expressions: SimpleExpressionNode[] = []
   const mergeArgs: PropsExpression[] = []
-  const transformResults: DirectiveTransformResult[] = []
+  let transformResults: DirectiveTransformResult[] = []
 
   function pushExpressions(...exprs: SimpleExpressionNode[]) {
     for (const expr of exprs) {
@@ -73,7 +73,7 @@ function buildProps(
     if (transformResults.length) {
       // TODO dedupe
       mergeArgs.push(transformResults)
-      transformResults.length = 0
+      transformResults = []
     }
   }
 
@@ -102,7 +102,7 @@ function buildProps(
     }
   }
 
-  // has v-bind="{}"
+  // has dynamic key or v-bind="{}"
   if (mergeArgs.length) {
     pushMergeArg()
     context.registerEffect(expressions, [
