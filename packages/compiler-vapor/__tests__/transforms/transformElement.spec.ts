@@ -2,19 +2,16 @@ import { makeCompile } from './_utils'
 import {
   IRNodeTypes,
   transformElement,
-  transformInterpolation,
   transformVBind,
   transformVOn,
-  transformVText,
 } from '../../src'
 import { NodeTypes } from '@vue/compiler-core'
 
 const compileWithElementTransform = makeCompile({
-  nodeTransforms: [transformInterpolation, transformElement],
+  nodeTransforms: [transformElement],
   directiveTransforms: {
     bind: transformVBind,
     on: transformVOn,
-    text: transformVText,
   },
 })
 
@@ -57,9 +54,6 @@ describe('compiler: element transform', () => {
   test('props merging: style', () => {
     const { code, ir } = compileWithElementTransform(
       `<div style="color: green" :style="{ color: 'red' }" />`,
-      {
-        prefixIdentifiers: false,
-      },
     )
     expect(code).toMatchSnapshot()
 
@@ -72,46 +66,6 @@ describe('compiler: element transform', () => {
             isStatic: false,
           },
         ],
-        operations: [
-          {
-            type: IRNodeTypes.SET_PROP,
-            element: 1,
-            prop: {
-              key: {
-                type: NodeTypes.SIMPLE_EXPRESSION,
-                content: 'style',
-                isStatic: true,
-              },
-              value: [
-                {
-                  type: NodeTypes.SIMPLE_EXPRESSION,
-                  content: 'color: green',
-                  isStatic: true,
-                },
-                {
-                  type: NodeTypes.SIMPLE_EXPRESSION,
-                  content: `{ color: 'red' }`,
-                  isStatic: false,
-                },
-              ],
-            },
-          },
-        ],
-      },
-    ])
-  })
-
-  test('props merging: style w/ transformExpression', () => {
-    const { code, ir } = compileWithElementTransform(
-      `<div style="color: green" :style="{ color: 'red' }" />`,
-      {
-        prefixIdentifiers: true,
-      },
-    )
-    expect(code).toMatchSnapshot()
-
-    expect(ir.effect).toMatchObject([
-      {
         operations: [
           {
             type: IRNodeTypes.SET_PROP,
