@@ -180,8 +180,6 @@ function transformProp(
 // Literal duplicated attributes would have been warned during the parse phase,
 // however, it's possible to encounter duplicated `onXXX` handlers with different
 // modifiers. We also need to merge static and dynamic class / style attributes.
-// - onXXX handlers / style: merge into array
-// - class: merge into single expression with concatenation
 function dedupeProperties(results: DirectiveTransformResult[]): IRProp[] {
   const knownProps: Map<string, IRProp> = new Map()
   const deduped: IRProp[] = []
