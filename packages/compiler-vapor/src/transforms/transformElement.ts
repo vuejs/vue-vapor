@@ -87,14 +87,6 @@ function buildProps(
     }
   }
 
-  // treat all props as dynamic key
-  const asDynamic = props.some(
-    prop =>
-      prop.type === NodeTypes.DIRECTIVE &&
-      prop.name === 'bind' &&
-      (!prop.arg || !prop.arg.isStatic),
-  )
-
   for (const prop of props) {
     if (
       prop.type === NodeTypes.DIRECTIVE &&
@@ -116,7 +108,7 @@ function buildProps(
     const result = transformProp(prop, node, context)
     if (result) {
       results.push(result)
-      asDynamic && pushDynamicExpressions(result.key, result.value)
+      pushDynamicExpressions(result.key, result.value)
     }
   }
 
