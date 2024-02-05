@@ -137,6 +137,26 @@ describe('patchProp', () => {
       setDOMProp(el, 'innerHTML', '<p>bar</p>')
       expect(el.innerHTML).toBe('<p>bar</p>')
     })
+
+    test('should be boolean prop', () => {
+      const el = document.createElement('select')
+      setDOMProp(el, 'multiple', '')
+      expect(el.multiple).toBe(true)
+      setDOMProp(el, 'multiple', null)
+      expect(el.multiple).toBe(false)
+      setDOMProp(el, 'multiple', true)
+      expect(el.multiple).toBe(true)
+      setDOMProp(el, 'multiple', 0)
+      expect(el.multiple).toBe(false)
+      setDOMProp(el, 'multiple', '0')
+      expect(el.multiple).toBe(true)
+      setDOMProp(el, 'multiple', false)
+      expect(el.multiple).toBe(false)
+      setDOMProp(el, 'multiple', 1)
+      expect(el.multiple).toBe(true)
+      setDOMProp(el, 'multiple', undefined)
+      expect(el.multiple).toBe(false)
+    })
   })
 
   describe('setDynamicProp', () => {
