@@ -1,9 +1,16 @@
-import { NewlineType, isSimpleIdentifier } from '@vue/compiler-core'
-import { isArray } from '@vue/shared'
+import {
+  NewlineType,
+  type SimpleExpressionNode,
+  isSimpleIdentifier,
+} from '@vue/compiler-core'
 import { type CodeFragment, type CodegenContext, NEWLINE } from '../generate'
-import type { SetDynamicPropsIRNode, SetPropIRNode, VaporHelper } from '../ir'
+import type {
+  IRProp,
+  SetDynamicPropsIRNode,
+  SetPropIRNode,
+  VaporHelper,
+} from '../ir'
 import { genExpression } from './expression'
-import type { DirectiveTransformResult } from '../transform'
 
 // only the static key prop will reach here
 export function genSetProp(
@@ -12,7 +19,7 @@ export function genSetProp(
 ): CodeFragment[] {
   const { call, vaporHelper } = context
   const {
-    prop: { key, value, modifier },
+    prop: { key, values, modifier },
   } = oper
 
   const keyName = key.content
@@ -37,7 +44,7 @@ export function genSetProp(
       vaporHelper(helperName),
       `n${oper.element}`,
       omitKey ? false : genExpression(key, context),
-      genPropValueExpression(value, context),
+      genPropValue(values, context),
     ),
   ]
 }
@@ -64,7 +71,7 @@ export function genDynamicProps(
 }
 
 function genLiteralObjectProps(
-  props: DirectiveTransformResult[],
+  props: IRProp[],
   context: CodegenContext,
 ): CodeFragment[] {
   const { multi } = context
@@ -73,13 +80,13 @@ function genLiteralObjectProps(
     ...props.map(prop => [
       ...genPropertyKey(prop, context),
       `: `,
-      ...genPropValueExpression(prop.value, context),
+      ...genPropValue(prop.values, context),
     ]),
   )
 }
 
 function genPropertyKey(
-  { key: node, runtimeCamelize, modifier }: DirectiveTransformResult,
+  { key: node, runtimeCamelize, modifier }: IRProp,
   context: CodegenContext,
 ): CodeFragment[] {
   const { call, helper } = context
@@ -113,19 +120,13 @@ function genPropertyKey(
   return [`[`, ...key, `]`]
 }
 
-function genPropValueExpression(
-  propValues: DirectiveTransformResult['value'],
-  context: CodegenContext,
-) {
-  if (isArray(propValues)) {
-    return [
-      `[`,
-      ...propValues.reduce<CodeFragment[]>((acc, e, i) => {
-        if (i) acc.push(`, `)
-        return acc.concat(genExpression(e, context))
-      }, []),
-      `]`,
-    ]
+function genPropValue(values: SimpleExpressionNode[], context: CodegenContext) {
+  if (values.length === 1) {
+    return genExpression(values[0], context)
   }
-  return genExpression(propValues, context)
+  const { multi } = context
+  return multi(
+    ['[', ']', ', '],
+    ...values.map(expr => genExpression(expr, context)),
+  )
 }

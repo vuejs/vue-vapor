@@ -9,6 +9,7 @@ import {
   createSimpleExpression,
 } from '@vue/compiler-dom'
 import {
+  extend,
   isArray,
   isBuiltInDirective,
   isReservedProp,
@@ -21,7 +22,8 @@ import type {
 } from '../transform'
 import {
   IRNodeTypes,
-  type PropsExpression,
+  type IRProp,
+  type IRProps,
   type VaporDirectiveNode,
 } from '../ir'
 
@@ -66,7 +68,7 @@ function buildProps(
   props: (VaporDirectiveNode | AttributeNode)[] = node.props as any,
   isComponent: boolean,
 ) {
-  const dynamicArgs: PropsExpression[] = []
+  const dynamicArgs: IRProps[] = []
   const dynamicExpr: SimpleExpressionNode[] = []
   let results: DirectiveTransformResult[] = []
 
@@ -137,21 +139,19 @@ function buildProps(
       },
     ])
   } else {
-    results = dedupeProperties(results)
-    for (const result of results) {
-      if (isStatic(result)) {
-        context.template += ` ${result.key.content}`
-        if (result.value.content)
-          context.template += `="${result.value.content}"`
+    const irProps = dedupeProperties(results)
+    for (const prop of irProps) {
+      const { key, values } = prop
+      if (key.isStatic && values.length === 1 && values[0].isStatic) {
+        context.template += ` ${key.content}`
+        if (values[0].content) context.template += `="${values[0].content}"`
       } else {
-        const expressions = isArray(result.value)
-          ? result.value.filter(v => !v.isStatic)
-          : [result.value]
+        const expressions = values.filter(v => !v.isStatic)
         context.registerEffect(expressions, [
           {
             type: IRNodeTypes.SET_PROP,
             element: context.reference(),
-            prop: result,
+            prop: prop,
           },
         ])
       }
@@ -192,26 +192,18 @@ function transformProp(
   }
 }
 
-function isStatic(
-  prop: DirectiveTransformResult,
-): prop is DirectiveTransformResult & { value: SimpleExpressionNode } {
-  const { key, value } = prop
-  return key.isStatic && !isArray(value) && value.isStatic
-}
-
 // Dedupe props in an object literal.
 // Literal duplicated attributes would have been warned during the parse phase,
 // however, it's possible to encounter duplicated `onXXX` handlers with different
 // modifiers. We also need to merge static and dynamic class / style attributes.
 // - onXXX handlers / style: merge into array
 // - class: merge into single expression with concatenation
-function dedupeProperties(
-  properties: DirectiveTransformResult[],
-): DirectiveTransformResult[] {
-  const knownProps: Map<string, DirectiveTransformResult> = new Map()
-  const deduped: DirectiveTransformResult[] = []
-  for (let i = 0; i < properties.length; i++) {
-    const prop = properties[i]
+function dedupeProperties(results: DirectiveTransformResult[]): IRProp[] {
+  const knownProps: Map<string, IRProp> = new Map()
+  const deduped: IRProp[] = []
+
+  for (const result of results) {
+    const prop = normalizeIRProp(result)
     // dynamic keys are always allowed
     if (!prop.key.isStatic) {
       deduped.push(prop)
@@ -232,14 +224,11 @@ function dedupeProperties(
   return deduped
 }
 
-function mergeAsArray(
-  existing: DirectiveTransformResult,
-  incoming: DirectiveTransformResult,
-) {
-  const newValues = isArray(incoming.value) ? incoming.value : [incoming.value]
-  if (isArray(existing.value)) {
-    existing.value.push(...newValues)
-  } else {
-    existing.value = [existing.value, ...newValues]
-  }
+function normalizeIRProp(prop: DirectiveTransformResult): IRProp {
+  return extend({}, prop, { value: undefined, values: [prop.value] })
+}
+
+function mergeAsArray(existing: IRProp, incoming: IRProp) {
+  const newValues = incoming.values
+  existing.values.push(...newValues)
 }
