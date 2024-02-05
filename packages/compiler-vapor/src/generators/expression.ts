@@ -4,6 +4,7 @@ import {
   type SourceLocation,
   advancePositionWithClone,
   isInDestructureAssignment,
+  isStaticProperty,
   walkIdentifiers,
 } from '@vue/compiler-dom'
 import { isGloballyAllowed, isString, makeMap } from '@vue/shared'
@@ -116,40 +117,40 @@ function genIdentifier(
     return [idMap[0], NewlineType.None, loc]
   }
 
-  // ({ x } = y)
-  const isDestructureAssignment =
-    parent && isInDestructureAssignment(parent, parentStack || [])
+  let prefix = ''
+  if (isStaticProperty(parent!) && parent.shorthand) {
+    // property shorthand like { foo }, we need to add the key since
+    // we rewrite the value
+    prefix = `${raw}: `
+  }
 
   if (inline) {
-    // x = y
-    const isAssignmentLVal =
-      parent && parent.type === 'AssignmentExpression' && parent.left === id
-    // x++
-    const isUpdateArg =
-      parent && parent.type === 'UpdateExpression' && parent.argument === id
-
     switch (bindingMetadata[raw]) {
       case BindingTypes.SETUP_REF:
-        name = undefined
-        raw = isDestructureAssignment
-          ? `${raw}: ${raw}.value`
-          : (name = `${raw}.value`)
+        name = raw = `${raw}.value`
         break
       case BindingTypes.SETUP_MAYBE_REF:
+        // ({ x } = y)
+        const isDestructureAssignment =
+          parent && isInDestructureAssignment(parent, parentStack || [])
+        // x = y
+        const isAssignmentLVal =
+          parent && parent.type === 'AssignmentExpression' && parent.left === id
+        // x++
+        const isUpdateArg =
+          parent && parent.type === 'UpdateExpression' && parent.argument === id
         // const binding that may or may not be ref
         // if it's not a ref, then assignments don't make sense -
         // so we ignore the non-ref assignment case and generate code
         // that assumes the value to be a ref for more efficiency
-        name = undefined
-        raw = isDestructureAssignment
-          ? `${raw}: ${raw}.value`
-          : isAssignmentLVal || isUpdateArg
+        raw =
+          isAssignmentLVal || isUpdateArg || isDestructureAssignment
             ? (name = `${raw}.value`)
             : `${vaporHelper('unref')}(${raw})`
         break
     }
   } else {
-    raw = isDestructureAssignment ? `${raw}: _ctx.${raw}` : `_ctx.${raw}`
+    raw = `_ctx.${raw}`
   }
-  return [raw, NewlineType.None, loc, name]
+  return [prefix + raw, NewlineType.None, loc, name]
 }
