@@ -10,7 +10,6 @@ import {
 } from '@vue/compiler-dom'
 import {
   extend,
-  isArray,
   isBuiltInDirective,
   isReservedProp,
   isVoidTag,
