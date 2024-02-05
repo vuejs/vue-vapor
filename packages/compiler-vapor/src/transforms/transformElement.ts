@@ -112,13 +112,10 @@ function buildProps(
     }
   }
 
-  // take rest of props as dynamic props
-  if (dynamicArgs.length || results.some(({ key }) => !key.isStatic)) {
-    pushMergeArg()
-  }
-
   // has dynamic key or v-bind="{}"
-  if (dynamicArgs.length) {
+  if (dynamicArgs.length || results.some(({ key }) => !key.isStatic)) {
+    // take rest of props as dynamic props
+    pushMergeArg()
     context.registerEffect(dynamicExpr, [
       {
         type: IRNodeTypes.SET_DYNAMIC_PROPS,
