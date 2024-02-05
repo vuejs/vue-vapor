@@ -18,9 +18,7 @@ const compileWithElementTransform = makeCompile({
 describe('compiler: element transform', () => {
   test.todo('baisc')
 
-  // This v-on feature comes from the unit tests of compiler-core,
-  // but I am not sure if Vapor needs this feature.
-  test.fails('props merging: event handlers', () => {
+  test.todo('props merging: event handlers', () => {
     const { code, ir } = compileWithElementTransform(
       `<div @click.foo="a" @click.bar="b" />`,
     )
@@ -35,16 +33,21 @@ describe('compiler: element transform', () => {
           content: 'click',
           isStatic: true,
         },
-        value: [
+        events: [
           {
-            type: NodeTypes.SIMPLE_EXPRESSION,
-            content: `a`,
-            isStatic: false,
+            // IREvent: value, modifiers, keyOverride...
+            value: {
+              type: NodeTypes.SIMPLE_EXPRESSION,
+              content: `a`,
+              isStatic: false,
+            },
           },
           {
-            type: NodeTypes.SIMPLE_EXPRESSION,
-            content: `b`,
-            isStatic: false,
+            value: {
+              type: NodeTypes.SIMPLE_EXPRESSION,
+              content: `b`,
+              isStatic: false,
+            },
           },
         ],
       },
