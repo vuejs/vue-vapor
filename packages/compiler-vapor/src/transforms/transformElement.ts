@@ -183,7 +183,6 @@ function transformProp(
     return directiveTransform(prop, node, context)
   }
 
-  // is column directive
   if (!isBuiltInDirective(name)) {
     context.registerOperation({
       type: IRNodeTypes.WITH_DIRECTIVE,
