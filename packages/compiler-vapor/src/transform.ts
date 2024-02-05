@@ -9,6 +9,7 @@ import {
   NodeTypes,
   type ParentNode,
   type RootNode,
+  type SimpleExpressionNode,
   type TemplateChildNode,
   type TemplateNode,
   defaultOnError,
@@ -39,7 +40,14 @@ export type DirectiveTransform = (
   dir: VaporDirectiveNode,
   node: ElementNode,
   context: TransformContext<ElementNode>,
-) => void
+) => DirectiveTransformResult | void
+
+export interface DirectiveTransformResult {
+  key: SimpleExpressionNode
+  value: SimpleExpressionNode
+  modifier?: '.' | '^'
+  runtimeCamelize?: boolean
+}
 
 // A structural directive transform is technically also a NodeTransform;
 // Only v-if and v-for fall into this category.

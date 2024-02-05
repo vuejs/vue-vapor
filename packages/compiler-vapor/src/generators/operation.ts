@@ -13,7 +13,7 @@ import { genFor } from './for'
 import { genSetHtml } from './html'
 import { genIf } from './if'
 import { genSetModelValue } from './modelValue'
-import { genSetProp } from './prop'
+import { genDynamicProps, genSetProp } from './prop'
 import { genSetRef } from './ref'
 import { genCreateTextNode, genSetText } from './text'
 
@@ -25,13 +25,15 @@ export function genOperations(opers: OperationNode[], context: CodegenContext) {
   return frag
 }
 
-function genOperation(
+export function genOperation(
   oper: OperationNode,
   context: CodegenContext,
 ): CodeFragment[] {
   switch (oper.type) {
     case IRNodeTypes.SET_PROP:
       return genSetProp(oper, context)
+    case IRNodeTypes.SET_DYNAMIC_PROPS:
+      return genDynamicProps(oper, context)
     case IRNodeTypes.SET_TEXT:
       return genSetText(oper, context)
     case IRNodeTypes.SET_EVENT:
@@ -60,9 +62,6 @@ function genOperation(
 }
 
 export function genEffects(effects: IREffect[], context: CodegenContext) {
-  if (context.genEffect) {
-    return context.genEffect(effects)
-  }
   const [frag, push] = buildCodeFragment()
   for (const effect of effects) {
     push(...genEffect(effect, context))
@@ -70,7 +69,7 @@ export function genEffects(effects: IREffect[], context: CodegenContext) {
   return frag
 }
 
-function genEffect({ operations }: IREffect, context: CodegenContext) {
+export function genEffect({ operations }: IREffect, context: CodegenContext) {
   const { vaporHelper } = context
   const [frag, push] = buildCodeFragment(
     NEWLINE,

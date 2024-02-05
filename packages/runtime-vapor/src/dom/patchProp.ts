@@ -1,11 +1,16 @@
 import {
+  type Data,
+  includeBooleanAttr,
+  isArray,
   isFunction,
+  isOn,
   isString,
   normalizeClass,
   normalizeStyle,
   toDisplayString,
 } from '@vue/shared'
 import { currentInstance } from '../component'
+import { warn } from '../warning'
 
 export function recordPropMetadata(el: Node, key: string, value: any): any {
   if (!currentInstance) {
@@ -53,10 +58,74 @@ export function setAttr(el: Element, key: string, value: any) {
 
 export function setDOMProp(el: any, key: string, value: any) {
   const oldVal = recordPropMetadata(el, key, value)
-  // TODO special checks
-  if (value !== oldVal) {
-    el[key] = value
+  if (value === oldVal) return
+
+  if (key === 'innerHTML' || key === 'textContent') {
+    // TODO special checks
+    // if (prevChildren) {
+    //   unmountChildren(prevChildren, parentComponent, parentSuspense)
+    // }
+    el[key] = value == null ? '' : value
+    return
   }
+
+  const tag = el.tagName
+
+  if (
+    key === 'value' &&
+    tag !== 'PROGRESS' &&
+    // custom elements may use _value internally
+    !tag.includes('-')
+  ) {
+    // store value as _value as well since
+    // non-string values will be stringified.
+    el._value = value
+    // #4956: <option> value will fallback to its text content so we need to
+    // compare against its attribute value instead.
+    const oldValue = tag === 'OPTION' ? el.getAttribute('value') : el.value
+    const newValue = value == null ? '' : value
+    if (oldValue !== newValue) {
+      el.value = newValue
+    }
+    if (value == null) {
+      el.removeAttribute(key)
+    }
+    return
+  }
+
+  let needRemove = false
+  if (value === '' || value == null) {
+    const type = typeof el[key]
+    if (type === 'boolean') {
+      // e.g. <select multiple> compiles to { multiple: '' }
+      value = includeBooleanAttr(value)
+    } else if (value == null && type === 'string') {
+      // e.g. <div :id="null">
+      value = ''
+      needRemove = true
+    } else if (type === 'number') {
+      // e.g. <img :width="null">
+      value = 0
+      needRemove = true
+    }
+  }
+
+  // some properties perform value validation and throw,
+  // some properties has getter, no setter, will error in 'use strict'
+  // eg. <select :type="null"></select> <select :willValidate="null"></select>
+  try {
+    el[key] = value
+  } catch (e: any) {
+    // do not warn if value is auto-coerced from nullish values
+    if (__DEV__ && !needRemove) {
+      warn(
+        `Failed setting prop "${key}" on <${tag.toLowerCase()}>: ` +
+          `value ${value} is invalid.`,
+        e,
+      )
+    }
+  }
+  needRemove && el.removeAttribute(key)
 }
 
 export function setDynamicProp(el: Element, key: string, value: any) {
@@ -78,6 +147,47 @@ export function setDynamicProp(el: Element, key: string, value: any) {
     // TODO special case for <input v-model type="checkbox">
     setAttr(el, key, value)
   }
+}
+
+export function setDynamicProps(el: Element, ...args: any) {
+  const props = args.length > 1 ? mergeProps(...args) : args[0]
+
+  // TODO remove all of old props before set new props since there is containing dynamic key
+  for (const key in props) {
+    setDynamicProp(el, key, props[key])
+  }
+}
+
+// TODO copied from runtime-core
+function mergeProps(...args: Data[]) {
+  const ret: Data = {}
+  for (let i = 0; i < args.length; i++) {
+    const toMerge = args[i]
+    for (const key in toMerge) {
+      if (key === 'class') {
+        if (ret.class !== toMerge.class) {
+          ret.class = normalizeClass([ret.class, toMerge.class])
+        }
+      } else if (key === 'style') {
+        ret.style = normalizeStyle([ret.style, toMerge.style])
+      } else if (isOn(key)) {
+        const existing = ret[key]
+        const incoming = toMerge[key]
+        if (
+          incoming &&
+          existing !== incoming &&
+          !(isArray(existing) && existing.includes(incoming))
+        ) {
+          ret[key] = existing
+            ? [].concat(existing as any, incoming as any)
+            : incoming
+        }
+      } else if (key !== '') {
+        ret[key] = toMerge[key]
+      }
+    }
+  }
+  return ret
 }
 
 export function setText(el: Node, value: any) {

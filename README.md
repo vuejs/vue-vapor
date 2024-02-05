@@ -2,6 +2,9 @@
 
 This repository is a fork of [vuejs/core](https://github.com/vuejs/core) and is used for research and development of no virtual dom mode.
 
+- [Vapor Playground](https://vapor-repl.netlify.app/)
+- [Vapor Template Explorer](https://vapor-template-explorer.netlify.app/)
+
 ## TODO
 
 PR are welcome!
@@ -69,6 +72,7 @@ The code provided here is a duplicate from `runtime-core` as Vapor cannot import
 
 - packages/runtime-vapor/src/apiWatch.ts
 - packages/runtime-vapor/src/component.ts
+- packages/runtime-vapor/src/componentEmits.ts
 - packages/runtime-vapor/src/componentProps.ts
 - packages/runtime-vapor/src/enums.ts
 - packages/runtime-vapor/src/errorHandling.ts
