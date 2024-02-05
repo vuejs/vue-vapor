@@ -157,6 +157,38 @@ describe('patchProp', () => {
       setDOMProp(el, 'multiple', undefined)
       expect(el.multiple).toBe(false)
     })
+
+    test('should remove attribute when value is falsy', () => {
+      const el = document.createElement('div')
+      setDOMProp(el, 'id', '')
+      expect(el.hasAttribute('id')).toBe(true)
+      setDOMProp(el, 'id', null)
+      expect(el.hasAttribute('id')).toBe(false)
+
+      setDOMProp(el, 'id', '')
+      expect(el.hasAttribute('id')).toBe(true)
+      setDOMProp(el, 'id', undefined)
+      expect(el.hasAttribute('id')).toBe(false)
+
+      setDOMProp(el, 'id', '')
+      expect(el.hasAttribute('id')).toBe(true)
+
+      const img = document.createElement('img')
+      setDOMProp(img, 'width', '')
+      expect(img.hasAttribute('width')).toBe(false)
+      setDOMProp(img, 'width', 0)
+      expect(img.hasAttribute('width')).toBe(true)
+
+      setDOMProp(img, 'width', null)
+      expect(img.hasAttribute('width')).toBe(false)
+      setDOMProp(img, 'width', 0)
+      expect(img.hasAttribute('width')).toBe(true)
+
+      setDOMProp(img, 'width', undefined)
+      expect(img.hasAttribute('width')).toBe(false)
+      setDOMProp(img, 'width', 0)
+      expect(img.hasAttribute('width')).toBe(true)
+    })
   })
 
   describe('setDynamicProp', () => {
