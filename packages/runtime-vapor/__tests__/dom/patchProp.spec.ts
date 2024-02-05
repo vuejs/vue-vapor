@@ -132,8 +132,13 @@ describe('patchProp', () => {
   describe('setDOMProp', () => {
     test('should set DOM property', () => {
       const el = document.createElement('div')
+      setDOMProp(el, 'textContent', null)
+      expect(el.textContent).toBe('')
       setDOMProp(el, 'textContent', 'foo')
       expect(el.textContent).toBe('foo')
+
+      setDOMProp(el, 'innerHTML', null)
+      expect(el.innerHTML).toBe('')
       setDOMProp(el, 'innerHTML', '<p>bar</p>')
       expect(el.innerHTML).toBe('<p>bar</p>')
     })
@@ -211,6 +216,20 @@ describe('patchProp', () => {
       expect(img.hasAttribute('width')).toBe(false)
       setDOMProp(img, 'width', 0)
       expect(img.hasAttribute('width')).toBe(true)
+    })
+
+    test('should warn when set prop error', () => {
+      const el = document.createElement('div')
+      Object.defineProperty(el, 'someProp', {
+        set() {
+          throw new TypeError('Invalid type')
+        },
+      })
+      setDOMProp(el, 'someProp', 'foo')
+
+      expect(
+        `Failed setting prop "someProp" on <div>: value foo is invalid.`,
+      ).toHaveBeenWarnedLast()
     })
   })
 
