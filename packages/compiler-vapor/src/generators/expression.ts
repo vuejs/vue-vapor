@@ -45,7 +45,7 @@ export function genExpression(
 
   // the expression is a simple identifier
   if (ast === null) {
-    return [genIdentifier(rawExpr, context, loc)]
+    return genIdentifier(rawExpr, context, loc)
   }
 
   const ids: Identifier[] = []
@@ -75,7 +75,7 @@ export function genExpression(
       const source = rawExpr.slice(start, end)
       const parentStack = parentStackMap.get(id)!
       push(
-        genIdentifier(
+        ...genIdentifier(
           source,
           context,
           {
@@ -108,16 +108,16 @@ function genIdentifier(
   id?: Identifier,
   parent?: Node,
   parentStack?: Node[],
-): CodeFragment {
+): CodeFragment[] {
   const { inline, bindingMetadata } = options
   let name: string | undefined = raw
 
   const idMap = identifiers[raw]
   if (idMap && idMap.length) {
-    return [idMap[0], NewlineType.None, loc]
+    return [[idMap[0], NewlineType.None, loc]]
   }
 
-  let prefix = ''
+  let prefix: string | undefined
   if (isStaticProperty(parent!) && parent.shorthand) {
     // property shorthand like { foo }, we need to add the key since
     // we rewrite the value
@@ -152,5 +152,5 @@ function genIdentifier(
   } else {
     raw = `_ctx.${raw}`
   }
-  return [prefix + raw, NewlineType.None, loc, name]
+  return [prefix, [raw, NewlineType.None, loc, name]]
 }
