@@ -73,14 +73,10 @@ function buildProps(
   let results: DirectiveTransformResult[] = []
 
   function pushDynamicExpressions(
-    ...exprs: (SimpleExpressionNode | SimpleExpressionNode[] | undefined)[]
+    ...exprs: (SimpleExpressionNode | undefined)[]
   ) {
     for (const expr of exprs) {
-      if (isArray(expr)) {
-        pushDynamicExpressions(...expr)
-      } else if (expr && !expr.isStatic) {
-        dynamicExpr.push(expr)
-      }
+      if (expr && !expr.isStatic) dynamicExpr.push(expr)
     }
   }
 
