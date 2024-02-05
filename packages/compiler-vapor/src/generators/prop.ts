@@ -1,8 +1,12 @@
 import { type CodeFragment, type CodegenContext, NEWLINE } from '../generate'
 import type { SetDynamicPropsIRNode, SetPropIRNode, VaporHelper } from '../ir'
 import { genExpression } from './expression'
-import type { DirectiveTransformResult } from '../transform'
+import type {
+  DirectiveTransformResult,
+  DirectiveTransformResultValue,
+} from '../transform'
 import { NewlineType, isSimpleIdentifier } from '@vue/compiler-core'
+import { isArray } from '@vue/shared'
 
 // only the static key prop will reach here
 export function genSetProp(
@@ -36,7 +40,7 @@ export function genSetProp(
       vaporHelper(helperName),
       `n${oper.element}`,
       omitKey ? false : genExpression(key, context),
-      genExpression(value, context),
+      genPropValueExpression(value, context),
     ),
   ]
 }
@@ -72,7 +76,7 @@ function genLiteralObjectProps(
     ...props.map(prop => [
       ...genPropertyKey(prop, context),
       `: `,
-      ...genExpression(prop.value, context),
+      ...genPropValueExpression(prop.value, context),
     ]),
   )
 }
@@ -110,4 +114,21 @@ function genPropertyKey(
   }
 
   return [`[`, ...key, `]`]
+}
+
+function genPropValueExpression(
+  propValues: DirectiveTransformResultValue,
+  context: CodegenContext,
+) {
+  if (isArray(propValues)) {
+    return [
+      `[`,
+      ...propValues.reduce<CodeFragment[]>((acc, e, i) => {
+        if (i) acc.push(`, `)
+        return acc.concat(genExpression(e, context))
+      }, []),
+      `]`,
+    ]
+  }
+  return genExpression(propValues, context)
 }

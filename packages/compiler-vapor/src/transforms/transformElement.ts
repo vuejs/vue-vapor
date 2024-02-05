@@ -8,7 +8,12 @@ import {
   createCompilerError,
   createSimpleExpression,
 } from '@vue/compiler-dom'
-import { isBuiltInDirective, isReservedProp, isVoidTag } from '@vue/shared'
+import {
+  isArray,
+  isBuiltInDirective,
+  isReservedProp,
+  isVoidTag,
+} from '@vue/shared'
 import type {
   DirectiveTransformResult,
   NodeTransform,
@@ -66,16 +71,20 @@ function buildProps(
   let results: DirectiveTransformResult[] = []
 
   function pushDynamicExpressions(
-    ...exprs: (SimpleExpressionNode | undefined)[]
+    ...exprs: (SimpleExpressionNode | SimpleExpressionNode[] | undefined)[]
   ) {
     for (const expr of exprs) {
-      if (expr && !expr.isStatic) dynamicExpr.push(expr)
+      if (isArray(expr)) {
+        pushDynamicExpressions(...expr)
+      } else if (expr && !expr.isStatic) {
+        dynamicExpr.push(expr)
+      }
     }
   }
 
   function pushMergeArg() {
     if (results.length) {
-      dynamicArgs.push(results)
+      dynamicArgs.push(dedupeProperties(results))
       results = []
     }
   }
@@ -106,7 +115,7 @@ function buildProps(
       continue
     }
 
-    const result = transformProp(prop, node, context, asDynamic)
+    const result = transformProp(prop, node, context)
     if (result) {
       results.push(result)
       asDynamic && pushDynamicExpressions(result.key, result.value)
@@ -128,17 +137,24 @@ function buildProps(
       },
     ])
   } else {
+    results = dedupeProperties(results)
     for (const result of results) {
-      context.registerEffect(
-        [result.value],
-        [
+      if (isStatic(result)) {
+        context.template += ` ${result.key.content}`
+        if (result.value.content)
+          context.template += `="${result.value.content}"`
+      } else {
+        const expressions = isArray(result.value)
+          ? result.value.filter(v => !v.isStatic)
+          : [result.value]
+        context.registerEffect(expressions, [
           {
             type: IRNodeTypes.SET_PROP,
             element: context.reference(),
             prop: result,
           },
-        ],
-      )
+        ])
+      }
     }
   }
 }
@@ -147,36 +163,84 @@ function transformProp(
   prop: VaporDirectiveNode | AttributeNode,
   node: ElementNode,
   context: TransformContext<ElementNode>,
-  asDynamic: boolean,
 ): DirectiveTransformResult | void {
   const { name } = prop
   if (isReservedProp(name)) return
 
   if (prop.type === NodeTypes.ATTRIBUTE) {
-    if (asDynamic) {
-      return {
-        key: createSimpleExpression(prop.name, true, prop.nameLoc),
-        value: createSimpleExpression(
-          prop.value ? prop.value.content : '',
-          true,
-          prop.value && prop.value.loc,
-        ),
-      }
-    } else {
-      context.template += ` ${name}`
-      if (prop.value) context.template += `="${prop.value.content}"`
-      return
+    return {
+      key: createSimpleExpression(prop.name, true, prop.nameLoc),
+      value: createSimpleExpression(
+        prop.value ? prop.value.content : '',
+        true,
+        prop.value && prop.value.loc,
+      ),
     }
   }
 
   const directiveTransform = context.options.directiveTransforms[name]
   if (directiveTransform) {
     return directiveTransform(prop, node, context)
-  } else if (!isBuiltInDirective(name)) {
+  }
+
+  // is column directive
+  if (!isBuiltInDirective(name)) {
     context.registerOperation({
       type: IRNodeTypes.WITH_DIRECTIVE,
       element: context.reference(),
       dir: prop,
     })
+  }
+}
+
+function isStatic(
+  prop: DirectiveTransformResult,
+): prop is DirectiveTransformResult<SimpleExpressionNode> {
+  const { key, value } = prop
+  return key.isStatic && !isArray(value) && value.isStatic
+}
+
+// Dedupe props in an object literal.
+// Literal duplicated attributes would have been warned during the parse phase,
+// however, it's possible to encounter duplicated `onXXX` handlers with different
+// modifiers. We also need to merge static and dynamic class / style attributes.
+// - onXXX handlers / style: merge into array
+// - class: merge into single expression with concatenation
+function dedupeProperties(
+  properties: DirectiveTransformResult[],
+): DirectiveTransformResult[] {
+  const knownProps: Map<string, DirectiveTransformResult> = new Map()
+  const deduped: DirectiveTransformResult[] = []
+  for (let i = 0; i < properties.length; i++) {
+    const prop = properties[i]
+    // dynamic keys are always allowed
+    if (!prop.key.isStatic) {
+      deduped.push(prop)
+      continue
+    }
+    const name = prop.key.content
+    const existing = knownProps.get(name)
+    if (existing) {
+      if (name === 'style' || name === 'class') {
+        mergeAsArray(existing, prop)
+      }
+      // unexpected duplicate, should have emitted error during parse
+    } else {
+      knownProps.set(name, prop)
+      deduped.push(prop)
+    }
+  }
+  return deduped
+}
+
+function mergeAsArray(
+  existing: DirectiveTransformResult,
+  incoming: DirectiveTransformResult,
+) {
+  const newValues = isArray(incoming.value) ? incoming.value : [incoming.value]
+  if (isArray(existing.value)) {
+    existing.value.push(...newValues)
+  } else {
+    existing.value = [existing.value, ...newValues]
   }
 }
