@@ -138,6 +138,29 @@ describe('patchProp', () => {
       expect(el.innerHTML).toBe('<p>bar</p>')
     })
 
+    test('should set value prop', () => {
+      const el = document.createElement('input')
+      setDOMProp(el, 'value', 'foo')
+      expect(el.value).toBe('foo')
+      setDOMProp(el, 'value', null)
+      expect(el.value).toBe('')
+      expect(el.getAttribute('value')).toBe(null)
+      const obj = {}
+      setDOMProp(el, 'value', obj)
+      expect(el.value).toBe(obj.toString())
+      expect((el as any)._value).toBe(obj)
+
+      const option = document.createElement('option')
+      setDOMProp(option, 'textContent', 'foo')
+      expect(option.value).toBe('foo')
+      expect(option.getAttribute('value')).toBe(null)
+
+      setDOMProp(option, 'value', 'bar')
+      expect(option.textContent).toBe('foo')
+      expect(option.value).toBe('bar')
+      expect(option.getAttribute('value')).toBe('bar')
+    })
+
     test('should be boolean prop', () => {
       const el = document.createElement('select')
       setDOMProp(el, 'multiple', '')
