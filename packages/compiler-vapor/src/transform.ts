@@ -42,18 +42,12 @@ export type DirectiveTransform = (
   context: TransformContext<ElementNode>,
 ) => DirectiveTransformResult | void
 
-export interface DirectiveTransformResult<
-  Value extends DirectiveTransformResultValue = DirectiveTransformResultValue,
-> {
+export interface DirectiveTransformResult {
   key: SimpleExpressionNode
-  value: Value
+  value: SimpleExpressionNode | SimpleExpressionNode[]
   modifier?: '.' | '^'
   runtimeCamelize?: boolean
 }
-
-export type DirectiveTransformResultValue =
-  | SimpleExpressionNode
-  | SimpleExpressionNode[]
 
 // A structural directive transform is technically also a NodeTransform;
 // Only v-if and v-for fall into this category.

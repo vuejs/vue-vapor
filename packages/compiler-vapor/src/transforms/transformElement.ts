@@ -194,7 +194,7 @@ function transformProp(
 
 function isStatic(
   prop: DirectiveTransformResult,
-): prop is DirectiveTransformResult<SimpleExpressionNode> {
+): prop is DirectiveTransformResult & { value: SimpleExpressionNode } {
   const { key, value } = prop
   return key.isStatic && !isArray(value) && value.isStatic
 }

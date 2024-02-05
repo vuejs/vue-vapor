@@ -1,12 +1,9 @@
+import { NewlineType, isSimpleIdentifier } from '@vue/compiler-core'
+import { isArray } from '@vue/shared'
 import { type CodeFragment, type CodegenContext, NEWLINE } from '../generate'
 import type { SetDynamicPropsIRNode, SetPropIRNode, VaporHelper } from '../ir'
 import { genExpression } from './expression'
-import type {
-  DirectiveTransformResult,
-  DirectiveTransformResultValue,
-} from '../transform'
-import { NewlineType, isSimpleIdentifier } from '@vue/compiler-core'
-import { isArray } from '@vue/shared'
+import type { DirectiveTransformResult } from '../transform'
 
 // only the static key prop will reach here
 export function genSetProp(
@@ -117,7 +114,7 @@ function genPropertyKey(
 }
 
 function genPropValueExpression(
-  propValues: DirectiveTransformResultValue,
+  propValues: DirectiveTransformResult['value'],
   context: CodegenContext,
 ) {
   if (isArray(propValues)) {
