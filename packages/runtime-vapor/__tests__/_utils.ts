@@ -2,10 +2,10 @@ import { type Data, isFunction } from '@vue/shared'
 import {
   type ComponentInternalInstance,
   type ObjectComponent,
+  type SetupFn,
   render as _render,
   defineComponent,
 } from '../src'
-import type { SetupFn } from '../src/component'
 
 export function makeRender<Component = ObjectComponent | SetupFn>(
   initHost = () => {
