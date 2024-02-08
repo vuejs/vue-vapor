@@ -22,16 +22,19 @@ import {
 } from '../ir'
 import { extend } from '@vue/shared'
 
+// Create a transformer to handle the v-if directive
 export const transformVIf = createStructuralDirectiveTransform(
   ['if', 'else', 'else-if'],
   processIf,
 )
 
+// Function to process the v-if directive
 export function processIf(
   node: ElementNode,
   dir: VaporDirectiveNode,
   context: TransformContext<ElementNode>,
 ) {
+  // If v-if directive has no expression, throw an error and default it to true
   if (dir.name !== 'else' && (!dir.exp || !dir.exp.content.trim())) {
     const loc = dir.exp ? dir.exp.loc : node.loc
     context.options.onError(
@@ -40,7 +43,10 @@ export function processIf(
     dir.exp = createSimpleExpression(`true`, false, loc)
   }
 
+  // Mark the current context as non-template
   context.dynamic.flags |= DynamicFlag.NON_TEMPLATE
+
+  // Process the v-if directive
   if (dir.name === 'if') {
     const id = context.reference()
     context.dynamic.flags |= DynamicFlag.INSERT
@@ -138,6 +144,7 @@ export function processIf(
   }
 }
 
+// Create an if branch
 export function createIfBranch(
   node: ElementNode,
   context: TransformContext<ElementNode>,
