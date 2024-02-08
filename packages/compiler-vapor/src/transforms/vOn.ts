@@ -19,9 +19,8 @@ export const transformVOn: DirectiveTransform = (dir, node, context) => {
     )
   }
 
-  // If no argument, return (TODO: support v-on="{}")
+  // TODO support v-on="{}"
   if (!arg) {
-    // TODO support v-on="{}"
     return
   }
 
