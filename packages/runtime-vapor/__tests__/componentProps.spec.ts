@@ -143,7 +143,7 @@ describe('component props (vapor)', () => {
   })
 
   // FIXME:
-  test.todo('functional without declaration', () => {
+  test('functional without declaration', () => {
     let props: any
     let attrs: any
 

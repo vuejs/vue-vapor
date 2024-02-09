@@ -75,6 +75,7 @@ export type NormalizedPropsOptions = [NormalizedProps, string[]] | []
 export function initProps(
   instance: ComponentInternalInstance,
   rawProps: Data | null,
+  isStateful: boolean,
 ) {
   const props: Data = {}
   const attrs: Data = {}
@@ -164,7 +165,15 @@ export function initProps(
     validateProps(rawProps || {}, props, instance)
   }
 
-  instance.props = shallowReactive(props)
+  if (isStateful) {
+    instance.props = shallowReactive(props)
+  } else {
+    if (instance.propsOptions === EMPTY_ARR) {
+      instance.props = attrs
+    } else {
+      instance.props = props
+    }
+  }
   instance.attrs = attrs
 
   return hasAttrsChanged
