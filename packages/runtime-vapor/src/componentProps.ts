@@ -19,6 +19,7 @@ import {
   type ComponentInternalInstance,
   setCurrentInstance,
 } from './component'
+import { isEmitListener } from './componentEmits'
 
 export type ComponentPropsOptions<P = Data> =
   | ComponentObjectPropsOptions<P>
@@ -76,8 +77,10 @@ export function initProps(
   rawProps: Data | null,
 ) {
   const props: Data = {}
+  const attrs: Data = {}
 
   const [options, needCastKeys] = instance.propsOptions
+  let hasAttrsChanged = false
   let rawCastValues: Data | undefined
   if (rawProps) {
     for (let key in rawProps) {
@@ -96,6 +99,7 @@ export function initProps(
             get() {
               return valueGetter()
             },
+            enumerable: true,
           })
         } else {
           // NOTE: must getter
@@ -105,10 +109,22 @@ export function initProps(
             get() {
               return valueGetter()
             },
+            enumerable: true,
           })
         }
-      } else {
-        // TODO:
+      } else if (!isEmitListener(instance.emitsOptions, key)) {
+        // if (!(key in attrs) || value !== attrs[key]) {
+        if (!(key in attrs)) {
+          // NOTE: must getter
+          // attrs[key] = value
+          Object.defineProperty(attrs, key, {
+            get() {
+              return valueGetter()
+            },
+            enumerable: true,
+          })
+          hasAttrsChanged = true
+        }
       }
     }
   }
@@ -149,6 +165,9 @@ export function initProps(
   }
 
   instance.props = shallowReactive(props)
+  instance.attrs = attrs
+
+  return hasAttrsChanged
 }
 
 function resolvePropValue(
