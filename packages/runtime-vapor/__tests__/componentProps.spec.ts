@@ -105,7 +105,6 @@ describe('component props (vapor)', () => {
       return {}
     })
     Comp.props = ['foo']
-    Comp.render = (() => {}) as any
 
     render({
       get foo() {
@@ -147,16 +146,12 @@ describe('component props (vapor)', () => {
     let props: any
     let attrs: any
 
-    const { component: Comp, render } = define(
-      (_props: any, { attrs: _attrs }: any) => {
-        const instance = getCurrentInstance()!
-        props = instance.props
-        attrs = instance.attrs
-        return {}
-      },
-    )
-    Comp.props = undefined
-    Comp.render = () => {}
+    const { render } = define((_props: any, { attrs: _attrs }: any) => {
+      const instance = getCurrentInstance()!
+      props = instance.props
+      attrs = instance.attrs
+      return {}
+    })
 
     render({
       get foo() {
@@ -543,7 +538,6 @@ describe('component props (vapor)', () => {
     const { render, host } = define({
       render() {
         const instance = getCurrentInstance()!
-
         const t0 = template('<div></div>')
         const n0 = t0()
         const n1 = children(n0, 0)
