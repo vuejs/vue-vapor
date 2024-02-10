@@ -1,22 +1,37 @@
-import { camelize, capitalize, hyphenate, isArray, isString } from '@vue/shared'
+import {
+  camelize,
+  capitalize,
+  hyphenate,
+  isArray,
+  isString,
+  normalizeStyle,
+} from '@vue/shared'
 import { warn } from '../warning'
+import { recordPropMetadata } from './prop'
+
+export function setStyle(el: HTMLElement, value: any) {
+  const prev = recordPropMetadata(el, 'style', (value = normalizeStyle(value)))
+  patchStyle(el, prev, value)
+}
+
+// TODO copied from packages/runtime-dom/src/modules/style.ts
 
 type Style = string | Record<string, string | string[]> | null
 
-export function patchStyle(el: Element, prev: Style, next: Style) {
+function patchStyle(el: Element, prev: Style, next: Style) {
   const style = (el as HTMLElement).style
   const isCssString = isString(next)
   if (next && !isCssString) {
     if (prev && !isString(prev)) {
       for (const key in prev) {
         if (next[key] == null) {
-          setStyle(style, key, '')
+          setStyleValue(style, key, '')
         }
       }
     }
 
     for (const key in next) {
-      setStyle(style, key, next[key])
+      setStyleValue(style, key, next[key])
     }
   } else {
     if (isCssString) {
@@ -33,13 +48,13 @@ export function patchStyle(el: Element, prev: Style, next: Style) {
 const semicolonRE = /[^\\];\s*$/
 const importantRE = /\s*!important$/
 
-function setStyle(
+function setStyleValue(
   style: CSSStyleDeclaration,
   name: string,
   val: string | string[],
 ) {
   if (isArray(val)) {
-    val.forEach(v => setStyle(style, name, v))
+    val.forEach(v => setStyleValue(style, name, v))
   } else {
     if (val == null) val = ''
     if (__DEV__) {
