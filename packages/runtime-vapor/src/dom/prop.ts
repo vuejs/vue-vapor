@@ -11,6 +11,7 @@ import {
 } from '@vue/shared'
 import { currentInstance } from '../component'
 import { warn } from '../warning'
+import { patchStyle } from './modules/style'
 
 export function recordPropMetadata(el: Node, key: string, value: any): any {
   if (!currentInstance) {
@@ -36,13 +37,7 @@ export function setClass(el: Element, value: any) {
 
 export function setStyle(el: HTMLElement, value: any) {
   const prev = recordPropMetadata(el, 'style', (value = normalizeStyle(value)))
-  if (value !== prev && (value || prev)) {
-    if (typeof value === 'string') {
-      el.style.cssText = value
-    } else {
-      // TODO
-    }
-  }
+  patchStyle(el, prev, value)
 }
 
 export function setAttr(el: Element, key: string, value: any) {
