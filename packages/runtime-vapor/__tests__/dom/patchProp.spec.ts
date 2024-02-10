@@ -6,7 +6,6 @@ import {
   setClass,
   setDOMProp,
   setHtml,
-  setStyle,
   setText,
 } from '../../src'
 import {
@@ -15,6 +14,7 @@ import {
   getCurrentInstance,
   setCurrentInstance,
 } from '../../src/component'
+import { setStyle } from '../../src/dom/style'
 
 let removeComponentInstance = NOOP
 beforeEach(() => {
