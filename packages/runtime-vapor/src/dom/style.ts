@@ -1,5 +1,5 @@
 import { camelize, capitalize, hyphenate, isArray, isString } from '@vue/shared'
-import { warn } from '../../warning'
+import { warn } from '../warning'
 
 type Style = string | Record<string, string | string[]> | null
 

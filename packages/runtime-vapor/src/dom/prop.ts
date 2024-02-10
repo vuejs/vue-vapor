@@ -11,7 +11,7 @@ import {
 } from '@vue/shared'
 import { currentInstance } from '../component'
 import { warn } from '../warning'
-import { patchStyle } from './modules/style'
+import { patchStyle } from './style'
 
 export function recordPropMetadata(el: Node, key: string, value: any): any {
   if (!currentInstance) {
