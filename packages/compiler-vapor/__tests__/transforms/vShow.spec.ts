@@ -1,6 +1,6 @@
 import { makeCompile } from './_utils'
 import { transformElement, transformVShow } from '../../src'
-import { VaporErrorCodes } from '../../src/errors'
+import { DOMErrorCodes } from '@vue/compiler-dom'
 
 const compileWithVShow = makeCompile({
   nodeTransforms: [transformElement],
@@ -22,7 +22,7 @@ describe('compiler: v-show transform', () => {
     expect(onError).toHaveBeenCalledTimes(1)
     expect(onError).toHaveBeenCalledWith(
       expect.objectContaining({
-        code: VaporErrorCodes.X_V_SHOW_NO_EXPRESSION,
+        code: DOMErrorCodes.X_V_SHOW_NO_EXPRESSION,
       }),
     )
   })
