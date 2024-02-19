@@ -28,6 +28,16 @@ export function recordPropMetadata(el: Node, key: string, value: any): any {
   return prev
 }
 
+function getPropsMetadata(el: Node): Data | undefined {
+  if (!currentInstance) {
+    // TODO implement error handling
+    if (__DEV__) throw new Error('cannot be used out of component')
+    return
+  }
+
+  return currentInstance.metadata.get(el)?.props
+}
+
 export function setClass(el: Element, value: any) {
   const prev = recordPropMetadata(el, 'class', (value = normalizeClass(value)))
   if (value !== prev && (value || prev)) {
@@ -140,9 +150,21 @@ export function setDynamicProp(el: Element, key: string, value: any) {
 }
 
 export function setDynamicProps(el: Element, ...args: any) {
+  const oldProps = getPropsMetadata(el)
   const props = args.length > 1 ? mergeProps(...args) : args[0]
 
-  // TODO remove all of old props before set new props since there is containing dynamic key
+  for (const key in oldProps) {
+    // TODO should these keys be allowed as dynamic keys? The current logic of the runtime-core will throw an error
+    if (key === 'textContent' || key === 'innerHTML') {
+      continue
+    }
+
+    const hasNewValue = props[key] || props['.' + key] || props['^' + key]
+    if (oldProps[key] && !hasNewValue) {
+      setDynamicProp(el, key, null)
+    }
+  }
+
   for (const key in props) {
     setDynamicProp(el, key, props[key])
   }

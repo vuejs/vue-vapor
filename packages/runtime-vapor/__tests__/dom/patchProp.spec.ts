@@ -5,6 +5,7 @@ import {
   setAttr,
   setClass,
   setDOMProp,
+  setDynamicProps,
   setHtml,
   setStyle,
   setText,
@@ -412,6 +413,47 @@ describe('patchProp', () => {
     })
 
     test.todo('should be able to set something on SVG')
+  })
+
+  describe('setDynamicProps', () => {
+    test('should merge props', () => {
+      const el = document.createElement('div')
+      setDynamicProps(el, { id: 'foo' }, { id: 'bar' })
+      expect(el.id).toBe('bar')
+    })
+
+    test('should reset old props', () => {
+      const el = document.createElement('div')
+
+      setDynamicProps(el, { key: 'foo' })
+      expect(el.attributes.length).toBe(1)
+      expect(el.getAttribute('key')).toBe('foo')
+
+      setDynamicProps(el, { id: 'foo' })
+      expect(el.attributes.length).toBe(1)
+      expect(el.getAttribute('id')).toBe('foo')
+      expect(el.getAttribute('key')).toBeNull()
+    })
+
+    test('should reset old modifier props', () => {
+      const el = document.createElement('div')
+
+      setDynamicProps(el, { ['.foo']: 'foo' })
+      expect((el as any).foo).toBe('foo')
+
+      setDynamicProps(el, { ['.bar']: 'bar' })
+      expect((el as any).bar).toBe('bar')
+      expect((el as any).foo).toBe('')
+
+      setDynamicProps(el, { ['^foo']: 'foo' })
+      expect(el.attributes.length).toBe(1)
+      expect(el.getAttribute('foo')).toBe('foo')
+
+      setDynamicProps(el, { ['^bar']: 'bar' })
+      expect(el.attributes.length).toBe(1)
+      expect(el.getAttribute('bar')).toBe('bar')
+      expect(el.getAttribute('foo')).toBeNull()
+    })
   })
 
   describe('setText', () => {
