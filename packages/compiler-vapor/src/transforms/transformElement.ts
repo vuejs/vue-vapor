@@ -61,7 +61,11 @@ export const transformElement: NodeTransform = (node, context) => {
 
     // TODO remove unnecessary close tag, e.g. if it's the last element of the template
     if (!isVoidTag(tag)) {
-      context.template += `</${tag}>`
+      if (node.tagType === ElementTypes.COMPONENT) {
+        context.template = `<${tag}/>`
+      } else {
+        context.template += `</${tag}>`
+      }
     }
   }
 }
