@@ -36,5 +36,5 @@ const handleClick = () => {
   <button v-bind="obj" :[key]="'dynamic key after'">{{ count }}</button>
 
   <!-- old props will be reset after dynamic key changed -->
-  <button :[`${key}${count}`]="'dynamic key'">{{ count }}</button>
+  <button :[`key${count}`]="'dynamic key'">{{ count }}</button>
 </template>
