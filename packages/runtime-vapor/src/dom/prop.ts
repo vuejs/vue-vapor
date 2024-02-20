@@ -9,33 +9,31 @@ import {
   normalizeStyle,
   toDisplayString,
 } from '@vue/shared'
-import { currentInstance } from '../component'
+import { type ElementMetadata, currentInstance } from '../component'
 import { warn } from '../warning'
 import { setStyle } from './style'
 
-export function recordPropMetadata(el: Node, key: string, value: any): any {
+function getMetadata(el: Node): ElementMetadata {
+  const EMPTY_METADATA = { props: {} }
+
   if (!currentInstance) {
     // TODO implement error handling
     if (__DEV__) throw new Error('cannot be used out of component')
-    return
+    return EMPTY_METADATA
   }
+
   let metadata = currentInstance.metadata.get(el)
   if (!metadata) {
-    currentInstance.metadata.set(el, (metadata = { props: {} }))
+    currentInstance.metadata.set(el, (metadata = EMPTY_METADATA))
   }
+  return metadata
+}
+
+export function recordPropMetadata(el: Node, key: string, value: any): any {
+  const metadata = getMetadata(el)
   const prev = metadata.props[key]
   metadata.props[key] = value
   return prev
-}
-
-function getPropsMetadata(el: Node): Data | undefined {
-  if (!currentInstance) {
-    // TODO implement error handling
-    if (__DEV__) throw new Error('cannot be used out of component')
-    return
-  }
-
-  return currentInstance.metadata.get(el)?.props
 }
 
 export function setClass(el: Element, value: any) {
@@ -150,7 +148,7 @@ export function setDynamicProp(el: Element, key: string, value: any) {
 }
 
 export function setDynamicProps(el: Element, ...args: any) {
-  const oldProps = getPropsMetadata(el)
+  const oldProps = getMetadata(el).props
   const props = args.length > 1 ? mergeProps(...args) : args[0]
 
   for (const key in oldProps) {
