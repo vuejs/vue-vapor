@@ -96,7 +96,7 @@ describe('compile', () => {
         )
 
         expect(code).toMatchSnapshot()
-        expect(code).contains('<div></div><div><Comp></Comp></div>')
+        expect(code).contains('<div></div><div><Comp/></div>')
         // Waiting for TODO, There should be more here.
       })
     })

@@ -130,7 +130,7 @@ export function render(_ctx) {
 
 exports[`compile > directives > v-pre > self-closing v-pre 1`] = `
 "import { children as _children, createTextNode as _createTextNode, append as _append, renderEffect as _renderEffect, setText as _setText, setDynamicProp as _setDynamicProp, template as _template } from 'vue/vapor';
-const t0 = _template("<div></div><div><Comp></Comp></div>")
+const t0 = _template("<div></div><div><Comp/></div>")
 
 export function render(_ctx) {
   const n0 = t0()
@@ -145,7 +145,7 @@ export function render(_ctx) {
 
 exports[`compile > directives > v-pre > should not affect siblings after it 1`] = `
 "import { children as _children, createTextNode as _createTextNode, append as _append, renderEffect as _renderEffect, setText as _setText, setDynamicProp as _setDynamicProp, template as _template } from 'vue/vapor';
-const t0 = _template("<div :id=\\"foo\\"><Comp></Comp>{{ bar }}</div><div><Comp></Comp></div>")
+const t0 = _template("<div :id=\\"foo\\"><Comp></Comp>{{ bar }}</div><div><Comp/></div>")
 
 export function render(_ctx) {
   const n0 = t0()
