@@ -1,5 +1,5 @@
 import { makeCompile } from './_utils'
-import { generate, transformElement, transformVModel } from '../../src'
+import { transformElement, transformVModel } from '../../src'
 import { DOMErrorCodes } from '@vue/compiler-dom'
 
 const compileWithVModel = makeCompile({
@@ -154,19 +154,19 @@ describe('compiler: vModel transform', () => {
 
   describe('modifiers', () => {
     test('.number', () => {
-      const { code } = compileWithVModel('<input  v-model.number="model" />')
+      const { code } = compileWithVModel('<input v-model.number="model" />')
 
       expect(code).toMatchSnapshot()
     })
 
     test('.trim', () => {
-      const { code } = compileWithVModel('<input  v-model.trim="model" />')
+      const { code } = compileWithVModel('<input v-model.trim="model" />')
 
       expect(code).toMatchSnapshot()
     })
 
     test('.lazy', () => {
-      const { code } = compileWithVModel('<input  v-model.lazy="model" />')
+      const { code } = compileWithVModel('<input v-model.lazy="model" />')
 
       expect(code).toMatchSnapshot()
     })
