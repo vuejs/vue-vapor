@@ -12,6 +12,16 @@ export function render(_ctx) {
 }"
 `;
 
+exports[`compile > component close tag 1`] = `
+"import { template as _template } from 'vue/vapor';
+const t0 = _template("<div><Comp/></div>")
+
+export function render(_ctx) {
+  const n0 = t0()
+  return n0
+}"
+`;
+
 exports[`compile > custom directive > basic 1`] = `
 "import { children as _children, resolveDirective as _resolveDirective, withDirectives as _withDirectives, template as _template } from 'vue/vapor';
 const t0 = _template("<div></div>")
