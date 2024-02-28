@@ -1,12 +1,12 @@
 import { type EffectScope, effectScope, isReactive } from '@vue/reactivity'
-import { isArray } from '@vue/shared'
+import { isArray, isObject, isString } from '@vue/shared'
 import { createComment, createTextNode, insert, remove } from './dom/element'
 import { renderEffect } from './renderWatch'
 import { type Block, type Fragment, fragmentKey } from './render'
 
 interface ForBlock extends Fragment {
   scope: EffectScope
-  s: [any, number] // state, use short key since it's used a lot in generated code
+  s: [any, number | string] // state, use short key since it's used a lot in generated code
   update: () => void
   key: any
   memo: any[] | undefined
@@ -14,7 +14,7 @@ interface ForBlock extends Fragment {
 
 /*! #__NO_SIDE_EFFECTS__ */
 export const createFor = (
-  src: () => any[] | Record<string, string> | Set<any> | Map<any, any>,
+  src: () => any[] | Record<string, any> | Set<any> | Map<any, any>,
   renderItem: (block: ForBlock) => [Block, () => void],
   getKey?: (item: any, index: number) => any,
   getMemo?: (item: any) => any[],
@@ -34,14 +34,14 @@ export const createFor = (
     item: any,
     index: number,
     anchor: Node = parentAnchor,
+    key?: string,
   ): ForBlock => {
     const scope = effectScope()
-    // TODO support object keys etc.
     const block: ForBlock = (newBlocks[index] = {
       nodes: null as any,
       update: null as any,
       scope,
-      s: [item, index],
+      s: [item, key || index],
       key: getKey && getKey(item, index),
       memo: getMemo && getMemo(item),
       [fragmentKey]: true,
@@ -54,10 +54,20 @@ export const createFor = (
     return block
   }
 
-  const mountList = (source: any[], offset = 0) => {
+  const mountList = (source: any[], sourceKeys: null | any[], offset = 0) => {
     if (offset) source = source.slice(offset)
-    for (let i = 0, l = source.length; i < l; i++) {
-      mount(source[i], i + offset)
+
+    if (sourceKeys) {
+      if (offset) sourceKeys = sourceKeys.slice(offset)
+
+      for (let i = 0, l = source.length; i < l; i++) {
+        const key = sourceKeys[i]
+        mount(source[i], i + offset, parentAnchor, key)
+      }
+    } else {
+      for (let i = 0, l = source.length; i < l; i++) {
+        mount(source[i], i + offset)
+      }
     }
   }
 
@@ -114,20 +124,21 @@ export const createFor = (
   }
 
   renderEffect(() => {
-    // TODO support more than arrays
-    const source = src() as any[]
+    const { resolvedSource: source, resolvedSourceKeys: sourceKeys } =
+      sourceProcessHelper(src())
+
     const newLength = source.length
     const oldLength = oldBlocks.length
-    newBlocks = new Array(newLength)
 
+    newBlocks = new Array(newLength)
     if (!isMounted) {
       isMounted = true
-      mountList(source)
+      mountList(source, sourceKeys)
     } else {
       parent = parent || parentAnchor.parentNode
       if (!oldLength) {
         // fast path for all new
-        mountList(source)
+        mountList(source, sourceKeys)
       } else if (!newLength) {
         // fast path for clearing
         for (let i = 0; i < oldLength; i++) {
@@ -136,10 +147,22 @@ export const createFor = (
       } else if (!getKey) {
         // unkeyed fast path
         const commonLength = Math.min(newLength, oldLength)
-        for (let i = 0; i < commonLength; i++) {
-          update((newBlocks[i] = oldBlocks[i]), source[i])
+        if (sourceKeys) {
+          for (let i = 0; i < commonLength; i++) {
+            const key = sourceKeys[i]
+            update(
+              (newBlocks[i] = oldBlocks[i]),
+              source[i],
+              newBlocks[i].s[1],
+              key,
+            )
+          }
+        } else {
+          for (let i = 0; i < commonLength; i++) {
+            update((newBlocks[i] = oldBlocks[i]), source[i])
+          }
         }
-        mountList(source, oldLength)
+        mountList(source, sourceKeys, oldLength)
         for (let i = newLength; i < oldLength; i++) {
           unmount(oldBlocks[i])
         }
@@ -186,7 +209,12 @@ export const createFor = (
                 ? normalizeAnchor(newBlocks[nextPos].nodes)
                 : parentAnchor
             while (i <= e2) {
-              mount(source[i], i, anchor)
+              if (sourceKeys) {
+                const key = sourceKeys[i]
+                mount(source[i], i, anchor, key)
+              } else {
+                mount(source[i], i, anchor)
+              }
               i++
             }
           }
@@ -251,12 +279,14 @@ export const createFor = (
                 } else {
                   moved = true
                 }
+
                 update(
                   (newBlocks[newIndex] = prevBlock),
                   source[newIndex],
                   i,
                   newIndex,
                 )
+
                 patched++
               }
             }
@@ -277,7 +307,12 @@ export const createFor = (
                 : parentAnchor
             if (newIndexToOldIndexMap[i] === 0) {
               // mount new
-              mount(source[nextIndex], nextIndex, anchor)
+              if (sourceKeys) {
+                const key = sourceKeys[nextIndex]
+                mount(source[nextIndex], nextIndex, anchor, key)
+              } else {
+                mount(source[nextIndex], nextIndex, anchor)
+              }
             } else if (moved) {
               // move if:
               // There is no stable subsequence (e.g. a reverse)
@@ -349,4 +384,33 @@ const getSequence = (arr: number[]): number[] => {
     v = p[v]
   }
   return result
+}
+
+/**
+ * translate all the source type to an Array
+ */
+const sourceProcessHelper = (source: any) => {
+  let resolvedSource: any[] = []
+  let resolvedSourceKeys: any[] | null = null
+
+  if (isString(source)) {
+    resolvedSource = source.split('') as string[]
+  } else if (typeof source === 'number') {
+    resolvedSource = Array.from({ length: source }, (_, index) => index + 1)
+  } else if (isArray(source)) {
+    resolvedSource = source
+  } else if (isObject(source)) {
+    if (source[Symbol.iterator as any]) {
+      resolvedSource = Array.from(source as Iterable<any>, (item, _) => item)
+    } else {
+      resolvedSourceKeys = Object.keys(source)
+      for (let i = 0; i < resolvedSourceKeys.length; i++) {
+        const key = resolvedSourceKeys[i]
+        resolvedSource[i] = source[key]
+      }
+    }
+  } else {
+    resolvedSource = []
+  }
+  return { resolvedSource, resolvedSourceKeys }
 }
