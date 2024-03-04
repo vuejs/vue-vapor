@@ -75,7 +75,7 @@ const Child = defineComponent({
   },
   render(_ctx) {
     const instance = /** @type {any} */ (getCurrentInstance())
-    const slots = instance.slots
+    const { slots } = instance
 
     // <div>
     //   <slot name="mySlot" :message="msg" :changeMessage="changeMessage" />
@@ -84,7 +84,7 @@ const Child = defineComponent({
     const n0 = /** @type {any} */ (t2())
     const n1 = /** @type {any} */ (children(n0, 0))
     on(n1, 'click', _ctx.changeMessage)
-    const mySlot = slots.mySlot({
+    const s0 = slots.mySlot({
       get message() {
         return _ctx.message
       },
@@ -92,7 +92,7 @@ const Child = defineComponent({
         return _ctx.changeMessage
       },
     })
-    insert(mySlot, n0, n1)
+    insert(s0, n0, n1)
     return n0
   },
 })
