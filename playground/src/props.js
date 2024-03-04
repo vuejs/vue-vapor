@@ -46,8 +46,6 @@ export default defineComponent({
     // insert(n0, c0)
     renderComponent(
       /** @type {any} */ (child),
-
-      // TODO: proxy??
       {
         /* <Comp :count="count" /> */
         get count() {
@@ -59,6 +57,7 @@ export default defineComponent({
           return _ctx.count * 2
         },
       },
+      {},
       // @ts-expect-error TODO
       n0[0],
     )

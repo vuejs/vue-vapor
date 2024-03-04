@@ -6,6 +6,7 @@ import {
   render as _render,
   defineComponent,
 } from '../src'
+import type { Slots } from '../src/componentSlots'
 
 export function makeRender<Component = ObjectComponent | SetupFn>(
   initHost = () => {
@@ -28,9 +29,10 @@ export function makeRender<Component = ObjectComponent | SetupFn>(
     let instance: ComponentInternalInstance
     const render = (
       props: Data = {},
+      slots: Slots = {},
       container: string | ParentNode = '#host',
     ) => {
-      instance = _render(component, props, container)
+      instance = _render(component, props, slots, container)
       return res()
     }
     const res = () => ({

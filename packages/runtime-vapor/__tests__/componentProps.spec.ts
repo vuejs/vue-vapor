@@ -316,6 +316,7 @@ describe('component props (vapor)', () => {
               return _ctx.id
             },
           },
+          {},
           n0 as HTMLDivElement,
         )
         return n0
