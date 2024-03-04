@@ -7,7 +7,7 @@ const mod = (modules['.' + location.pathname] || modules['./App.vue'])()
 
 mod.then(({ default: mod }) => {
   if (mod.vapor) {
-    const instance = render(mod, {}, '#app')
+    const instance = render(mod, {}, {}, '#app')
     // @ts-expect-error
     globalThis.unmount = () => {
       unmountComponent(instance)

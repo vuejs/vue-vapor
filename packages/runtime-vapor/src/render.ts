@@ -14,6 +14,7 @@ import {
   unsetCurrentInstance,
 } from './component'
 import { initProps } from './componentProps'
+import { type Slots, initSlots } from './componentSlots'
 import { invokeDirectiveHook } from './directives'
 import { insert, querySelector, remove } from './dom/element'
 import { flushPostFlushCbs, queuePostRenderEffect } from './scheduler'
@@ -30,10 +31,12 @@ export type Fragment = {
 export function render(
   comp: Component,
   props: Data,
+  slots: Slots, // TODO:
   container: string | ParentNode,
 ): ComponentInternalInstance {
   const instance = createComponentInstance(comp, props)
   initProps(instance, props, !isFunction(instance.component))
+  initSlots(instance, slots)
   const component = mountComponent(
     instance,
     (container = normalizeContainer(container)),
@@ -56,8 +59,8 @@ function mountComponent(
 
   const reset = setCurrentInstance(instance)
   const block = instance.scope.run(() => {
-    const { component, props, emit, attrs } = instance
-    const ctx = { expose: () => {}, emit, attrs }
+    const { component, props, emit, attrs, slots } = instance
+    const ctx = { expose: () => {}, emit, attrs, slots }
 
     const setupFn = isFunction(component) ? component : component.setup
     const stateOrNode = setupFn && setupFn(props, ctx)

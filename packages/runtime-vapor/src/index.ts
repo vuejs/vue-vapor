@@ -105,6 +105,7 @@ export {
 } from './apiLifecycle'
 export { createIf } from './if'
 export { createFor } from './for'
+export { createSlots as createSlot } from './slot'
 
 // **Internal** DOM-only runtime directive helpers
 export {

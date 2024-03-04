@@ -15,6 +15,7 @@ import {
   emit,
   normalizeEmitsOptions,
 } from './componentEmits'
+import type { InternalSlots } from './componentSlots'
 
 import type { Data } from '@vue/shared'
 import { VaporLifecycleHooks } from './enums'
@@ -56,6 +57,7 @@ export interface ComponentInternalInstance {
   setupState: Data
   emit: EmitFn
   emitted: Record<string, boolean> | null
+  slots: InternalSlots
   refs: Data
 
   vapor: true
@@ -175,6 +177,7 @@ export const createComponentInstance = (
     props: EMPTY_OBJ,
     attrs: EMPTY_OBJ,
     setupState: EMPTY_OBJ,
+    slots: EMPTY_OBJ,
     refs: EMPTY_OBJ,
     vapor: true,
 
