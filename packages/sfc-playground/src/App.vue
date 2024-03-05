@@ -60,8 +60,7 @@ let hash = location.hash.slice(1)
 if (hash.startsWith('__DEV__')) {
   hash = hash.slice(7)
   productionMode.value = false
-}
-if (hash.startsWith('__PROD__')) {
+} else if (hash.startsWith('__PROD__')) {
   hash = hash.slice(8)
   productionMode.value = true
 }
