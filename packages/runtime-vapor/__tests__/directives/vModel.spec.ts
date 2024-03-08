@@ -1,7 +1,7 @@
 import { reactive, ref } from '@vue/reactivity'
 import {
   delegate,
-  on,
+  delegateEvents,
   setClass,
   setDOMProp,
   template,
@@ -15,7 +15,7 @@ import { nextTick } from '@vue/runtime-dom'
 const define = makeRender()
 
 const triggerEvent = (type: string, el: Element) => {
-  const event = new Event(type)
+  const event = new Event(type, { bubbles: true })
   el.dispatchEvent(event)
 }
 
@@ -33,10 +33,11 @@ describe('directive: v-model', () => {
     const data = ref<string | null | undefined>('')
     const { host } = define(() => {
       const t0 = template('<input />')
+      delegateEvents('input')
       const n0 = t0() as HTMLInputElement
       withDirectives(n0, [[vModelDynamic, () => data.value]])
       delegate(n0, 'update:modelValue', () => val => (data.value = val))
-      on(n0, 'input', () => () => spy(data.value))
+      delegate(n0, 'input', () => () => spy(data.value))
       return n0
     }).render()
 
@@ -60,6 +61,7 @@ describe('directive: v-model', () => {
 
   test('should work with select', async () => {
     const spy = vi.fn()
+    delegateEvents('change')
     const data = ref<string | null>('')
     const { host } = define(() => {
       const t0 = template(
@@ -68,7 +70,7 @@ describe('directive: v-model', () => {
       const n0 = t0() as HTMLInputElement
       withDirectives(n0, [[vModelSelect, () => data.value]])
       delegate(n0, 'update:modelValue', () => val => (data.value = val))
-      on(n0, 'change', () => () => spy(data.value))
+      delegate(n0, 'change', () => () => spy(data.value))
       return n0
     }).render()
 
