@@ -2,6 +2,7 @@ import { reactive, ref } from '@vue/reactivity'
 import {
   delegate,
   delegateEvents,
+  on,
   setClass,
   setDOMProp,
   template,
@@ -61,7 +62,6 @@ describe('directive: v-model', () => {
 
   test('should work with select', async () => {
     const spy = vi.fn()
-    delegateEvents('change')
     const data = ref<string | null>('')
     const { host } = define(() => {
       const t0 = template(
@@ -70,7 +70,7 @@ describe('directive: v-model', () => {
       const n0 = t0() as HTMLInputElement
       withDirectives(n0, [[vModelSelect, () => data.value]])
       delegate(n0, 'update:modelValue', () => val => (data.value = val))
-      delegate(n0, 'change', () => () => spy(data.value))
+      on(n0, 'change', () => () => spy(data.value))
       return n0
     }).render()
 
