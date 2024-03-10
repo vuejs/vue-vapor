@@ -1,5 +1,4 @@
 import {
-  getCurrentEffect,
   getCurrentScope,
   onEffectCleanup,
   onScopeDispose,
@@ -27,26 +26,24 @@ export function on(
   el: HTMLElement,
   event: string,
   handlerGetter: () => undefined | ((...args: any[]) => any),
-  options: AddEventListenerOptions & ModifierOptions = {},
+  options: AddEventListenerOptions &
+    ModifierOptions & { effect?: boolean } = {},
 ) {
   const handler: DelegatedHandler = eventHandler(handlerGetter, options)
-  const cleanupMetadata = recordEventMetadata(el, event, handler)
+  let cleanupEvent: (() => void) | undefined
   queuePostRenderEffect(() => {
-    const cleanupEvent = addEventListener(el, event, handler, options)
-
-    function cleanup() {
-      cleanupMetadata()
-      cleanupEvent()
-    }
-
-    const scope = getCurrentScope()
-    const effect = getCurrentEffect()
-    if (effect && effect.scope === scope) {
-      onEffectCleanup(cleanup)
-    } else if (scope) {
-      onScopeDispose(cleanup)
-    }
+    cleanupEvent = addEventListener(el, event, handler, options)
   })
+
+  if (options.effect) {
+    onEffectCleanup(cleanup)
+  } else if (getCurrentScope()) {
+    onScopeDispose(cleanup)
+  }
+
+  function cleanup() {
+    cleanupEvent && cleanupEvent()
+  }
 }
 
 export type DelegatedHandler = {
