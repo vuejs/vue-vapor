@@ -21,7 +21,23 @@ export const transformVOn: DirectiveTransform = (dir, node, context) => {
   }
 
   if (!arg) {
-    // TODO support v-on="{}"
+    // v-on="obj"
+    if (exp) {
+      context.registerEffect(
+        [exp],
+        [
+          {
+            type: IRNodeTypes.SET_DYNAMIC_EVENTS,
+            element: context.reference(),
+            prop: exp,
+          },
+        ],
+      )
+    } else {
+      context.options.onError(
+        createCompilerError(ErrorCodes.X_V_ON_NO_EXPRESSION, loc),
+      )
+    }
     return
   }
 
