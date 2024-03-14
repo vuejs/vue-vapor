@@ -370,6 +370,6 @@ describe('compiler: element transform', () => {
         ],
       },
     ])
-    expect(code).contains('_setDynamicEvents(n0, _ctx.obj)')
+    expect(code).contains('_setDynamicProps(n0, _toHandlers(_ctx.obj, true))')
   })
 })
