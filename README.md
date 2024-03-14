@@ -77,6 +77,7 @@ The code provided here is a duplicate from `runtime-core` as Vapor cannot import
 - packages/runtime-vapor/src/errorHandling.ts
 - packages/runtime-vapor/src/scheduler.ts
 - packages/runtime-vapor/src/warning.ts
+- packages/runtime-vapor/src/helpers/toHandlers.ts
 
 If there are more, please feel free to add.
 

@@ -101,9 +101,13 @@ export function genSetDynamicEvents(
   return [
     NEWLINE,
     ...genCall(
-      vaporHelper('setDynamicEvents'),
+      vaporHelper('setDynamicProps'),
       `n${oper.element}`,
-      genExpression(oper.event, context),
+      genCall(
+        vaporHelper('toHandlers'),
+        genExpression(oper.event, context),
+        'true',
+      ),
     ),
   ]
 }

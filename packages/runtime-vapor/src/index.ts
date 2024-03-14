@@ -84,8 +84,10 @@ export {
   setDynamicProp,
   setDynamicProps,
 } from './dom/prop'
-export { on, delegate, delegateEvents, setDynamicEvents } from './dom/event'
+export { on, delegate, delegateEvents } from './dom/event'
 export { setRef } from './dom/templateRef'
+
+export { toHandlers } from './helpers/toHandlers'
 
 export { defineComponent } from './apiDefineComponent'
 export {
