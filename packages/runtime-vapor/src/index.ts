@@ -87,7 +87,6 @@ export { on, delegate, delegateEvents, setDynamicEvents } from './dom/event'
 export { setRef } from './dom/templateRef'
 
 export { defineComponent } from './apiDefineComponent'
-export { createComponentInstance } from './component'
 export {
   onBeforeMount,
   onMounted,
@@ -105,6 +104,9 @@ export {
 export { createIf } from './apiCreateIf'
 export { createFor } from './apiCreateFor'
 export { createComponent } from './apiCreateComponent'
+
+// TODO remove
+export { test_createComponent } from './component'
 
 export { resolveComponent, resolveDirective } from './helpers/resolveAssets'
 

@@ -127,10 +127,9 @@ const t1 = _template("<div></div>")
 export function render(_ctx) {
   const n0 = t0()
   const n3 = t1()
-  const n1 = n3.firstChild
   const n1 = _createComponent(_resolveComponent("Comp"))
   const n2 = _createTextNode()
-  _insert(n2, n3)
+  _insert([n1, n2], n3)
   _renderEffect(() => _setText(n2, _ctx.bar))
   _renderEffect(() => _setDynamicProp(n3, "id", _ctx.foo))
   return [n0, n3]

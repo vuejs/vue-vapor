@@ -15,6 +15,7 @@ import type {
   TransformContext,
 } from '../transform'
 import {
+  DynamicFlag,
   IRNodeTypes,
   type IRProp,
   type IRProps,
@@ -62,10 +63,12 @@ function transformComponentElement(
 ) {
   const { bindingMetadata } = context.options
   const resolve = !bindingMetadata[tag]
+  context.dynamic.flags |= DynamicFlag.NON_TEMPLATE | DynamicFlag.INSERT
   context.registerOperation({
     type: IRNodeTypes.CREATE_COMPONENT_NODE,
     id: context.reference(),
     tag,
+    // TODO
     props: [],
     resolve,
   })
