@@ -103,7 +103,7 @@ export function genSetDynamicEvents(
     ...genCall(
       vaporHelper('setDynamicEvents'),
       `n${oper.element}`,
-      genExpression(oper.prop, context),
+      genExpression(oper.event, context),
     ),
   ]
 }

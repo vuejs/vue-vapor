@@ -98,7 +98,7 @@ export interface SetDynamicPropsIRNode extends BaseIRNode {
 export interface SetDynamicEventsIRNode extends BaseIRNode {
   type: IRNodeTypes.SET_DYNAMIC_EVENTS
   element: number
-  prop: SimpleExpressionNode
+  event: SimpleExpressionNode
 }
 
 export interface SetTextIRNode extends BaseIRNode {

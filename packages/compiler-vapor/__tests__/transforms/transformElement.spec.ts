@@ -361,7 +361,7 @@ describe('compiler: element transform', () => {
           {
             type: IRNodeTypes.SET_DYNAMIC_EVENTS,
             element: 0,
-            prop: {
+            event: {
               type: NodeTypes.SIMPLE_EXPRESSION,
               content: 'obj',
               isStatic: false,

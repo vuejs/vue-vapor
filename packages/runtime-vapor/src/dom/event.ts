@@ -125,9 +125,9 @@ const delegatedEventHandler = (e: Event) => {
 
 export function setDynamicEvents(
   el: HTMLElement,
-  dynamicEvents: Record<string, () => undefined | ((...args: any[]) => any)>,
+  events: Record<string, (...args: any[]) => any>,
 ) {
-  for (const [event, eventHandler] of Object.entries(dynamicEvents)) {
-    on(el, event, eventHandler, { effect: true })
+  for (const [event, eventHandler] of Object.entries(events)) {
+    on(el, event, () => eventHandler, { effect: true })
   }
 }
