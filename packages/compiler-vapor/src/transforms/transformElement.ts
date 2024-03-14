@@ -29,8 +29,7 @@ export const isReservedProp = /*#__PURE__*/ makeMap(
 
 export const transformElement: NodeTransform = (node, context) => {
   return function postTransformElement() {
-    node = context.node
-
+    ;({ node } = context)
     if (
       !(
         node.type === NodeTypes.ELEMENT &&
@@ -41,37 +40,90 @@ export const transformElement: NodeTransform = (node, context) => {
       return
     }
 
-    const { tag, props } = node
-    const isComponent = node.tagType === ElementTypes.COMPONENT
+    const { tag, tagType } = node
+    const isComponent = tagType === ElementTypes.COMPONENT
+    const propsResult = buildProps(
+      node,
+      context as TransformContext<ElementNode>,
+    )
 
-    context.template += `<${tag}`
-    if (props.length) {
-      buildProps(
-        node,
-        context as TransformContext<ElementNode>,
-        undefined,
-        isComponent,
-      )
-    }
-    const { scopeId } = context.options
-    if (scopeId) {
-      context.template += ` ${scopeId}`
-    }
-    context.template += `>` + context.childrenTemplate.join('')
+    ;(isComponent ? transformComponentElement : transformNativeElement)(
+      tag,
+      propsResult,
+      context,
+    )
+  }
+}
 
-    // TODO remove unnecessary close tag, e.g. if it's the last element of the template
-    if (!isVoidTag(tag)) {
-      context.template += `</${tag}>`
+function transformComponentElement(
+  tag: string,
+  propsResult: ReturnType<typeof buildProps>,
+  context: TransformContext,
+) {
+  const { bindingMetadata } = context.options
+  const resolve = !bindingMetadata[tag]
+  context.registerOperation({
+    type: IRNodeTypes.CREATE_COMPONENT_NODE,
+    id: context.reference(),
+    tag,
+    props: [],
+    resolve,
+  })
+}
+
+function transformNativeElement(
+  tag: string,
+  propsResult: ReturnType<typeof buildProps>,
+  context: TransformContext,
+) {
+  const { scopeId } = context.options
+
+  context.template += `<${tag}`
+  if (scopeId) context.template += ` ${scopeId}`
+
+  if (propsResult[0] /* dynamic props */) {
+    const [, dynamicArgs, expressions] = propsResult
+    context.registerEffect(expressions, [
+      {
+        type: IRNodeTypes.SET_DYNAMIC_PROPS,
+        element: context.reference(),
+        props: dynamicArgs,
+      },
+    ])
+  } else {
+    for (const prop of propsResult[1]) {
+      const { key, values } = prop
+      if (key.isStatic && values.length === 1 && values[0].isStatic) {
+        context.template += ` ${key.content}`
+        if (values[0].content) context.template += `="${values[0].content}"`
+      } else {
+        context.registerEffect(values, [
+          {
+            type: IRNodeTypes.SET_PROP,
+            element: context.reference(),
+            prop,
+          },
+        ])
+      }
     }
+  }
+
+  context.template += `>` + context.childrenTemplate.join('')
+  // TODO remove unnecessary close tag, e.g. if it's the last element of the template
+  if (!isVoidTag(tag)) {
+    context.template += `</${tag}>`
   }
 }
 
 function buildProps(
   node: ElementNode,
   context: TransformContext<ElementNode>,
-  props: (VaporDirectiveNode | AttributeNode)[] = node.props as any,
-  isComponent: boolean,
-) {
+):
+  | [dynamic: true, props: IRProps[], expressions: SimpleExpressionNode[]]
+  | [dynamic: false, props: IRProp[]] {
+  const props = node.props as (VaporDirectiveNode | AttributeNode)[]
+  if (props.length === 0) return [false, []]
+
   const dynamicArgs: IRProps[] = []
   const dynamicExpr: SimpleExpressionNode[] = []
   let results: DirectiveTransformResult[] = []
@@ -112,31 +164,11 @@ function buildProps(
   if (dynamicArgs.length || results.some(({ key }) => !key.isStatic)) {
     // take rest of props as dynamic props
     pushMergeArg()
-    context.registerEffect(dynamicExpr, [
-      {
-        type: IRNodeTypes.SET_DYNAMIC_PROPS,
-        element: context.reference(),
-        props: dynamicArgs,
-      },
-    ])
-  } else {
-    const irProps = dedupeProperties(results)
-    for (const prop of irProps) {
-      const { key, values } = prop
-      if (key.isStatic && values.length === 1 && values[0].isStatic) {
-        context.template += ` ${key.content}`
-        if (values[0].content) context.template += `="${values[0].content}"`
-      } else {
-        context.registerEffect(values, [
-          {
-            type: IRNodeTypes.SET_PROP,
-            element: context.reference(),
-            prop,
-          },
-        ])
-      }
-    }
+    return [true, dynamicArgs, dynamicExpr]
   }
+
+  const irProps = dedupeProperties(results)
+  return [false, irProps]
 }
 
 function transformProp(

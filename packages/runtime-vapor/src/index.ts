@@ -62,7 +62,6 @@ export {
 } from './apiWatch'
 export {
   withDirectives,
-  resolveDirective,
   type Directive,
   type DirectiveBinding,
   type DirectiveHook,
@@ -105,6 +104,9 @@ export {
 } from './apiLifecycle'
 export { createIf } from './apiCreateIf'
 export { createFor } from './apiCreateFor'
+export { createComponent } from './apiCreateComponent'
+
+export { resolveComponent, resolveDirective } from './helpers/resolveAssets'
 
 // **Internal** DOM-only runtime directive helpers
 export {
