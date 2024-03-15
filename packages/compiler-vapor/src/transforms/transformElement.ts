@@ -58,18 +58,18 @@ export const transformElement: NodeTransform = (node, context) => {
 
 function transformComponentElement(
   tag: string,
-  propsResult: ReturnType<typeof buildProps>,
+  propsResult: PropsResult,
   context: TransformContext,
 ) {
   const { bindingMetadata } = context.options
   const resolve = !bindingMetadata[tag]
   context.dynamic.flags |= DynamicFlag.NON_TEMPLATE | DynamicFlag.INSERT
+
   context.registerOperation({
     type: IRNodeTypes.CREATE_COMPONENT_NODE,
     id: context.reference(),
     tag,
-    // TODO
-    props: [],
+    props: propsResult[0] ? propsResult[1] : [propsResult[1]],
     resolve,
   })
 }
@@ -118,12 +118,14 @@ function transformNativeElement(
   }
 }
 
+export type PropsResult =
+  | [dynamic: true, props: IRProps[], expressions: SimpleExpressionNode[]]
+  | [dynamic: false, props: IRProp[]]
+
 function buildProps(
   node: ElementNode,
   context: TransformContext<ElementNode>,
-):
-  | [dynamic: true, props: IRProps[], expressions: SimpleExpressionNode[]]
-  | [dynamic: false, props: IRProp[]] {
+): PropsResult {
   const props = node.props as (VaporDirectiveNode | AttributeNode)[]
   if (props.length === 0) return [false, []]
 

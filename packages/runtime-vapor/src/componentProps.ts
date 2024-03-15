@@ -9,6 +9,7 @@ import {
   isArray,
   isFunction,
 } from '@vue/shared'
+import { shallowReactive } from '@vue/reactivity'
 import { warn } from './warning'
 import {
   type Component,
@@ -71,11 +72,9 @@ export type NormalizedPropsOptions =
   | []
 
 type StaticProps = Record<string, () => unknown>
-type RestProps = () => Data
-export type RawProps =
-  | [staticProps?: StaticProps, restProps?: RestProps]
-  | StaticProps
-  | null
+type DynamicProps = () => Data
+export type NormalizedRawProps = Array<StaticProps | DynamicProps>
+export type RawProps = NormalizedRawProps | StaticProps | null
 
 export function initProps(
   instance: ComponentInternalInstance,
@@ -83,48 +82,40 @@ export function initProps(
   isStateful: boolean,
 ) {
   const props: Data = {}
-  const attrs: Data = {}
 
-  let staticProps: StaticProps | undefined
-  let restProps: (() => Data) | undefined
-
-  if (rawProps) {
-    if (isArray(rawProps)) {
-      ;[staticProps, restProps] = rawProps
-    } else {
-      staticProps = rawProps
-    }
-  }
+  if (!rawProps) rawProps = []
+  else if (!isArray(rawProps)) rawProps = [rawProps]
+  instance.rawProps = rawProps
 
   const [options, needCastKeys] = instance.propsOptions
 
-  if (staticProps) {
-    for (const key in staticProps) {
-      registerProp(key, staticProps[key])
-    }
-  }
-
-  // ensure all declared prop keys are present
   if (options) {
-    for (const key in options) {
-      if (!(key in props)) {
-        if (restProps) {
-          const getter = () => {
-            const rest = restProps!()
-            return key in rest ? rest[key] : rest[hyphenate(key)]
-          }
-          registerProp(key, getter)
+    const hasDynamicProps = rawProps.length > 1
+    if (hasDynamicProps) {
+      for (const key in options) {
+        const getter = () =>
+          resolveDynamicProp(rawProps as NormalizedRawProps, key)
+        registerProp(key, getter, true)
+      }
+    } else {
+      for (const key in options) {
+        const rawKey = getRawKey(rawProps[0] as StaticProps, key)
+        if (rawKey) {
+          registerProp(key, (rawProps[0] as StaticProps)[rawKey])
         } else {
-          registerProp(key, () => undefined, true)
+          registerProp(key, undefined, false, true)
         }
       }
     }
-
-    // validation
-    if (__DEV__) {
-      validateProps(staticProps, restProps, props, options)
-    }
   }
+
+  // validation
+  if (__DEV__) {
+    validateProps(rawProps, props, options || {})
+  }
+
+  const attrs: Data = (instance.attrs = shallowReactive({}))
+  patchAttrs(instance)
 
   if (isStateful) {
     instance.props = props
@@ -132,40 +123,111 @@ export function initProps(
     // functional w/ optional props, props === attrs
     instance.props = instance.propsOptions === EMPTY_ARR ? attrs : props
   }
-  instance.attrs = attrs
 
-  function registerProp(rawKey: string, getter: () => any, isStatic?: boolean) {
+  function registerProp(
+    rawKey: string,
+    getter: () => DynamicPropResult,
+    isDynamic: true,
+    isAbsent?: boolean,
+  ): void
+  function registerProp(
+    rawKey: string,
+    getter?: () => any,
+    isDynamic?: false,
+    isAbsent?: boolean,
+  ): void
+  function registerProp(
+    rawKey: string,
+    getter?: (() => unknown) | (() => DynamicPropResult),
+    isDynamic?: boolean,
+    isAbsent?: boolean,
+  ) {
     const key = camelize(rawKey)
-    if (options && hasOwn(options, key)) {
-      const getterWithCast =
-        needCastKeys && needCastKeys.includes(key)
-          ? () =>
-              resolvePropValue(
-                options!,
-                props,
-                rawKey,
-                getter(),
-                instance,
-                (!rawProps || !hasOwn(rawProps, rawKey)) &&
-                  (!restProps || !hasOwn(restProps(), rawKey)),
-              )
-          : getter
+    if (key in props) return
 
-      if (isStatic) {
-        props[key] = getterWithCast()
-      } else {
-        Object.defineProperty(props, key, {
-          get: getterWithCast,
-          enumerable: true,
-        })
-      }
-    } else if (!isEmitListener(instance.emitsOptions, rawKey)) {
-      Object.defineProperty(attrs, rawKey, {
-        get: getter,
+    const needCast = needCastKeys && needCastKeys.includes(key)
+    const withCast = (value: unknown, absent?: boolean) =>
+      resolvePropValue(options!, props, key, value, instance, absent)
+
+    if (isAbsent) {
+      props[key] = needCast ? withCast(undefined, true) : undefined
+    } else {
+      const get: () => unknown = isDynamic
+        ? needCast
+          ? () => withCast(...(getter!() as DynamicPropResult))
+          : () => (getter!() as DynamicPropResult)[0]
+        : needCast
+          ? () => withCast(getter!())
+          : getter!
+
+      Object.defineProperty(props, key, {
+        get,
         enumerable: true,
       })
     }
   }
+}
+
+export function patchAttrs(instance: ComponentInternalInstance) {
+  const attrs = instance.attrs
+  const options = instance.propsOptions[0]
+
+  const keys = new Set<string>()
+  for (const props of Array.from(instance.rawProps).reverse()) {
+    if (isFunction(props)) {
+      const resolved = props()
+      for (const rawKey in resolved) {
+        registerAttr(rawKey, () => resolved[rawKey])
+      }
+    } else {
+      for (const rawKey in props) {
+        registerAttr(rawKey, props[rawKey])
+      }
+    }
+  }
+
+  for (const key in attrs) {
+    if (!keys.has(key)) {
+      delete attrs[key]
+    }
+  }
+
+  function registerAttr(key: string, getter: () => unknown) {
+    if (
+      (!options || !(key in options)) &&
+      !isEmitListener(instance.emitsOptions, key)
+    ) {
+      keys.add(key)
+      if (key in attrs) return
+      Object.defineProperty(attrs, key, {
+        get: getter,
+        enumerable: true,
+        configurable: true,
+      })
+    }
+  }
+}
+
+function getRawKey(obj: Data, key: string) {
+  return Object.keys(obj).find(k => camelize(k) === key)
+}
+
+type DynamicPropResult = [value: unknown, absent: boolean]
+function resolveDynamicProp(
+  rawProps: NormalizedRawProps,
+  key: string,
+): DynamicPropResult {
+  for (const props of Array.from(rawProps).reverse()) {
+    if (isFunction(props)) {
+      const resolved = props()
+      const rawKey = getRawKey(resolved, key)
+      if (rawKey) return [resolved[rawKey], false]
+    } else {
+      const rawKey = getRawKey(props, key)
+      if (rawKey) return [props[rawKey](), false]
+    }
+  }
+  return [undefined, true]
 }
 
 function resolvePropValue(
@@ -174,7 +236,7 @@ function resolvePropValue(
   key: string,
   value: unknown,
   instance: ComponentInternalInstance,
-  isAbsent: boolean,
+  isAbsent?: boolean,
 ) {
   const opt = options[key]
   if (opt != null) {
@@ -291,23 +353,26 @@ function getTypeIndex(
  * dev only
  */
 function validateProps(
-  staticProps: StaticProps | undefined,
-  restProps: RestProps | undefined,
+  rawProps: NormalizedRawProps,
   props: Data,
   options: NormalizedProps,
 ) {
+  const presentKeys: string[] = []
+  for (const props of rawProps) {
+    presentKeys.push(...Object.keys(isFunction(props) ? props() : props))
+  }
+
   for (const key in options) {
     const opt = options[key]
-    const found =
-      (staticProps && findKey(staticProps, key)) ||
-      (restProps && findKey(restProps(), key))
-
-    if (opt != null) validateProp(key, props[key], opt, props, !found)
+    if (opt != null)
+      validateProp(
+        key,
+        props[key],
+        opt,
+        props,
+        !presentKeys.some(k => camelize(k) === key),
+      )
   }
-}
-
-function findKey(obj: Data, key: string) {
-  return Object.keys(obj).find(k => k !== '__rest' && camelize(k) === key)
 }
 
 /**

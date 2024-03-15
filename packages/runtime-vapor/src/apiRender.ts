@@ -87,6 +87,10 @@ function mountComponent(
   // hook: mounted
   queuePostRenderEffect(() => {
     invokeDirectiveHook(instance, 'mounted')
+    // TODO
+    for (const com of instance.comps) {
+      com.isMounted = true
+    }
     m && invokeArrayFns(m)
   })
   reset()

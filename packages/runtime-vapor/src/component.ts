@@ -5,6 +5,7 @@ import type { DirectiveBinding } from './directives'
 import {
   type ComponentPropsOptions,
   type NormalizedPropsOptions,
+  type NormalizedRawProps,
   type RawProps,
   initProps,
   normalizePropsOptions,
@@ -48,6 +49,7 @@ export interface ComponentInternalInstance {
   comps: Set<ComponentInternalInstance>
   dirs: Map<Node, DirectiveBinding[]>
 
+  rawProps: NormalizedRawProps
   propsOptions: NormalizedPropsOptions
   emitsOptions: ObjectEmitsOptions | null
 
@@ -156,6 +158,7 @@ export function createComponentInstance(
     dirs: new Map(),
 
     // resolved props and emits options
+    rawProps: null!, // set later
     propsOptions: normalizePropsOptions(component),
     emitsOptions: normalizeEmitsOptions(component),
 

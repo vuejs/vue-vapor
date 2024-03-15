@@ -178,7 +178,7 @@ export interface CreateComponentIRNode extends BaseIRNode {
   type: IRNodeTypes.CREATE_COMPONENT_NODE
   id: number
   tag: string
-  props: IRProps
+  props: IRProps[]
   // TODO slots
 
   resolve: boolean
