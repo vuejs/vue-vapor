@@ -100,7 +100,12 @@ export {
   onErrorCaptured,
   // onServerPrefetch,
 } from './apiLifecycle'
-export { createVaporApp, type App } from './apiCreateApp'
+export {
+  createVaporApp,
+  type App,
+  type AppConfig,
+  type AppContext,
+} from './apiCreateVaporApp'
 export { createIf } from './apiCreateIf'
 export { createFor } from './apiCreateFor'
 export { createComponent } from './apiCreateComponent'

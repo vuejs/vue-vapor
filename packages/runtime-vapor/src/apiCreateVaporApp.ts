@@ -18,10 +18,24 @@ export function createVaporApp(
     rootProps = null
   }
 
+  const context = createAppContext()
   let instance: ComponentInternalInstance
 
   const app: App = {
     version,
+
+    get config() {
+      return context.config
+    },
+
+    set config(v) {
+      if (__DEV__) {
+        warn(
+          `app.config cannot be replaced. Modify individual options instead.`,
+        )
+      }
+    },
+
     mount(rootContainer): any {
       if (!instance) {
         instance = createComponentInstance(rootComponent, rootProps)
@@ -49,11 +63,41 @@ export function createVaporApp(
   return app
 }
 
+function createAppContext(): AppContext {
+  return {
+    app: null as any,
+    config: {
+      errorHandler: undefined,
+      warnHandler: undefined,
+    },
+  }
+}
+
 export interface App {
   version: string
+  config: AppConfig
+
   mount(
     rootContainer: ParentNode | string,
     isHydrate?: boolean,
   ): ComponentInternalInstance
   unmount(): void
+}
+
+export interface AppConfig {
+  errorHandler?: (
+    err: unknown,
+    instance: ComponentInternalInstance | null,
+    info: string,
+  ) => void
+  warnHandler?: (
+    msg: string,
+    instance: ComponentInternalInstance | null,
+    trace: string,
+  ) => void
+}
+
+export interface AppContext {
+  app: App // for devtools
+  config: AppConfig
 }
