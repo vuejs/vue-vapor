@@ -1,9 +1,5 @@
 // NOTE: This test is implemented based on the case of `runtime-core/__test__/componentProps.spec.ts`.
 
-// NOTE: not supported
-// mixins
-// caching
-
 import { setCurrentInstance } from '../src/component'
 import {
   defineComponent,
@@ -18,7 +14,7 @@ import { makeRender } from './_utils'
 
 const define = makeRender<any>()
 
-describe('component props (vapor)', () => {
+describe('component: props', () => {
   test('stateful', () => {
     let props: any
     let attrs: any
@@ -33,10 +29,10 @@ describe('component props (vapor)', () => {
     })
 
     render({
-      get fooBar() {
+      fooBar() {
         return 1
       },
-      get bar() {
+      bar() {
         return 2
       },
     })
@@ -45,13 +41,13 @@ describe('component props (vapor)', () => {
 
     // test passing kebab-case and resolving to camelCase
     render({
-      get ['foo-bar']() {
+      ['foo-bar']() {
         return 2
       },
-      get bar() {
+      bar() {
         return 3
       },
-      get baz() {
+      baz() {
         return 4
       },
     })
@@ -61,16 +57,16 @@ describe('component props (vapor)', () => {
 
     // test updating kebab-case should not delete it (#955)
     render({
-      get ['foo-bar']() {
+      ['foo-bar']() {
         return 3
       },
-      get bar() {
+      bar() {
         return 3
       },
-      get baz() {
+      baz() {
         return 4
       },
-      get barBaz() {
+      barBaz() {
         return 5
       },
     })
@@ -80,7 +76,7 @@ describe('component props (vapor)', () => {
     expect(attrs.baz).toEqual(4)
 
     render({
-      get qux() {
+      qux() {
         return 5
       },
     })
@@ -106,10 +102,10 @@ describe('component props (vapor)', () => {
     Comp.props = ['foo']
 
     render({
-      get foo() {
+      foo() {
         return 1
       },
-      get bar() {
+      bar() {
         return 2
       },
     })
@@ -117,13 +113,13 @@ describe('component props (vapor)', () => {
     expect(attrs.bar).toEqual(2)
 
     render({
-      get foo() {
+      foo() {
         return 2
       },
-      get bar() {
+      bar() {
         return 3
       },
-      get baz() {
+      baz() {
         return 4
       },
     })
@@ -132,7 +128,7 @@ describe('component props (vapor)', () => {
     expect(attrs.baz).toEqual(4)
 
     render({
-      get qux() {
+      qux() {
         return 5
       },
     })
@@ -153,7 +149,7 @@ describe('component props (vapor)', () => {
     })
 
     render({
-      get foo() {
+      foo() {
         return 1
       },
     })
@@ -161,7 +157,7 @@ describe('component props (vapor)', () => {
     expect(attrs.foo).toEqual(1)
 
     render({
-      get foo() {
+      foo() {
         return 2
       },
     })
@@ -186,9 +182,9 @@ describe('component props (vapor)', () => {
 
     render({
       // absent should cast to false
-      bar: '', // empty string should cast to true
-      baz: 'baz', // same string should cast to true
-      qux: 'ok', // other values should be left in-tact (but raise warning)
+      bar: () => '', // empty string should cast to true
+      baz: () => 'baz', // same string should cast to true
+      qux: () => 'ok', // other values should be left in-tact (but raise warning)
     })
 
     expect(props.foo).toBe(false)
@@ -222,60 +218,57 @@ describe('component props (vapor)', () => {
     })
 
     render({
-      get foo() {
+      foo() {
         return 2
       },
     })
     expect(props.foo).toBe(2)
-    // const prevBar = props.bar
-    props.bar
     expect(props.bar).toEqual({ a: 1 })
     expect(props.baz).toEqual(defaultBaz)
-    // expect(defaultFn).toHaveBeenCalledTimes(1) // failed: (caching is not supported)
-    expect(defaultFn).toHaveBeenCalledTimes(3)
+    expect(defaultFn).toHaveBeenCalledTimes(1)
     expect(defaultBaz).toHaveBeenCalledTimes(0)
 
     // #999: updates should not cause default factory of unchanged prop to be
     // called again
     render({
-      get foo() {
+      foo() {
         return 3
       },
     })
     expect(props.foo).toBe(3)
     expect(props.bar).toEqual({ a: 1 })
     // expect(props.bar).toBe(prevBar) // failed: (caching is not supported)
-    // expect(defaultFn).toHaveBeenCalledTimes(1) // failed: caching is not supported (called 3 times)
+    // expect(defaultFn).toHaveBeenCalledTimes(1) // failed: caching is not supported (called 2 times)
 
     render({
-      get bar() {
+      bar() {
         return { b: 2 }
       },
     })
     expect(props.foo).toBe(1)
     expect(props.bar).toEqual({ b: 2 })
-    // expect(defaultFn).toHaveBeenCalledTimes(1) // failed: caching is not supported (called 3 times)
+    // expect(defaultFn).toHaveBeenCalledTimes(1) // failed: caching is not supported (called 2 times)
 
     render({
-      get foo() {
+      foo() {
         return 3
       },
-      get bar() {
+      bar() {
         return { b: 3 }
       },
     })
     expect(props.foo).toBe(3)
     expect(props.bar).toEqual({ b: 3 })
-    // expect(defaultFn).toHaveBeenCalledTimes(1) // failed: caching is not supported (called 3 times)
+    // expect(defaultFn).toHaveBeenCalledTimes(1) // failed: caching is not supported (called 2 times)
 
     render({
-      get bar() {
+      bar() {
         return { b: 4 }
       },
     })
     expect(props.foo).toBe(1)
     expect(props.bar).toEqual({ b: 4 })
-    // expect(defaultFn).toHaveBeenCalledTimes(1) // failed: caching is not supported (called 3 times)
+    // expect(defaultFn).toHaveBeenCalledTimes(1) // failed: caching is not supported (called 2 times)
   })
 
   test.todo('using inject in default value factory', () => {
@@ -309,10 +302,10 @@ describe('component props (vapor)', () => {
         const n0 = t0()
         renderChild(
           {
-            get foo() {
+            foo() {
               return _ctx.foo
             },
-            get id() {
+            id() {
               return _ctx.id
             },
           },
@@ -345,10 +338,10 @@ describe('component props (vapor)', () => {
       })
 
       const props = {
-        get foo() {
+        foo() {
           return 1
         },
-        get bar() {
+        bar() {
           return 2
         },
       }
@@ -401,16 +394,16 @@ describe('component props (vapor)', () => {
             return n0
           },
         }).render!({
-          get foo() {
+          foo() {
             return 1
           },
-          get bar() {
+          bar() {
             return 2
           },
         })
 
         expect(
-          `Set operation on key "bar" failed: target is readonly.`,
+          `Set operation on key "bar" failed: taris readonly.`,
         ).toHaveBeenWarnedLast()
         expect(mockFn).toHaveBeenCalledWith(2)
       },
@@ -450,7 +443,7 @@ describe('component props (vapor)', () => {
         return () => null
       },
     }).render({
-      get ['foo-bar']() {
+      ['foo-bar']() {
         return 'hello'
       },
     })
@@ -472,7 +465,7 @@ describe('component props (vapor)', () => {
         return n0
       },
     }).render({
-      get foo() {
+      foo() {
         return BigInt(BigInt(100000111)) + BigInt(2000000000) * BigInt(30000000)
       },
     })
@@ -522,11 +515,11 @@ describe('component props (vapor)', () => {
     })
 
     expect(() => {
-      render({ foo: () => {} })
+      render({ foo: () => () => {} })
     }).not.toThrow()
 
     expect(() => {
-      render({ foo: null })
+      render({ foo: () => null })
     }).not.toThrow()
   })
 
@@ -548,7 +541,7 @@ describe('component props (vapor)', () => {
     })
 
     let attrs: any = {
-      get foo() {
+      foo() {
         return undefined
       },
     }
@@ -567,7 +560,7 @@ describe('component props (vapor)', () => {
         type: String,
       },
     }
-    define({ props, render() {} }).render({ msg: 'test' })
+    define({ props, render() {} }).render({ msg: () => 'test' })
 
     expect(Object.keys(props.msg).length).toBe(1)
   })

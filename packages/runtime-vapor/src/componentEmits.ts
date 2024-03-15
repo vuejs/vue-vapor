@@ -45,6 +45,8 @@ export function emit(
   ...rawArgs: any[]
 ) {
   if (instance.isUnmounted) return
+  // TODO
+  // @ts-expect-error
   const { rawProps } = instance
 
   let args = rawArgs

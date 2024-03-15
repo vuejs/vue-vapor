@@ -52,7 +52,7 @@ export function createVaporApp(
 export interface App {
   version: string
   mount(
-    rootContainer: Element | string,
+    rootContainer: ParentNode | string,
     isHydrate?: boolean,
   ): ComponentInternalInstance
   unmount(): void

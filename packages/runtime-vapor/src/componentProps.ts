@@ -115,7 +115,7 @@ export function initProps(
           }
           registerProp(key, getter)
         } else {
-          props[key] = undefined
+          registerProp(key, () => undefined, true)
         }
       }
     }
@@ -134,7 +134,7 @@ export function initProps(
   }
   instance.attrs = attrs
 
-  function registerProp(rawKey: string, getter: () => any) {
+  function registerProp(rawKey: string, getter: () => any, isStatic?: boolean) {
     const key = camelize(rawKey)
     if (options && hasOwn(options, key)) {
       const getterWithCast =
@@ -151,10 +151,14 @@ export function initProps(
               )
           : getter
 
-      Object.defineProperty(props, key, {
-        get: getterWithCast,
-        enumerable: true,
-      })
+      if (isStatic) {
+        props[key] = getterWithCast()
+      } else {
+        Object.defineProperty(props, key, {
+          get: getterWithCast,
+          enumerable: true,
+        })
+      }
     } else if (!isEmitListener(instance.emitsOptions, rawKey)) {
       Object.defineProperty(attrs, rawKey, {
         get: getter,
