@@ -1,14 +1,16 @@
-import type { Data } from '@vue/shared'
 import {
   type Component,
   createComponentInstance,
   currentInstance,
-  setupComponent,
 } from './component'
+import { setupComponent } from './apiRender'
 
-export function createComponent(comp: Component, props: Data = {}) {
+export function createComponent(
+  comp: Component,
+  rawProps: Record<string, () => unknown> | null = {},
+) {
   const current = currentInstance!
-  const instance = createComponentInstance(comp, props)
+  const instance = createComponentInstance(comp, rawProps)
   setupComponent(instance)
 
   // register sub-component with current component for lifecycle management

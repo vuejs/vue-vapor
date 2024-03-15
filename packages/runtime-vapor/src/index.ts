@@ -46,7 +46,6 @@ export {
   type FunctionalComponent,
   type SetupFn,
 } from './component'
-export { render, unmountComponent } from './render'
 export { renderEffect, renderWatch } from './renderWatch'
 export {
   watch,
@@ -101,12 +100,10 @@ export {
   onErrorCaptured,
   // onServerPrefetch,
 } from './apiLifecycle'
+export { createVaporApp } from './apiCreateApp'
 export { createIf } from './apiCreateIf'
 export { createFor } from './apiCreateFor'
 export { createComponent } from './apiCreateComponent'
-
-// TODO remove
-export { test_createComponent } from './component'
 
 export { resolveComponent, resolveDirective } from './helpers/resolveAssets'
 

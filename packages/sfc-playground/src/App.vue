@@ -120,10 +120,9 @@ watch(
       files.value['src/index.html'] = new File(
         'src/index.html',
         `<script type="module">
-        import { test_createComponent, render } from 'vue/vapor'
+        import { createVaporApp } from 'vue/vapor'
         import App from './App.vue'
-        const instance = test_createComponent(App, {})
-        render(instance, '#app')` +
+        createVaporApp(App).mount('#app')` +
           '<' +
           '/script>' +
           `<div id="app"></div>`,

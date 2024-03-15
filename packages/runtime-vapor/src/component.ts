@@ -1,7 +1,6 @@
-import { EffectScope, proxyRefs } from '@vue/reactivity'
-
-import { EMPTY_OBJ, isArray, isFunction, isObject } from '@vue/shared'
-import { type Block, fragmentKey } from './render'
+import { EffectScope } from '@vue/reactivity'
+import { EMPTY_OBJ, isFunction } from '@vue/shared'
+import type { Block } from './apiRender'
 import type { DirectiveBinding } from './directives'
 import {
   type ComponentPropsOptions,
@@ -48,8 +47,6 @@ export interface ComponentInternalInstance {
   comps: Set<ComponentInternalInstance>
   dirs: Map<Node, DirectiveBinding[]>
 
-  rawProps: { [key: string]: any }
-  // normalized options
   propsOptions: NormalizedPropsOptions
   emitsOptions: ObjectEmitsOptions | null
 
@@ -140,7 +137,7 @@ export const unsetCurrentInstance = () => {
 let uid = 0
 export function createComponentInstance(
   component: ObjectComponent | FunctionalComponent,
-  rawProps: Data,
+  rawProps: Record<string, () => unknown> | null,
 ): ComponentInternalInstance {
   const instance: ComponentInternalInstance = {
     uid: uid++,
@@ -157,7 +154,6 @@ export function createComponentInstance(
     comps: new Set(),
     dirs: new Map(),
 
-    rawProps,
     // resolved props and emits options
     propsOptions: normalizePropsOptions(component),
     emitsOptions: normalizeEmitsOptions(component),
@@ -224,56 +220,8 @@ export function createComponentInstance(
      */
     // [VaporLifecycleHooks.SERVER_PREFETCH]: null,
   }
-
-  // TODO init first
   initProps(instance, rawProps, !isFunction(component))
   instance.emit = emit.bind(null, instance)
 
-  return instance
-}
-
-export function setupComponent(instance: ComponentInternalInstance): void {
-  const reset = setCurrentInstance(instance)
-  instance.scope.run(() => {
-    const { component, props, emit, attrs } = instance
-    const ctx = { expose: () => {}, emit, attrs }
-
-    const setupFn = isFunction(component) ? component : component.setup
-    const stateOrNode = setupFn && setupFn(props, ctx)
-
-    let block: Block | undefined
-
-    if (
-      stateOrNode &&
-      (stateOrNode instanceof Node ||
-        isArray(stateOrNode) ||
-        (stateOrNode as any)[fragmentKey])
-    ) {
-      block = stateOrNode as Block
-    } else if (isObject(stateOrNode)) {
-      instance.setupState = proxyRefs(stateOrNode)
-    }
-    if (!block && component.render) {
-      block = component.render(instance.setupState)
-    }
-
-    if (block instanceof DocumentFragment) {
-      block = Array.from(block.childNodes)
-    }
-    if (!block) {
-      // TODO: warn no template
-      block = []
-    }
-    return (instance.block = block)
-  })
-  reset()
-}
-
-export function test_createComponent(
-  component: ObjectComponent | FunctionalComponent,
-  rawProps: Data,
-) {
-  const instance = createComponentInstance(component, rawProps)
-  setupComponent(instance)
   return instance
 }

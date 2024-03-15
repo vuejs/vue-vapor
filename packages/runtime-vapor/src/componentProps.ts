@@ -73,7 +73,7 @@ export type NormalizedPropsOptions = [NormalizedProps, string[]] | []
 
 export function initProps(
   instance: ComponentInternalInstance,
-  rawProps: Data | null,
+  rawProps: Record<string, () => unknown> | null,
   isStateful: boolean,
 ) {
   const props: Data = {}

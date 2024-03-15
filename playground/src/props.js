@@ -1,10 +1,9 @@
 // @ts-check
 import {
-  children,
+  createComponent,
   defineComponent,
   on,
   ref,
-  render as renderComponent,
   setText,
   template,
   watch,
@@ -15,55 +14,26 @@ const t0 = template('<button></button>')
 
 export default defineComponent({
   vapor: true,
-  props: undefined,
-
-  setup(_, {}) {
+  setup() {
     const count = ref(1)
     const handleClick = () => {
       count.value++
     }
 
-    const __returned__ = { count, handleClick }
-
-    Object.defineProperty(__returned__, '__isScriptSetup', {
-      enumerable: false,
-      value: true,
-    })
-
-    return __returned__
-  },
-
-  render(_ctx) {
-    const n0 = t0()
-    const n1 = /** @type {HTMLButtonElement} */ (children(n0, 0))
-    on(n1, 'click', () => _ctx.handleClick)
-    watchEffect(() => {
-      setText(n1, _ctx.count)
-    })
-
-    // TODO: create component fn?
-    // const c0 = createComponent(...)
-    // insert(n0, c0)
-    renderComponent(
-      /** @type {any} */ (child),
-
-      // TODO: proxy??
-      {
+    return (() => {
+      const n0 = /** @type {HTMLButtonElement} */ (t0())
+      on(n0, 'click', () => handleClick)
+      watchEffect(() => setText(n0, count.value))
+      /** @type {any} */
+      const n1 = createComponent(child, {
         /* <Comp :count="count" /> */
-        get count() {
-          return _ctx.count
-        },
+        count: () => count.value,
 
         /* <Comp :inline-double="count * 2" /> */
-        get inlineDouble() {
-          return _ctx.count * 2
-        },
-      },
-      // @ts-expect-error TODO
-      n0[0],
-    )
-
-    return n0
+        inlineDouble: () => count.value * 2,
+      })
+      return [n0, n1]
+    })()
   },
 })
 
@@ -85,14 +55,13 @@ const child = defineComponent({
       () => props.inlineDouble,
       v => console.log('inlineDouble changed', v),
     )
-  },
 
-  render(_ctx) {
-    const n0 = t1()
-    const n1 = children(n0, 0)
-    watchEffect(() => {
-      setText(n1, void 0, _ctx.count + ' * 2 = ' + _ctx.inlineDouble)
-    })
-    return n0
+    return (() => {
+      const n0 = /** @type {HTMLParagraphElement} */ (t1())
+      watchEffect(() => {
+        setText(n0, props.count + ' * 2 = ' + props.inlineDouble)
+      })
+      return n0
+    })()
   },
 })
