@@ -5,6 +5,7 @@ import type { DirectiveBinding } from './directives'
 import {
   type ComponentPropsOptions,
   type NormalizedPropsOptions,
+  type RawProps,
   initProps,
   normalizePropsOptions,
 } from './componentProps'
@@ -137,7 +138,7 @@ export const unsetCurrentInstance = () => {
 let uid = 0
 export function createComponentInstance(
   component: ObjectComponent | FunctionalComponent,
-  rawProps: Record<string, () => unknown> | null,
+  rawProps: RawProps | null,
 ): ComponentInternalInstance {
   const instance: ComponentInternalInstance = {
     uid: uid++,

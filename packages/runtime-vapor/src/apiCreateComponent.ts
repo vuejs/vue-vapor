@@ -4,11 +4,9 @@ import {
   currentInstance,
 } from './component'
 import { setupComponent } from './apiRender'
+import type { RawProps } from './componentProps'
 
-export function createComponent(
-  comp: Component,
-  rawProps: Record<string, () => unknown> | null = {},
-) {
+export function createComponent(comp: Component, rawProps: RawProps) {
   const current = currentInstance!
   const instance = createComponentInstance(comp, rawProps)
   setupComponent(instance)

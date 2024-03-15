@@ -1,4 +1,4 @@
-import { type Data, isObject } from '@vue/shared'
+import { isObject } from '@vue/shared'
 import {
   type Component,
   type ComponentInternalInstance,
@@ -7,10 +7,11 @@ import {
 import { warn } from './warning'
 import { version } from '.'
 import { render, setupComponent, unmountComponent } from './apiRender'
+import type { RawProps } from './componentProps'
 
 export function createVaporApp(
   rootComponent: Component,
-  rootProps: Data | null | undefined = null,
+  rootProps: RawProps | null = null,
 ): App {
   if (rootProps != null && !isObject(rootProps)) {
     __DEV__ && warn(`root props passed to app.mount() must be an object.`)

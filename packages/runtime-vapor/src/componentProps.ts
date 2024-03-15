@@ -1,5 +1,3 @@
-// NOTE: runtime-core/src/componentProps.ts
-
 import {
   type Data,
   EMPTY_ARR,
@@ -11,7 +9,6 @@ import {
   isArray,
   isFunction,
 } from '@vue/shared'
-import { shallowReactive, shallowReadonly, toRaw } from '@vue/reactivity'
 import { warn } from './warning'
 import {
   type Component,
@@ -69,108 +66,102 @@ type NormalizedProp =
     })
 
 export type NormalizedProps = Record<string, NormalizedProp>
-export type NormalizedPropsOptions = [NormalizedProps, string[]] | []
+export type NormalizedPropsOptions =
+  | [props: NormalizedProps, needCastKeys: string[]]
+  | []
+
+type StaticProps = Record<string, () => unknown>
+type RestProps = () => Data
+export type RawProps =
+  | [staticProps?: StaticProps, restProps?: RestProps]
+  | StaticProps
+  | null
 
 export function initProps(
   instance: ComponentInternalInstance,
-  rawProps: Record<string, () => unknown> | null,
+  rawProps: RawProps,
   isStateful: boolean,
 ) {
   const props: Data = {}
   const attrs: Data = {}
 
-  const [options, needCastKeys] = instance.propsOptions
-  let hasAttrsChanged = false
-  let rawCastValues: Data | undefined
+  let staticProps: StaticProps | undefined
+  let restProps: (() => Data) | undefined
+
   if (rawProps) {
-    for (let key in rawProps) {
-      const valueGetter = () => rawProps[key]
-      let camelKey
-      if (options && hasOwn(options, (camelKey = camelize(key)))) {
-        if (!needCastKeys || !needCastKeys.includes(camelKey)) {
-          // NOTE: must getter
-          // props[camelKey] = value
-          Object.defineProperty(props, camelKey, {
-            get() {
-              return valueGetter()
-            },
-            enumerable: true,
-          })
+    if (isArray(rawProps)) {
+      ;[staticProps, restProps] = rawProps
+    } else {
+      staticProps = rawProps
+    }
+  }
+
+  const [options, needCastKeys] = instance.propsOptions
+
+  if (staticProps) {
+    for (const key in staticProps) {
+      registerProp(key, staticProps[key])
+    }
+  }
+
+  // ensure all declared prop keys are present
+  if (options) {
+    for (const key in options) {
+      if (!(key in props)) {
+        if (restProps) {
+          const getter = () => {
+            const rest = restProps!()
+            return key in rest ? rest[key] : rest[hyphenate(key)]
+          }
+          registerProp(key, getter)
         } else {
-          // NOTE: must getter
-          // ;(rawCastValues || (rawCastValues = {}))[camelKey] = value
-          rawCastValues || (rawCastValues = {})
-          Object.defineProperty(rawCastValues, camelKey, {
-            get() {
-              return valueGetter()
-            },
-            enumerable: true,
-          })
-        }
-      } else if (!isEmitListener(instance.emitsOptions, key)) {
-        // if (!(key in attrs) || value !== attrs[key]) {
-        if (!(key in attrs)) {
-          // NOTE: must getter
-          // attrs[key] = value
-          Object.defineProperty(attrs, key, {
-            get() {
-              return valueGetter()
-            },
-            enumerable: true,
-          })
-          hasAttrsChanged = true
+          props[key] = undefined
         }
       }
     }
-  }
 
-  if (needCastKeys) {
-    const rawCurrentProps = toRaw(props)
-    const castValues = rawCastValues || EMPTY_OBJ
-    for (let i = 0; i < needCastKeys.length; i++) {
-      const key = needCastKeys[i]
-
-      // NOTE: must getter
-      // props[key] = resolvePropValue(
-      //   options!,
-      //   rawCurrentProps,
-      //   key,
-      //   castValues[key],
-      //   instance,
-      //   !hasOwn(castValues, key),
-      // )
-      Object.defineProperty(props, key, {
-        get() {
-          return resolvePropValue(
-            options!,
-            rawCurrentProps,
-            key,
-            castValues[key],
-            instance,
-            !hasOwn(castValues, key),
-          )
-        },
-      })
+    // validation
+    if (__DEV__) {
+      validateProps(staticProps, restProps, props, options)
     }
-  }
-
-  // validation
-  if (__DEV__) {
-    validateProps(rawProps || {}, props, instance)
   }
 
   if (isStateful) {
-    instance.props = shallowReactive(props)
+    instance.props = props
   } else {
-    if (instance.propsOptions === EMPTY_ARR) {
-      instance.props = attrs
-    } else {
-      instance.props = props
-    }
+    // functional w/ optional props, props === attrs
+    instance.props = instance.propsOptions === EMPTY_ARR ? attrs : props
   }
   instance.attrs = attrs
 
-  return hasAttrsChanged
+  function registerProp(rawKey: string, getter: () => any) {
+    const key = camelize(rawKey)
+    if (options && hasOwn(options, key)) {
+      const getterWithCast =
+        needCastKeys && needCastKeys.includes(key)
+          ? () =>
+              resolvePropValue(
+                options!,
+                props,
+                rawKey,
+                getter(),
+                instance,
+                (!rawProps || !hasOwn(rawProps, rawKey)) &&
+                  (!restProps || !hasOwn(restProps(), rawKey)),
+              )
+          : getter
+
+      Object.defineProperty(props, key, {
+        get: getterWithCast,
+        enumerable: true,
+      })
+    } else if (!isEmitListener(instance.emitsOptions, rawKey)) {
+      Object.defineProperty(attrs, rawKey, {
+        get: getter,
+        enumerable: true,
+      })
+    }
+  }
 }
 
 function resolvePropValue(
@@ -223,12 +214,12 @@ function resolvePropValue(
 export function normalizePropsOptions(comp: Component): NormalizedPropsOptions {
   // TODO: cahching?
 
-  const raw = comp.props as any
-  const normalized: NormalizedPropsOptions[0] = {}
+  const raw = comp.props
+  const normalized: NormalizedProps | undefined = {}
   const needCastKeys: NormalizedPropsOptions[1] = []
 
   if (!raw) {
-    return EMPTY_ARR as any
+    return EMPTY_ARR as []
   }
 
   if (isArray(raw)) {
@@ -238,7 +229,7 @@ export function normalizePropsOptions(comp: Component): NormalizedPropsOptions {
         normalized[normalizedKey] = EMPTY_OBJ
       }
     }
-  } else if (raw) {
+  } else {
     for (const key in raw) {
       const normalizedKey = camelize(key)
       if (validatePropName(normalizedKey)) {
@@ -296,23 +287,23 @@ function getTypeIndex(
  * dev only
  */
 function validateProps(
-  rawProps: Data,
+  staticProps: StaticProps | undefined,
+  restProps: RestProps | undefined,
   props: Data,
-  instance: ComponentInternalInstance,
+  options: NormalizedProps,
 ) {
-  const resolvedValues = toRaw(props)
-  const options = instance.propsOptions[0]
   for (const key in options) {
-    let opt = options[key]
-    if (opt == null) continue
-    validateProp(
-      key,
-      resolvedValues[key],
-      opt,
-      __DEV__ ? shallowReadonly(resolvedValues) : resolvedValues,
-      !hasOwn(rawProps, key) && !hasOwn(rawProps, hyphenate(key)),
-    )
+    const opt = options[key]
+    const found =
+      (staticProps && findKey(staticProps, key)) ||
+      (restProps && findKey(restProps(), key))
+
+    if (opt != null) validateProp(key, props[key], opt, props, !found)
   }
+}
+
+function findKey(obj: Data, key: string) {
+  return Object.keys(obj).find(k => k !== '__rest' && camelize(k) === key)
 }
 
 /**
@@ -321,11 +312,11 @@ function validateProps(
 function validateProp(
   name: string,
   value: unknown,
-  prop: PropOptions,
+  option: PropOptions,
   props: Data,
   isAbsent: boolean,
 ) {
-  const { required, validator } = prop
+  const { required, validator } = option
   // required!
   if (required && isAbsent) {
     warn('Missing required prop: "' + name + '"')
