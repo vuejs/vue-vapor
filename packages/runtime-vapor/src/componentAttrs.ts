@@ -1,4 +1,4 @@
-import { isFunction } from '@vue/shared'
+import { camelize, isFunction } from '@vue/shared'
 import type { ComponentInternalInstance } from './component'
 import { isEmitListener } from './componentEmits'
 
@@ -29,7 +29,7 @@ export function patchAttrs(instance: ComponentInternalInstance) {
 
   function registerAttr(key: string, getter: () => unknown) {
     if (
-      (!options || !(key in options)) &&
+      (!options || !(camelize(key) in options)) &&
       !isEmitListener(instance.emitsOptions, key)
     ) {
       keys.add(key)

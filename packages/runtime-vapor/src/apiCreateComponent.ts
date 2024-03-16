@@ -6,7 +6,7 @@ import {
 import { setupComponent } from './apiRender'
 import type { RawProps } from './componentProps'
 
-export function createComponent(comp: Component, rawProps: RawProps) {
+export function createComponent(comp: Component, rawProps: RawProps = null) {
   const current = currentInstance!
   const instance = createComponentInstance(comp, rawProps)
   setupComponent(instance)

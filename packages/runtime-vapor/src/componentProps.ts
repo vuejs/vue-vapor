@@ -101,7 +101,7 @@ export function initProps(
       }
     } else {
       for (const key in options) {
-        const rawKey = getRawKey(rawProps[0] as StaticProps, key)
+        const rawKey = rawProps[0] && getRawKey(rawProps[0] as StaticProps, key)
         if (rawKey) {
           registerProp(
             instance,
@@ -130,7 +130,7 @@ export function initProps(
   }
 
   if (isStateful) {
-    instance.props = props
+    instance.props = /* isSSR ? props :  */ shallowReactive(props)
   } else {
     // functional w/ optional props, props === attrs
     instance.props = instance.propsOptions === EMPTY_ARR ? attrs : props
@@ -287,6 +287,8 @@ export function normalizePropsOptions(comp: Component): NormalizedPropsOptions {
 function validatePropName(key: string) {
   if (key[0] !== '$') {
     return true
+  } else if (__DEV__) {
+    warn(`Invalid prop name: "${key}" is a reserved property.`)
   }
   return false
 }
