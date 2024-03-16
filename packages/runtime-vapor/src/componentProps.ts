@@ -17,7 +17,6 @@ import {
   setCurrentInstance,
 } from './component'
 import { patchAttrs } from './componentAttrs'
-import { watchEffect } from './apiWatch'
 import { createVaporPreScheduler } from './scheduler'
 
 export type ComponentPropsOptions<P = Data> =

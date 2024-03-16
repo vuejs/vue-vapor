@@ -1,5 +1,8 @@
 // NOTE: runtime-core/src/componentEmits.ts
 
+// TODO WIP
+// @ts-nocheck
+
 import {
   EMPTY_OBJ,
   type UnionToIntersection,
