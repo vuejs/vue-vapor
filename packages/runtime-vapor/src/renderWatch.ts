@@ -17,7 +17,6 @@ import {
 import { handleError as handleErrorWithInstance } from './errorHandling'
 import { warn } from './warning'
 import { invokeDirectiveHook } from './directives'
-import { patchAttrs } from './componentProps'
 
 interface RenderWatchOptions {
   immediate?: boolean
@@ -83,8 +82,6 @@ const createMiddleware =
       // beforeUpdate hook
       const isFirstEffect = !instance.isUpdating
       if (isFirstEffect) {
-        // TODO
-        patchAttrs(instance)
         if (bu) {
           invokeArrayFns(bu)
         }

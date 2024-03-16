@@ -9,14 +9,16 @@ import {
   isArray,
   isFunction,
 } from '@vue/shared'
-import { shallowReactive } from '@vue/reactivity'
+import { baseWatch, shallowReactive } from '@vue/reactivity'
 import { warn } from './warning'
 import {
   type Component,
   type ComponentInternalInstance,
   setCurrentInstance,
 } from './component'
-import { isEmitListener } from './componentEmits'
+import { patchAttrs } from './componentAttrs'
+import { watchEffect } from './apiWatch'
+import { createVaporPreScheduler } from './scheduler'
 
 export type ComponentPropsOptions<P = Data> =
   | ComponentObjectPropsOptions<P>
@@ -82,28 +84,34 @@ export function initProps(
   isStateful: boolean,
 ) {
   const props: Data = {}
+  const attrs = (instance.attrs = shallowReactive<Data>({}))
 
   if (!rawProps) rawProps = []
   else if (!isArray(rawProps)) rawProps = [rawProps]
   instance.rawProps = rawProps
 
-  const [options, needCastKeys] = instance.propsOptions
+  const [options] = instance.propsOptions
 
   if (options) {
-    const hasDynamicProps = rawProps.length > 1
+    const hasDynamicProps = rawProps.some(isFunction)
     if (hasDynamicProps) {
       for (const key in options) {
         const getter = () =>
-          resolveDynamicProp(rawProps as NormalizedRawProps, key)
-        registerProp(key, getter, true)
+          getDynamicPropValue(rawProps as NormalizedRawProps, key)
+        registerProp(instance, props, key, getter, true)
       }
     } else {
       for (const key in options) {
         const rawKey = getRawKey(rawProps[0] as StaticProps, key)
         if (rawKey) {
-          registerProp(key, (rawProps[0] as StaticProps)[rawKey])
+          registerProp(
+            instance,
+            props,
+            key,
+            (rawProps[0] as StaticProps)[rawKey],
+          )
         } else {
-          registerProp(key, undefined, false, true)
+          registerProp(instance, props, key, undefined, false, true)
         }
       }
     }
@@ -114,8 +122,9 @@ export function initProps(
     validateProps(rawProps, props, options || {})
   }
 
-  const attrs: Data = (instance.attrs = shallowReactive({}))
-  patchAttrs(instance)
+  baseWatch(() => patchAttrs(instance), undefined, {
+    scheduler: createVaporPreScheduler(instance),
+  })
 
   if (isStateful) {
     instance.props = props
@@ -123,88 +132,39 @@ export function initProps(
     // functional w/ optional props, props === attrs
     instance.props = instance.propsOptions === EMPTY_ARR ? attrs : props
   }
-
-  function registerProp(
-    rawKey: string,
-    getter: () => DynamicPropResult,
-    isDynamic: true,
-    isAbsent?: boolean,
-  ): void
-  function registerProp(
-    rawKey: string,
-    getter?: () => any,
-    isDynamic?: false,
-    isAbsent?: boolean,
-  ): void
-  function registerProp(
-    rawKey: string,
-    getter?: (() => unknown) | (() => DynamicPropResult),
-    isDynamic?: boolean,
-    isAbsent?: boolean,
-  ) {
-    const key = camelize(rawKey)
-    if (key in props) return
-
-    const needCast = needCastKeys && needCastKeys.includes(key)
-    const withCast = (value: unknown, absent?: boolean) =>
-      resolvePropValue(options!, props, key, value, instance, absent)
-
-    if (isAbsent) {
-      props[key] = needCast ? withCast(undefined, true) : undefined
-    } else {
-      const get: () => unknown = isDynamic
-        ? needCast
-          ? () => withCast(...(getter!() as DynamicPropResult))
-          : () => (getter!() as DynamicPropResult)[0]
-        : needCast
-          ? () => withCast(getter!())
-          : getter!
-
-      Object.defineProperty(props, key, {
-        get,
-        enumerable: true,
-      })
-    }
-  }
 }
 
-export function patchAttrs(instance: ComponentInternalInstance) {
-  const attrs = instance.attrs
-  const options = instance.propsOptions[0]
+function registerProp(
+  instance: ComponentInternalInstance,
+  props: Data,
+  rawKey: string,
+  getter?: (() => unknown) | (() => DynamicPropResult),
+  isDynamic?: boolean,
+  isAbsent?: boolean,
+) {
+  const key = camelize(rawKey)
+  if (key in props) return
 
-  const keys = new Set<string>()
-  for (const props of Array.from(instance.rawProps).reverse()) {
-    if (isFunction(props)) {
-      const resolved = props()
-      for (const rawKey in resolved) {
-        registerAttr(rawKey, () => resolved[rawKey])
-      }
-    } else {
-      for (const rawKey in props) {
-        registerAttr(rawKey, props[rawKey])
-      }
-    }
-  }
+  const [options, needCastKeys] = instance.propsOptions
+  const needCast = needCastKeys && needCastKeys.includes(key)
+  const withCast = (value: unknown, absent?: boolean) =>
+    resolvePropValue(options!, props, key, value, instance, absent)
 
-  for (const key in attrs) {
-    if (!keys.has(key)) {
-      delete attrs[key]
-    }
-  }
+  if (isAbsent) {
+    props[key] = needCast ? withCast(undefined, true) : undefined
+  } else {
+    const get: () => unknown = isDynamic
+      ? needCast
+        ? () => withCast(...(getter!() as DynamicPropResult))
+        : () => (getter!() as DynamicPropResult)[0]
+      : needCast
+        ? () => withCast(getter!())
+        : getter!
 
-  function registerAttr(key: string, getter: () => unknown) {
-    if (
-      (!options || !(key in options)) &&
-      !isEmitListener(instance.emitsOptions, key)
-    ) {
-      keys.add(key)
-      if (key in attrs) return
-      Object.defineProperty(attrs, key, {
-        get: getter,
-        enumerable: true,
-        configurable: true,
-      })
-    }
+    Object.defineProperty(props, key, {
+      get,
+      enumerable: true,
+    })
   }
 }
 
@@ -213,7 +173,7 @@ function getRawKey(obj: Data, key: string) {
 }
 
 type DynamicPropResult = [value: unknown, absent: boolean]
-function resolveDynamicProp(
+function getDynamicPropValue(
   rawProps: NormalizedRawProps,
   key: string,
 ): DynamicPropResult {
