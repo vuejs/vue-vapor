@@ -1,6 +1,12 @@
 <script setup lang="ts">
+import {
+  onBeforeMount,
+  onMounted,
+  onBeforeUnmount,
+  onUnmounted,
+  ref,
+} from 'vue/vapor'
 import SubComp from './sub-comp.vue'
-import { ref } from 'vue'
 
 const bar = ref('update')
 const id = ref('id')
@@ -20,6 +26,11 @@ function update() {
 function update2() {
   delete p.value.test
 }
+
+onBeforeMount(() => console.log('root: before mount'))
+onMounted(() => console.log('root: mounted'))
+onBeforeUnmount(() => console.log('root: before unmount'))
+onUnmounted(() => console.log('root: unmounted'))
 </script>
 
 <template>

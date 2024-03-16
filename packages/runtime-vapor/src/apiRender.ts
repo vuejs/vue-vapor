@@ -1,13 +1,10 @@
-import { invokeArrayFns, isArray, isFunction, isObject } from '@vue/shared'
-import {
-  type ComponentInternalInstance,
-  setCurrentInstance,
-  unsetCurrentInstance,
-} from './component'
-import { invokeDirectiveHook } from './directives'
+import { isArray, isFunction, isObject } from '@vue/shared'
+import { type ComponentInternalInstance, setCurrentInstance } from './component'
 import { insert, querySelector, remove } from './dom/element'
 import { flushPostFlushCbs, queuePostRenderEffect } from './scheduler'
 import { proxyRefs } from '@vue/reactivity'
+import { invokeLifecycle } from './componentLifecycle'
+import { VaporLifecycleHooks } from './apiLifecycle'
 
 export const fragmentKey = Symbol(__DEV__ ? `fragmentKey` : ``)
 
@@ -74,44 +71,29 @@ function mountComponent(
   container: ParentNode,
 ) {
   instance.container = container
-  const reset = setCurrentInstance(instance)
-  const { bm, m } = instance
 
   // hook: beforeMount
-  bm && invokeArrayFns(bm)
-  invokeDirectiveHook(instance, 'beforeMount')
+  invokeLifecycle(instance, VaporLifecycleHooks.BEFORE_MOUNT, 'beforeMount')
 
   insert(instance.block!, instance.container)
   instance.isMounted = true
 
   // hook: mounted
-  queuePostRenderEffect(() => {
-    invokeDirectiveHook(instance, 'mounted')
-    // TODO
-    for (const com of instance.comps) {
-      com.isMounted = true
-    }
-    m && invokeArrayFns(m)
-  })
-  reset()
+  invokeLifecycle(instance, VaporLifecycleHooks.MOUNTED, 'mounted', true)
 
   return instance
 }
 
 export function unmountComponent(instance: ComponentInternalInstance) {
-  const { container, block, scope, um, bum } = instance
+  const { container, block, scope } = instance
 
   // hook: beforeUnmount
-  bum && invokeArrayFns(bum)
-  invokeDirectiveHook(instance, 'beforeUnmount')
+  invokeLifecycle(instance, VaporLifecycleHooks.BEFORE_UNMOUNT, 'beforeUnmount')
 
   scope.stop()
   block && remove(block, container)
-  instance.isMounted = false
-  instance.isUnmounted = true
 
   // hook: unmounted
-  invokeDirectiveHook(instance, 'unmounted')
-  um && invokeArrayFns(um)
-  unsetCurrentInstance()
+  invokeLifecycle(instance, VaporLifecycleHooks.UNMOUNTED, 'unmounted', true)
+  queuePostRenderEffect(() => (instance.isUnmounted = true))
 }

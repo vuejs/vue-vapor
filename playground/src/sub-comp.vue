@@ -1,5 +1,12 @@
 <script setup lang="ts">
-import { getCurrentInstance, watchEffect } from 'vue/vapor'
+import {
+  getCurrentInstance,
+  onBeforeMount,
+  onBeforeUnmount,
+  onMounted,
+  onUnmounted,
+  watchEffect,
+} from 'vue/vapor'
 
 const props = defineProps<{
   foo: string
@@ -14,6 +21,11 @@ watchEffect(() => {
 })
 
 const keys = Object.keys
+
+onBeforeMount(() => console.log('sub: before mount'))
+onMounted(() => console.log('sub: mounted'))
+onBeforeUnmount(() => console.log('sub: before unmount'))
+onUnmounted(() => console.log('sub: unmounted'))
 </script>
 
 <template>
