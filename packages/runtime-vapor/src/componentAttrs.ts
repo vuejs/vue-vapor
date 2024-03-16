@@ -7,18 +7,19 @@ export function patchAttrs(instance: ComponentInternalInstance) {
   const options = instance.propsOptions[0]
 
   const keys = new Set<string>()
-  for (const props of Array.from(instance.rawProps).reverse()) {
-    if (isFunction(props)) {
-      const resolved = props()
-      for (const rawKey in resolved) {
-        registerAttr(rawKey, () => resolved[rawKey])
-      }
-    } else {
-      for (const rawKey in props) {
-        registerAttr(rawKey, props[rawKey])
+  if (instance.rawProps.length)
+    for (const props of Array.from(instance.rawProps).reverse()) {
+      if (isFunction(props)) {
+        const resolved = props()
+        for (const rawKey in resolved) {
+          registerAttr(rawKey, () => resolved[rawKey])
+        }
+      } else {
+        for (const rawKey in props) {
+          registerAttr(rawKey, props[rawKey])
+        }
       }
     }
-  }
 
   for (const key in attrs) {
     if (!keys.has(key)) {

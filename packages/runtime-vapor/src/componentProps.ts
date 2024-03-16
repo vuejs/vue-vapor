@@ -91,8 +91,8 @@ export function initProps(
 
   const [options] = instance.propsOptions
 
+  const hasDynamicProps = rawProps.some(isFunction)
   if (options) {
-    const hasDynamicProps = rawProps.some(isFunction)
     if (hasDynamicProps) {
       for (const key in options) {
         const getter = () =>
@@ -121,9 +121,13 @@ export function initProps(
     validateProps(rawProps, props, options || {})
   }
 
-  baseWatch(() => patchAttrs(instance), undefined, {
-    scheduler: createVaporPreScheduler(instance),
-  })
+  if (hasDynamicProps) {
+    baseWatch(() => patchAttrs(instance), undefined, {
+      scheduler: createVaporPreScheduler(instance),
+    })
+  } else {
+    patchAttrs(instance)
+  }
 
   if (isStateful) {
     instance.props = props
