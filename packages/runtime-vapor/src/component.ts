@@ -19,6 +19,7 @@ import {
 } from './componentEmits'
 import { type InternalSlots, type Slots, initSlots } from './componentSlots'
 import { VaporLifecycleHooks } from './apiLifecycle'
+
 import type { Data } from '@vue/shared'
 
 export type Component = FunctionalComponent | ObjectComponent
@@ -166,7 +167,6 @@ export function createComponentInstance(
 
     // state
     setupState: EMPTY_OBJ,
-
     props: EMPTY_OBJ,
     emit: null!,
     emitted: null,

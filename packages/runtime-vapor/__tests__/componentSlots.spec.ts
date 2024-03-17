@@ -2,6 +2,7 @@
 
 import {
   createComponent,
+  createSlots,
   createVaporApp,
   defineComponent,
   getCurrentInstance,
@@ -9,7 +10,6 @@ import {
   ref,
   template,
 } from '../src'
-import { createSlots } from '../src/apiCreateSlots'
 import { makeRender } from './_utils'
 
 const define = makeRender<any>()

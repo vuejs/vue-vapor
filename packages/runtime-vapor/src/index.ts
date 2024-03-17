@@ -100,7 +100,6 @@ export {
   onErrorCaptured,
   // onServerPrefetch,
 } from './apiLifecycle'
-
 export {
   createVaporApp,
   type App,
