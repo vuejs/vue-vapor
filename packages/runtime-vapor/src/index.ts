@@ -110,7 +110,7 @@ export {
 export { createIf } from './apiCreateIf'
 export { createFor } from './apiCreateFor'
 export { createComponent } from './apiCreateComponent'
-export { createSlots } from './slot'
+export { createSlots } from './apiCreateSlots'
 export { resolveComponent, resolveDirective } from './helpers/resolveAssets'
 
 // **Internal** DOM-only runtime directive helpers

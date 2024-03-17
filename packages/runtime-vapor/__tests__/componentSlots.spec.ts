@@ -2,13 +2,14 @@
 
 import {
   createComponent,
+  createVaporApp,
   defineComponent,
   getCurrentInstance,
   nextTick,
   ref,
   template,
 } from '../src'
-import { createSlots } from '../src/slot'
+import { createSlots } from '../src/apiCreateSlots'
 import { makeRender } from './_utils'
 
 const define = makeRender<any>()
@@ -69,80 +70,65 @@ describe('component: slots', () => {
     render(
       {},
       createSlots({
-        header: () => {
-          const t0 = template('header')
-          // TODO: single node
-          return [t0()]
-        },
+        header: () => template('header')(),
       }),
     )
-    expect(instance.slots.header()).toMatchObject([
+    expect(instance.slots.header()).toMatchObject(
       document.createTextNode('header'),
-    ])
+    )
   })
 
+  // TODO: test case name
   test('initSlots: instance.slots should be set correctly (when vnode.shapeFlag is not SLOTS_CHILDREN)', () => {
     const { slots } = renderWithSlots(
       createSlots({
-        // TODO: normalize from array
-        default: () => {
-          const t0 = template('<span></span>')
-          return [t0()]
-        },
+        // TODO: normalize from array?
+        default: () => template('<span></span>')(),
       }),
     )
 
-    // TODO: warn
     // expect(
     //   '[Vue warn]: Non-function value encountered for default slot. Prefer function slots for better performance.',
     // ).toHaveBeenWarned()
 
-    expect(slots.default()).toMatchObject([document.createElement('span')])
+    expect(slots.default()).toMatchObject(document.createElement('span'))
   })
 
-  // TODO: dynamic slot
-  test.todo(
-    'updateSlots: instance.slots should be updated correctly',
-    async () => {
-      const flag1 = ref(true)
+  test('updateSlots: instance.slots should be updated correctly', async () => {
+    const flag1 = ref(true)
 
-      let instance: any
-      const Child = () => {
-        instance = getCurrentInstance()
-        return template('child')()
-      }
+    let instance: any
+    const Child = () => {
+      instance = getCurrentInstance()
+      return template('child')()
+    }
 
-      const { render } = define({
-        render() {
-          return createComponent(
-            Child,
-            {},
-            createSlots({
-              default: () => {
-                // TODO: dynamic slot
-                return flag1.value
-                  ? [template('<span></span>')()]
-                  : [template('<div></div>')()]
-              },
-            }),
-          )
-        },
-      })
+    const { render } = define({
+      render() {
+        return createComponent(
+          Child,
+          {},
+          createSlots({ _: 2 as any }, () => [
+            flag1.value
+              ? { name: 'one', fn: () => template('<span></span>')() }
+              : { name: 'two', fn: () => template('<div></div>')() },
+          ]),
+        )
+      },
+    })
 
-      render()
+    render()
 
-      expect(instance.slots.default()).toMatchObject([])
-      expect(instance.slots.default()).not.toMatchObject([])
+    expect(instance.slots).toHaveProperty('one')
+    expect(instance.slots).not.toHaveProperty('two')
 
-      flag1.value = false
-      await nextTick()
+    flag1.value = false
+    await nextTick()
 
-      expect(instance.slots.default()).not.toMatchObject([])
-      expect(instance.slots.default()).toMatchObject([])
-    },
-  )
+    expect(instance.slots).not.toHaveProperty('one')
+    expect(instance.slots).toHaveProperty('two')
+  })
 
-  // TODO: dynamic slots
   test.todo(
     'updateSlots: instance.slots should be updated correctly',
     async () => {
@@ -164,16 +150,15 @@ describe('component: slots', () => {
       }
 
       const { render } = define({
-        render() {
-          const t0 = template('<div></div>')
-          const n0 = t0()
-          // renderComponent(
-          //   Child,
-          //   {},
-          //   createSlots(flag1.value ? oldSlots : newSlots),
-          //   n0 as ParentNode,
-          // )
-          return []
+        setup() {
+          return (() => {
+            return createComponent(
+              Child,
+              {},
+              // TODO: maybe it is not supported
+              createSlots(flag1.value ? oldSlots : newSlots),
+            )
+          })()
         },
       })
 
@@ -188,56 +173,78 @@ describe('component: slots', () => {
     },
   )
 
-  test.todo(
-    'updateSlots: instance.slots should be update correctly (when vnode.shapeFlag is not SLOTS_CHILDREN)',
-    async () => {
-      // TODO: dynamic slots
-    },
-  )
+  // TODO: test case name
+  test('updateSlots: instance.slots should be update correctly (when vnode.shapeFlag is not SLOTS_CHILDREN)', async () => {
+    const flag1 = ref(true)
+
+    let instance: any
+    const Child = () => {
+      instance = getCurrentInstance()
+      return template('child')()
+    }
+
+    const { render } = define({
+      setup() {
+        return createComponent(
+          Child,
+          {},
+          createSlots({}, () => [
+            flag1.value
+              ? [{ name: 'header', fn: () => template('header')() }]
+              : [{ name: 'footer', fn: () => template('footer')() }],
+          ]),
+        )
+      },
+    })
+    render()
+
+    expect(instance.slots).toHaveProperty('header')
+    flag1.value = false
+    await nextTick()
+
+    // expect(
+    //   '[Vue warn]: Non-function value encountered for default slot. Prefer function slots for better performance.',
+    // ).toHaveBeenWarned()
+
+    expect(instance.slots).toHaveProperty('footer')
+  })
 
   test.todo('should respect $stable flag', async () => {
-    // TODO: $stable flag
+    // TODO: $stable flag?
   })
 
   test.todo('should not warn when mounting another app in setup', () => {
-    // TODO: warning and createApp fn
-    // const Comp = {
-    //   render() {
-    //     const i = getCurrentInstance()
-    //     return i?.slots.default?.()
-    //   },
-    // }
-    // const mountComp = () => {
-    //   createApp({
-    //     render() {
-    //       const t0 = template('<div></div>')
-    //       const n0 = t0()
-    //       renderComponent(
-    //         Comp,
-    //         {},
-    //         createSlots({
-    //           default: () => {
-    //             const t0 = template('msg')
-    //             return [t0()]
-    //           },
-    //         }),
-    //         n0,
-    //       )
-    //       return n0
-    //     },
-    //   })
-    // }
-    // const App = {
-    //   setup() {
-    //     mountComp()
-    //   },
-    //   render() {
-    //     return null
-    //   },
-    // }
-    // createApp(App).mount(document.createElement('div'))
-    // expect(
-    //   'Slot "default" invoked outside of the render function',
-    // ).not.toHaveBeenWarned()
+    // TODO: warning
+    const Comp = defineComponent({
+      render() {
+        const i = getCurrentInstance()
+        return i!.slots.default!()
+      },
+    })
+    const mountComp = () => {
+      createVaporApp({
+        render() {
+          return createComponent(
+            Comp,
+            {},
+            createSlots({
+              default: () => template('msg')(),
+            }),
+          )!
+        },
+      })
+    }
+    const App = {
+      setup() {
+        mountComp()
+      },
+      render() {
+        return null!
+      },
+    }
+    createVaporApp(App).mount(document.createElement('div'))
+    expect(
+      'Slot "default" invoked outside of the render function',
+    ).not.toHaveBeenWarned()
   })
 })
