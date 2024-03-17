@@ -6,9 +6,8 @@ import {
 } from './component'
 import { warn } from './warning'
 import { version } from '.'
-import { render, unmountComponent } from './apiRender'
+import { render, setupComponent, unmountComponent } from './apiRender'
 import type { RawProps } from './componentProps'
-import { setupComponent } from './apiSetup'
 
 export function createVaporApp(
   rootComponent: Component,
