@@ -1,17 +1,9 @@
 import { proxyRefs } from '@vue/reactivity'
-import { type Data, isArray, isFunction, isObject } from '@vue/shared'
+import { isArray, isFunction, isObject } from '@vue/shared'
 import { type ComponentInternalInstance, setCurrentInstance } from './component'
 import { getAttrsProxy } from './componentAttrs'
+// import { SetupContext } from 'vue'
 import { type Block, fragmentKey } from './apiRender'
-import type { EmitFn, EmitsOptions } from './componentEmits'
-
-export type SetupContext<E = EmitsOptions> = E extends any
-  ? {
-      attrs: Data
-      emit: EmitFn<E>
-      expose: (exposed?: Record<string, any>) => void
-    }
-  : never
 
 export function setupComponent(instance: ComponentInternalInstance): void {
   const reset = setCurrentInstance(instance)
@@ -50,9 +42,7 @@ export function setupComponent(instance: ComponentInternalInstance): void {
   reset()
 }
 
-export function createSetupContext(
-  instance: ComponentInternalInstance,
-): SetupContext {
+export function createSetupContext(instance: ComponentInternalInstance): any {
   if (__DEV__) {
     // We use getters in dev in case libs like test-utils overwrite instance
     // properties (overwrites should not be done in prod)
@@ -67,7 +57,6 @@ export function createSetupContext(
     })
   } else {
     return {
-      expose: () => {},
       get attrs() {
         return getAttrsProxy(instance)
       },
