@@ -17,7 +17,7 @@ import {
   emit,
   normalizeEmitsOptions,
 } from './componentEmits'
-import type { InternalSlots } from './componentSlots'
+import { type InternalSlots, type Slots, initSlots } from './componentSlots'
 import { VaporLifecycleHooks } from './apiLifecycle'
 import type { Data } from '@vue/shared'
 
@@ -142,6 +142,7 @@ let uid = 0
 export function createComponentInstance(
   component: ObjectComponent | FunctionalComponent,
   rawProps: RawProps | null,
+  slots: Slots | null,
 ): ComponentInternalInstance {
   const instance: ComponentInternalInstance = {
     uid: uid++,
@@ -228,7 +229,7 @@ export function createComponentInstance(
     // [VaporLifecycleHooks.SERVER_PREFETCH]: null,
   }
   initProps(instance, rawProps, !isFunction(component))
-  // TODO: initSlots(instance, slots)
+  initSlots(instance, slots)
   instance.emit = emit.bind(null, instance)
 
   return instance
