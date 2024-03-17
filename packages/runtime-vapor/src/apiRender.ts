@@ -5,6 +5,7 @@ import { flushPostFlushCbs, queuePostRenderEffect } from './scheduler'
 import { proxyRefs } from '@vue/reactivity'
 import { invokeLifecycle } from './componentLifecycle'
 import { VaporLifecycleHooks } from './apiLifecycle'
+import { fallThroughAttrs } from './componentAttrs'
 
 export const fragmentKey = Symbol(__DEV__ ? `fragmentKey` : ``)
 
@@ -47,7 +48,11 @@ export function setupComponent(instance: ComponentInternalInstance): void {
       // TODO: warn no template
       block = []
     }
-    return (instance.block = block)
+    instance.block = block
+    if (instance.inheritAttrs !== false) {
+      fallThroughAttrs(instance)
+    }
+    return block
   })
   reset()
 }
