@@ -19,3 +19,5 @@ export const initSlots = (
   // TODO: normalize?
   instance.slots = slots
 }
+
+// TODO: $stable ?
