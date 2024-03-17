@@ -67,6 +67,8 @@ export interface ComponentInternalInstance {
    */
   inheritAttrs?: boolean
 
+  attrsProxy: Data | null
+
   // lifecycle
   isMounted: boolean
   isUnmounted: boolean
@@ -176,6 +178,9 @@ export function createComponentInstance(
     attrs: EMPTY_OBJ,
     refs: EMPTY_OBJ,
 
+    inheritAttrs: component.inheritAttrs,
+    attrsProxy: null,
+
     // lifecycle
     isMounted: false,
     isUnmounted: false,
@@ -229,9 +234,6 @@ export function createComponentInstance(
      * @internal
      */
     // [VaporLifecycleHooks.SERVER_PREFETCH]: null,
-  }
-  if (component.inheritAttrs != null) {
-    instance.inheritAttrs = component.inheritAttrs
   }
   initProps(instance, rawProps, !isFunction(component))
   instance.emit = emit.bind(null, instance)

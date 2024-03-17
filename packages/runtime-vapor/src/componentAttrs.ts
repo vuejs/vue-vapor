@@ -1,6 +1,8 @@
-import { camelize, isFunction } from '@vue/shared'
+import { type Data, camelize, isFunction } from '@vue/shared'
 import type { ComponentInternalInstance } from './component'
 import { isEmitListener } from './componentEmits'
+import { TrackOpTypes, track } from '@vue/reactivity'
+import { warn } from './warning'
 
 export function patchAttrs(instance: ComponentInternalInstance) {
   const attrs = instance.attrs
@@ -41,4 +43,46 @@ export function patchAttrs(instance: ComponentInternalInstance) {
       })
     }
   }
+}
+
+/**
+ * dev only flag to track whether $attrs was used during render.
+ * If $attrs was used during render then the warning for failed attrs
+ * fallthrough can be suppressed.
+ */
+let accessedAttrs: boolean = false
+
+function markAttrsAccessed() {
+  accessedAttrs = true
+}
+
+export function getAttrsProxy(instance: ComponentInternalInstance): Data {
+  return (
+    instance.attrsProxy ||
+    (instance.attrsProxy = new Proxy(
+      instance.attrs,
+      __DEV__
+        ? {
+            get(target, key: string) {
+              markAttrsAccessed()
+              track(instance, TrackOpTypes.GET, '$attrs')
+              return target[key]
+            },
+            set() {
+              warn(`setupContext.attrs is readonly.`)
+              return false
+            },
+            deleteProperty() {
+              warn(`setupContext.attrs is readonly.`)
+              return false
+            },
+          }
+        : {
+            get(target, key: string) {
+              track(instance, TrackOpTypes.GET, '$attrs')
+              return target[key]
+            },
+          },
+    ))
+  )
 }
