@@ -246,17 +246,14 @@ describe('component: props', () => {
       },
     }).render()
     const reset = setCurrentInstance(instance)
-    // expect(host.innerHTML).toBe('<div id="a">1</div>') // TODO: Fallthrough Attributes
     expect(host.innerHTML).toBe('<div>1</div>')
 
     foo.value++
     await nextTick()
-    // expect(host.innerHTML).toBe('<div id="a">2</div>') // TODO: Fallthrough Attributes
     expect(host.innerHTML).toBe('<div>2</div>')
 
     id.value = 'b'
     await nextTick()
-    // expect(host.innerHTML).toBe('<div id="b">2</div>') // TODO: Fallthrough Attributes
     reset()
   })
 

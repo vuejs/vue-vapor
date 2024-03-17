@@ -1,8 +1,12 @@
 import { isArray, isFunction, isObject } from '@vue/shared'
 import { type ComponentInternalInstance, setCurrentInstance } from './component'
 import { insert, querySelector, remove } from './dom/element'
-import { flushPostFlushCbs, queuePostRenderEffect } from './scheduler'
-import { proxyRefs } from '@vue/reactivity'
+import {
+  createVaporPreScheduler,
+  flushPostFlushCbs,
+  queuePostRenderEffect,
+} from './scheduler'
+import { baseWatch, proxyRefs } from '@vue/reactivity'
 import { invokeLifecycle } from './componentLifecycle'
 import { VaporLifecycleHooks } from './apiLifecycle'
 import { fallThroughAttrs } from './componentAttrs'
@@ -50,7 +54,9 @@ export function setupComponent(instance: ComponentInternalInstance): void {
     }
     instance.block = block
     if (instance.inheritAttrs !== false) {
-      fallThroughAttrs(instance)
+      baseWatch(() => fallThroughAttrs(instance), undefined, {
+        scheduler: createVaporPreScheduler(instance),
+      })
     }
     return block
   })
