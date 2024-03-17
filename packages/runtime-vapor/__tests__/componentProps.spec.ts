@@ -222,6 +222,7 @@ describe('component: props', () => {
   test('optimized props updates', async () => {
     const t0 = template('<div>')
     const { component: Child } = define({
+      inheritAttrs: false,
       props: ['foo'],
       render() {
         const instance = getCurrentInstance()!
@@ -441,6 +442,7 @@ describe('component: props', () => {
   // #5016
   test('handling attr with undefined value', () => {
     const { render, host } = define({
+      inheritAttrs: false,
       render() {
         const instance = getCurrentInstance()!
         const t0 = template('<div></div>')
