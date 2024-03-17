@@ -1,11 +1,11 @@
 // NOTE: This test is implemented based on the case of `runtime-core/__test__/componentSlots.spec.ts`.
 
 import {
+  createComponent,
   defineComponent,
   getCurrentInstance,
   nextTick,
   ref,
-  render as renderComponent,
   template,
 } from '../src'
 import { createSlots } from '../src/slot'
@@ -28,9 +28,7 @@ describe('component: slots', () => {
 
     const { render } = define({
       render() {
-        const t0 = template('<div></div>')
-        const n0 = t0()
-        renderComponent(Comp, {}, slots, n0 as ParentNode)
+        return createComponent(Comp, {}, slots)
       },
     })
 
@@ -58,12 +56,12 @@ describe('component: slots', () => {
   )
 
   test('initSlots: instance.slots should be set correctly', () => {
-    let proxy: any
+    let instance: any
     const { render } = define({
       render() {
         const t0 = template('<div></div>')
         const n0 = t0()
-        proxy = getCurrentInstance()
+        instance = getCurrentInstance()
         return n0
       },
     })
@@ -78,7 +76,7 @@ describe('component: slots', () => {
         },
       }),
     )
-    expect(proxy.slots.header()).toMatchObject([
+    expect(instance.slots.header()).toMatchObject([
       document.createTextNode('header'),
     ])
   })
@@ -116,9 +114,7 @@ describe('component: slots', () => {
 
       const { render } = define({
         render() {
-          const t0 = template('<div></div>')
-          const n0 = t0()
-          renderComponent(
+          return createComponent(
             Child,
             {},
             createSlots({
@@ -129,9 +125,7 @@ describe('component: slots', () => {
                   : [template('<div></div>')()]
               },
             }),
-            n0 as ParentNode,
           )
-          return []
         },
       })
 

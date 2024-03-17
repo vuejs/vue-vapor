@@ -40,7 +40,7 @@ export function createVaporApp(
 
     mount(rootContainer): any {
       if (!instance) {
-        instance = createComponentInstance(rootComponent, rootProps)
+        instance = createComponentInstance(rootComponent, rootProps, rootSlots)
         setupComponent(instance)
         render(instance, rootContainer)
         return instance

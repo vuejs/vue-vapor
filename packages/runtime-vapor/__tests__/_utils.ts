@@ -34,7 +34,7 @@ export function makeRender<Component = ObjectComponent | SetupFn>(
       slots: Slots = {},
       container: string | ParentNode = '#host',
     ) => {
-      app = createVaporApp(component, props)
+      app = createVaporApp(component, props, slots)
       instance = app.mount(container)
 
       return res()
