@@ -13,8 +13,6 @@ import {
   template,
 } from '@vue/vapor'
 
-const t0 = template('<div class="parnet-container"></div>')
-
 // <template #mySlot="{ message, changeMessage }">
 //   <div clas="slotted">
 //     <h1>{{ message }}</h1>
@@ -27,30 +25,31 @@ const t1 = template(
 
 const Parent = defineComponent({
   vapor: true,
-
-  setup(props) {
+  setup(_) {
     return (() => {
-      const n0 = /** @type {any} */ (t0())
-      const s0 = createSlots({
-        mySlot: scope => {
-          const n1 = t1()
-          const n2 = /** @type {any} */ (children(n1, 0))
-          const n3 = /** @type {any} */ (children(n1, 1))
-          renderEffect(() => {
-            setText(n2, scope.message())
-          })
-          on(n3, 'click', scope.changeMessage)
-          return [n1]
-        },
-        // e.g. default slot
-        // default: () => {
-        //   const n1 = t1()
-        //   return [n1]
-        // }
-      })
       /** @type {any} */
-      const n1 = createComponent(Child, {}, s0)
-      return [n0, n1]
+      const n0 = createComponent(
+        Child,
+        {},
+        createSlots({
+          mySlot: ({ message, changeMessage }) => {
+            const n1 = t1()
+            const n2 = /** @type {any} */ (children(n1, 0))
+            const n3 = /** @type {any} */ (children(n1, 1))
+            renderEffect(() => {
+              setText(n2, message())
+            })
+            on(n3, 'click', changeMessage)
+            return n1
+          },
+          // e.g. default slot
+          // default: () => {
+          //   const n1 = t1()
+          //   return n1
+          // }
+        }),
+      )
+      return n0
     })()
   },
 })
