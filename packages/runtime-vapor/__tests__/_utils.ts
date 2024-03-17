@@ -36,7 +36,6 @@ export function makeRender<Component = ObjectComponent | SetupFn>(
     ) => {
       app = createVaporApp(component, props, slots)
       instance = app.mount(container)
-
       return res()
     }
     const res = () => ({
