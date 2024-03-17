@@ -1,12 +1,13 @@
-import type { Data } from '@vue/shared'
 import {
+  type App,
   type ComponentInternalInstance,
   type ObjectComponent,
   type SetupFn,
-  render as _render,
+  createVaporApp,
   defineComponent,
 } from '../src'
 import type { Slots } from '../src/componentSlots'
+import type { RawProps } from '../src/componentProps'
 
 export function makeRender<Component = ObjectComponent | SetupFn>(
   initHost = () => {
@@ -27,18 +28,22 @@ export function makeRender<Component = ObjectComponent | SetupFn>(
   const define = (comp: Component) => {
     const component = defineComponent(comp as any)
     let instance: ComponentInternalInstance
+    let app: App
     const render = (
-      props: Data = {},
+      props: RawProps = {},
       slots: Slots = {},
       container: string | ParentNode = '#host',
     ) => {
-      instance = _render(component, props, slots, container)
+      app = createVaporApp(component, props)
+      instance = app.mount(container)
+
       return res()
     }
     const res = () => ({
       component,
       host,
       instance,
+      app,
       render,
     })
 

@@ -21,6 +21,7 @@ export enum IRNodeTypes {
   SET_DYNAMIC_PROPS,
   SET_TEXT,
   SET_EVENT,
+  SET_DYNAMIC_EVENTS,
   SET_HTML,
   SET_REF,
   SET_MODEL_VALUE,
@@ -28,6 +29,7 @@ export enum IRNodeTypes {
   INSERT_NODE,
   PREPEND_NODE,
   CREATE_TEXT_NODE,
+  CREATE_COMPONENT_NODE,
 
   WITH_DIRECTIVE,
 
@@ -92,6 +94,12 @@ export interface SetDynamicPropsIRNode extends BaseIRNode {
   type: IRNodeTypes.SET_DYNAMIC_PROPS
   element: number
   props: IRProps[]
+}
+
+export interface SetDynamicEventsIRNode extends BaseIRNode {
+  type: IRNodeTypes.SET_DYNAMIC_EVENTS
+  element: number
+  event: SimpleExpressionNode
 }
 
 export interface SetTextIRNode extends BaseIRNode {
@@ -166,12 +174,23 @@ export interface WithDirectiveIRNode extends BaseIRNode {
   builtin?: VaporHelper
 }
 
+export interface CreateComponentIRNode extends BaseIRNode {
+  type: IRNodeTypes.CREATE_COMPONENT_NODE
+  id: number
+  tag: string
+  props: IRProps[]
+  // TODO slots
+
+  resolve: boolean
+}
+
 export type IRNode = OperationNode | RootIRNode
 export type OperationNode =
   | SetPropIRNode
   | SetDynamicPropsIRNode
   | SetTextIRNode
   | SetEventIRNode
+  | SetDynamicEventsIRNode
   | SetHtmlIRNode
   | SetRefIRNode
   | SetModelValueIRNode
@@ -181,6 +200,7 @@ export type OperationNode =
   | WithDirectiveIRNode
   | IfIRNode
   | ForIRNode
+  | CreateComponentIRNode
 
 export enum DynamicFlag {
   NONE = 0,
