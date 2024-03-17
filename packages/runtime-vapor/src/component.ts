@@ -28,6 +28,7 @@ export type FunctionalComponent = SetupFn & Omit<ObjectComponent, 'setup'>
 
 export interface ObjectComponent {
   props?: ComponentPropsOptions
+  inheritAttrs?: boolean
   emits?: EmitsOptions
   setup?: SetupFn
   render?(ctx: any): Block
@@ -60,6 +61,11 @@ export interface ComponentInternalInstance {
   emitted: Record<string, boolean> | null
   attrs: Data
   refs: Data
+  /**
+   * resolved inheritAttrs options
+   * @internal
+   */
+  inheritAttrs?: boolean
 
   // lifecycle
   isMounted: boolean
