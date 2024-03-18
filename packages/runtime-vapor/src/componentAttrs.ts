@@ -1,4 +1,4 @@
-import { camelize, isArray, isFunction } from '@vue/shared'
+import { camelize, isFunction } from '@vue/shared'
 import type { ComponentInternalInstance } from './component'
 import { isEmitListener } from './componentEmits'
 import { type Block, withAttrsKey } from './apiRender'
