@@ -111,6 +111,7 @@ export { createFor } from './apiCreateFor'
 export { createComponent } from './apiCreateComponent'
 
 export { resolveComponent, resolveDirective } from './helpers/resolveAssets'
+export { withAttrs } from './helpers/withAttrs'
 
 // **Internal** DOM-only runtime directive helpers
 export {

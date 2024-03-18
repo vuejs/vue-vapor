@@ -16,20 +16,30 @@ export function genCreateComponent(
   oper: CreateComponentIRNode,
   context: CodegenContext,
 ): CodeFragment[] {
-  const { vaporHelper } = context
+  const {
+    vaporHelper,
+    ir: {
+      node: { children },
+    },
+  } = context
 
   const tag = oper.resolve
     ? genCall(vaporHelper('resolveComponent'), JSON.stringify(oper.tag))
     : [oper.tag]
 
+  let props = genProps()
+  if (children.length === 1) {
+    props = genCall(vaporHelper('withAttrs'), props)
+  }
+
   return [
     NEWLINE,
     `const n${oper.id} = `,
-    ...genCall(vaporHelper('createComponent'), tag, genProps()),
+    ...genCall(vaporHelper('createComponent'), tag, props),
   ]
 
   function genProps() {
-    const props = oper.props
+    const props = [...oper.props]
       .map(props => {
         if (isArray(props)) {
           if (!props.length) return undefined
