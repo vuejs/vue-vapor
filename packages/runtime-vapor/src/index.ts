@@ -29,7 +29,7 @@ export {
   // effect
   stop,
   ReactiveEffect,
-  onEffectCleanup,
+  onWatcherCleanup,
   // effect scope
   effectScope,
   EffectScope,
@@ -46,7 +46,7 @@ export {
   type FunctionalComponent,
   type SetupFn,
 } from './component'
-export { renderEffect, renderWatch } from './renderWatch'
+export { renderEffect } from './renderEffect'
 export {
   watch,
   watchEffect,
