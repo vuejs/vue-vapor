@@ -28,10 +28,7 @@ export function genCreateComponent(
     : [oper.tag]
 
   const singleRoot = children.length === 1
-  let props = genProps()
-  if (!props && singleRoot) {
-    props = ['null']
-  }
+  const props = genProps()
 
   return [
     NEWLINE,
@@ -39,7 +36,7 @@ export function genCreateComponent(
     ...genCall(
       vaporHelper('createComponent'),
       tag,
-      props,
+      props || (singleRoot ? ['null'] : undefined),
       singleRoot ? 'true' : undefined,
     ),
   ]
