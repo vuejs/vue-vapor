@@ -29,8 +29,8 @@ export function genCreateComponent(
 
   const singleRoot = children.length === 1
   let props = genProps()
-  if (singleRoot) {
-    props = genCall(vaporHelper('withAttrs'), props)
+  if (!props && singleRoot) {
+    props = ['null']
   }
 
   return [

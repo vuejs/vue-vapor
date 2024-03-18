@@ -6,9 +6,7 @@ import {
   setText,
   template,
   watchEffect,
-  withAttrs,
 } from '../src'
-import { WithAttrsNode } from '../src/apiRender'
 import { setCurrentInstance } from '../src/component'
 import { makeRender } from './_utils'
 
@@ -116,9 +114,9 @@ describe('attribute fallthrough', () => {
       render() {
         const n0 = createComponent(
           Grandson,
-          withAttrs({
+          {
             'custom-attr': () => 'custom-attr',
-          }),
+          },
           true,
         )
         return n0

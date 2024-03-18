@@ -1,12 +1,8 @@
 import { isArray, isFunction, isObject } from '@vue/shared'
 import { type ComponentInternalInstance, setCurrentInstance } from './component'
 import { insert, querySelector, remove } from './dom/element'
-import {
-  createVaporPreScheduler,
-  flushPostFlushCbs,
-  queuePostRenderEffect,
-} from './scheduler'
-import { baseWatch, proxyRefs } from '@vue/reactivity'
+import { flushPostFlushCbs, queuePostRenderEffect } from './scheduler'
+import { proxyRefs } from '@vue/reactivity'
 import { invokeLifecycle } from './componentLifecycle'
 import { VaporLifecycleHooks } from './apiLifecycle'
 import { fallThroughAttrs } from './componentAttrs'
@@ -26,7 +22,7 @@ export type WithAttrsNode = Node & {
 
 export function setupComponent(
   instance: ComponentInternalInstance,
-  withAttrs: boolean = false,
+  singleRoot: boolean = false,
 ): void {
   const reset = setCurrentInstance(instance)
   instance.scope.run(() => {
@@ -60,18 +56,7 @@ export function setupComponent(
       block = []
     }
     instance.block = block
-    if (
-      !instance.component.inheritAttrs &&
-      withAttrs &&
-      !(withAttrsKey in block)
-    ) {
-      ;(block as WithAttrsNode)[withAttrsKey] = instance.uid
-    }
-    if (instance.component.inheritAttrs !== false) {
-      baseWatch(() => fallThroughAttrs(instance), undefined, {
-        scheduler: createVaporPreScheduler(instance),
-      })
-    }
+    fallThroughAttrs(instance, singleRoot)
     return block
   })
   reset()
