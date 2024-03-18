@@ -22,7 +22,7 @@ export function genCreateComponent(
     ? genCall(vaporHelper('resolveComponent'), JSON.stringify(oper.tag))
     : [oper.tag]
 
-  const singleRoot = oper.isSingleRoot
+  const isRoot = oper.root
   const props = genProps()
 
   return [
@@ -31,8 +31,8 @@ export function genCreateComponent(
     ...genCall(
       vaporHelper('createComponent'),
       tag,
-      props || (singleRoot ? 'null' : false),
-      singleRoot ? 'true' : undefined,
+      props || (isRoot ? 'null' : false),
+      isRoot ? 'true' : undefined,
     ),
   ]
 

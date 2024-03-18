@@ -71,7 +71,7 @@ function transformComponentElement(
   const { bindingMetadata } = context.options
   const resolve = !bindingMetadata[tag]
   context.dynamic.flags |= DynamicFlag.NON_TEMPLATE | DynamicFlag.INSERT
-  const isSingleRoot =
+  const root =
     context.root.node.children.length === 1 &&
     context.root.node.children[0] === node
 
@@ -81,7 +81,7 @@ function transformComponentElement(
     tag,
     props: propsResult[0] ? propsResult[1] : [propsResult[1]],
     resolve,
-    isSingleRoot,
+    root,
   })
 }
 

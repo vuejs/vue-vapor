@@ -182,7 +182,7 @@ export interface CreateComponentIRNode extends BaseIRNode {
   // TODO slots
 
   resolve: boolean
-  isSingleRoot: boolean
+  root: boolean
 }
 
 export type IRNode = OperationNode | RootIRNode
