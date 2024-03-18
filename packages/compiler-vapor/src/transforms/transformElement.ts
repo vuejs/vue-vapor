@@ -1,6 +1,5 @@
 import {
   type AttributeNode,
-  type ComponentNode,
   type ElementNode,
   ElementTypes,
   ErrorCodes,
