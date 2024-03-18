@@ -1,5 +1,6 @@
 import {
   type AttributeNode,
+  type ComponentNode,
   type ElementNode,
   ElementTypes,
   ErrorCodes,
@@ -48,11 +49,16 @@ export const transformElement: NodeTransform = (node, context) => {
       context as TransformContext<ElementNode>,
     )
 
-    ;(isComponent ? transformComponentElement : transformNativeElement)(
-      tag,
-      propsResult,
-      context,
-    )
+    if (isComponent) {
+      transformComponentElement(
+        tag,
+        propsResult,
+        context,
+        node as ComponentNode,
+      )
+    } else {
+      transformNativeElement(tag, propsResult, context)
+    }
   }
 }
 
@@ -60,10 +66,14 @@ function transformComponentElement(
   tag: string,
   propsResult: PropsResult,
   context: TransformContext,
+  node: ComponentNode,
 ) {
   const { bindingMetadata } = context.options
   const resolve = !bindingMetadata[tag]
   context.dynamic.flags |= DynamicFlag.NON_TEMPLATE | DynamicFlag.INSERT
+  const isSingleRoot =
+    context.root.node.children.length === 1 &&
+    context.root.node.children[0] === node
 
   context.registerOperation({
     type: IRNodeTypes.CREATE_COMPONENT_NODE,
@@ -71,6 +81,7 @@ function transformComponentElement(
     tag,
     props: propsResult[0] ? propsResult[1] : [propsResult[1]],
     resolve,
+    isSingleRoot,
   })
 }
 

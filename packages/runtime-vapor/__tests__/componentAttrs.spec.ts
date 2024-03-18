@@ -34,10 +34,12 @@ describe('attribute fallthrough', () => {
       render(_ctx: Record<string, any>) {
         return createComponent(
           Child,
-          {
-            foo: () => _ctx.foo,
-            id: () => _ctx.id,
-          },
+          [
+            {
+              foo: () => _ctx.foo,
+              id: () => _ctx.id,
+            },
+          ],
           true,
         )
       },
@@ -77,10 +79,12 @@ describe('attribute fallthrough', () => {
       render(_ctx: Record<string, any>) {
         return createComponent(
           Child,
-          {
-            foo: () => _ctx.foo,
-            id: () => _ctx.id,
-          },
+          [
+            {
+              foo: () => _ctx.foo,
+              id: () => _ctx.id,
+            },
+          ],
           true,
         )
       },
@@ -114,9 +118,11 @@ describe('attribute fallthrough', () => {
       render() {
         const n0 = createComponent(
           Grandson,
-          {
-            'custom-attr': () => 'custom-attr',
-          },
+          [
+            {
+              'custom-attr': () => 'custom-attr',
+            },
+          ],
           true,
         )
         return n0
@@ -132,10 +138,12 @@ describe('attribute fallthrough', () => {
       render(_ctx: Record<string, any>) {
         return createComponent(
           Child,
-          {
-            foo: () => _ctx.foo,
-            id: () => _ctx.id,
-          },
+          [
+            {
+              foo: () => _ctx.foo,
+              id: () => _ctx.id,
+            },
+          ],
           true,
         )
       },

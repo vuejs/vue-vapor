@@ -30,3 +30,15 @@ export function render(_ctx) {
   return n0
 }"
 `;
+
+exports[`generate component > should not generate withAttrs if component is not the root of the template 1`] = `
+"import { resolveComponent as _resolveComponent, createComponent as _createComponent, insert as _insert, template as _template } from 'vue/vapor';
+const t0 = _template("<div></div>")
+
+export function render(_ctx) {
+  const n1 = t0()
+  const n0 = _createComponent(_resolveComponent("Comp"))
+  _insert(n0, n1)
+  return n1
+}"
+`;

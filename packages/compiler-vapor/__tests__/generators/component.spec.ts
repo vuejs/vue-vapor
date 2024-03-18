@@ -15,4 +15,9 @@ describe('generate component', () => {
     const { code } = compile(`<Comp/>123`)
     expect(code).toMatchSnapshot()
   })
+
+  test('should not generate withAttrs if component is not the root of the template', () => {
+    const { code } = compile(`<div><Comp/></div>`)
+    expect(code).toMatchSnapshot()
+  })
 })
