@@ -12,12 +12,16 @@ import { VaporLifecycleHooks } from './apiLifecycle'
 import { fallThroughAttrs } from './componentAttrs'
 
 export const fragmentKey = Symbol(__DEV__ ? `fragmentKey` : ``)
+export const withAttrsKey = Symbol(__DEV__ ? `withAttrsKey` : ``)
 
-export type Block = Node | Fragment | Block[]
+export type Block = Node | WithAttrsNode | Fragment | Block[]
 export type Fragment = {
   nodes: Block
   anchor?: Node
   [fragmentKey]: true
+}
+export type WithAttrsNode = Node & {
+  [withAttrsKey]: true
 }
 
 export function setupComponent(instance: ComponentInternalInstance): void {

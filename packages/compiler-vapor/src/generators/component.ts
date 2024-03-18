@@ -27,8 +27,9 @@ export function genCreateComponent(
     ? genCall(vaporHelper('resolveComponent'), JSON.stringify(oper.tag))
     : [oper.tag]
 
+  const singleRoot = children.length === 1
   let props = genProps()
-  if (children.length === 1) {
+  if (singleRoot) {
     props = genCall(vaporHelper('withAttrs'), props)
   }
 
@@ -36,6 +37,12 @@ export function genCreateComponent(
     NEWLINE,
     `const n${oper.id} = `,
     ...genCall(vaporHelper('createComponent'), tag, props),
+    ...(singleRoot
+      ? [
+          NEWLINE as typeof NEWLINE,
+          ...genCall(vaporHelper('markWithAttrs'), `n${oper.id}`),
+        ]
+      : []),
   ]
 
   function genProps() {

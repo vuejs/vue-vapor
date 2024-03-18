@@ -1,7 +1,7 @@
 import { camelize, isArray, isFunction } from '@vue/shared'
 import type { ComponentInternalInstance } from './component'
 import { isEmitListener } from './componentEmits'
-import type { Block } from './apiRender'
+import { type Block, withAttrsKey } from './apiRender'
 import { setDynamicProp } from './dom/prop'
 
 export function patchAttrs(instance: ComponentInternalInstance) {
@@ -57,6 +57,9 @@ export function fallThroughAttrs(instance: ComponentInternalInstance) {
 }
 
 function getFallThroughNode(block: Block) {
+  // If the block has withAttrsKey, it should not fall through In runtime
+  // since attrs was already pass through by props
+  if (withAttrsKey in block && block[withAttrsKey]) return null
   if (block instanceof Node) return block
   if (isArray(block) && block.length === 1) return getFallThroughNode(block[0])
   return null
