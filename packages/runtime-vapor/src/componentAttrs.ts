@@ -1,4 +1,4 @@
-import { camelize, isFunction } from '@vue/shared'
+import { camelize, isArray, isFunction } from '@vue/shared'
 import { type ComponentInternalInstance, currentInstance } from './component'
 import { isEmitListener } from './componentEmits'
 import { type Block, type WithAttrsNode, withAttrsKey } from './apiRender'
@@ -51,11 +51,12 @@ export function patchAttrs(instance: ComponentInternalInstance) {
 export function withAttrs(props: RawProps): RawProps {
   const instance = currentInstance!
   if (instance.component.inheritAttrs === false) return props
-  if (!props) return [() => instance.attrs]
-  if (Array.isArray(props)) {
-    return [() => instance.attrs, ...props]
+  const attrsGetter = () => instance.attrs
+  if (!props) return [attrsGetter]
+  if (isArray(props)) {
+    return [attrsGetter, ...props]
   }
-  return [() => instance.attrs, props]
+  return [attrsGetter, props]
 }
 
 export function fallThroughAttrs(

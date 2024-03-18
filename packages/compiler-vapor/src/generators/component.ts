@@ -36,7 +36,7 @@ export function genCreateComponent(
     ...genCall(
       vaporHelper('createComponent'),
       tag,
-      props || (singleRoot ? ['null'] : undefined),
+      props || (singleRoot ? 'null' : false),
       singleRoot ? 'true' : undefined,
     ),
   ]
