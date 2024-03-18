@@ -49,16 +49,11 @@ export const transformElement: NodeTransform = (node, context) => {
       context as TransformContext<ElementNode>,
     )
 
-    if (isComponent) {
-      transformComponentElement(
-        tag,
-        propsResult,
-        context,
-        node as ComponentNode,
-      )
-    } else {
-      transformNativeElement(tag, propsResult, context)
-    }
+    ;(isComponent ? transformComponentElement : transformNativeElement)(
+      tag,
+      propsResult,
+      context,
+    )
   }
 }
 
@@ -66,14 +61,12 @@ function transformComponentElement(
   tag: string,
   propsResult: PropsResult,
   context: TransformContext,
-  node: ComponentNode,
 ) {
   const { bindingMetadata } = context.options
   const resolve = !bindingMetadata[tag]
   context.dynamic.flags |= DynamicFlag.NON_TEMPLATE | DynamicFlag.INSERT
   const root =
-    context.root.node.children.length === 1 &&
-    context.root.node.children[0] === node
+    context.root === context.parent && context.parent.node.children.length === 1
 
   context.registerOperation({
     type: IRNodeTypes.CREATE_COMPONENT_NODE,

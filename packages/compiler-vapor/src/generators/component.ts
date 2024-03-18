@@ -32,7 +32,7 @@ export function genCreateComponent(
       vaporHelper('createComponent'),
       tag,
       props || (isRoot ? 'null' : false),
-      isRoot && 'root',
+      isRoot && 'true',
     ),
   ]
 
