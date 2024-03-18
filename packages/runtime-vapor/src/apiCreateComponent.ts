@@ -6,18 +6,24 @@ import {
 import { setupComponent } from './apiRender'
 import type { RawProps } from './componentProps'
 import type { Slots } from './componentSlots'
+import { withAttrs } from './componentAttrs'
 
 export function createComponent(
   comp: Component,
-  rawProps: RawProps = null,
+  rawProps: RawProps | null = null,
   slots: Slots | null = null,
+  singleRoot: boolean = false,
 ) {
   const current = currentInstance!
-  const instance = createComponentInstance(comp, rawProps, slots)
-  setupComponent(instance)
+  const instance = createComponentInstance(
+    comp,
+    singleRoot ? withAttrs(rawProps) : rawProps,
+    slots,
+  )
+  setupComponent(instance, singleRoot)
 
   // register sub-component with current component for lifecycle management
   current.comps.add(instance)
 
-  return instance.block
+  return instance
 }
