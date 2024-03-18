@@ -1,11 +1,9 @@
 import { camelize, isArray, isFunction } from '@vue/shared'
 import { type ComponentInternalInstance, currentInstance } from './component'
 import { isEmitListener } from './componentEmits'
-import { type Block, type WithAttrsNode, withAttrsKey } from './apiRender'
-import { setDynamicProp } from './dom/prop'
-import { baseWatch } from '@vue/reactivity'
-import { createVaporPreScheduler } from './scheduler'
+import { setDynamicProps } from './dom/prop'
 import type { RawProps } from './componentProps'
+import { renderEffect } from './renderEffect'
 
 export function patchAttrs(instance: ComponentInternalInstance) {
   const attrs = instance.attrs
@@ -66,31 +64,10 @@ export function fallThroughAttrs(
   const {
     block,
     component: { inheritAttrs },
-    uid,
   } = instance
   if (inheritAttrs === false) return
-  if (singleRoot && !(withAttrsKey in block!)) {
-    ;(block as WithAttrsNode)[withAttrsKey] = uid
-  }
-  if (withAttrsKey in block! && block[withAttrsKey] === uid) {
-    baseWatch(() => doFallThroughAttrs(instance), undefined, {
-      scheduler: createVaporPreScheduler(instance),
-    })
-  }
-}
 
-export function doFallThroughAttrs(instance: ComponentInternalInstance) {
-  const attrs = instance.attrs
-  const block = getFallThroughNode(instance.block!, instance.uid)
-  if (!block) return
-  for (const key in attrs) {
-    if (block instanceof Element) {
-      setDynamicProp(block, key, attrs[key])
-    }
+  if (singleRoot && block instanceof Element) {
+    renderEffect(() => setDynamicProps(block, instance.attrs))
   }
-}
-
-function getFallThroughNode(block: Block, id: number) {
-  if (withAttrsKey in block && block[withAttrsKey] === id) return block
-  return null
 }

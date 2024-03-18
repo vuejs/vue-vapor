@@ -22,5 +22,5 @@ export function createComponent(
   // register sub-component with current component for lifecycle management
   current.comps.add(instance)
 
-  return instance.block
+  return instance
 }

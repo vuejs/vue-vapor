@@ -1,5 +1,9 @@
 import { isArray, isFunction, isObject } from '@vue/shared'
-import { type ComponentInternalInstance, setCurrentInstance } from './component'
+import {
+  type ComponentInternalInstance,
+  componentKey,
+  setCurrentInstance,
+} from './component'
 import { insert, querySelector, remove } from './dom/element'
 import { flushPostFlushCbs, queuePostRenderEffect } from './scheduler'
 import { proxyRefs } from '@vue/reactivity'
@@ -8,16 +12,12 @@ import { VaporLifecycleHooks } from './apiLifecycle'
 import { fallThroughAttrs } from './componentAttrs'
 
 export const fragmentKey = Symbol(__DEV__ ? `fragmentKey` : ``)
-export const withAttrsKey = Symbol(__DEV__ ? `withAttrsKey` : ``)
 
-export type Block = Node | WithAttrsNode | Fragment | Block[]
+export type Block = Node | Fragment | ComponentInternalInstance | Block[]
 export type Fragment = {
   nodes: Block
   anchor?: Node
   [fragmentKey]: true
-}
-export type WithAttrsNode = Node & {
-  [withAttrsKey]: number
 }
 
 export function setupComponent(
@@ -38,7 +38,8 @@ export function setupComponent(
       stateOrNode &&
       (stateOrNode instanceof Node ||
         isArray(stateOrNode) ||
-        (stateOrNode as any)[fragmentKey])
+        (stateOrNode as any)[fragmentKey] ||
+        (stateOrNode as any)[componentKey])
     ) {
       block = stateOrNode as Block
     } else if (isObject(stateOrNode)) {
