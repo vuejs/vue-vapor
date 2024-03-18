@@ -1,9 +1,16 @@
 import { type EffectScope, effectScope, isReactive } from '@vue/reactivity'
 import { isArray, isObject, isString } from '@vue/shared'
-import { createComment, createTextNode, insert, remove } from './dom/element'
+import {
+  createComment,
+  createTextNode,
+  insert,
+  normalizeBlock,
+  remove,
+} from './dom/element'
 import { renderEffect } from './renderEffect'
 import { type Block, type Fragment, fragmentKey } from './apiRender'
 import { warn } from './warning'
+import { componentKey } from './component'
 
 interface ForBlock extends Fragment {
   scope: EffectScope
@@ -343,6 +350,8 @@ function normalizeAnchor(node: Block): Node {
     return node
   } else if (isArray(node)) {
     return normalizeAnchor(node[0])
+  } else if (componentKey in node) {
+    return normalizeAnchor(node.block!)
   } else {
     return normalizeAnchor(node.nodes!)
   }
