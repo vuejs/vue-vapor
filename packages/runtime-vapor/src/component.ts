@@ -61,11 +61,6 @@ export interface ComponentInternalInstance {
   emitted: Record<string, boolean> | null
   attrs: Data
   refs: Data
-  /**
-   * resolved inheritAttrs options
-   * @internal
-   */
-  inheritAttrs?: boolean
 
   // lifecycle
   isMounted: boolean
@@ -229,9 +224,6 @@ export function createComponentInstance(
      * @internal
      */
     // [VaporLifecycleHooks.SERVER_PREFETCH]: null,
-  }
-  if (component.inheritAttrs != null) {
-    instance.inheritAttrs = component.inheritAttrs
   }
   initProps(instance, rawProps, !isFunction(component))
   instance.emit = emit.bind(null, instance)

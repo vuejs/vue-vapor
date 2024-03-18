@@ -53,7 +53,7 @@ export function setupComponent(instance: ComponentInternalInstance): void {
       block = []
     }
     instance.block = block
-    if (instance.inheritAttrs !== false) {
+    if (instance.component.inheritAttrs !== false) {
       baseWatch(() => fallThroughAttrs(instance), undefined, {
         scheduler: createVaporPreScheduler(instance),
       })

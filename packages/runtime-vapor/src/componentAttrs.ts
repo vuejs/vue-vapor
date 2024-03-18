@@ -2,6 +2,7 @@ import { camelize, isArray, isFunction } from '@vue/shared'
 import type { ComponentInternalInstance } from './component'
 import { isEmitListener } from './componentEmits'
 import type { Block } from './apiRender'
+import { setDynamicProp } from './dom/prop'
 
 export function patchAttrs(instance: ComponentInternalInstance) {
   const attrs = instance.attrs
@@ -50,7 +51,7 @@ export function fallThroughAttrs(instance: ComponentInternalInstance) {
   if (!block) return
   for (const key in attrs) {
     if (block instanceof Element) {
-      block.setAttribute(key, String(attrs[key]))
+      setDynamicProp(block, key, attrs[key])
     }
   }
 }
