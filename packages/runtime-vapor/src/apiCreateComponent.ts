@@ -5,7 +5,7 @@ import {
 } from './component'
 import { setupComponent } from './apiRender'
 import type { RawProps } from './componentProps'
-import { withAttrs } from './helpers/withAttrs'
+import { withAttrs } from './componentAttrs'
 
 export function createComponent(
   comp: Component,
@@ -15,7 +15,7 @@ export function createComponent(
   const current = currentInstance!
   const instance = createComponentInstance(
     comp,
-    singleRoot && comp.inheritAttrs !== false ? withAttrs(rawProps) : rawProps,
+    singleRoot ? withAttrs(rawProps) : rawProps,
   )
   setupComponent(instance, singleRoot)
 

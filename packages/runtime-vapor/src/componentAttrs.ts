@@ -1,10 +1,11 @@
 import { camelize, isFunction } from '@vue/shared'
-import type { ComponentInternalInstance } from './component'
+import { type ComponentInternalInstance, currentInstance } from './component'
 import { isEmitListener } from './componentEmits'
 import { type Block, type WithAttrsNode, withAttrsKey } from './apiRender'
 import { setDynamicProp } from './dom/prop'
 import { baseWatch } from '@vue/reactivity'
 import { createVaporPreScheduler } from './scheduler'
+import type { RawProps } from './componentProps'
 
 export function patchAttrs(instance: ComponentInternalInstance) {
   const attrs = instance.attrs
@@ -47,6 +48,16 @@ export function patchAttrs(instance: ComponentInternalInstance) {
   }
 }
 
+export function withAttrs(props: RawProps): RawProps {
+  const instance = currentInstance!
+  if (instance.component.inheritAttrs === false) return props
+  if (!props) return [() => instance.attrs]
+  if (Array.isArray(props)) {
+    return [() => instance.attrs, ...props]
+  }
+  return [() => instance.attrs, props]
+}
+
 export function fallThroughAttrs(
   instance: ComponentInternalInstance,
   singleRoot: boolean,
@@ -56,14 +67,11 @@ export function fallThroughAttrs(
     component: { inheritAttrs },
     uid,
   } = instance
-  if (singleRoot && inheritAttrs !== false && !(withAttrsKey in block!)) {
+  if (inheritAttrs === false) return
+  if (singleRoot && !(withAttrsKey in block!)) {
     ;(block as WithAttrsNode)[withAttrsKey] = uid
   }
-  if (
-    inheritAttrs !== false &&
-    withAttrsKey in block! &&
-    block[withAttrsKey] === uid
-  ) {
+  if (withAttrsKey in block! && block[withAttrsKey] === uid) {
     baseWatch(() => doFallThroughAttrs(instance), undefined, {
       scheduler: createVaporPreScheduler(instance),
     })
