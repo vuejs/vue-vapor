@@ -46,7 +46,7 @@ export function genCreateComponent(
   ]
 
   function genProps() {
-    const props = [...oper.props]
+    const props = oper.props
       .map(props => {
         if (isArray(props)) {
           if (!props.length) return undefined
