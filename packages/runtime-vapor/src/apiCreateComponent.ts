@@ -4,12 +4,12 @@ import {
   currentInstance,
 } from './component'
 import { setupComponent } from './apiRender'
-import type { NormalizedRawProps } from './componentProps'
+import type { RawProps } from './componentProps'
 import { withAttrs } from './componentAttrs'
 
 export function createComponent(
   comp: Component,
-  rawProps: NormalizedRawProps | null = null,
+  rawProps: RawProps | null = null,
   singleRoot: boolean = false,
 ) {
   const current = currentInstance!

@@ -57,7 +57,7 @@ export function setupComponent(
       block = []
     }
     instance.block = block
-    fallThroughAttrs(instance, singleRoot)
+    if (singleRoot) fallThroughAttrs(instance)
     return block
   })
   reset()

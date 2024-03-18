@@ -222,7 +222,6 @@ describe('component: props', () => {
   test('optimized props updates', async () => {
     const t0 = template('<div>')
     const { component: Child } = define({
-      inheritAttrs: false,
       props: ['foo'],
       render() {
         const instance = getCurrentInstance()!
@@ -239,21 +238,26 @@ describe('component: props', () => {
         return { foo, id }
       },
       render(_ctx: Record<string, any>) {
-        return createComponent(Child, {
-          foo: () => _ctx.foo,
-          id: () => _ctx.id,
-        })
+        return createComponent(
+          Child,
+          {
+            foo: () => _ctx.foo,
+            id: () => _ctx.id,
+          },
+          true,
+        )
       },
     }).render()
     const reset = setCurrentInstance(instance)
-    expect(host.innerHTML).toBe('<div>1</div>')
+    expect(host.innerHTML).toBe('<div id="a">1</div>')
 
     foo.value++
     await nextTick()
-    expect(host.innerHTML).toBe('<div>2</div>')
+    expect(host.innerHTML).toBe('<div id="a">2</div>')
 
     id.value = 'b'
     await nextTick()
+    expect(host.innerHTML).toBe('<div id="b">2</div>')
     reset()
   })
 

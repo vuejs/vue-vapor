@@ -57,17 +57,14 @@ export function withAttrs(props: RawProps): RawProps {
   return [attrsGetter, props]
 }
 
-export function fallThroughAttrs(
-  instance: ComponentInternalInstance,
-  singleRoot: boolean,
-) {
+export function fallThroughAttrs(instance: ComponentInternalInstance) {
   const {
     block,
     component: { inheritAttrs },
   } = instance
   if (inheritAttrs === false) return
 
-  if (singleRoot && block instanceof Element) {
+  if (block instanceof Element) {
     renderEffect(() => setDynamicProps(block, instance.attrs))
   }
 }
