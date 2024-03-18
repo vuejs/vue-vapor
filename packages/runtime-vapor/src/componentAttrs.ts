@@ -61,6 +61,5 @@ function getFallThroughNode(block: Block) {
   // since attrs was already pass through by props
   if (withAttrsKey in block && block[withAttrsKey]) return null
   if (block instanceof Node) return block
-  if (isArray(block) && block.length === 1) return getFallThroughNode(block[0])
   return null
 }
