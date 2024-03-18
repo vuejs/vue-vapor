@@ -38,10 +38,10 @@ export function setupComponent(
       stateOrNode &&
       (stateOrNode instanceof Node ||
         isArray(stateOrNode) ||
-        (stateOrNode as any)[fragmentKey] ||
-        (stateOrNode as any)[componentKey])
+        fragmentKey in stateOrNode ||
+        componentKey in stateOrNode)
     ) {
-      block = stateOrNode as Block
+      block = stateOrNode
     } else if (isObject(stateOrNode)) {
       instance.setupState = proxyRefs(stateOrNode)
     }
