@@ -36,13 +36,12 @@ export function genCreateComponent(
   return [
     NEWLINE,
     `const n${oper.id} = `,
-    ...genCall(vaporHelper('createComponent'), tag, props),
-    ...(singleRoot
-      ? [
-          NEWLINE as typeof NEWLINE,
-          ...genCall(vaporHelper('markWithAttrs'), `n${oper.id}`),
-        ]
-      : []),
+    ...genCall(
+      vaporHelper('createComponent'),
+      tag,
+      props,
+      singleRoot ? 'true' : undefined,
+    ),
   ]
 
   function genProps() {

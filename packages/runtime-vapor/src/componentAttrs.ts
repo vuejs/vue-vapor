@@ -47,7 +47,7 @@ export function patchAttrs(instance: ComponentInternalInstance) {
 
 export function fallThroughAttrs(instance: ComponentInternalInstance) {
   const attrs = instance.attrs
-  const block = getFallThroughNode(instance.block!)
+  const block = getFallThroughNode(instance.block!, instance.uid)
   if (!block) return
   for (const key in attrs) {
     if (block instanceof Element) {
@@ -56,10 +56,7 @@ export function fallThroughAttrs(instance: ComponentInternalInstance) {
   }
 }
 
-function getFallThroughNode(block: Block) {
-  // If the block has withAttrsKey, it should not fall through In runtime
-  // since attrs was already pass through by props
-  if (withAttrsKey in block && block[withAttrsKey]) return null
-  if (block instanceof Node) return block
+function getFallThroughNode(block: Block, id: number) {
+  if (withAttrsKey in block && block[withAttrsKey] === id) return block
   return null
 }

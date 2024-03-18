@@ -21,10 +21,13 @@ export type Fragment = {
   [fragmentKey]: true
 }
 export type WithAttrsNode = Node & {
-  [withAttrsKey]: true
+  [withAttrsKey]: number
 }
 
-export function setupComponent(instance: ComponentInternalInstance): void {
+export function setupComponent(
+  instance: ComponentInternalInstance,
+  withAttrs: boolean = false,
+): void {
   const reset = setCurrentInstance(instance)
   instance.scope.run(() => {
     const { component, props, emit, attrs } = instance
@@ -57,6 +60,13 @@ export function setupComponent(instance: ComponentInternalInstance): void {
       block = []
     }
     instance.block = block
+    if (
+      !instance.component.inheritAttrs &&
+      withAttrs &&
+      !(withAttrsKey in block)
+    ) {
+      ;(block as WithAttrsNode)[withAttrsKey] = instance.uid
+    }
     if (instance.component.inheritAttrs !== false) {
       baseWatch(() => fallThroughAttrs(instance), undefined, {
         scheduler: createVaporPreScheduler(instance),
