@@ -20,10 +20,11 @@ import {
 import { VaporLifecycleHooks } from './apiLifecycle'
 
 import type { Data } from '@vue/shared'
+import type { SetupContext } from './apiSetup'
 
 export type Component = FunctionalComponent | ObjectComponent
 
-export type SetupFn = (props: any, ctx: any) => Block | Data | void
+export type SetupFn = (props: any, ctx: SetupContext) => Block | Data | void
 export type FunctionalComponent = SetupFn & Omit<ObjectComponent, 'setup'>
 
 export interface ObjectComponent {

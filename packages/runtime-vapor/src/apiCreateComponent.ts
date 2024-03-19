@@ -3,7 +3,7 @@ import {
   createComponentInstance,
   currentInstance,
 } from './component'
-import { setupComponent } from './apiRender'
+import { setupComponent } from './apiSetup'
 import type { RawProps } from './componentProps'
 import { withAttrs } from './componentAttrs'
 
