@@ -1,4 +1,4 @@
-import { EffectScope, TrackOpTypes, track } from '@vue/reactivity'
+import { EffectScope } from '@vue/reactivity'
 import { EMPTY_OBJ, NOOP, isFunction } from '@vue/shared'
 import type { Block } from './apiRender'
 import type { DirectiveBinding } from './directives'
@@ -285,7 +285,6 @@ function getAttrsProxy(instance: ComponentInternalInstance): Data {
       __DEV__
         ? {
             get(target, key: string) {
-              track(instance, TrackOpTypes.GET, '$attrs')
               return target[key]
             },
             set() {
@@ -299,7 +298,6 @@ function getAttrsProxy(instance: ComponentInternalInstance): Data {
           }
         : {
             get(target, key: string) {
-              track(instance, TrackOpTypes.GET, '$attrs')
               return target[key]
             },
           },
