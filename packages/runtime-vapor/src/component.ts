@@ -24,7 +24,7 @@ import { warn } from './warning'
 
 export type Component = FunctionalComponent | ObjectComponent
 
-export type SetupFn = (props: any, ctx?: SetupContext) => Block | Data | void
+export type SetupFn = (props: any, ctx: SetupContext) => Block | Data | void
 export type FunctionalComponent = SetupFn & Omit<ObjectComponent, 'setup'>
 
 export type SetupContext<E = EmitsOptions> = E extends any
