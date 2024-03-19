@@ -27,6 +27,7 @@ export function setupComponent(
   instance.scope.run(() => {
     const { component, props } = instance
     const ctx = createSetupContext(instance)
+    instance.setupContext = ctx
 
     const setupFn = isFunction(component) ? component : component.setup
     const stateOrNode = setupFn && setupFn(props, ctx)

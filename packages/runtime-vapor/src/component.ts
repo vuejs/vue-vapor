@@ -60,6 +60,7 @@ export interface ComponentInternalInstance {
 
   // state
   setupState: Data
+  setupContext: SetupContext
   props: Data
   emit: EmitFn
   emitted: Record<string, boolean> | null
@@ -170,6 +171,7 @@ export function createComponentInstance(
 
     // state
     setupState: EMPTY_OBJ,
+    setupContext: null!,
     props: EMPTY_OBJ,
     emit: null!,
     emitted: null,
