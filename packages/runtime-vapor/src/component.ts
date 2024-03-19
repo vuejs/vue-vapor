@@ -1,5 +1,5 @@
-import { EffectScope } from '@vue/reactivity'
-import { EMPTY_OBJ, isFunction } from '@vue/shared'
+import { EffectScope, TrackOpTypes, track } from '@vue/reactivity'
+import { EMPTY_OBJ, NOOP, isFunction } from '@vue/shared'
 import type { Block } from './apiRender'
 import type { DirectiveBinding } from './directives'
 import {
@@ -20,12 +20,47 @@ import {
 import { VaporLifecycleHooks } from './apiLifecycle'
 
 import type { Data } from '@vue/shared'
-import type { SetupContext } from './apiSetup'
+import { warn } from './warning'
 
 export type Component = FunctionalComponent | ObjectComponent
 
-export type SetupFn = (props: any, ctx: SetupContext) => Block | Data | void
+export type SetupFn = (props: any, ctx?: SetupContext) => Block | Data | void
 export type FunctionalComponent = SetupFn & Omit<ObjectComponent, 'setup'>
+
+export type SetupContext<E = EmitsOptions> = E extends any
+  ? {
+      attrs: Data
+      emit: EmitFn<E>
+      expose: (exposed?: Record<string, any>) => void
+      // TODO slots
+    }
+  : never
+
+export function createSetupContext(
+  instance: ComponentInternalInstance,
+): SetupContext {
+  if (__DEV__) {
+    // We use getters in dev in case libs like test-utils overwrite instance
+    // properties (overwrites should not be done in prod)
+    return Object.freeze({
+      get attrs() {
+        return getAttrsProxy(instance)
+      },
+      get emit() {
+        return (event: string, ...args: any[]) => instance.emit(event, ...args)
+      },
+      expose: NOOP,
+    })
+  } else {
+    return {
+      get attrs() {
+        return getAttrsProxy(instance)
+      },
+      emit: instance.emit,
+      expose: NOOP,
+    }
+  }
+}
 
 export interface ObjectComponent {
   props?: ComponentPropsOptions
@@ -60,12 +95,14 @@ export interface ComponentInternalInstance {
 
   // state
   setupState: Data
-  setupContext: SetupContext
+  setupContext: SetupContext | null
   props: Data
   emit: EmitFn
   emitted: Record<string, boolean> | null
   attrs: Data
   refs: Data
+
+  attrsProxy: Data | null
 
   // lifecycle
   isMounted: boolean
@@ -171,12 +208,14 @@ export function createComponentInstance(
 
     // state
     setupState: EMPTY_OBJ,
-    setupContext: null!,
+    setupContext: null,
     props: EMPTY_OBJ,
     emit: null!,
     emitted: null,
     attrs: EMPTY_OBJ,
     refs: EMPTY_OBJ,
+
+    attrsProxy: null,
 
     // lifecycle
     isMounted: false,
@@ -236,4 +275,34 @@ export function createComponentInstance(
   instance.emit = emit.bind(null, instance)
 
   return instance
+}
+
+function getAttrsProxy(instance: ComponentInternalInstance): Data {
+  return (
+    instance.attrsProxy ||
+    (instance.attrsProxy = new Proxy(
+      instance.attrs,
+      __DEV__
+        ? {
+            get(target, key: string) {
+              track(instance, TrackOpTypes.GET, '$attrs')
+              return target[key]
+            },
+            set() {
+              warn(`setupContext.attrs is readonly.`)
+              return false
+            },
+            deleteProperty() {
+              warn(`setupContext.attrs is readonly.`)
+              return false
+            },
+          }
+        : {
+            get(target, key: string) {
+              track(instance, TrackOpTypes.GET, '$attrs')
+              return target[key]
+            },
+          },
+    ))
+  )
 }

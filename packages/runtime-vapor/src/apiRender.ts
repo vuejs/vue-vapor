@@ -1,8 +1,17 @@
-import type { ComponentInternalInstance } from './component'
+import {
+  type ComponentInternalInstance,
+  componentKey,
+  createSetupContext,
+  setCurrentInstance,
+} from './component'
 import { insert, querySelector, remove } from './dom/element'
 import { flushPostFlushCbs, queuePostRenderEffect } from './scheduler'
 import { invokeLifecycle } from './componentLifecycle'
 import { VaporLifecycleHooks } from './apiLifecycle'
+import { pauseTracking, proxyRefs, shallowReadonly } from '@vue/reactivity'
+import { isArray, isFunction, isObject } from '@vue/shared'
+import { fallThroughAttrs } from './componentAttrs'
+import { VaporErrorCodes, callWithErrorHandling } from './errorHandling'
 
 export const fragmentKey = Symbol(__DEV__ ? `fragmentKey` : ``)
 
@@ -11,6 +20,60 @@ export type Fragment = {
   nodes: Block
   anchor?: Node
   [fragmentKey]: true
+}
+
+export function setupComponent(
+  instance: ComponentInternalInstance,
+  singleRoot: boolean = false,
+): void {
+  const reset = setCurrentInstance(instance)
+  instance.scope.run(() => {
+    const { component, props } = instance
+
+    const setupFn = isFunction(component) ? component : component.setup
+    let stateOrNode: Block | undefined
+    if (setupFn) {
+      const setupContext = (instance.setupContext =
+        setupFn && setupFn.length > 1 ? createSetupContext(instance) : null)
+      pauseTracking()
+      stateOrNode = callWithErrorHandling(
+        setupFn,
+        instance,
+        VaporErrorCodes.SETUP_FUNCTION,
+        [__DEV__ ? shallowReadonly(props) : props, setupContext],
+      )
+      resetTracking()
+    }
+
+    let block: Block | undefined
+
+    if (
+      stateOrNode &&
+      (stateOrNode instanceof Node ||
+        isArray(stateOrNode) ||
+        fragmentKey in stateOrNode ||
+        componentKey in stateOrNode)
+    ) {
+      block = stateOrNode
+    } else if (isObject(stateOrNode)) {
+      instance.setupState = proxyRefs(stateOrNode)
+    }
+    if (!block && component.render) {
+      block = component.render(instance.setupState)
+    }
+
+    if (block instanceof DocumentFragment) {
+      block = Array.from(block.childNodes)
+    }
+    if (!block) {
+      // TODO: warn no template
+      block = []
+    }
+    instance.block = block
+    if (singleRoot) fallThroughAttrs(instance)
+    return block
+  })
+  reset()
 }
 
 export function render(
@@ -57,4 +120,7 @@ export function unmountComponent(instance: ComponentInternalInstance) {
   // hook: unmounted
   invokeLifecycle(instance, VaporLifecycleHooks.UNMOUNTED, 'unmounted', true)
   queuePostRenderEffect(() => (instance.isUnmounted = true))
+}
+function resetTracking() {
+  throw new Error('Function not implemented.')
 }
