@@ -26,8 +26,8 @@ export function setupComponent(
 ): void {
   const reset = setCurrentInstance(instance)
   instance.scope.run(() => {
-    const { component, props, emit, attrs } = instance
-    const ctx = { expose: () => {}, emit, attrs }
+    const { component, props, emit, attrs, slots } = instance
+    const ctx = { expose: () => {}, emit, attrs, slots }
 
     const setupFn = isFunction(component) ? component : component.setup
     const stateOrNode = setupFn && setupFn(props, ctx)
