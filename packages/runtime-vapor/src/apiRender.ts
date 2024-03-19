@@ -8,7 +8,12 @@ import { insert, querySelector, remove } from './dom/element'
 import { flushPostFlushCbs, queuePostRenderEffect } from './scheduler'
 import { invokeLifecycle } from './componentLifecycle'
 import { VaporLifecycleHooks } from './apiLifecycle'
-import { pauseTracking, proxyRefs, shallowReadonly } from '@vue/reactivity'
+import {
+  pauseTracking,
+  proxyRefs,
+  resetTracking,
+  shallowReadonly,
+} from '@vue/reactivity'
 import { isArray, isFunction, isObject } from '@vue/shared'
 import { fallThroughAttrs } from './componentAttrs'
 import { VaporErrorCodes, callWithErrorHandling } from './errorHandling'
@@ -120,7 +125,4 @@ export function unmountComponent(instance: ComponentInternalInstance) {
   // hook: unmounted
   invokeLifecycle(instance, VaporLifecycleHooks.UNMOUNTED, 'unmounted', true)
   queuePostRenderEffect(() => (instance.isUnmounted = true))
-}
-function resetTracking() {
-  throw new Error('Function not implemented.')
 }
