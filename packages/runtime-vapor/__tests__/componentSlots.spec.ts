@@ -58,7 +58,7 @@ describe('component: slots', () => {
 
   test('initSlots: instance.slots should be set correctly', () => {
     let instance: any
-    const { render } = define({
+    const Comp = defineComponent({
       render() {
         const t0 = template('<div></div>')
         const n0 = t0()
@@ -67,12 +67,20 @@ describe('component: slots', () => {
       },
     })
 
-    render(
-      {},
-      createSlots({
-        header: () => template('header')(),
-      }),
-    )
+    const { render } = define({
+      render() {
+        return createComponent(
+          Comp,
+          {},
+          createSlots({
+            header: () => template('header')(),
+          }),
+        )
+      },
+    })
+
+    render()
+
     expect(instance.slots.header()).toMatchObject(
       document.createTextNode('header'),
     )

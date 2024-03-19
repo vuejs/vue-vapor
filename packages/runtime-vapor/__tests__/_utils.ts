@@ -6,7 +6,6 @@ import {
   createVaporApp,
   defineComponent,
 } from '../src'
-import type { Slots } from '../src/componentSlots'
 import type { RawProps } from '../src/componentProps'
 
 export function makeRender<Component = ObjectComponent | SetupFn>(
@@ -31,10 +30,9 @@ export function makeRender<Component = ObjectComponent | SetupFn>(
     let app: App
     const render = (
       props: RawProps = {},
-      slots: Slots = {},
       container: string | ParentNode = '#host',
     ) => {
-      app = createVaporApp(component, props, slots)
+      app = createVaporApp(component, props)
       instance = app.mount(container)
       return res()
     }

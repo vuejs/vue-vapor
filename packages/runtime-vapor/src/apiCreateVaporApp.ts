@@ -8,12 +8,10 @@ import { warn } from './warning'
 import { version } from '.'
 import { render, setupComponent, unmountComponent } from './apiRender'
 import type { RawProps } from './componentProps'
-import type { Slots } from './componentSlots'
 
 export function createVaporApp(
   rootComponent: Component,
   rootProps: RawProps | null = null,
-  rootSlots: Slots | null = null,
 ): App {
   if (rootProps != null && !isObject(rootProps)) {
     __DEV__ && warn(`root props passed to app.mount() must be an object.`)
@@ -40,7 +38,7 @@ export function createVaporApp(
 
     mount(rootContainer): any {
       if (!instance) {
-        instance = createComponentInstance(rootComponent, rootProps, rootSlots)
+        instance = createComponentInstance(rootComponent, rootProps)
         setupComponent(instance)
         render(instance, rootContainer)
         return instance

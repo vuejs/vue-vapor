@@ -147,7 +147,7 @@ let uid = 0
 export function createComponentInstance(
   component: ObjectComponent | FunctionalComponent,
   rawProps: RawProps | null,
-  slots: Slots | null,
+  slots: Slots | null = null,
 ): ComponentInternalInstance {
   const instance: ComponentInternalInstance = {
     [componentKey]: true,
