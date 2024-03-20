@@ -1,8 +1,8 @@
 // NOTE: This test is implemented based on the case of `runtime-core/__test__/apiInject.spec.ts`.
 
-import type { Ref } from '@vue/reactivity' // TODO: export Ref from ../src
 import {
   type InjectionKey,
+  type Ref,
   createComponent,
   createTextNode,
   createVaporApp,

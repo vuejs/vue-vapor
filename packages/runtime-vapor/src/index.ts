@@ -3,6 +3,7 @@
 export const version = __VERSION__
 export {
   // core
+  type Ref,
   reactive,
   ref,
   readonly,
