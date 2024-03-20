@@ -33,7 +33,7 @@ describe('api: provide/inject', () => {
 
     const Middle = {
       render() {
-        return createComponent(Consumer as any, getCurrentInstance()!)
+        return createComponent(Consumer, getCurrentInstance()!)
       },
     }
 
@@ -67,7 +67,7 @@ describe('api: provide/inject', () => {
     const Middle = {
       render() {
         const instance = getCurrentInstance()!
-        return createComponent(Consumer as any, instance)
+        return createComponent(Consumer, instance)
       },
     }
 
@@ -98,7 +98,7 @@ describe('api: provide/inject', () => {
     const Middle = {
       render() {
         const instance = getCurrentInstance()!
-        return createComponent(Consumer as any, instance)
+        return createComponent(Consumer, instance)
       },
     }
 

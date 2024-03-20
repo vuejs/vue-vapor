@@ -2,6 +2,7 @@
 import {
   createComponent,
   defineComponent,
+  getCurrentInstance,
   on,
   reactive,
   ref,
@@ -33,7 +34,7 @@ export default defineComponent({
       on(n0, 'click', () => handleClick)
       renderEffect(() => setText(n0, count.value))
       /** @type {any} */
-      const n1 = createComponent(child, [
+      const n1 = createComponent(child, getCurrentInstance(), [
         {
           /* <Comp :count="count" /> */
           count: () => {
@@ -44,6 +45,7 @@ export default defineComponent({
           inlineDouble: () => count.value * 2,
           id: () => 'hello',
         },
+
         () => props,
       ])
       return [n0, n1]
