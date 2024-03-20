@@ -59,16 +59,12 @@ describe('api: provide/inject', () => {
     const Provider = define({
       setup() {
         provide(key, 1)
-        const instance = getCurrentInstance()!
-        return createComponent(Middle, instance)
+        return createComponent(Middle, getCurrentInstance()!)
       },
     })
 
     const Middle = {
-      render() {
-        const instance = getCurrentInstance()!
-        return createComponent(Consumer, instance)
-      },
+      render: () => createComponent(Consumer, getCurrentInstance()!),
     }
 
     const Consumer = {
@@ -90,16 +86,12 @@ describe('api: provide/inject', () => {
     const Provider = define({
       setup() {
         provide('foo', 'foo')
-        const instance = getCurrentInstance()!
-        return createComponent(Middle, instance)
+        return createComponent(Middle, getCurrentInstance()!)
       },
     })
 
     const Middle = {
-      render() {
-        const instance = getCurrentInstance()!
-        return createComponent(Consumer, instance)
-      },
+      render: () => createComponent(Consumer, getCurrentInstance()!),
     }
 
     const Consumer = {
