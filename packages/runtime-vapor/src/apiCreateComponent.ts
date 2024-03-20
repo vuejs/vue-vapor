@@ -1,5 +1,6 @@
 import {
   type Component,
+  type ComponentInternalInstance,
   createComponentInstance,
   currentInstance,
 } from './component'
@@ -9,12 +10,14 @@ import { withAttrs } from './componentAttrs'
 
 export function createComponent(
   comp: Component,
+  parent: ComponentInternalInstance | null,
   rawProps: RawProps | null = null,
   singleRoot: boolean = false,
 ) {
   const current = currentInstance!
   const instance = createComponentInstance(
     comp,
+    parent,
     singleRoot ? withAttrs(rawProps) : rawProps,
   )
   setupComponent(instance, singleRoot)

@@ -89,6 +89,7 @@ export { on, delegate, delegateEvents, setDynamicEvents } from './dom/event'
 export { setRef } from './dom/templateRef'
 
 export { defineComponent } from './apiDefineComponent'
+export { type InjectionKey, inject, provide } from './apiInject'
 export {
   onBeforeMount,
   onMounted,
