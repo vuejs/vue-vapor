@@ -5,7 +5,9 @@ import {
   type InjectionKey,
   createComponent,
   createTextNode,
+  createVaporApp,
   getCurrentInstance,
+  hasInjectionContext,
   inject,
   nextTick,
   provide,
@@ -376,12 +378,28 @@ describe('api: provide/inject', () => {
     expect(Comp.host.innerHTML).toBe('')
   })
 
-  // TODO:
-  describe.todo('hasInjectionContext', () => {
-    it.todo('should be false outside of setup', () => {})
+  describe('hasInjectionContext', () => {
+    it('should be false outside of setup', () => {
+      expect(hasInjectionContext()).toBe(false)
+    })
 
-    it.todo('should be true within setup', () => {})
+    it('should be true within setup', () => {
+      expect.assertions(1)
+      const Comp = define({
+        setup() {
+          expect(hasInjectionContext()).toBe(true)
+          return () => null
+        },
+      })
 
-    it.todo('should be true within app.runWithContext()', () => {})
+      Comp.render()
+    })
+
+    it('should be true within app.runWithContext()', () => {
+      expect.assertions(1)
+      createVaporApp({}).runWithContext(() => {
+        expect(hasInjectionContext()).toBe(true)
+      })
+    })
   })
 })
