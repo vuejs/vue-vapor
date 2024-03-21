@@ -240,7 +240,6 @@ describe('component: props', () => {
       render(_ctx: Record<string, any>) {
         return createComponent(
           Child,
-          null,
           {
             foo: () => _ctx.foo,
             id: () => _ctx.id,
@@ -409,9 +408,7 @@ describe('component: props', () => {
     }
 
     define(() =>
-      createComponent(Comp, null, [
-        () => (passFoo.value ? { foo: () => 'ok' } : {}),
-      ]),
+      createComponent(Comp, [() => (passFoo.value ? { foo: () => 'ok' } : {})]),
     ).render()
 
     expect(initialKeys).toMatchObject(['foo'])

@@ -27,13 +27,13 @@ describe('api: provide/inject', () => {
     const Provider = define({
       setup() {
         provide('foo', 1)
-        return createComponent(Middle, getCurrentInstance()!)
+        return createComponent(Middle)
       },
     })
 
     const Middle = {
       render() {
-        return createComponent(Consumer, getCurrentInstance()!)
+        return createComponent(Consumer)
       },
     }
 
@@ -59,12 +59,12 @@ describe('api: provide/inject', () => {
     const Provider = define({
       setup() {
         provide(key, 1)
-        return createComponent(Middle, getCurrentInstance()!)
+        return createComponent(Middle)
       },
     })
 
     const Middle = {
-      render: () => createComponent(Consumer, getCurrentInstance()!),
+      render: () => createComponent(Consumer),
     }
 
     const Consumer = {
@@ -86,12 +86,12 @@ describe('api: provide/inject', () => {
     const Provider = define({
       setup() {
         provide('foo', 'foo')
-        return createComponent(Middle, getCurrentInstance()!)
+        return createComponent(Middle)
       },
     })
 
     const Middle = {
-      render: () => createComponent(Consumer, getCurrentInstance()!),
+      render: () => createComponent(Consumer),
     }
 
     const Consumer = {
@@ -120,7 +120,7 @@ describe('api: provide/inject', () => {
       setup() {
         provide('foo', 'foo')
         provide('bar', 'bar')
-        return createComponent(ProviderTwo, getCurrentInstance()!)
+        return createComponent(ProviderTwo)
       },
     })
 
@@ -129,7 +129,7 @@ describe('api: provide/inject', () => {
         // override parent value
         provide('foo', 'fooOverride')
         provide('baz', 'baz')
-        return createComponent(Consumer, getCurrentInstance()!)
+        return createComponent(Consumer)
       },
     }
 
@@ -156,12 +156,12 @@ describe('api: provide/inject', () => {
     const Provider = define({
       setup() {
         provide('count', count)
-        return createComponent(Middle, getCurrentInstance()!)
+        return createComponent(Middle)
       },
     })
 
     const Middle = {
-      render: () => createComponent(Consumer, getCurrentInstance()!),
+      render: () => createComponent(Consumer),
     }
 
     const Consumer = {
@@ -191,12 +191,12 @@ describe('api: provide/inject', () => {
     const Provider = define({
       setup() {
         provide('count', readonly(count))
-        return createComponent(Middle, getCurrentInstance()!)
+        return createComponent(Middle)
       },
     })
 
     const Middle = {
-      render: () => createComponent(Consumer, getCurrentInstance()!),
+      render: () => createComponent(Consumer),
     }
 
     const Consumer = {
@@ -232,12 +232,12 @@ describe('api: provide/inject', () => {
     const Provider = define({
       setup() {
         provide('state', rootState)
-        return createComponent(Middle, getCurrentInstance()!)
+        return createComponent(Middle)
       },
     })
 
     const Middle = {
-      render: () => createComponent(Consumer, getCurrentInstance()!),
+      render: () => createComponent(Consumer),
     }
 
     const Consumer = {
@@ -267,12 +267,12 @@ describe('api: provide/inject', () => {
     const Provider = define({
       setup() {
         provide('state', readonly(rootState))
-        return createComponent(Middle, getCurrentInstance()!)
+        return createComponent(Middle)
       },
     })
 
     const Middle = {
-      render: () => createComponent(Consumer, getCurrentInstance()!),
+      render: () => createComponent(Consumer),
     }
 
     const Consumer = {
@@ -305,12 +305,12 @@ describe('api: provide/inject', () => {
   it('should warn unfound', () => {
     const Provider = define({
       setup() {
-        return createComponent(Middle, getCurrentInstance()!)
+        return createComponent(Middle)
       },
     })
 
     const Middle = {
-      render: () => createComponent(Consumer, getCurrentInstance()!),
+      render: () => createComponent(Consumer),
     }
 
     const Consumer = {
@@ -333,12 +333,12 @@ describe('api: provide/inject', () => {
   it('should not warn when default value is undefined', () => {
     const Provider = define({
       setup() {
-        return createComponent(Middle, getCurrentInstance()!)
+        return createComponent(Middle)
       },
     })
 
     const Middle = {
-      render: () => createComponent(Consumer, getCurrentInstance()!),
+      render: () => createComponent(Consumer),
     }
 
     const Consumer = {

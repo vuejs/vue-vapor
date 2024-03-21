@@ -187,11 +187,11 @@ const emptyAppContext = createAppContext()
 let uid = 0
 export function createComponentInstance(
   component: ObjectComponent | FunctionalComponent,
-  parent: ComponentInternalInstance | null,
   rawProps: RawProps | null,
   // application root node only
   appContext: AppContext | null = null,
 ): ComponentInternalInstance {
+  const parent = getCurrentInstance()
   const _appContext =
     (parent ? parent.appContext : appContext) || emptyAppContext
 
