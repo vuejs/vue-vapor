@@ -1,8 +1,5 @@
-// NOTE: copied from `runtime-core/src/apiInject.ts`
-
 import { isFunction } from '@vue/shared'
 import { currentInstance } from './component'
-// import { currentRenderingInstance } from './componentRenderContext'
 import { currentApp } from './apiCreateVaporApp'
 import { warn } from './warning'
 
@@ -49,10 +46,7 @@ export function inject(
   defaultValue?: unknown,
   treatDefaultAsFactory = false,
 ) {
-  // fallback to `currentRenderingInstance` so that this can be called in
-  // a functional component
   const instance = currentInstance
-  // || currentRenderingInstance // TODO:?
 
   // also support looking up from app-level provides w/ `app.runWithContext()`
   if (instance || currentApp) {
@@ -86,9 +80,5 @@ export function inject(
  * user. One example is `useRoute()` in `vue-router`.
  */
 export function hasInjectionContext(): boolean {
-  return !!(
-    currentInstance ||
-    // || currentRenderingInstance // TODO:?
-    currentApp
-  )
+  return !!(currentInstance || currentApp)
 }
