@@ -33,7 +33,7 @@ export type SetupContext<E = EmitsOptions> = E extends any
       attrs: Data
       emit: EmitFn<E>
       expose: (exposed?: Record<string, any>) => void
-      slots: InternalSlots
+      slots: Readonly<InternalSlots>
     }
   : never
 
@@ -196,6 +196,7 @@ export function createComponentInstance(
   component: ObjectComponent | FunctionalComponent,
   rawProps: RawProps | null,
   slots: Slots | null = null,
+  // application root node only
   appContext: AppContext | null = null,
 ): ComponentInternalInstance {
   const parent = getCurrentInstance()
