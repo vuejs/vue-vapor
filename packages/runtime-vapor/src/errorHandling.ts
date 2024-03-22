@@ -136,7 +136,7 @@ export function handleError(
     }
 
     // app-level handling
-    const appErrorHandler = instance.appContext?.config.errorHandler
+    const appErrorHandler = instance.appContext.config.errorHandler
     if (appErrorHandler) {
       pauseTracking()
       callWithErrorHandling(
