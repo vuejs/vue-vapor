@@ -22,10 +22,11 @@ export const transformRef: NodeTransform = (node, context) => {
       ? createSimpleExpression(dir.value.content, true, dir.value.loc)
       : EMPTY_EXPRESSION
   }
-
-  context.registerOperation({
-    type: IRNodeTypes.SET_REF,
-    element: context.reference(),
-    value,
-  })
+  return () => {
+    context.registerOperation({
+      type: IRNodeTypes.SET_REF,
+      element: context.reference(),
+      value,
+    })
+  }
 }
