@@ -18,7 +18,7 @@ import {
   normalizeEmitsOptions,
 } from './componentEmits'
 import {
-  type DinamicSlots,
+  type DynamicSlots,
   type InternalSlots,
   type Slots,
   initSlots,
@@ -201,7 +201,7 @@ export function createComponentInstance(
   component: ObjectComponent | FunctionalComponent,
   rawProps: RawProps | null,
   slots: Slots | null = null,
-  dynamicSlots: DinamicSlots | null = null,
+  dynamicSlots: DynamicSlots | null = null,
   // application root node only
   appContext: AppContext | null = null,
 ): ComponentInternalInstance {

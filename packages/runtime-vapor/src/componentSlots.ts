@@ -22,12 +22,12 @@ export interface DynamicSlot {
   key?: string
 }
 
-export type DinamicSlots = () => (DynamicSlot | DynamicSlot[])[]
+export type DynamicSlots = () => (DynamicSlot | DynamicSlot[])[]
 
 export const initSlots = (
   instance: ComponentInternalInstance,
   rawSlots: InternalSlots | null = null,
-  dynamicSlots: DinamicSlots | null = null,
+  dynamicSlots: DynamicSlots | null = null,
 ) => {
   const slots: InternalSlots = extend({}, rawSlots)
 
