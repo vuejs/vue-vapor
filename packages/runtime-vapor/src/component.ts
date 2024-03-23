@@ -341,7 +341,6 @@ function getSlotsProxy(instance: ComponentInternalInstance): Slots {
     instance.slotsProxy ||
     (instance.slotsProxy = new Proxy(instance.slots, {
       get(target, key: string) {
-        track(instance, TrackOpTypes.GET, '$slots')
         return target[key]
       },
     }))
