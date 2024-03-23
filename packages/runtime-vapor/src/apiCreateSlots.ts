@@ -6,7 +6,7 @@ import { renderEffect } from './renderEffect'
 
 // TODO: SSR
 
-interface CompiledSlotDescriptor {
+interface DynamicSlot {
   name: string
   fn: Slot
   key?: string
@@ -14,11 +14,7 @@ interface CompiledSlotDescriptor {
 
 export const createSlots = (
   slots: InternalSlots,
-  dynamicSlotsGetter?: () => (
-    | CompiledSlotDescriptor
-    | CompiledSlotDescriptor[]
-    | undefined
-  )[],
+  dynamicSlotsGetter?: () => (DynamicSlot | DynamicSlot[] | undefined)[],
 ): InternalSlots => {
   const dynamicSlotKeys: Record<string, true> = {}
   renderEffect(() => {
