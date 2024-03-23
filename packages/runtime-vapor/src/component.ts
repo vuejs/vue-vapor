@@ -115,7 +115,7 @@ export interface ComponentInternalInstance {
   slots: InternalSlots
   refs: Data
 
-  attrsProxy: Data | null
+  attrsProxy?: Data
   slotsProxy?: Slots
 
   // lifecycle
@@ -240,8 +240,6 @@ export function createComponentInstance(
     attrs: EMPTY_OBJ,
     slots: EMPTY_OBJ,
     refs: EMPTY_OBJ,
-
-    attrsProxy: null,
 
     // lifecycle
     isMounted: false,
