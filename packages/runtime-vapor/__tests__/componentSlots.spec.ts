@@ -119,49 +119,8 @@ describe('component: slots', () => {
     expect(instance.slots).toHaveProperty('two')
   })
 
-  test.todo(
-    'updateSlots: instance.slots should be updated correctly',
-    async () => {
-      const flag1 = ref(true)
-
-      let instance: any
-      const Child = () => {
-        instance = getCurrentInstance()
-        return template('child')()
-      }
-
-      const oldSlots = {
-        header: () => template('header')(),
-        footer: undefined,
-      }
-      const newSlots = {
-        header: undefined,
-        footer: () => template('footer')(),
-      }
-
-      const { render } = define({
-        setup() {
-          return (() => {
-            return createComponent(
-              Child,
-              {},
-              // TODO: maybe it is not supported
-              flag1.value ? oldSlots : newSlots,
-            )
-          })()
-        },
-      })
-
-      render()
-
-      expect(instance.slots).toMatchObject({ _: null })
-
-      flag1.value = false
-      await nextTick()
-
-      expect(instance.slots).toMatchObject({ _: null })
-    },
-  )
+  // NOTE: it is not supported
+  // test('updateSlots: instance.slots should be updated correctly (when slotType is null)', () => {})
 
   // runtime-core's "updateSlots: instance.slots should be update correctly (when vnode.shapeFlag is not SLOTS_CHILDREN)"
   test('updateSlots: instance.slots should be update correctly', async () => {
