@@ -1,8 +1,8 @@
 // NOTE: this filed is based on `runtime-core/src/helpers/createSlots.ts`
 
 import { isArray } from '@vue/shared'
+import { baseWatch } from '@vue/reactivity'
 import type { InternalSlots, Slot } from './componentSlots'
-import { renderEffect } from './renderEffect'
 
 // TODO: SSR
 
@@ -17,7 +17,7 @@ export const createSlots = (
   dynamicSlotsGetter?: () => (DynamicSlot | DynamicSlot[] | undefined)[],
 ): InternalSlots => {
   const dynamicSlotKeys: Record<string, true> = {}
-  renderEffect(() => {
+  baseWatch(() => {
     const dynamicSlots = dynamicSlotsGetter?.() ?? []
     for (let i = 0; i < dynamicSlots.length; i++) {
       const slot = dynamicSlots[i]
@@ -44,8 +44,7 @@ export const createSlots = (
     // delete stale slots
     for (const key in dynamicSlotKeys) {
       if (
-        // TODO: type (renderWatch)
-        !dynamicSlots.some((slot: any) =>
+        !dynamicSlots.some(slot =>
           isArray(slot) ? slot.some(s => s.name === key) : slot?.name === key,
         )
       ) {
