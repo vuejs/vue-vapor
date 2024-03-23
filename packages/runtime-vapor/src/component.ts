@@ -1,4 +1,4 @@
-import { EffectScope, TrackOpTypes, track } from '@vue/reactivity'
+import { EffectScope } from '@vue/reactivity'
 import { EMPTY_OBJ, NOOP, isFunction } from '@vue/shared'
 import type { Block } from './apiRender'
 import type { DirectiveBinding } from './directives'
