@@ -1,8 +1,8 @@
+// @ts-check
 import {
   children,
   createComponent,
   defineComponent,
-  getCurrentInstance,
   insert,
   on,
   ref,
@@ -23,7 +23,7 @@ const t1 = template(
 
 const Parent = defineComponent({
   vapor: true,
-  setup(_) {
+  setup() {
     return (() => {
       /** @type {any} */
       const n0 = createComponent(
@@ -34,9 +34,7 @@ const Parent = defineComponent({
             const n1 = t1()
             const n2 = /** @type {any} */ (children(n1, 0))
             const n3 = /** @type {any} */ (children(n1, 1))
-            renderEffect(() => {
-              setText(n2, message())
-            })
+            renderEffect(() => setText(n2, message()))
             on(n3, 'click', changeMessage)
             return n1
           },
@@ -58,16 +56,13 @@ const t2 = template(
 
 const Child = defineComponent({
   vapor: true,
-  setup(_, { expose: __expose }) {
-    __expose()
+  setup(_, { slots }) {
     const message = ref('Hello World!')
     function changeMessage() {
       message.value += '!'
     }
 
     return (() => {
-      const instance = /** @type {any} */ (getCurrentInstance())
-      const { slots } = instance
       // <div>
       //   <slot name="mySlot" :message="msg" :changeMessage="changeMessage" />
       //   <button @click="changeMessage">button in child</button>
@@ -75,10 +70,12 @@ const Child = defineComponent({
       const n0 = /** @type {any} */ (t2())
       const n1 = /** @type {any} */ (children(n0, 0))
       on(n1, 'click', () => changeMessage)
-      const s0 = slots.mySlot({
-        message: () => message.value,
-        changeMessage: () => changeMessage,
-      })
+      const s0 = /** @type {any} */ (
+        slots.mySlot?.({
+          message: () => message.value,
+          changeMessage: () => changeMessage,
+        })
+      )
       insert(s0, n0, n1)
       return n0
     })()
