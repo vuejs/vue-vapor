@@ -1,4 +1,4 @@
-import { type IfAny, isArray } from '@vue/shared'
+import { type IfAny, extend, isArray } from '@vue/shared'
 import { baseWatch } from '@vue/reactivity'
 import type { ComponentInternalInstance } from './component'
 import type { Block } from './apiRender'
@@ -29,13 +29,7 @@ export const initSlots = (
   rawSlots: InternalSlots | null = null,
   dynamicSlots: DinamicSlots | null = null,
 ) => {
-  const slots: InternalSlots = {}
-  for (const key in rawSlots) {
-    Object.defineProperty(slots, key, {
-      get: () => rawSlots[key],
-      enumerable: true,
-    })
-  }
+  const slots: InternalSlots = extend({}, rawSlots)
 
   if (dynamicSlots) {
     const dynamicSlotKeys: Record<string, true> = {}
