@@ -41,19 +41,15 @@ describe('component: slots', () => {
     expect(slots).toMatchObject({ _: 1 })
   })
 
-  test.todo(
-    'initSlots: should normalize object slots (when value is null, string, array)',
-    () => {
-      // TODO: normalize
-    },
-  )
-
-  test.todo(
-    'initSlots: should normalize object slots (when value is function)',
-    () => {
-      // TODO: normalize
-    },
-  )
+  // NOTE: slot normalization is not supported
+  // test.todo(
+  //   'initSlots: should normalize object slots (when value is null, string, array)',
+  //   () => {},
+  // )
+  // test.todo(
+  //   'initSlots: should normalize object slots (when value is function)',
+  //   () => {},
+  // )
 
   test('initSlots: instance.slots should be set correctly', () => {
     let instance: any
@@ -79,8 +75,8 @@ describe('component: slots', () => {
     )
   })
 
-  // TODO: test case name
-  test('initSlots: instance.slots should be set correctly (when vnode.shapeFlag is not SLOTS_CHILDREN)', () => {
+  // runtime-core's "initSlots: instance.slots should be set correctly (when vnode.shapeFlag is not SLOTS_CHILDREN)"
+  test('initSlots: instance.slots should be set correctly', () => {
     const { slots } = renderWithSlots({
       default: () => template('<span></span>')(),
     })
@@ -167,8 +163,8 @@ describe('component: slots', () => {
     },
   )
 
-  // TODO: test case name
-  test('updateSlots: instance.slots should be update correctly (when vnode.shapeFlag is not SLOTS_CHILDREN)', async () => {
+  // runtime-core's "updateSlots: instance.slots should be update correctly (when vnode.shapeFlag is not SLOTS_CHILDREN)"
+  test('updateSlots: instance.slots should be update correctly', async () => {
     const flag1 = ref(true)
 
     let instance: any
