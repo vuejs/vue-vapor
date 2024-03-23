@@ -119,7 +119,6 @@ export {
 export { createIf } from './apiCreateIf'
 export { createFor } from './apiCreateFor'
 export { createComponent } from './apiCreateComponent'
-export { createSlots } from './apiCreateSlots'
 
 export { resolveComponent, resolveDirective } from './helpers/resolveAssets'
 
