@@ -1,7 +1,6 @@
 import {
   children,
   createComponent,
-  createSlots,
   defineComponent,
   getCurrentInstance,
   insert,
@@ -30,7 +29,7 @@ const Parent = defineComponent({
       const n0 = createComponent(
         Child,
         {},
-        createSlots({
+        {
           mySlot: ({ message, changeMessage }) => {
             const n1 = t1()
             const n2 = /** @type {any} */ (children(n1, 0))
@@ -46,7 +45,7 @@ const Parent = defineComponent({
           //   const n1 = t1()
           //   return n1
           // }
-        }),
+        },
       )
       return n0
     })()

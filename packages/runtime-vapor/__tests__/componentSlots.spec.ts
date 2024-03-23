@@ -2,7 +2,6 @@
 
 import {
   createComponent,
-  createSlots,
   createVaporApp,
   defineComponent,
   getCurrentInstance,
@@ -69,13 +68,7 @@ describe('component: slots', () => {
 
     const { render } = define({
       render() {
-        return createComponent(
-          Comp,
-          {},
-          createSlots({
-            header: () => template('header')(),
-          }),
-        )
+        return createComponent(Comp, {}, { header: () => template('header')() })
       },
     })
 
@@ -88,12 +81,9 @@ describe('component: slots', () => {
 
   // TODO: test case name
   test('initSlots: instance.slots should be set correctly (when vnode.shapeFlag is not SLOTS_CHILDREN)', () => {
-    const { slots } = renderWithSlots(
-      createSlots({
-        // TODO: normalize from array?
-        default: () => template('<span></span>')(),
-      }),
-    )
+    const { slots } = renderWithSlots({
+      default: () => template('<span></span>')(),
+    })
 
     // expect(
     //   '[Vue warn]: Non-function value encountered for default slot. Prefer function slots for better performance.',
@@ -113,15 +103,11 @@ describe('component: slots', () => {
 
     const { render } = define({
       render() {
-        return createComponent(
-          Child,
-          {},
-          createSlots({ _: 2 as any }, () => [
-            flag1.value
-              ? { name: 'one', fn: () => template('<span></span>')() }
-              : { name: 'two', fn: () => template('<div></div>')() },
-          ]),
-        )
+        return createComponent(Child, {}, { _: 2 as any }, () => [
+          flag1.value
+            ? { name: 'one', fn: () => template('<span></span>')() }
+            : { name: 'two', fn: () => template('<div></div>')() },
+        ])
       },
     })
 
@@ -164,7 +150,7 @@ describe('component: slots', () => {
               Child,
               {},
               // TODO: maybe it is not supported
-              createSlots(flag1.value ? oldSlots : newSlots),
+              flag1.value ? oldSlots : newSlots,
             )
           })()
         },
@@ -193,15 +179,11 @@ describe('component: slots', () => {
 
     const { render } = define({
       setup() {
-        return createComponent(
-          Child,
-          {},
-          createSlots({}, () => [
-            flag1.value
-              ? [{ name: 'header', fn: () => template('header')() }]
-              : [{ name: 'footer', fn: () => template('footer')() }],
-          ]),
-        )
+        return createComponent(Child, {}, {}, () => [
+          flag1.value
+            ? [{ name: 'header', fn: () => template('header')() }]
+            : [{ name: 'footer', fn: () => template('footer')() }],
+        ])
       },
     })
     render()
@@ -235,9 +217,7 @@ describe('component: slots', () => {
           return createComponent(
             Comp,
             {},
-            createSlots({
-              default: () => template('msg')(),
-            }),
+            { default: () => template('msg')() },
           )!
         },
       })

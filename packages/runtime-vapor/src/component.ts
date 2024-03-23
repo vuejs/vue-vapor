@@ -17,7 +17,12 @@ import {
   emit,
   normalizeEmitsOptions,
 } from './componentEmits'
-import { type InternalSlots, type Slots, initSlots } from './componentSlots'
+import {
+  type DinamicSlotsGetter,
+  type InternalSlots,
+  type Slots,
+  initSlots,
+} from './componentSlots'
 import { VaporLifecycleHooks } from './apiLifecycle'
 import { warn } from './warning'
 import { type AppContext, createAppContext } from './apiCreateVaporApp'
@@ -196,6 +201,7 @@ export function createComponentInstance(
   component: ObjectComponent | FunctionalComponent,
   rawProps: RawProps | null,
   slots: Slots | null = null,
+  dynamicSlotsGetter: DinamicSlotsGetter | null = null,
   // application root node only
   appContext: AppContext | null = null,
 ): ComponentInternalInstance {
@@ -293,7 +299,7 @@ export function createComponentInstance(
     // [VaporLifecycleHooks.SERVER_PREFETCH]: null,
   }
   initProps(instance, rawProps, !isFunction(component))
-  initSlots(instance, slots)
+  initSlots(instance, slots, dynamicSlotsGetter)
   instance.emit = emit.bind(null, instance)
 
   return instance

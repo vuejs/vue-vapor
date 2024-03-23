@@ -245,6 +245,7 @@ describe('component: props', () => {
             id: () => _ctx.id,
           },
           null,
+          null,
           true,
         )
       },
