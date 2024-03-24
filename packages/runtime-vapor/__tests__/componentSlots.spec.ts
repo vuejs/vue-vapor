@@ -12,44 +12,42 @@ import {
 import { makeRender } from './_utils'
 
 const define = makeRender<any>()
+function renderWithSlots(slots: any): any {
+  let instance: any
+  const Comp = defineComponent({
+    render() {
+      const t0 = template('<div></div>')
+      const n0 = t0()
+      instance = getCurrentInstance()
+      return n0
+    },
+  })
+
+  const { render } = define({
+    render() {
+      return createComponent(Comp, {}, slots)
+    },
+  })
+
+  render()
+  return instance
+}
 
 describe('component: slots', () => {
-  function renderWithSlots(slots: any): any {
-    let instance: any
-    const Comp = defineComponent({
-      vapor: true,
-      render() {
-        const t0 = template('<div></div>')
-        const n0 = t0()
-        instance = getCurrentInstance()
-        return n0
-      },
-    })
-
-    const { render } = define({
-      render() {
-        return createComponent(Comp, {}, slots)
-      },
-    })
-
-    render()
-    return instance
-  }
-
   test('initSlots: instance.slots should be set correctly', () => {
     const { slots } = renderWithSlots({ _: 1 })
     expect(slots).toMatchObject({ _: 1 })
   })
 
   // NOTE: slot normalization is not supported
-  // test.todo(
-  //   'initSlots: should normalize object slots (when value is null, string, array)',
-  //   () => {},
-  // )
-  // test.todo(
-  //   'initSlots: should normalize object slots (when value is function)',
-  //   () => {},
-  // )
+  test.todo(
+    'initSlots: should normalize object slots (when value is null, string, array)',
+    () => {},
+  )
+  test.todo(
+    'initSlots: should normalize object slots (when value is function)',
+    () => {},
+  )
 
   test('initSlots: instance.slots should be set correctly', () => {
     let instance: any
