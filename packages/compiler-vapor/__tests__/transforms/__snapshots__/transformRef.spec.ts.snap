@@ -1,0 +1,73 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`compiler: template ref transform > dynamic ref 1`] = `
+"import { setRef as _setRef, template as _template } from 'vue/vapor';
+const t0 = _template("<div></div>")
+
+export function render(_ctx) {
+  const n0 = t0()
+  _setRef(n0, _ctx.foo)
+  return n0
+}"
+`;
+
+exports[`compiler: template ref transform > ref + v-if + v-else-if + v-else 1`] = `
+"import { setRef as _setRef, createIf as _createIf, template as _template } from 'vue/vapor';
+const t0 = _template("<div></div>")
+
+export function render(_ctx) {
+  const n0 = _createIf(() => (true), () => {
+    const n2 = t0()
+    _setRef(n2, "foo")
+    return n2
+  }, () => _createIf(() => (true), () => {
+    const n4 = t0()
+    _setRef(n4, "bar")
+    return n4
+  }, () => {
+    const n7 = t0()
+    _setRef(n7, "zoo")
+    return n7
+  }))
+  return n0
+}"
+`;
+
+exports[`compiler: template ref transform > ref + v-if 1`] = `
+"import { setRef as _setRef, createIf as _createIf, template as _template } from 'vue/vapor';
+const t0 = _template("<div></div>")
+
+export function render(_ctx) {
+  const n0 = _createIf(() => (true), () => {
+    const n2 = t0()
+    _setRef(n2, "foo")
+    return n2
+  })
+  return n0
+}"
+`;
+
+exports[`compiler: template ref transform > ref with if 1`] = `
+"import { setRef as _setRef, createIf as _createIf, template as _template } from 'vue/vapor';
+const t0 = _template("<div></div>")
+
+export function render(_ctx) {
+  const n0 = _createIf(() => (true), () => {
+    const n2 = t0()
+    _setRef(n2, "foo")
+    return n2
+  })
+  return n0
+}"
+`;
+
+exports[`compiler: template ref transform > static ref 1`] = `
+"import { setRef as _setRef, template as _template } from 'vue/vapor';
+const t0 = _template("<div></div>")
+
+export function render(_ctx) {
+  const n0 = t0()
+  _setRef(n0, "foo")
+  return n0
+}"
+`;
