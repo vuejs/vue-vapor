@@ -16,8 +16,30 @@ import { makeRender } from './_utils'
 
 const define = makeRender<any>()
 
-describe('apiLifecycle', () => {
-  // TODO: test
+describe('api: lifecycle hooks', () => {
+  it.todo('onBeforeMount', () => {})
+
+  it.todo('onMounted', () => {})
+
+  it.todo('onBeforeUpdate', async () => {})
+
+  it.todo('state mutation in onBeforeUpdate', async () => {})
+
+  it.todo('onUpdated', async () => {})
+
+  it.todo('onBeforeUnmount', async () => {})
+
+  it.todo('onUnmounted', async () => {})
+
+  it.todo('onBeforeUnmount in onMounted', async () => {})
+
+  it.todo('lifecycle call order', async () => {})
+
+  it.todo('onRenderTracked', () => {})
+
+  it.todo('onRenderTriggered', async () => {})
+
+  it.todo('runs shared hook fn for each instance', async () => {})
 
   // #136
   test('should trigger updated hooks across components. (parent -> child)', async () => {
