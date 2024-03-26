@@ -1,4 +1,3 @@
-import { ErrorCodes, NodeTypes } from '@vue/compiler-dom'
 import {
   DynamicFlag,
   IRNodeTypes,
