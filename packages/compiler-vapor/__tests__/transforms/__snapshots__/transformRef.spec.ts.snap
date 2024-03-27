@@ -11,6 +11,20 @@ export function render(_ctx) {
 }"
 `;
 
+exports[`compiler: template ref transform > ref + v-for 1`] = `
+"import { setRef as _setRef, createFor as _createFor, template as _template } from 'vue/vapor';
+const t0 = _template("<div></div>")
+
+export function render(_ctx) {
+  const n0 = _createFor(() => ([1,2,3]), (_block) => {
+    const n2 = t0()
+    _setRef(n2, "foo", true)
+    return [n2, () => {}]
+  })
+  return n0
+}"
+`;
+
 exports[`compiler: template ref transform > ref + v-if 1`] = `
 "import { setRef as _setRef, createIf as _createIf, template as _template } from 'vue/vapor';
 const t0 = _template("<div></div>")

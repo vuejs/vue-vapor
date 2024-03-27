@@ -1,10 +1,12 @@
 import {
   DynamicFlag,
+  type ForIRNode,
   IRNodeTypes,
   type IfIRNode,
   transformChildren,
   transformElement,
   transformRef,
+  transformVFor,
   transformVIf,
 } from '../../src'
 import { makeCompile } from './_utils'
@@ -12,6 +14,7 @@ import { makeCompile } from './_utils'
 const compileWithTransformRef = makeCompile({
   nodeTransforms: [
     transformVIf,
+    transformVFor,
     transformRef,
     transformElement,
     transformChildren,
@@ -96,5 +99,32 @@ describe('compiler: template ref transform', () => {
 
     expect(code).matchSnapshot()
     expect(code).contains('_setRef(n2, "foo")')
+  })
+
+  test('ref + v-for', () => {
+    const { ir, code } = compileWithTransformRef(
+      `<div ref="foo" v-for="item in [1,2,3]" />`,
+    )
+
+    const { render } = ir.block.operation[0] as ForIRNode
+    expect(render.operation).lengthOf(1)
+    expect(render.operation[0]).toMatchObject({
+      type: IRNodeTypes.SET_REF,
+      element: 2,
+      value: {
+        content: 'foo',
+        isStatic: true,
+        loc: {
+          start: { line: 1, column: 10, offset: 9 },
+          end: { line: 1, column: 15, offset: 14 },
+        },
+      },
+      ref_for: {
+        content: 'true',
+        isStatic: false,
+      },
+    })
+    expect(code).matchSnapshot()
+    expect(code).contains('_setRef(n2, "foo", true)')
   })
 })
