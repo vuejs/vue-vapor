@@ -11,8 +11,8 @@ import { makeCompile } from './_utils'
 
 const compileWithTransformRef = makeCompile({
   nodeTransforms: [
-    transformRef,
     transformVIf,
+    transformRef,
     transformElement,
     transformChildren,
   ],
@@ -74,6 +74,7 @@ describe('compiler: template ref transform', () => {
     const { ir, code } = compileWithTransformRef(
       `<div ref="foo" v-if="true" />`,
     )
+
     expect(ir.block.operation).lengthOf(1)
     expect(ir.block.operation[0].type).toBe(IRNodeTypes.IF)
 
