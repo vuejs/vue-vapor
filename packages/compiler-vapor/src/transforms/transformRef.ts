@@ -28,5 +28,6 @@ export const transformRef: NodeTransform = (node, context) => {
       type: IRNodeTypes.SET_REF,
       element: context.reference(),
       value,
+      ref_for: createSimpleExpression(String(context.vFor > 0), false),
     })
 }
