@@ -1,5 +1,4 @@
 import {
-  type ElementNode,
   NodeTypes,
   type SimpleExpressionNode,
   createSimpleExpression,
@@ -11,9 +10,7 @@ import { findProp } from '../utils'
 import { EMPTY_EXPRESSION } from './utils'
 
 export const transformRef: NodeTransform = (node, context) => {
-  // If the current node has conditional directives,
-  // it will result in duplicate registration of SET_REF operations.
-  if (node.type !== NodeTypes.ELEMENT || hasConditionalDirective(node)) return
+  if (node.type !== NodeTypes.ELEMENT) return
 
   const dir = findProp(node, 'ref', false, true)
   if (!dir) return
@@ -32,12 +29,4 @@ export const transformRef: NodeTransform = (node, context) => {
       element: context.reference(),
       value,
     })
-}
-
-function hasConditionalDirective(node: ElementNode) {
-  return node.props.some(
-    prop =>
-      prop.type === NodeTypes.DIRECTIVE &&
-      ['if', 'else-if', 'else'].includes(prop.name),
-  )
 }
