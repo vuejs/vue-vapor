@@ -23,11 +23,16 @@ export const transformRef: NodeTransform = (node, context) => {
       ? createSimpleExpression(dir.value.content, true, dir.value.loc)
       : EMPTY_EXPRESSION
   }
+
+  const refFor = context.vFor > 0
+
   return () =>
     context.registerOperation({
       type: IRNodeTypes.SET_REF,
       element: context.reference(),
       value,
-      ref_for: createSimpleExpression(String(context.vFor > 0), false),
+      ref_for: refFor
+        ? createSimpleExpression(String(refFor), false)
+        : undefined,
     })
 }
