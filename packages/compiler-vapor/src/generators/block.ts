@@ -50,7 +50,12 @@ export function genBlockContent(
   }
 
   push(...genOperations(operation, context))
-  push(...(context.genEffect || genEffects)(effect, context))
+  push(
+    ...(context.genEffects[context.genEffects.length - 1] || genEffects)(
+      effect,
+      context,
+    ),
+  )
 
   push(NEWLINE, `return `)
 
