@@ -42,10 +42,9 @@ export class CodegenContext {
 
   identifiers: Record<string, string[]> = Object.create(null)
 
-  genEffects: ((
-    effects: IREffect[],
-    context: CodegenContext,
-  ) => CodeFragment[])[] = []
+  genEffects: Array<
+    (effects: IREffect[], context: CodegenContext) => CodeFragment[]
+  > = []
 
   withId = <T>(fn: () => T, map: Record<string, string | null>): T => {
     const { identifiers } = this
