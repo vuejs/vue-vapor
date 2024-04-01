@@ -1,4 +1,9 @@
-import { type Ref, type SchedulerJob, isRef } from '@vue/reactivity'
+import {
+  type Ref,
+  type SchedulerJob,
+  isRef,
+  onScopeDispose,
+} from '@vue/reactivity'
 import { currentInstance } from '../component'
 import { VaporErrorCodes, callWithErrorHandling } from '../errorHandling'
 import {
@@ -37,6 +42,8 @@ export function setRef(el: Element, ref: NodeRef, ref_for = false) {
     const _isRef = isRef(ref)
 
     if (_isString || _isRef) {
+      let isScopeDispose = false
+
       const doSet = () => {
         if (ref_for) {
           const existing = _isString
@@ -44,7 +51,7 @@ export function setRef(el: Element, ref: NodeRef, ref_for = false) {
               ? setupState[ref]
               : refs[ref]
             : ref.value
-          if (isUnmounted) {
+          if (isUnmounted || isScopeDispose) {
             isArray(existing) && remove(existing, value)
           } else {
             if (!isArray(existing)) {
@@ -71,6 +78,13 @@ export function setRef(el: Element, ref: NodeRef, ref_for = false) {
           warn('Invalid template ref type:', ref, `(${typeof ref})`)
         }
       }
+
+      onScopeDispose(() => {
+        isScopeDispose = true
+        doSet()
+        isScopeDispose = false
+      })
+
       // #9908 ref on v-for mutates the same array for both mount and unmount
       // and should be done together
       if (isUnmounted /* || isVFor */) {
