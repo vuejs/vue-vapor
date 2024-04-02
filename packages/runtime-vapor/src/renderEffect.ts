@@ -43,9 +43,8 @@ export function renderEffect(cb: () => void) {
       effect.run()
     }
   }
-
+  const reset = instance && setCurrentInstance(instance)
   effect = new ReactiveEffect(() => {
-    const reset = instance && setCurrentInstance(instance)
     callWithAsyncErrorHandling(cb, instance, VaporErrorCodes.RENDER_FUNCTION)
     reset?.()
   })
