@@ -3,7 +3,6 @@ import {
   type SchedulerJob,
   isRef,
   onScopeDispose,
-  shallowReactive,
 } from '@vue/reactivity'
 import { currentInstance } from '../component'
 import { VaporErrorCodes, callWithErrorHandling } from '../errorHandling'
@@ -37,10 +36,17 @@ export function setRef(el: Element, ref: NodeRef, ref_for = false) {
       : currentInstance.refs
 
   if (isFunction(ref)) {
-    callWithErrorHandling(ref, currentInstance, VaporErrorCodes.FUNCTION_REF, [
-      el,
-      refs,
-    ])
+    const invokeRefSetter = (value: Element | null) => {
+      callWithErrorHandling(
+        ref,
+        currentInstance,
+        VaporErrorCodes.FUNCTION_REF,
+        [value, refs],
+      )
+    }
+
+    invokeRefSetter(el)
+    onScopeDispose(() => invokeRefSetter(null))
   } else {
     const _isString = isString(ref)
     const _isRef = isRef(ref)
@@ -56,11 +62,15 @@ export function setRef(el: Element, ref: NodeRef, ref_for = false) {
             : ref.value
 
           if (!isArray(existing)) {
-            existing = shallowReactive([el])
+            existing = [el]
             if (_isString) {
               refs[ref] = existing
               if (hasOwn(setupState, ref)) {
                 setupState[ref] = refs[ref]
+                // if setupState[ref] is a reactivity ref,
+                // the existing will also become reactivity too
+                // need to get the Proxy object by resetting
+                existing = setupState[ref]
               }
             } else {
               ref.value = existing
