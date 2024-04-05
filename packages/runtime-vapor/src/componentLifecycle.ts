@@ -17,7 +17,9 @@ export function invokeLifecycle(
     if (hooks) {
       const fn = () => {
         const reset = setCurrentInstance(instance)
-        invokeArrayFns(hooks)
+        instance.scope.run(() => {
+          invokeArrayFns(hooks)
+        })
         reset()
       }
       post ? queuePostRenderEffect(fn) : fn()

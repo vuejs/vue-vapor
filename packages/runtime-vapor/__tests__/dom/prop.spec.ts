@@ -17,10 +17,11 @@ import { getMetadata, recordPropMetadata } from '../../src/componentMetadata'
 
 let removeComponentInstance = NOOP
 beforeEach(() => {
-  const reset = setCurrentInstance(
-    createComponentInstance((() => {}) as any, {}),
-  )
+  const instance = createComponentInstance((() => {}) as any, {})
+  const reset = setCurrentInstance(instance)
+  instance.scope.on()
   removeComponentInstance = () => {
+    instance.scope.off()
     reset()
     removeComponentInstance = NOOP
   }
