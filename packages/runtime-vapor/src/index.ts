@@ -50,7 +50,6 @@ export {
   type FunctionalComponent,
   type SetupFn,
 } from './component'
-export { withCtx } from './componentRenderContext'
 export { renderEffect } from './renderEffect'
 export {
   watch,
