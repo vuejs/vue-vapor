@@ -127,7 +127,7 @@ export function createSlot(
     }
   }
 
-  const getName = isDynamicName ? name : () => name
+  const getSlot = isDynamicName ? () => slots[name()] : () => slots[name]
   const anchor = __DEV__ ? createComment('slot') : createTextNode()
   const fragment: Fragment = {
     nodes: [],
@@ -137,7 +137,7 @@ export function createSlot(
 
   // TODO lifecycle hooks
   renderEffect(() => {
-    if ((branch = slots[getName()] || fallback) !== oldBranch) {
+    if ((branch = getSlot() || fallback) !== oldBranch) {
       parent ||= anchor.parentNode
       if (block) {
         scope!.stop()
