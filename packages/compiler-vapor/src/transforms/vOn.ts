@@ -84,7 +84,7 @@ export const transformVOn: DirectiveTransform = (dir, node, context) => {
     return {
       key: createSimpleExpression(eventName, true, arg.loc),
       value: handler,
-      applyRawValue: true,
+      isHandler: true,
     }
   }
 

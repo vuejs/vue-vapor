@@ -41,7 +41,7 @@ export type DirectiveTransform = (
 export interface DirectiveTransformResult {
   key: SimpleExpressionNode
   value: SimpleExpressionNode
-  applyRawValue?: boolean
+  isHandler?: boolean
   modifier?: '.' | '^'
   runtimeCamelize?: boolean
 }
