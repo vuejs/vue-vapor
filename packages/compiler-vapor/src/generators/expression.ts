@@ -13,6 +13,7 @@ import type { CodegenContext } from '../generate'
 import type { Node } from '@babel/types'
 import { isConstantExpression } from '../utils'
 import { type CodeFragment, buildCodeFragment } from './utils'
+import { isGloballyAllowed } from '@vue/shared'
 
 export function genExpression(
   node: SimpleExpressionNode,
@@ -47,8 +48,9 @@ export function genExpression(
   const parentStack: Node[] = []
   walkIdentifiers(
     ast!,
-    id => {
-      ids.push(id)
+    (id, _, __, isReferenced) => {
+      const needPrefix = isReferenced && canPrefix(id)
+      if (needPrefix) ids.push(id)
       parentStackMap.set(id, parentStack.slice())
     },
     false,
@@ -177,4 +179,16 @@ function genIdentifier(
   function unref() {
     return `${vaporHelper('unref')}(${raw})`
   }
+}
+
+function canPrefix(id: Identifier) {
+  // skip whitelisted globals
+  if (isGloballyAllowed(id.name)) {
+    return false
+  }
+  // special case for webpack compilation
+  if (id.name === 'require') {
+    return false
+  }
+  return true
 }
