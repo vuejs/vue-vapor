@@ -74,10 +74,17 @@ export function emit(
   // TODO: warn
 
   let handlerName
-  let handler =
-    rawProps[(handlerName = toHandlerKey(event))] ||
-    // also try camelCase event handler (#2249)
-    rawProps[(handlerName = toHandlerKey(camelize(event)))]
+  let handler
+  for (let rawProp of rawProps) {
+    if (
+      (handler =
+        rawProp[(handlerName = toHandlerKey(event))] ||
+        // also try camelCase event handler (#2249)
+        rawProp[(handlerName = toHandlerKey(camelize(event)))])
+    ) {
+      break
+    }
+  }
   // for v-model update:xxx events, also trigger kebab-case equivalent
   // for props passed via kebab-case
   if (!handler && isModelListener) {
