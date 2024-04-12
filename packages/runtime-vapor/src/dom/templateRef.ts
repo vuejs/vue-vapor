@@ -22,7 +22,7 @@ export type NodeRef = string | Ref | ((ref: Element) => void)
 /**
  * Function for handling a template ref
  */
-export function setRef(el: Element, ref: NodeRef, ref_for = false) {
+export function setRef(el: Element, ref: NodeRef, refFor = false) {
   if (!currentInstance) return
   const { setupState, isUnmounted } = currentInstance
 
@@ -54,7 +54,7 @@ export function setRef(el: Element, ref: NodeRef, ref_for = false) {
 
     if (_isString || _isRef) {
       const doSet: SchedulerJob = () => {
-        if (ref_for) {
+        if (refFor) {
           existing = _isString
             ? hasOwn(setupState, ref)
               ? setupState[ref]

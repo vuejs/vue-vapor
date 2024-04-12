@@ -24,15 +24,11 @@ export const transformRef: NodeTransform = (node, context) => {
       : EMPTY_EXPRESSION
   }
 
-  const refFor = context.vFor > 0
-
   return () =>
     context.registerOperation({
       type: IRNodeTypes.SET_REF,
       element: context.reference(),
       value,
-      ref_for: refFor
-        ? createSimpleExpression(String(refFor), false)
-        : undefined,
+      refFor: !!context.inVFor,
     })
 }

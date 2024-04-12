@@ -72,7 +72,7 @@ export interface TransformContext<T extends AllNode = AllNode> {
   comment: CommentNode[]
 
   inVOnce: boolean
-  vFor: number
+  inVFor: number
 
   enterBlock(ir: TransformContext['block'], isVFor?: boolean): () => void
   reference(): number
@@ -123,27 +123,27 @@ function createRootContext(
     index: 0,
     root: null!, // set later
     block: root.block,
-    enterBlock(ir, isVFor = false) {
+    enterBlock(ir, inVFor = false) {
       const { block, template, dynamic, childrenTemplate } = this
       this.block = ir
       this.dynamic = ir.dynamic
       this.template = ''
       this.childrenTemplate = []
-      isVFor && this.vFor++
+      inVFor && this.inVFor++
       return () => {
         // exit
         this.block = block
         this.template = template
         this.dynamic = dynamic
         this.childrenTemplate = childrenTemplate
-        isVFor && this.vFor--
+        inVFor && this.inVFor--
       }
     },
     options: extend({}, defaultOptions, options),
     dynamic: root.block.dynamic,
     inVOnce: false,
+    inVFor: 0,
     comment: [],
-    vFor: 0,
 
     increaseId: () => globalId++,
     reference() {

@@ -119,10 +119,7 @@ describe('compiler: template ref transform', () => {
           end: { line: 1, column: 15, offset: 14 },
         },
       },
-      ref_for: {
-        content: 'true',
-        isStatic: false,
-      },
+      refFor: true,
     })
     expect(code).matchSnapshot()
     expect(code).contains('_setRef(n2, "foo", true)')
