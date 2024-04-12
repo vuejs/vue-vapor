@@ -1,4 +1,4 @@
-import { isArray } from '@vue/shared'
+import { isArray, isOn } from '@vue/shared'
 import type { CodegenContext } from '../generate'
 import type { CreateComponentIRNode, IRProp } from '../ir'
 import {
@@ -11,6 +11,7 @@ import {
 } from './utils'
 import { genExpression } from './expression'
 import { genPropKey } from './prop'
+import { genEventHandler } from './event'
 
 // TODO: generate component slots
 export function genCreateComponent(
@@ -33,6 +34,8 @@ export function genCreateComponent(
       vaporHelper('createComponent'),
       tag,
       props || (isRoot ? 'null' : false),
+      'null', // todo slots
+      'null', // todo dynamicSlots
       isRoot && 'true',
     ),
   ]
@@ -43,6 +46,14 @@ export function genCreateComponent(
         if (isArray(props)) {
           if (!props.length) return undefined
           return genStaticProps(props)
+        } else if (props.isHandlerKey) {
+          return [
+            '() => (',
+            vaporHelper('toHandlers'),
+            '(',
+            ...genExpression(props, context),
+            '))',
+          ]
         } else {
           return ['() => (', ...genExpression(props, context), ')']
         }
@@ -63,9 +74,9 @@ export function genCreateComponent(
       ...props.map(prop => {
         return [
           ...genPropKey(prop, context),
-          ': () => (',
-          ...genExpression(prop.values[0], context),
-          ')',
+          ...(isOn(prop.key.content.trim())
+            ? [':', ...genEventHandler(context, prop.values[0])]
+            : [': () => (', ...genExpression(prop.values[0], context), ')']),
         ]
       }),
     )

@@ -8,6 +8,7 @@ import {
   hyphenate,
   isArray,
   isFunction,
+  toHandlerKey,
 } from '@vue/shared'
 import { baseWatch, shallowReactive } from '@vue/reactivity'
 import { warn } from './warning'
@@ -83,6 +84,7 @@ export function initProps(
   isStateful: boolean,
 ) {
   const props: Data = {}
+  const events: Record<string, (...args: any[]) => any> = {}
   const attrs = (instance.attrs = shallowReactive<Data>({}))
 
   if (!rawProps) rawProps = []
@@ -90,6 +92,7 @@ export function initProps(
   instance.rawProps = rawProps
 
   const [options] = instance.propsOptions
+  const emitsOptions = instance.emitsOptions
 
   const hasDynamicProps = rawProps.some(isFunction)
   if (options) {
@@ -116,6 +119,29 @@ export function initProps(
     }
   }
 
+  if (emitsOptions) {
+    if (hasDynamicProps) {
+      for (const key in emitsOptions) {
+        const rawKey = toHandlerKey(key)
+        const [handler] = getDynamicPropValue(
+          rawProps as NormalizedRawProps,
+          rawKey,
+        )
+        if (handler && isFunction(handler)) {
+          events[key] = handler as (...args: any[]) => any
+        }
+      }
+    } else {
+      for (const key in emitsOptions) {
+        const rawKey = toHandlerKey(key)
+        const handler = (rawProps[0] as StaticProps)[rawKey]
+        if (handler && isFunction(handler)) {
+          events[key] = handler as (...args: any[]) => any
+        }
+      }
+    }
+  }
+
   // validation
   if (__DEV__) {
     validateProps(rawProps, props, options || {})
@@ -135,6 +161,8 @@ export function initProps(
     // functional w/ optional props, props === attrs
     instance.props = instance.propsOptions === EMPTY_ARR ? attrs : props
   }
+
+  instance.events = shallowReactive(events)
 }
 
 function registerProp(

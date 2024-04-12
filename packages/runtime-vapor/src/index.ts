@@ -123,6 +123,8 @@ export { createComponent } from './apiCreateComponent'
 
 export { resolveComponent, resolveDirective } from './helpers/resolveAssets'
 
+export { toHandlers } from './helpers/toHandlers'
+
 // **Internal** DOM-only runtime directive helpers
 export {
   vModelText,

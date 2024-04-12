@@ -144,15 +144,17 @@ function buildProps(
   }
 
   for (const prop of props) {
-    if (
-      prop.type === NodeTypes.DIRECTIVE &&
-      prop.name === 'bind' &&
-      !prop.arg
-    ) {
+    const isComponent = node.tagType === ElementTypes.COMPONENT
+    const isVOn = prop.type === NodeTypes.DIRECTIVE && prop.name === 'on'
+    const isVBind = prop.type === NodeTypes.DIRECTIVE && prop.name === 'bind'
+
+    if ((isVBind && !prop.arg) || (isVOn && isComponent && !prop.arg)) {
       if (prop.exp) {
         dynamicExpr.push(prop.exp)
         pushMergeArg()
-        dynamicArgs.push(prop.exp)
+        dynamicArgs.push(
+          isVOn ? extend({}, prop.exp, { isHandlerKey: true }) : prop.exp,
+        )
       } else {
         context.options.onError(
           createCompilerError(ErrorCodes.X_V_BIND_NO_EXPRESSION, prop.loc),

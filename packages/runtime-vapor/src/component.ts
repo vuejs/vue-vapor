@@ -112,6 +112,7 @@ export interface ComponentInternalInstance {
   emit: EmitFn
   emitted: Record<string, boolean> | null
   attrs: Data
+  events: Record<string, (...args: any[]) => any>
   slots: InternalSlots
   refs: Data
 
