@@ -2,7 +2,6 @@ import {
   ElementTypes,
   ErrorCodes,
   createCompilerError,
-  createSimpleExpression,
 } from '@vue/compiler-dom'
 import type { DirectiveTransform } from '../transform'
 import { IRNodeTypes, type KeyOverride, type SetEventIRNode } from '../ir'
@@ -79,7 +78,6 @@ export const transformVOn: DirectiveTransform = (dir, node, context) => {
   }
 
   if (isComponent) {
-    const eventName = arg.content
     const handler = exp || EMPTY_EXPRESSION
     return {
       key: arg,
