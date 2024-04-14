@@ -41,9 +41,9 @@ export type DirectiveTransform = (
 export interface DirectiveTransformResult {
   key: SimpleExpressionNode
   value: SimpleExpressionNode
-  isHandler?: boolean
   modifier?: '.' | '^'
   runtimeCamelize?: boolean
+  runtimeHandler?: boolean
 }
 
 // A structural directive transform is technically also a NodeTransform;

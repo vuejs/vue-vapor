@@ -6,7 +6,7 @@ import {
 import type { DirectiveTransform } from '../transform'
 import { IRNodeTypes, type KeyOverride, type SetEventIRNode } from '../ir'
 import { resolveModifiers } from '@vue/compiler-dom'
-import { extend, makeMap } from '@vue/shared'
+import { extend, makeMap, toHandlerKey } from '@vue/shared'
 import { resolveExpression } from '../utils'
 import { EMPTY_EXPRESSION } from './utils'
 
@@ -78,11 +78,14 @@ export const transformVOn: DirectiveTransform = (dir, node, context) => {
   }
 
   if (isComponent) {
+    if (arg.isStatic) {
+      arg = extend({}, arg, { content: toHandlerKey(arg.content) })
+    }
     const handler = exp || EMPTY_EXPRESSION
     return {
       key: arg,
       value: handler,
-      isHandler: true,
+      runtimeHandler: !arg.isStatic,
     }
   }
 
