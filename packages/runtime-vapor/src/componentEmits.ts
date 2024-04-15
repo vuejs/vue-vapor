@@ -23,6 +23,7 @@ import {
   type StaticProps,
   getDynamicPropValue,
 } from './componentProps'
+import { warn } from './warning'
 
 export type ObjectEmitsOptions = Record<
   string,
@@ -54,6 +55,33 @@ export function emit(
 ) {
   if (instance.isUnmounted) return
   // TODO
+  if (__DEV__) {
+    const {
+      emitsOptions,
+      propsOptions: [propsOptions],
+    } = instance
+    if (emitsOptions) {
+      if (!(event in emitsOptions)) {
+        if (!propsOptions || !(toHandlerKey(event) in propsOptions)) {
+          warn(
+            `Component emitted event "${event}" but it is neither declared in ` +
+              `the emits option nor as an "${toHandlerKey(event)}" prop.`,
+          )
+        }
+      } else {
+        const validator = emitsOptions[event]
+        if (isFunction(validator)) {
+          const isValid = validator(...rawArgs)
+          if (!isValid) {
+            warn(
+              `Invalid event arguments: event validation failed for event "${event}".`,
+            )
+          }
+        }
+      }
+    }
+  }
+
   const { rawProps, emitsOptions } = instance
   const hasDynamicProps = rawProps.some(isFunction)
   const events: Record<string, (...args: any[]) => any> = {}
