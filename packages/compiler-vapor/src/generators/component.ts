@@ -1,4 +1,4 @@
-import { extend, isArray, isOn } from '@vue/shared'
+import { extend, isArray } from '@vue/shared'
 import type { CodegenContext } from '../generate'
 import type { CreateComponentIRNode, IRProp } from '../ir'
 import {
