@@ -72,7 +72,7 @@ export type NormalizedPropsOptions =
   | [props: NormalizedProps, needCastKeys: string[]]
   | []
 
-type StaticProps = Record<string, () => unknown>
+export type StaticProps = Record<string, () => unknown>
 type DynamicProps = () => Data
 export type NormalizedRawProps = Array<StaticProps | DynamicProps>
 export type RawProps = NormalizedRawProps | StaticProps | null
@@ -170,7 +170,7 @@ function getRawKey(obj: Data, key: string) {
 }
 
 type DynamicPropResult = [value: unknown, absent: boolean]
-function getDynamicPropValue(
+export function getDynamicPropValue(
   rawProps: NormalizedRawProps,
   key: string,
 ): DynamicPropResult {

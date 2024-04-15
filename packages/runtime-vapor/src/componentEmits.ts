@@ -1,7 +1,6 @@
 // NOTE: runtime-core/src/componentEmits.ts
 
 // TODO WIP
-// @ts-nocheck
 
 import {
   EMPTY_OBJ,
@@ -11,6 +10,7 @@ import {
   hasOwn,
   hyphenate,
   isArray,
+  isFunction,
   isOn,
   isString,
   looseToNumber,
@@ -18,6 +18,11 @@ import {
 } from '@vue/shared'
 import type { Component, ComponentInternalInstance } from './component'
 import { VaporErrorCodes, callWithAsyncErrorHandling } from './errorHandling'
+import {
+  type NormalizedRawProps,
+  type StaticProps,
+  getDynamicPropValue,
+} from './componentProps'
 
 export type ObjectEmitsOptions = Record<
   string,
@@ -49,8 +54,28 @@ export function emit(
 ) {
   if (instance.isUnmounted) return
   // TODO
-  // @ts-expect-error
-  const { rawProps } = instance
+  const { rawProps, emitsOptions } = instance
+  const hasDynamicProps = rawProps.some(isFunction)
+  const events: Record<string, (...args: any[]) => any> = {}
+
+  if (emitsOptions) {
+    if (hasDynamicProps) {
+      for (const key in emitsOptions) {
+        const rawKey = toHandlerKey(key)
+        const [handler] = getDynamicPropValue(
+          rawProps as NormalizedRawProps,
+          rawKey,
+        )
+        events[rawKey] = handler as (...args: any[]) => any
+      }
+    } else {
+      for (const key in emitsOptions) {
+        const rawKey = toHandlerKey(key)
+        const handler = (rawProps[0] as StaticProps)[rawKey]
+        events[rawKey] = handler as (...args: any[]) => any
+      }
+    }
+  }
 
   let args = rawArgs
   const isModelListener = event.startsWith('update:')
@@ -58,11 +83,13 @@ export function emit(
   // for v-model update:xxx events, apply modifiers on args
   const modelArg = isModelListener && event.slice(7)
 
-  if (modelArg && modelArg in rawProps) {
+  if (modelArg && modelArg in events) {
     const modifiersKey = `${
       modelArg === 'modelValue' ? 'model' : modelArg
     }Modifiers`
-    const { number, trim } = rawProps[modifiersKey] || EMPTY_OBJ
+
+    // @ts-expect-error: todo
+    const { number, trim } = events[modifiersKey] || EMPTY_OBJ
     if (trim) {
       args = rawArgs.map(a => (isString(a) ? a.trim() : a))
     }
@@ -75,13 +102,13 @@ export function emit(
 
   let handlerName
   let handler =
-    rawProps[(handlerName = toHandlerKey(event))] ||
+    events[(handlerName = toHandlerKey(event))] ||
     // also try camelCase event handler (#2249)
-    rawProps[(handlerName = toHandlerKey(camelize(event)))]
+    events[(handlerName = toHandlerKey(camelize(event)))]
   // for v-model update:xxx events, also trigger kebab-case equivalent
   // for props passed via kebab-case
   if (!handler && isModelListener) {
-    handler = rawProps[(handlerName = toHandlerKey(hyphenate(event)))]
+    handler = events[(handlerName = toHandlerKey(hyphenate(event)))]
   }
 
   if (handler) {
@@ -93,7 +120,7 @@ export function emit(
     )
   }
 
-  const onceHandler = rawProps[`${handlerName}Once`]
+  const onceHandler = events[`${handlerName}Once`]
   if (onceHandler) {
     if (!instance.emitted) {
       instance.emitted = {}
