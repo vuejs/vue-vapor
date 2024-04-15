@@ -1,4 +1,4 @@
-import { extend, isArray } from '@vue/shared'
+import { extend, isArray, isOn } from '@vue/shared'
 import type { CodegenContext } from '../generate'
 import type { CreateComponentIRNode, IRProp } from '../ir'
 import {
@@ -12,6 +12,7 @@ import {
 import { genExpression } from './expression'
 import { genPropKey } from './prop'
 import { createSimpleExpression } from '@vue/compiler-dom'
+import { genEventHandler } from './event'
 
 // TODO: generate component slots
 export function genCreateComponent(
@@ -74,9 +75,9 @@ export function genCreateComponent(
       ...props.map(prop => {
         return [
           ...genPropKey(prop, context),
-          ': () => (',
-          ...genExpression(prop.values[0], context),
-          ')',
+          ...(prop.handler
+            ? [':', ...genEventHandler(context, prop.values[0])]
+            : [': () => (', ...genExpression(prop.values[0], context), ')']),
         ]
       }),
     )

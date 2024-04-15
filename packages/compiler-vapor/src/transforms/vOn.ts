@@ -61,14 +61,11 @@ export const transformVOn: DirectiveTransform = (dir, node, context) => {
   }
 
   if (isComponent) {
-    if (arg.isStatic) {
-      arg = extend({}, arg, { content: toHandlerKey(arg.content) })
-    }
     const handler = exp || EMPTY_EXPRESSION
     return {
       key: arg,
       value: handler,
-      runtimeHandler: !arg.isStatic,
+      handler: true,
     }
   }
 
