@@ -94,7 +94,7 @@ function genArrayExpression(elements: string[]) {
 
 export function genEventHandler(
   context: CodegenContext,
-  value?: SimpleExpressionNode,
+  value: SimpleExpressionNode | undefined,
 ) {
   if (value && value.content.trim()) {
     const isMemberExp = isMemberExpression(value.content, context.options)
@@ -116,5 +116,5 @@ export function genEventHandler(
     }
   }
 
-  return ['() =>{}']
+  return ['() => {}']
 }

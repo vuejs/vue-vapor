@@ -96,7 +96,7 @@ exports[`compiler: element transform > component > should wrap as function if v-
 
 export function render(_ctx) {
   const n0 = _createComponent(_resolveComponent("Foo"), [{
-    onBar:() => $event => (_ctx.handleBar($event))
+    onBar: () => $event => (_ctx.handleBar($event))
   }], true)
   return n0
 }"

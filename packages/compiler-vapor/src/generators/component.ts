@@ -75,9 +75,10 @@ export function genCreateComponent(
       ...props.map(prop => {
         return [
           ...genPropKey(prop, context),
+          ': ',
           ...(prop.handler
-            ? [':', ...genEventHandler(context, prop.values[0])]
-            : [': () => (', ...genExpression(prop.values[0], context), ')']),
+            ? genEventHandler(context, prop.values[0])
+            : ['() => (', ...genExpression(prop.values[0], context), ')']),
         ]
       }),
     )

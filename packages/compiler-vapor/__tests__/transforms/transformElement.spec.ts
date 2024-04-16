@@ -370,7 +370,7 @@ describe('compiler: element transform', () => {
         `<Foo v-on:bar="handleBar($event)" />`,
       )
       expect(code).toMatchSnapshot()
-      expect(code).contains(`onBar:() => $event => (_ctx.handleBar($event))`)
+      expect(code).contains(`onBar: () => $event => (_ctx.handleBar($event))`)
       expect(ir.block.operation).toMatchObject([
         {
           type: IRNodeTypes.CREATE_COMPONENT_NODE,
