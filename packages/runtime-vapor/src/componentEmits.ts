@@ -1,7 +1,3 @@
-// NOTE: runtime-core/src/componentEmits.ts
-
-// TODO WIP
-
 import {
   EMPTY_OBJ,
   type UnionToIntersection,
@@ -54,7 +50,7 @@ export function emit(
   ...rawArgs: any[]
 ) {
   if (instance.isUnmounted) return
-  // TODO
+
   if (__DEV__) {
     const {
       emitsOptions,
