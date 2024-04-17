@@ -113,7 +113,7 @@ export function generate(
   const functionName = 'render'
   const isSetupInlined = options.inline
   if (isSetupInlined) {
-    push(`(() => {`)
+    push(`() => {`)
   } else {
     push(NEWLINE, `export function ${functionName}(_ctx) {`)
   }
