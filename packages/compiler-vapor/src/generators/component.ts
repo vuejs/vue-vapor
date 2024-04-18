@@ -1,4 +1,4 @@
-import { extend, isArray } from '@vue/shared'
+import { camelize, extend, isArray } from '@vue/shared'
 import type { CodegenContext } from '../generate'
 import type { CreateComponentIRNode, IRProp } from '../ir'
 import {
@@ -13,6 +13,8 @@ import { genExpression } from './expression'
 import { genPropKey } from './prop'
 import { createSimpleExpression } from '@vue/compiler-dom'
 import { genEventHandler } from './event'
+import { genDirectiveModifiers } from './directive'
+import { genModelHandler } from './modelValue'
 
 // TODO: generate component slots
 export function genCreateComponent(
@@ -79,8 +81,34 @@ export function genCreateComponent(
           ...(prop.handler
             ? genEventHandler(context, prop.values[0])
             : ['() => (', ...genExpression(prop.values[0], context), ')']),
+          ...(prop.model
+            ? [...genModel(prop, context), ...genModifiers(prop, context)]
+            : []),
         ]
       }),
     )
+
+    function genModel(prop: IRProp, context: CodegenContext) {
+      const name = prop.key.isStatic
+        ? [JSON.stringify(`onUpdate:${camelize(prop.key.content)}`)]
+        : ['[`onUpdate:${', ...genExpression(prop.key, context), '}`]']
+      const handler = genModelHandler(prop.values[0], context)
+
+      return [',', ...name, ':', ...handler]
+    }
+
+    function genModifiers(prop: IRProp, context: CodegenContext) {
+      const { key, modifiers } = prop
+      if (!isArray(modifiers) || modifiers.length === 0) return []
+
+      const modifiersKey = key.isStatic
+        ? key.content === 'modelValue'
+          ? [`modelModifiers`]
+          : [`${key.content}Modifiers`]
+        : ['[`${', ...genExpression(key, context), '}Modifiers`]']
+
+      const modifiersVal = genDirectiveModifiers(modifiers)
+      return [',', ...modifiersKey, ':', `() => ({${modifiersVal}})`]
+    }
   }
 }
