@@ -209,7 +209,8 @@ describe('compiler: vModel transform', () => {
       const { code, ir } = compileWithVModel('<Comp v-model="foo" />')
       expect(code).toMatchSnapshot()
       expect(code).contains(
-        `modelValue: () => (_ctx.foo),"onUpdate:modelValue":() => $event => (_ctx.foo = $event)`,
+        `modelValue: () => (_ctx.foo),
+    "onUpdate:modelValue": () => $event => (_ctx.foo = $event)`,
       )
       expect(ir.block.operation).toMatchObject([
         {
@@ -220,7 +221,7 @@ describe('compiler: vModel transform', () => {
               {
                 key: { content: 'modelValue', isStatic: true },
                 model: true,
-                modifiers: [],
+                modelModifiers: [],
                 values: [{ content: 'foo', isStatic: false }],
               },
             ],
@@ -233,7 +234,8 @@ describe('compiler: vModel transform', () => {
       const { code, ir } = compileWithVModel('<Comp v-model:bar="foo" />')
       expect(code).toMatchSnapshot()
       expect(code).contains(
-        `bar: () => (_ctx.foo),"onUpdate:bar":() => $event => (_ctx.foo = $event)`,
+        `bar: () => (_ctx.foo),
+    "onUpdate:bar": () => $event => (_ctx.foo = $event)`,
       )
       expect(ir.block.operation).toMatchObject([
         {
@@ -244,7 +246,7 @@ describe('compiler: vModel transform', () => {
               {
                 key: { content: 'bar', isStatic: true },
                 model: true,
-                modifiers: [],
+                modelModifiers: [],
                 values: [{ content: 'foo', isStatic: false }],
               },
             ],
@@ -257,7 +259,8 @@ describe('compiler: vModel transform', () => {
       const { code, ir } = compileWithVModel('<Comp v-model:[arg]="foo" />')
       expect(code).toMatchSnapshot()
       expect(code).contains(
-        `[_ctx.arg]: () => (_ctx.foo),[\`onUpdate:\${_ctx.arg}\`]:() => $event => (_ctx.foo = $event)`,
+        `[_ctx.arg]: () => (_ctx.foo),
+    ["onUpdate:" + _ctx.arg]: () => $event => (_ctx.foo = $event)`,
       )
       expect(ir.block.operation).toMatchObject([
         {
@@ -267,9 +270,9 @@ describe('compiler: vModel transform', () => {
             [
               {
                 key: { content: 'arg', isStatic: false },
-                model: true,
-                modifiers: [],
                 values: [{ content: 'foo', isStatic: false }],
+                model: true,
+                modelModifiers: [],
               },
             ],
           ],
@@ -283,7 +286,7 @@ describe('compiler: vModel transform', () => {
       )
       expect(code).toMatchSnapshot()
       expect(code).contain(
-        `modelModifiers:() => ({trim: true, "bar-baz": true})`,
+        `modelModifiers: () => ({ trim: true, "bar-baz": true })`,
       )
       expect(ir.block.operation).toMatchObject([
         {
@@ -293,9 +296,9 @@ describe('compiler: vModel transform', () => {
             [
               {
                 key: { content: 'modelValue', isStatic: true },
-                model: true,
-                modifiers: ['trim', 'bar-baz'],
                 values: [{ content: 'foo', isStatic: false }],
+                model: true,
+                modelModifiers: ['trim', 'bar-baz'],
               },
             ],
           ],
@@ -308,8 +311,8 @@ describe('compiler: vModel transform', () => {
         '<Comp v-model:foo.trim="foo" v-model:bar.number="bar" />',
       )
       expect(code).toMatchSnapshot()
-      expect(code).contain(`fooModifiers:() => ({trim: true})`)
-      expect(code).contain(`barModifiers:() => ({number: true})`)
+      expect(code).contain(`fooModifiers: () => ({ trim: true })`)
+      expect(code).contain(`barModifiers: () => ({ number: true })`)
       expect(ir.block.operation).toMatchObject([
         {
           type: IRNodeTypes.CREATE_COMPONENT_NODE,
@@ -318,15 +321,15 @@ describe('compiler: vModel transform', () => {
             [
               {
                 key: { content: 'foo', isStatic: true },
-                model: true,
-                modifiers: ['trim'],
                 values: [{ content: 'foo', isStatic: false }],
+                model: true,
+                modelModifiers: ['trim'],
               },
               {
                 key: { content: 'bar', isStatic: true },
-                model: true,
-                modifiers: ['number'],
                 values: [{ content: 'bar', isStatic: false }],
+                model: true,
+                modelModifiers: ['number'],
               },
             ],
           ],
@@ -339,8 +342,8 @@ describe('compiler: vModel transform', () => {
         '<Comp v-model:[foo].trim="foo" v-model:[bar].number="bar" />',
       )
       expect(code).toMatchSnapshot()
-      expect(code).contain(`[\`\${_ctx.foo}Modifiers\`]:() => ({trim: true})`)
-      expect(code).contain(`[\`\${_ctx.bar}Modifiers\`]:() => ({number: true})`)
+      expect(code).contain(`[_ctx.foo + "Modifiers"]: () => ({ trim: true })`)
+      expect(code).contain(`[_ctx.bar + "Modifiers"]: () => ({ number: true })`)
       expect(ir.block.operation).toMatchObject([
         {
           type: IRNodeTypes.CREATE_COMPONENT_NODE,
@@ -349,15 +352,15 @@ describe('compiler: vModel transform', () => {
             [
               {
                 key: { content: 'foo', isStatic: false },
-                model: true,
-                modifiers: ['trim'],
                 values: [{ content: 'foo', isStatic: false }],
+                model: true,
+                modelModifiers: ['trim'],
               },
               {
                 key: { content: 'bar', isStatic: false },
-                model: true,
-                modifiers: ['number'],
                 values: [{ content: 'bar', isStatic: false }],
+                model: true,
+                modelModifiers: ['number'],
               },
             ],
           ],

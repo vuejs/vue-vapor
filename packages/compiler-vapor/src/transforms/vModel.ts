@@ -69,7 +69,7 @@ export const transformVModel: DirectiveTransform = (dir, node, context) => {
       key: arg ? arg : createSimpleExpression('modelValue', true),
       value: exp,
       model: true,
-      modifiers: dir.modifiers,
+      modelModifiers: dir.modifiers,
     }
   } else {
     if (dir.arg)

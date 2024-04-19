@@ -25,7 +25,7 @@ export function genCreateComponent(
 
   const tag = genTag()
   const isRoot = oper.root
-  const props = genProps()
+  const rawProps = genRawProps()
 
   return [
     NEWLINE,
@@ -33,7 +33,7 @@ export function genCreateComponent(
     ...genCall(
       vaporHelper('createComponent'),
       tag,
-      props || (isRoot ? 'null' : false),
+      rawProps || (isRoot ? 'null' : false),
       isRoot && 'true',
     ),
   ]
@@ -49,11 +49,11 @@ export function genCreateComponent(
     }
   }
 
-  function genProps() {
+  function genRawProps() {
     const props = oper.props
       .map(props => {
         if (isArray(props)) {
-          if (!props.length) return undefined
+          if (!props.length) return
           return genStaticProps(props)
         } else {
           let expr = genExpression(props.value, context)
@@ -82,33 +82,33 @@ export function genCreateComponent(
             ? genEventHandler(context, prop.values[0])
             : ['() => (', ...genExpression(prop.values[0], context), ')']),
           ...(prop.model
-            ? [...genModel(prop, context), ...genModifiers(prop, context)]
+            ? [...genModelEvent(prop), ...genModelModifiers(prop)]
             : []),
         ]
       }),
     )
 
-    function genModel(prop: IRProp, context: CodegenContext) {
+    function genModelEvent(prop: IRProp): CodeFragment[] {
       const name = prop.key.isStatic
         ? [JSON.stringify(`onUpdate:${camelize(prop.key.content)}`)]
-        : ['[`onUpdate:${', ...genExpression(prop.key, context), '}`]']
+        : ['["onUpdate:" + ', ...genExpression(prop.key, context), ']']
       const handler = genModelHandler(prop.values[0], context)
 
-      return [',', ...name, ':', ...handler]
+      return [',', NEWLINE, ...name, ': ', ...handler]
     }
 
-    function genModifiers(prop: IRProp, context: CodegenContext) {
-      const { key, modifiers } = prop
-      if (!isArray(modifiers) || modifiers.length === 0) return []
+    function genModelModifiers(prop: IRProp): CodeFragment[] {
+      const { key, modelModifiers } = prop
+      if (!modelModifiers || !modelModifiers.length) return []
 
       const modifiersKey = key.isStatic
         ? key.content === 'modelValue'
           ? [`modelModifiers`]
           : [`${key.content}Modifiers`]
-        : ['[`${', ...genExpression(key, context), '}Modifiers`]']
+        : ['[', ...genExpression(key, context), ' + "Modifiers"]']
 
-      const modifiersVal = genDirectiveModifiers(modifiers)
-      return [',', ...modifiersKey, ':', `() => ({${modifiersVal}})`]
+      const modifiersVal = genDirectiveModifiers(modelModifiers)
+      return [',', NEWLINE, ...modifiersKey, `: () => ({ ${modifiersVal} })`]
     }
   }
 }
