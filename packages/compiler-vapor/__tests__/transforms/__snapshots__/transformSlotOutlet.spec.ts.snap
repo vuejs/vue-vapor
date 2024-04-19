@@ -1,0 +1,19 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`compiler: transform <slot> outlets > default slot outlet 1`] = `
+"import { createSlot as _createSlot } from 'vue/vapor';
+
+export function render(_ctx) {
+  const n0 = _createSlot("default")
+  return n0
+}"
+`;
+
+exports[`compiler: transform <slot> outlets > statically named slot outlet 1`] = `
+"import { createSlot as _createSlot } from 'vue/vapor';
+
+export function render(_ctx) {
+  const n0 = _createSlot("foo")
+  return n0
+}"
+`;
