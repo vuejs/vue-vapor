@@ -1,5 +1,4 @@
 import {
-  EMPTY_OBJ,
   type UnionToIntersection,
   camelize,
   extend,
@@ -14,11 +13,7 @@ import {
 } from '@vue/shared'
 import type { Component, ComponentInternalInstance } from './component'
 import { VaporErrorCodes, callWithAsyncErrorHandling } from './errorHandling'
-import {
-  type NormalizedRawProps,
-  type StaticProps,
-  getDynamicPropValue,
-} from './componentProps'
+import type { StaticProps } from './componentProps'
 import { warn } from './warning'
 
 export type ObjectEmitsOptions = Record<
@@ -78,42 +73,50 @@ export function emit(
     }
   }
 
-  const { rawProps, emitsOptions } = instance
+  const { rawProps } = instance
   const hasDynamicProps = rawProps.some(isFunction)
-  const events: Record<string, (...args: any[]) => any> = {}
 
-  if (emitsOptions) {
-    if (hasDynamicProps) {
-      for (const key in emitsOptions) {
-        const rawKey = toHandlerKey(key)
-        const [handler] = getDynamicPropValue(
-          rawProps as NormalizedRawProps,
-          rawKey,
-        )
-        events[rawKey] = handler as (...args: any[]) => any
-      }
-    } else {
-      for (const key in emitsOptions) {
-        const rawKey = toHandlerKey(key)
-        const handler = (rawProps[0] as StaticProps)[rawKey]
-        events[rawKey] = handler as (...args: any[]) => any
-      }
-    }
+  let handlerName: string
+  let handler: any
+  let onceHandler: any
+
+  const isModelListener = event.startsWith('update:')
+  const modelArg = isModelListener && event.slice(7)
+  let modifiers: any
+
+  // has v-bind or :[eventName]
+  if (hasDynamicProps) {
+    // TODO
+    // getDynamicPropValue(rawProps, 'key')
+    // for (const key in rawProps) {
+    // const getter = () =>
+    // registerProp(instance, props, key, getter, true)
+    // }
+  } else {
+    const staticProps = rawProps[0] as StaticProps
+    tryGet(key => staticProps[key] && staticProps[key]())
   }
 
-  let args = rawArgs
-  const isModelListener = event.startsWith('update:')
+  function tryGet(getter: (key: string) => any) {
+    handler =
+      getter((handlerName = toHandlerKey(event))) ||
+      // also try camelCase event handler (#2249)
+      getter((handlerName = toHandlerKey(camelize(event))))
+    // for v-model update:xxx events, also trigger kebab-case equivalent
+    // for props passed via kebab-case
+    if (!handler && isModelListener) {
+      handler = getter((handlerName = toHandlerKey(hyphenate(event))))
+    }
+    onceHandler = getter(`${handlerName}Once`)
+    modifiers =
+      modelArg &&
+      getter(`${modelArg === 'modelValue' ? 'model' : modelArg}Modifiers`)
+  }
 
   // for v-model update:xxx events, apply modifiers on args
-  const modelArg = isModelListener && event.slice(7)
-
-  if (modelArg && modelArg in events) {
-    const modifiersKey = `${
-      modelArg === 'modelValue' ? 'model' : modelArg
-    }Modifiers`
-
-    // @ts-expect-error: todo
-    const { number, trim } = events[modifiersKey] || EMPTY_OBJ
+  let args = rawArgs
+  if (modifiers) {
+    const { number, trim } = modifiers
     if (trim) {
       args = rawArgs.map(a => (isString(a) ? a.trim() : a))
     }
@@ -124,17 +127,6 @@ export function emit(
 
   // TODO: warn
 
-  let handlerName
-  let handler =
-    events[(handlerName = toHandlerKey(event))] ||
-    // also try camelCase event handler (#2249)
-    events[(handlerName = toHandlerKey(camelize(event)))]
-  // for v-model update:xxx events, also trigger kebab-case equivalent
-  // for props passed via kebab-case
-  if (!handler && isModelListener) {
-    handler = events[(handlerName = toHandlerKey(hyphenate(event)))]
-  }
-
   if (handler) {
     callWithAsyncErrorHandling(
       handler,
@@ -144,14 +136,13 @@ export function emit(
     )
   }
 
-  const onceHandler = events[`${handlerName}Once`]
   if (onceHandler) {
     if (!instance.emitted) {
       instance.emitted = {}
-    } else if (instance.emitted[handlerName]) {
+    } else if (instance.emitted[handlerName!]) {
       return
     }
-    instance.emitted[handlerName] = true
+    instance.emitted[handlerName!] = true
     callWithAsyncErrorHandling(
       onceHandler,
       instance,
@@ -167,8 +158,9 @@ export function normalizeEmitsOptions(
   // TODO: caching?
 
   const raw = comp.emits
-  let normalized: ObjectEmitsOptions = {}
+  if (!raw) return null
 
+  let normalized: ObjectEmitsOptions = {}
   if (isArray(raw)) {
     raw.forEach(key => (normalized[key] = null))
   } else {
