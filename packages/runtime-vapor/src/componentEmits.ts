@@ -13,7 +13,7 @@ import {
 } from '@vue/shared'
 import type { Component, ComponentInternalInstance } from './component'
 import { VaporErrorCodes, callWithAsyncErrorHandling } from './errorHandling'
-import type { StaticProps } from './componentProps'
+import { type StaticProps, getDynamicPropValue } from './componentProps'
 import { warn } from './warning'
 
 export type ObjectEmitsOptions = Record<
@@ -86,12 +86,7 @@ export function emit(
 
   // has v-bind or :[eventName]
   if (hasDynamicProps) {
-    // TODO
-    // getDynamicPropValue(rawProps, 'key')
-    // for (const key in rawProps) {
-    // const getter = () =>
-    // registerProp(instance, props, key, getter, true)
-    // }
+    tryGet(key => getDynamicPropValue(rawProps, key)[0])
   } else {
     const staticProps = rawProps[0] as StaticProps
     tryGet(key => staticProps[key] && staticProps[key]())

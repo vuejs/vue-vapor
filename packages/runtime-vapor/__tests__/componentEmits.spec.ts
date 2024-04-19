@@ -38,6 +38,28 @@ describe('component: emit', () => {
     expect(onBaz).toHaveBeenCalled()
   })
 
+  test('trigger dynamic emits', () => {
+    const { render } = define({
+      setup(_, { emit }) {
+        emit('foo')
+        emit('bar')
+        emit('!baz')
+      },
+    })
+    const onFoo = vi.fn()
+    const onBar = vi.fn()
+    const onBaz = vi.fn()
+    render(() => ({
+      onfoo: onFoo,
+      onBar,
+      ['on!baz']: onBaz,
+    }))
+
+    expect(onFoo).not.toHaveBeenCalled()
+    expect(onBar).toHaveBeenCalled()
+    expect(onBaz).toHaveBeenCalled()
+  })
+
   test('trigger camelCase handler', () => {
     const { render } = define({
       setup(_, { emit }) {

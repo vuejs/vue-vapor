@@ -75,7 +75,7 @@ export type NormalizedPropsOptions =
 export type StaticProps = Record<string, () => unknown>
 type DynamicProps = () => Data
 export type NormalizedRawProps = Array<StaticProps | DynamicProps>
-export type RawProps = NormalizedRawProps | StaticProps | null
+export type RawProps = NormalizedRawProps | StaticProps | DynamicProps | null
 
 export function initProps(
   instance: ComponentInternalInstance,
