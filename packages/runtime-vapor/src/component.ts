@@ -139,7 +139,7 @@ export interface ComponentInternalInstance {
   slots: InternalSlots
   refs: Data
   // exposed properties via expose()
-  exposed: Record<string, any> | null
+  exposed?: Record<string, any>
 
   attrsProxy?: Data
   slotsProxy?: Slots
