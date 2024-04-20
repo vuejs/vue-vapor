@@ -1,4 +1,4 @@
-import { EffectScope, isRef } from '@vue/reactivity'
+import { EffectScope, isRef, markRaw, proxyRefs } from '@vue/reactivity'
 import { EMPTY_OBJ, isArray, isFunction } from '@vue/shared'
 import type { Block } from './apiRender'
 import type { DirectiveBinding } from './directives'
@@ -369,4 +369,22 @@ function getSlotsProxy(instance: ComponentInternalInstance): Slots {
       },
     }))
   )
+}
+
+export function getExposeProxy(instance: ComponentInternalInstance) {
+  if (instance.exposed) {
+    return (
+      instance.exposeProxy ||
+      (instance.exposeProxy = new Proxy(proxyRefs(markRaw(instance.exposed)), {
+        get(target, key: string) {
+          if (key in target) {
+            return target[key]
+          }
+        },
+        has(target, key: string) {
+          return key in target
+        },
+      }))
+    )
+  }
 }
