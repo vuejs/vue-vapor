@@ -143,7 +143,7 @@ export interface ComponentInternalInstance {
 
   attrsProxy?: Data
   slotsProxy?: Slots
-  exposeProxy: Record<string, any> | null
+  exposeProxy?: Record<string, any>
 
   // lifecycle
   isMounted: boolean
