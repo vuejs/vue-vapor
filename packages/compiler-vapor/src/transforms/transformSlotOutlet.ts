@@ -13,10 +13,12 @@ import {
   DynamicFlag,
   type IRDynamicInfo,
   IRNodeTypes,
+  type IRProps,
   type VaporDirectiveNode,
 } from '../ir'
 import { camelize, extend } from '@vue/shared'
 import { genDefaultDynamic } from './utils'
+import { buildProps } from './transformElement'
 
 export const transformSlotOutlet: NodeTransform = (node, context) => {
   if (node.type !== NodeTypes.ELEMENT || node.tag !== 'slot') {
@@ -37,7 +39,6 @@ export const transformSlotOutlet: NodeTransform = (node, context) => {
       if (p.value) {
         if (p.name === 'name') {
           name = createSimpleExpression(p.value.content, true, p.loc)
-          break
         } else {
           p.name = camelize(p.name)
           nonNameProps.push(p)
@@ -65,6 +66,15 @@ export const transformSlotOutlet: NodeTransform = (node, context) => {
     }
   }
   name ||= createSimpleExpression('default', true)
+  let irProps: IRProps[] = []
+  if (nonNameProps.length > 0) {
+    const [isDynamic, props] = buildProps(
+      extend({}, node, { props: nonNameProps }),
+      context as TransformContext<ElementNode>,
+      true,
+    )
+    irProps = isDynamic ? props : [props]
+  }
 
   return () => {
     exitBlock && exitBlock()
@@ -72,7 +82,7 @@ export const transformSlotOutlet: NodeTransform = (node, context) => {
       type: IRNodeTypes.SLOT_OUTLET_NODE,
       id,
       name,
-      props: [],
+      props: irProps,
       fallback,
     })
   }

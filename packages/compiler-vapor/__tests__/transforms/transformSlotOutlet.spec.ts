@@ -92,6 +92,80 @@ describe('compiler: transform <slot> outlets', () => {
     ])
   })
 
+  test('default slot outlet with props', () => {
+    const { ir, code } = compileWithSlotsOutlet(
+      `<slot foo="bar" :baz="qux" :foo-bar="foo-bar" />`,
+    )
+    expect(code).toMatchSnapshot()
+    expect(ir.block.operation).toMatchObject([
+      {
+        type: IRNodeTypes.SLOT_OUTLET_NODE,
+        name: { content: 'default' },
+        props: [
+          [
+            { key: { content: 'foo' }, values: [{ content: 'bar' }] },
+            { key: { content: 'baz' }, values: [{ content: 'qux' }] },
+            { key: { content: 'fooBar' }, values: [{ content: 'foo-bar' }] },
+          ],
+        ],
+      },
+    ])
+  })
+
+  test('statically named slot outlet with props', () => {
+    const { ir, code } = compileWithSlotsOutlet(
+      `<slot name="foo" foo="bar" :baz="qux" />`,
+    )
+    expect(code).toMatchSnapshot()
+    expect(ir.block.operation).toMatchObject([
+      {
+        type: IRNodeTypes.SLOT_OUTLET_NODE,
+        name: { content: 'foo' },
+        props: [
+          [
+            { key: { content: 'foo' }, values: [{ content: 'bar' }] },
+            { key: { content: 'baz' }, values: [{ content: 'qux' }] },
+          ],
+        ],
+      },
+    ])
+  })
+
+  test('statically named slot outlet with v-bind="obj"', () => {
+    const { ir, code } = compileWithSlotsOutlet(
+      `<slot name="foo" foo="bar" v-bind="obj" :baz="qux" />`,
+    )
+    expect(code).toMatchSnapshot()
+    expect(ir.block.operation).toMatchObject([
+      {
+        type: IRNodeTypes.SLOT_OUTLET_NODE,
+        name: { content: 'foo' },
+        props: [
+          [{ key: { content: 'foo' }, values: [{ content: 'bar' }] }],
+          { value: { content: 'obj', isStatic: false } },
+          [{ key: { content: 'baz' }, values: [{ content: 'qux' }] }],
+        ],
+      },
+    ])
+  })
+
+  test('statically named slot outlet with v-on', () => {
+    const { ir, code } = compileWithSlotsOutlet(
+      `<slot @click="foo" v-on="bar" :baz="qux" />`,
+    )
+    expect(code).toMatchSnapshot()
+    expect(ir.block.operation).toMatchObject([
+      {
+        type: IRNodeTypes.SLOT_OUTLET_NODE,
+        props: [
+          [{ key: { content: 'click' }, values: [{ content: 'foo' }] }],
+          { value: { content: 'bar' }, handler: true },
+          [{ key: { content: 'baz' }, values: [{ content: 'qux' }] }],
+        ],
+      },
+    ])
+  })
+
   test('default slot outlet with fallback', () => {
     const { ir, code } = compileWithSlotsOutlet(`<slot><div/></slot>`)
     expect(code).toMatchSnapshot()

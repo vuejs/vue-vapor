@@ -181,7 +181,7 @@ export type PropsResult =
   | [dynamic: true, props: IRProps[], expressions: SimpleExpressionNode[]]
   | [dynamic: false, props: IRProp[]]
 
-function buildProps(
+export function buildProps(
   node: ElementNode,
   context: TransformContext<ElementNode>,
   isComponent: boolean,
