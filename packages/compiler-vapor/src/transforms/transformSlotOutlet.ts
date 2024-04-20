@@ -4,6 +4,8 @@ import {
   NodeTypes,
   type SimpleExpressionNode,
   createSimpleExpression,
+  isStaticArgOf,
+  isStaticExp,
 } from '@vue/compiler-core'
 import type { NodeTransform, TransformContext } from '../transform'
 import {
@@ -34,16 +36,30 @@ export const transformSlotOutlet: NodeTransform = (node, context) => {
     if (p.type === NodeTypes.ATTRIBUTE) {
       if (p.value) {
         if (p.name === 'name') {
-          name = createSimpleExpression(p.value.content, true)
+          name = createSimpleExpression(p.value.content, true, p.loc)
           break
         } else {
-          nonNameProps.push(extend({}, p, { name: camelize(p.name) }))
+          p.name = camelize(p.name)
+          nonNameProps.push(p)
         }
       }
     } else {
-      if (p.name === 'name') {
-        name = (p as VaporDirectiveNode).exp!
+      if (p.name === 'bind' && isStaticArgOf(p.arg, 'name')) {
+        if (p.exp) {
+          name = (p as VaporDirectiveNode).exp!
+        } else if (p.arg && p.arg.type === NodeTypes.SIMPLE_EXPRESSION) {
+          // v-bind shorthand syntax
+          name = createSimpleExpression(
+            camelize(p.arg.content),
+            false,
+            p.arg.loc,
+          )
+          name.ast = null
+        }
       } else {
+        if (p.name === 'bind' && p.arg && isStaticExp(p.arg)) {
+          p.arg.content = camelize(p.arg.content)
+        }
         nonNameProps.push(p)
       }
     }

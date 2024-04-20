@@ -9,7 +9,9 @@ export function genSlotOutlet(oper: SlotOutletIRNode, context: CodegenContext) {
   const { id, name, fallback } = oper
   const [frag, push] = buildCodeFragment()
 
-  const nameExpr = genExpression(name, context)
+  const nameExpr = name.isStatic
+    ? genExpression(name, context)
+    : ['() => (', ...genExpression(name, context), ')']
 
   let fallbackArg: false | CodeFragment[] = false
   if (fallback) {
