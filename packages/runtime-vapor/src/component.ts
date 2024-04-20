@@ -265,8 +265,6 @@ export function createComponentInstance(
     attrs: EMPTY_OBJ,
     slots: EMPTY_OBJ,
     refs: EMPTY_OBJ,
-    exposed: null,
-    exposeProxy: null,
 
     // lifecycle
     isMounted: false,
@@ -369,22 +367,4 @@ function getSlotsProxy(instance: ComponentInternalInstance): Slots {
       },
     }))
   )
-}
-
-export function getExposeProxy(instance: ComponentInternalInstance) {
-  if (instance.exposed) {
-    return (
-      instance.exposeProxy ||
-      (instance.exposeProxy = new Proxy(proxyRefs(markRaw(instance.exposed)), {
-        get(target, key: string) {
-          if (key in target) {
-            return target[key]
-          }
-        },
-        has(target, key: string) {
-          return key in target
-        },
-      }))
-    )
-  }
 }
