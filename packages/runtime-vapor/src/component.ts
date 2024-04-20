@@ -1,4 +1,4 @@
-import { EffectScope, isRef, markRaw, proxyRefs } from '@vue/reactivity'
+import { EffectScope, isRef } from '@vue/reactivity'
 import { EMPTY_OBJ, isArray, isFunction } from '@vue/shared'
 import type { Block } from './apiRender'
 import type { DirectiveBinding } from './directives'
