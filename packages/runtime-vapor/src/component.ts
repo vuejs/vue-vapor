@@ -327,6 +327,12 @@ export function createComponentInstance(
   return instance
 }
 
+export const isVaporComponent = (
+  val: any,
+): val is ComponentInternalInstance => {
+  return val && componentKey in val
+}
+
 function getAttrsProxy(instance: ComponentInternalInstance): Data {
   return (
     instance.attrsProxy ||
