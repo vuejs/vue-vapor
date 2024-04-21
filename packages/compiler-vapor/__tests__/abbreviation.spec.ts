@@ -1,7 +1,3 @@
-/*
- * @Date: 2024-04-21 15:29:37
- * @Description:
- */
 /**
  * @vitest-environment jsdom
  */
@@ -23,10 +19,8 @@ const compileWithElementTransform = makeCompile({
 })
 
 function checkAbbr(template: string, abbrevation: string, expected: string) {
-  // TODO do some optimzations to make sure template === abbrevation
   const { ir } = compileWithElementTransform(template)
-  const templateOfIr = ir.template
-  abbrevation = templateOfIr.reduce((cur, next) => cur + next)
+  expect(ir.template.reduce((cur, next) => cur + next)).toBe(abbrevation)
   expect(parseHTML(abbrevation)).toBe(expected)
 }
 
