@@ -207,4 +207,6 @@ describe('compiler: transform <slot> outlets', () => {
       },
     ])
   })
+
+  test.todo('error on unexpected custom directive on <slot>')
 })

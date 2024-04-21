@@ -34,7 +34,7 @@ export function genSlotOutlet(oper: SlotOutletIRNode, context: CodegenContext) {
     ...genCall(
       vaporHelper('createSlot'),
       nameExpr,
-      genRawProps() || false,
+      genRawProps() || 'null',
       fallbackArg,
     ),
   )
