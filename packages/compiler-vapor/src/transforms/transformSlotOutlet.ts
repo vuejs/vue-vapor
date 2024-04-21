@@ -1,8 +1,12 @@
 import {
+  type AttributeNode,
+  type DirectiveNode,
   type ElementNode,
   ElementTypes,
+  ErrorCodes,
   NodeTypes,
   type SimpleExpressionNode,
+  createCompilerError,
   createSimpleExpression,
   isStaticArgOf,
   isStaticExp,
@@ -11,13 +15,12 @@ import type { NodeTransform, TransformContext } from '../transform'
 import {
   type BlockIRNode,
   DynamicFlag,
-  type IRDynamicInfo,
   IRNodeTypes,
   type IRProps,
   type VaporDirectiveNode,
 } from '../ir'
-import { camelize, extend } from '@vue/shared'
-import { genDefaultDynamic } from './utils'
+import { camelize, extend, isBuiltInDirective } from '@vue/shared'
+import { newDynamic } from './utils'
 import { buildProps } from './transformElement'
 
 export const transformSlotOutlet: NodeTransform = (node, context) => {
@@ -33,7 +36,8 @@ export const transformSlotOutlet: NodeTransform = (node, context) => {
   )
 
   let name: SimpleExpressionNode | undefined
-  const nonNameProps = []
+  const nonNameProps: (AttributeNode | DirectiveNode)[] = []
+  const customDirectives: DirectiveNode[] = []
   for (const p of props) {
     if (p.type === NodeTypes.ATTRIBUTE) {
       if (p.value) {
@@ -58,13 +62,27 @@ export const transformSlotOutlet: NodeTransform = (node, context) => {
           name.ast = null
         }
       } else {
-        if (p.name === 'bind' && p.arg && isStaticExp(p.arg)) {
-          p.arg.content = camelize(p.arg.content)
+        if (!isBuiltInDirective(p.name)) {
+          customDirectives.push(p)
+        } else {
+          if (p.name === 'bind' && p.arg && isStaticExp(p.arg)) {
+            p.arg.content = camelize(p.arg.content)
+          }
+          nonNameProps.push(p)
         }
-        nonNameProps.push(p)
       }
     }
   }
+
+  if (customDirectives.length) {
+    context.options.onError(
+      createCompilerError(
+        ErrorCodes.X_V_SLOT_UNEXPECTED_DIRECTIVE_ON_SLOT_OUTLET,
+        customDirectives[0].loc,
+      ),
+    )
+  }
+
   name ||= createSimpleExpression('default', true)
   let irProps: IRProps[] = []
   if (nonNameProps.length > 0) {
@@ -107,9 +125,7 @@ function createFallback(
   const fallback: BlockIRNode = {
     type: IRNodeTypes.BLOCK,
     node,
-    dynamic: extend(genDefaultDynamic(), {
-      flags: DynamicFlag.REFERENCED,
-    } satisfies Partial<IRDynamicInfo>),
+    dynamic: newDynamic(),
     effect: [],
     operation: [],
     returns: [],

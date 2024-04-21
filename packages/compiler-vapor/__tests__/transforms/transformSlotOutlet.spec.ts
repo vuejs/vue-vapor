@@ -1,4 +1,4 @@
-import { NodeTypes } from '@vue/compiler-core'
+import { ErrorCodes, NodeTypes } from '@vue/compiler-core'
 import {
   IRNodeTypes,
   transformChildren,
@@ -208,5 +208,26 @@ describe('compiler: transform <slot> outlets', () => {
     ])
   })
 
-  test.todo('error on unexpected custom directive on <slot>')
+  test('error on unexpected custom directive on <slot>', () => {
+    const onError = vi.fn()
+    const source = `<slot v-foo />`
+    const index = source.indexOf('v-foo')
+    const { code } = compileWithSlotsOutlet(source, { onError })
+    expect(code).toMatchSnapshot()
+    expect(onError.mock.calls[0][0]).toMatchObject({
+      code: ErrorCodes.X_V_SLOT_UNEXPECTED_DIRECTIVE_ON_SLOT_OUTLET,
+      loc: {
+        start: {
+          offset: index,
+          line: 1,
+          column: index + 1,
+        },
+        end: {
+          offset: index + 5,
+          line: 1,
+          column: index + 6,
+        },
+      },
+    })
+  })
 })

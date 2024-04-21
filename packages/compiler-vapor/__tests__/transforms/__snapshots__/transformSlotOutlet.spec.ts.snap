@@ -53,6 +53,15 @@ export function render(_ctx) {
 }"
 `;
 
+exports[`compiler: transform <slot> outlets > error on unexpected custom directive on <slot> 1`] = `
+"import { createSlot as _createSlot } from 'vue/vapor';
+
+export function render(_ctx) {
+  const n0 = _createSlot("default", null)
+  return n0
+}"
+`;
+
 exports[`compiler: transform <slot> outlets > named slot outlet with fallback 1`] = `
 "import { createSlot as _createSlot, template as _template } from 'vue/vapor';
 const t0 = _template("<div></div>")
