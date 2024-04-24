@@ -374,3 +374,9 @@ function getSlotsProxy(instance: ComponentInternalInstance): Slots {
     }))
   )
 }
+
+export function isComponentInstance(
+  val: any,
+): val is ComponentInternalInstance {
+  return val && componentKey in val
+}

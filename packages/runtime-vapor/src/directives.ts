@@ -1,8 +1,14 @@
-import { isFunction } from '@vue/shared'
-import { type ComponentInternalInstance, currentInstance } from './component'
+import { isArray, isFunction } from '@vue/shared'
+import {
+  type ComponentInternalInstance,
+  currentInstance,
+  isComponentInstance,
+} from './component'
 import { pauseTracking, resetTracking, traverse } from '@vue/reactivity'
 import { VaporErrorCodes, callWithAsyncErrorHandling } from './errorHandling'
 import { renderEffect } from './renderEffect'
+import { type Block, fragmentKey } from './apiRender'
+import { warn } from './warning'
 
 export type DirectiveModifiers<M extends string = string> = Record<M, boolean>
 
@@ -62,18 +68,29 @@ export type DirectiveArguments = Array<
     ]
 >
 
-export function withDirectives<T extends Node>(
+export function withDirectives<T extends ComponentInternalInstance | Node>(
   node: T,
   directives: DirectiveArguments,
 ): T {
   if (!currentInstance) {
-    // TODO warning
+    __DEV__ && warn(`withDirectives can only be used inside render functions.`)
     return node
   }
 
+  let realNode: Node
+
   const instance = currentInstance
-  if (!instance.dirs.has(node)) instance.dirs.set(node, [])
-  const bindings = instance.dirs.get(node)!
+
+  if (isComponentInstance(node)) {
+    let root = normalizeNode(node.block)
+    if (!root) return node
+    realNode = root
+  } else {
+    realNode = node
+  }
+
+  if (!instance.dirs.has(realNode)) instance.dirs.set(realNode, [])
+  const bindings = instance.dirs.get(realNode)!
 
   for (const directive of directives) {
     let [dir, source, arg, modifiers] = directive
@@ -96,7 +113,7 @@ export function withDirectives<T extends Node>(
     }
     bindings.push(binding)
 
-    callDirectiveHook(node, binding, instance, 'created')
+    callDirectiveHook(realNode, binding, instance, 'created')
 
     // register source
     if (source) {
@@ -110,6 +127,25 @@ export function withDirectives<T extends Node>(
   }
 
   return node
+
+  function normalizeNode(block: Block | null) {
+    if (!block) return
+
+    if (isArray(block)) {
+      __DEV__ &&
+        warn(
+          `Runtime directive used on component with non-element root node. ` +
+            `The directives will not function as intended.`,
+        )
+      return
+    }
+
+    if (block instanceof Node || fragmentKey in block) {
+      return block as Node
+    } else {
+      return normalizeNode(block.block)
+    }
+  }
 }
 
 export function invokeDirectiveHook(
