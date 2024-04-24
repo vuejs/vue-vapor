@@ -1,5 +1,5 @@
 import { EffectScope, isRef } from '@vue/reactivity'
-import { EMPTY_OBJ, isArray, isFunction } from '@vue/shared'
+import { EMPTY_OBJ, hasOwn, isArray, isFunction } from '@vue/shared'
 import type { Block } from './apiRender'
 import type { DirectiveBinding } from './directives'
 import {
@@ -327,10 +327,10 @@ export function createComponentInstance(
   return instance
 }
 
-export const isVaporComponent = (
-  val: any,
-): val is ComponentInternalInstance => {
-  return val && componentKey in val
+export function isVaporComponent(
+  val: unknown,
+): val is ComponentInternalInstance {
+  return !!val && hasOwn(val, componentKey)
 }
 
 function getAttrsProxy(instance: ComponentInternalInstance): Data {

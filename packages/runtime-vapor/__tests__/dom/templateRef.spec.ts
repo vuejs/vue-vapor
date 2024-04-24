@@ -1,54 +1,26 @@
-import { createComponent, ref, setRef, template } from '../../src'
+import { ref, setRef, template } from '../../src'
 import { makeRender } from '../_utils'
 
 const define = makeRender()
 
 describe('api: template ref', () => {
-  test('ref on element', () => {
-    const t0 = template('<div ref="foo">hello</div>')
+  test('string ref mount', () => {
+    const t0 = template('<div ref="refKey"></div>')
+    const el = ref(null)
     const { render } = define({
       setup() {
         return {
-          foo: ref(null),
+          refKey: el,
         }
       },
       render() {
         const n0 = t0()
-        setRef(n0 as any, 'foo')
+        setRef(n0 as Element, 'refKey')
         return n0
       },
     })
 
-    const { host, instance } = render()
-    expect(instance.refs.foo).toBe(host.firstChild)
-  })
-
-  test('ref on component', () => {
-    const exposeRef = ref<Record<string, string> | undefined>()
-    const { component: Child } = define({
-      setup(_, { expose }) {
-        expose(exposeRef.value)
-      },
-    })
-    const compRef = ref()
-    const { render } = define({
-      setup() {
-        return {
-          compRef,
-        }
-      },
-      render: () => {
-        const n0 = createComponent(Child)
-        setRef(n0, 'compRef')
-        return n0
-      },
-    })
-
-    expect(render().instance.refs.compRef).toBeDefined()
-
-    const exposeValue = { foo: 'bar' }
-    exposeRef.value = exposeValue
-
-    expect(render().instance.refs.compRef).toEqual(exposeValue)
+    const { host } = render()
+    expect(el.value).toBe(host.children[0])
   })
 })

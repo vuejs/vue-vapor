@@ -44,7 +44,7 @@ export function setRef(el: RefEl, ref: NodeRef, refFor = false) {
 
   if (isFunction(ref)) {
     const invokeRefSetter = (
-      value: Element | ComponentInternalInstance['exposed'] | null,
+      value: Element | Record<string, any> | undefined,
     ) => {
       callWithErrorHandling(
         ref,
@@ -55,7 +55,7 @@ export function setRef(el: RefEl, ref: NodeRef, refFor = false) {
     }
 
     invokeRefSetter(refValue)
-    onScopeDispose(() => invokeRefSetter(null))
+    onScopeDispose(() => invokeRefSetter(undefined))
   } else {
     const _isString = isString(ref)
     const _isRef = isRef(ref)
