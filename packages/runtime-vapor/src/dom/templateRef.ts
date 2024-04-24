@@ -35,7 +35,7 @@ export function setRef(el: RefEl, ref: NodeRef, refFor = false) {
     return
   }
 
-  const refValue = isVaporComponent(el) ? el.exposed || currentInstance : el
+  const refValue = isVaporComponent(el) ? el.exposed || el : el
 
   const refs =
     currentInstance.refs === EMPTY_OBJ
