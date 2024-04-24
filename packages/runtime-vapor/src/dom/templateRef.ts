@@ -43,9 +43,7 @@ export function setRef(el: RefEl, ref: NodeRef, refFor = false) {
       : currentInstance.refs
 
   if (isFunction(ref)) {
-    const invokeRefSetter = (
-      value: Element | Record<string, any> | undefined,
-    ) => {
+    const invokeRefSetter = (value?: Element | Record<string, any>) => {
       callWithErrorHandling(
         ref,
         currentInstance,
@@ -55,7 +53,7 @@ export function setRef(el: RefEl, ref: NodeRef, refFor = false) {
     }
 
     invokeRefSetter(refValue)
-    onScopeDispose(() => invokeRefSetter(undefined))
+    onScopeDispose(() => invokeRefSetter())
   } else {
     const _isString = isString(ref)
     const _isRef = isRef(ref)
