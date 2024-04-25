@@ -13,6 +13,7 @@ import type { CodegenContext } from '../generate'
 import type { Node } from '@babel/types'
 import { isConstantExpression } from '../utils'
 import { type CodeFragment, buildCodeFragment } from './utils'
+import { isGloballyAllowed } from '@vue/shared'
 
 export function genExpression(
   node: SimpleExpressionNode,
@@ -167,7 +168,7 @@ function genIdentifier(
         raw = withAssignment(raw)
     }
   } else {
-    raw = withAssignment(`_ctx.${raw}`)
+    raw = canPrefix(raw) ? withAssignment(`_ctx.${raw}`) : withAssignment(raw)
   }
   return [prefix, [raw, NewlineType.None, loc, name]]
 
@@ -177,4 +178,16 @@ function genIdentifier(
   function unref() {
     return `${vaporHelper('unref')}(${raw})`
   }
+}
+
+function canPrefix(name: string) {
+  // skip whitelisted globals
+  if (isGloballyAllowed(name)) {
+    return false
+  }
+  // special case for webpack compilation
+  if (name === 'require') {
+    return false
+  }
+  return true
 }
