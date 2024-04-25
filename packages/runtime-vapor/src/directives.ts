@@ -2,7 +2,7 @@ import { isArray, isFunction } from '@vue/shared'
 import {
   type ComponentInternalInstance,
   currentInstance,
-  isComponentInstance,
+  isVaporComponent,
 } from './component'
 import { pauseTracking, resetTracking, traverse } from '@vue/reactivity'
 import { VaporErrorCodes, callWithAsyncErrorHandling } from './errorHandling'
@@ -81,7 +81,7 @@ export function withDirectives<T extends ComponentInternalInstance | Node>(
 
   const instance = currentInstance
 
-  if (isComponentInstance(node)) {
+  if (isVaporComponent(node)) {
     let root = normalizeNode(node.block)
     if (!root) return node
     realNode = root
