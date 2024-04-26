@@ -19,7 +19,7 @@ const t0 = _template("<div></div>")
 export function render(_ctx) {
   const n0 = _createFor(() => ([1,2,3]), (_block) => {
     const n2 = t0()
-    _setRef(n2, "foo", undefined, true)
+    _setRef(n2, "foo", void 0, true)
     return [n2, () => {}]
   })
   return n0
@@ -33,7 +33,7 @@ const t0 = _template("<div></div>")
 export function render(_ctx) {
   const n0 = _createIf(() => (true), () => {
     const n2 = t0()
-    _setRef(n2, "foo", undefined)
+    _setRef(n2, "foo")
     return n2
   })
   return n0
@@ -46,7 +46,7 @@ const t0 = _template("<div></div>")
 
 export function render(_ctx) {
   const n0 = t0()
-  _setRef(n0, "foo", undefined)
+  _setRef(n0, "foo")
   return n0
 }"
 `;

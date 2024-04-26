@@ -20,7 +20,7 @@ export function genSetRef(
       vaporHelper('setRef'),
       [`n${oper.element}`],
       genExpression(oper.value, context),
-      [dynamicExp ? `r${oper.refCount}` : 'undefined'],
+      dynamicExp ? `r${oper.refCount}` : oper.refFor ? 'void 0' : undefined,
       oper.refFor && 'true',
     ),
     !!dynamicExp && ')',

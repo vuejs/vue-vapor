@@ -45,7 +45,7 @@ describe('compiler: template ref transform', () => {
     })
 
     expect(code).matchSnapshot()
-    expect(code).contains('_setRef(n0, "foo", undefined)')
+    expect(code).contains('_setRef(n0, "foo")')
   })
 
   test('dynamic ref', () => {
@@ -98,7 +98,7 @@ describe('compiler: template ref transform', () => {
     })
 
     expect(code).matchSnapshot()
-    expect(code).contains('_setRef(n2, "foo", undefined)')
+    expect(code).contains('_setRef(n2, "foo")')
   })
 
   test('ref + v-for', () => {
@@ -122,6 +122,6 @@ describe('compiler: template ref transform', () => {
       refFor: true,
     })
     expect(code).matchSnapshot()
-    expect(code).contains('_setRef(n2, "foo", undefined, true)')
+    expect(code).contains('_setRef(n2, "foo", void 0, true)')
   })
 })
