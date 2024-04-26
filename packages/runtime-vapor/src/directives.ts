@@ -69,28 +69,26 @@ export type DirectiveArguments = Array<
 >
 
 export function withDirectives<T extends ComponentInternalInstance | Node>(
-  node: T,
+  nodeOrComponent: T,
   directives: DirectiveArguments,
 ): T {
   if (!currentInstance) {
     __DEV__ && warn(`withDirectives can only be used inside render functions.`)
-    return node
+    return nodeOrComponent
   }
 
-  let realNode: Node
+  let node: Node
+  if (isVaporComponent(nodeOrComponent)) {
+    const root = normalizeNode(nodeOrComponent.block)
+    if (!root) return nodeOrComponent
+    node = root
+  } else {
+    node = nodeOrComponent
+  }
 
   const instance = currentInstance
-
-  if (isVaporComponent(node)) {
-    let root = normalizeNode(node.block)
-    if (!root) return node
-    realNode = root
-  } else {
-    realNode = node
-  }
-
-  if (!instance.dirs.has(realNode)) instance.dirs.set(realNode, [])
-  const bindings = instance.dirs.get(realNode)!
+  if (!instance.dirs.has(node)) instance.dirs.set(node, [])
+  const bindings = instance.dirs.get(node)!
 
   for (const directive of directives) {
     let [dir, source, arg, modifiers] = directive
@@ -113,7 +111,7 @@ export function withDirectives<T extends ComponentInternalInstance | Node>(
     }
     bindings.push(binding)
 
-    callDirectiveHook(realNode, binding, instance, 'created')
+    callDirectiveHook(node, binding, instance, 'created')
 
     // register source
     if (source) {
@@ -126,7 +124,7 @@ export function withDirectives<T extends ComponentInternalInstance | Node>(
     }
   }
 
-  return node
+  return nodeOrComponent
 
   function normalizeNode(block: Block | null) {
     if (!block) return
