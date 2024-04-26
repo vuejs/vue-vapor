@@ -1,4 +1,4 @@
-import { isArray, isFunction } from '@vue/shared'
+import { isFunction } from '@vue/shared'
 import {
   type ComponentInternalInstance,
   currentInstance,
@@ -7,8 +7,8 @@ import {
 import { pauseTracking, resetTracking, traverse } from '@vue/reactivity'
 import { VaporErrorCodes, callWithAsyncErrorHandling } from './errorHandling'
 import { renderEffect } from './renderEffect'
-import { type Block, fragmentKey } from './apiRender'
 import { warn } from './warning'
+import { normalizeBlock } from './dom/element'
 
 export type DirectiveModifiers<M extends string = string> = Record<M, boolean>
 
@@ -79,7 +79,7 @@ export function withDirectives<T extends ComponentInternalInstance | Node>(
 
   let node: Node
   if (isVaporComponent(nodeOrComponent)) {
-    const root = normalizeNode(nodeOrComponent.block)
+    const root = getComponentNode(nodeOrComponent)
     if (!root) return nodeOrComponent
     node = root
   } else {
@@ -125,25 +125,21 @@ export function withDirectives<T extends ComponentInternalInstance | Node>(
   }
 
   return nodeOrComponent
+}
 
-  function normalizeNode(block: Block | null) {
-    if (!block) return
+function getComponentNode(component: ComponentInternalInstance) {
+  if (!component.block) return
 
-    if (isArray(block)) {
-      __DEV__ &&
-        warn(
-          `Runtime directive used on component with non-element root node. ` +
-            `The directives will not function as intended.`,
-        )
-      return
-    }
-
-    if (block instanceof Node || fragmentKey in block) {
-      return block as Node
-    } else {
-      return normalizeNode(block.block)
-    }
+  const nodes = normalizeBlock(component.block)
+  if (nodes.length !== 1) {
+    warn(
+      `Runtime directive used on component with non-element root node. ` +
+        `The directives will not function as intended.`,
+    )
+    return
   }
+
+  return nodes[0]
 }
 
 export function invokeDirectiveHook(
