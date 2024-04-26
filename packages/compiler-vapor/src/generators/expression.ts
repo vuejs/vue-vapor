@@ -1,3 +1,4 @@
+import { isGloballyAllowed } from '@vue/shared'
 import {
   BindingTypes,
   NewlineType,
@@ -13,7 +14,6 @@ import type { CodegenContext } from '../generate'
 import type { Node } from '@babel/types'
 import { isConstantExpression } from '../utils'
 import { type CodeFragment, buildCodeFragment } from './utils'
-import { isGloballyAllowed } from '@vue/shared'
 
 export function genExpression(
   node: SimpleExpressionNode,
