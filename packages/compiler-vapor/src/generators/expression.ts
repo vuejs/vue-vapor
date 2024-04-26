@@ -168,7 +168,7 @@ function genIdentifier(
         raw = withAssignment(raw)
     }
   } else {
-    raw = canPrefix(raw) ? withAssignment(`_ctx.${raw}`) : withAssignment(raw)
+    raw = withAssignment(canPrefix(raw) ? `_ctx.${raw}` : raw)
   }
   return [prefix, [raw, NewlineType.None, loc, name]]
 
