@@ -25,13 +25,24 @@ export const transformRef: NodeTransform = (node, context) => {
   }
 
   return () => {
-    const dynamicExp = !isConstantExpression(value)
-    context.registerOperation({
-      type: IRNodeTypes.SET_REF,
-      element: context.reference(),
-      value,
-      refFor: !!context.inVFor,
-      refCount: dynamicExp ? context.refCount++ : -1,
-    })
+    const id = context.reference()
+    const effect = !isConstantExpression(value)
+    effect &&
+      context.registerOperation({
+        type: IRNodeTypes.DECLARE_OLD_REF,
+        id,
+      })
+    context.registerEffect(
+      [value],
+      [
+        {
+          type: IRNodeTypes.SET_REF,
+          element: context.reference(),
+          value,
+          refFor: !!context.inVFor,
+          effect,
+        },
+      ],
+    )
   }
 }

@@ -7,7 +7,7 @@ import { genSetHtml } from './html'
 import { genIf } from './if'
 import { genSetModelValue } from './modelValue'
 import { genDynamicProps, genSetProp } from './prop'
-import { genSetRef } from './ref'
+import { genDeclareOldRef, genSetRef } from './ref'
 import { genCreateTextNode, genSetText } from './text'
 import {
   type CodeFragment,
@@ -59,6 +59,8 @@ export function genOperation(
       return genFor(oper, context)
     case IRNodeTypes.CREATE_COMPONENT_NODE:
       return genCreateComponent(oper, context)
+    case IRNodeTypes.DECLARE_OLD_REF:
+      return genDeclareOldRef(oper)
   }
 
   return []

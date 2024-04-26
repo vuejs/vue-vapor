@@ -79,8 +79,6 @@ export interface TransformContext<T extends AllNode = AllNode> {
 
   component: Set<string>
 
-  refCount: number
-
   enterBlock(ir: TransformContext['block'], isVFor?: boolean): () => void
   reference(): number
   increaseId(): number
@@ -154,7 +152,6 @@ function createRootContext(
     inVFor: 0,
     comment: [],
     component: root.component,
-    refCount: 0,
 
     increaseId: () => globalId++,
     reference() {
