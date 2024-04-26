@@ -6,7 +6,7 @@ import {
 import type { NodeTransform } from '../transform'
 import { IRNodeTypes } from '../ir'
 import { normalizeBindShorthand } from './vBind'
-import { findProp } from '../utils'
+import { findProp, isConstantExpression } from '../utils'
 import { EMPTY_EXPRESSION } from './utils'
 
 export const transformRef: NodeTransform = (node, context) => {
@@ -24,11 +24,14 @@ export const transformRef: NodeTransform = (node, context) => {
       : EMPTY_EXPRESSION
   }
 
-  return () =>
+  return () => {
+    const dynamicExp = !isConstantExpression(value)
     context.registerOperation({
       type: IRNodeTypes.SET_REF,
       element: context.reference(),
       value,
       refFor: !!context.inVFor,
+      refCount: dynamicExp ? context.refCount++ : -1,
     })
+  }
 }

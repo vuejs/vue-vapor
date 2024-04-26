@@ -8,13 +8,21 @@ export function genSetRef(
   context: CodegenContext,
 ): CodeFragment[] {
   const { vaporHelper } = context
+  const dynamicExp = oper.refCount !== -1
   return [
     NEWLINE,
+    dynamicExp && `let r${oper.refCount}`,
+    dynamicExp && NEWLINE,
+    ...(!!dynamicExp
+      ? [`${vaporHelper('renderEffect')}(() => `, `r${oper.refCount} = `]
+      : []),
     ...genCall(
       vaporHelper('setRef'),
       [`n${oper.element}`],
       genExpression(oper.value, context),
+      [dynamicExp ? `r${oper.refCount}` : 'undefined'],
       oper.refFor && 'true',
     ),
+    !!dynamicExp && ')',
   ]
 }

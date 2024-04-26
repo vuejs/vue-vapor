@@ -145,6 +145,7 @@ export interface SetRefIRNode extends BaseIRNode {
   element: number
   value: SimpleExpressionNode
   refFor: boolean
+  refCount: number
 }
 
 export interface SetModelValueIRNode extends BaseIRNode {
