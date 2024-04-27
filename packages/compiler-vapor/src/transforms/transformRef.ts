@@ -37,7 +37,7 @@ export const transformRef: NodeTransform = (node, context) => {
       [
         {
           type: IRNodeTypes.SET_REF,
-          element: context.reference(),
+          element: id,
           value,
           refFor: !!context.inVFor,
           effect,
