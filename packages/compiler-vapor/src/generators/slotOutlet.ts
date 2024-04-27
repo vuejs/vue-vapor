@@ -5,9 +5,9 @@ import { genBlock } from './block'
 import { genExpression } from './expression'
 import {
   type CodeFragment,
-  INDENT_END,
-  INDENT_START,
   NEWLINE,
+  SEGMENTS_ARRAY,
+  SEGMENTS_OBJECT_NEWLINE,
   buildCodeFragment,
   genCall,
   genMulti,
@@ -24,7 +24,7 @@ export function genSlotOutlet(oper: SlotOutletIRNode, context: CodegenContext) {
     ? genExpression(name, context)
     : ['() => (', ...genExpression(name, context), ')']
 
-  let fallbackArg: false | CodeFragment[] = false
+  let fallbackArg: CodeFragment[] | undefined
   if (fallback) {
     fallbackArg = genBlock(fallback, context)
   }
@@ -56,17 +56,13 @@ export function genSlotOutlet(oper: SlotOutletIRNode, context: CodegenContext) {
       })
       .filter(Boolean)
     if (props.length) {
-      return genMulti(['[', ']', ', '], ...props)
+      return genMulti(SEGMENTS_ARRAY, ...props)
     }
   }
 
   function genStaticProps(props: IRProp[]) {
     return genMulti(
-      [
-        ['{', INDENT_START, NEWLINE],
-        [INDENT_END, NEWLINE, '}'],
-        [', ', NEWLINE],
-      ],
+      SEGMENTS_OBJECT_NEWLINE,
       ...props.map(prop => {
         return [
           ...genPropKey(prop, context),
