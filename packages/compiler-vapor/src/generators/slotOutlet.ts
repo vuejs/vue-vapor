@@ -1,22 +1,12 @@
-import { isArray } from '@vue/shared'
 import type { CodegenContext } from '../generate'
-import type { IRProp, SlotOutletIRNode } from '../ir'
+import type { SlotOutletIRNode } from '../ir'
 import { genBlock } from './block'
 import { genExpression } from './expression'
-import {
-  type CodeFragment,
-  NEWLINE,
-  SEGMENTS_ARRAY,
-  SEGMENTS_OBJECT_NEWLINE,
-  buildCodeFragment,
-  genCall,
-  genMulti,
-} from './utils'
-import { genPropKey } from './prop'
-import { genEventHandler } from './event'
+import { type CodeFragment, NEWLINE, buildCodeFragment, genCall } from './utils'
+import { genRawProps } from './component'
 
 export function genSlotOutlet(oper: SlotOutletIRNode, context: CodegenContext) {
-  const { helper, vaporHelper } = context
+  const { vaporHelper } = context
   const { id, name, fallback } = oper
   const [frag, push] = buildCodeFragment()
 
@@ -34,44 +24,10 @@ export function genSlotOutlet(oper: SlotOutletIRNode, context: CodegenContext) {
     ...genCall(
       vaporHelper('createSlot'),
       nameExpr,
-      genRawProps() || 'null',
+      genRawProps(oper.props, context) || 'null',
       fallbackArg,
     ),
   )
 
   return frag
-
-  // TODO share this with genCreateComponent
-  function genRawProps() {
-    const props = oper.props
-      .map(props => {
-        if (isArray(props)) {
-          if (!props.length) return
-          return genStaticProps(props)
-        } else {
-          let expr = genExpression(props.value, context)
-          if (props.handler) expr = genCall(helper('toHandlers'), expr)
-          return ['() => (', ...expr, ')']
-        }
-      })
-      .filter(Boolean)
-    if (props.length) {
-      return genMulti(SEGMENTS_ARRAY, ...props)
-    }
-  }
-
-  function genStaticProps(props: IRProp[]) {
-    return genMulti(
-      SEGMENTS_OBJECT_NEWLINE,
-      ...props.map(prop => {
-        return [
-          ...genPropKey(prop, context),
-          ': ',
-          ...(prop.handler
-            ? genEventHandler(context, prop.values[0])
-            : ['() => (', ...genExpression(prop.values[0], context), ')']),
-        ]
-      }),
-    )
-  }
 }
