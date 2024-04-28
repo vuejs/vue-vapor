@@ -20,7 +20,7 @@ import {
   type VaporDirectiveNode,
 } from '../ir'
 import { camelize, extend, isBuiltInDirective } from '@vue/shared'
-import { newDynamic } from './utils'
+import { newBlock } from './utils'
 import { buildProps } from './transformElement'
 
 export const transformSlotOutlet: NodeTransform = (node, context) => {
@@ -122,15 +122,7 @@ function createFallback(
     children: [...node.children],
   })
 
-  const fallback: BlockIRNode = {
-    type: IRNodeTypes.BLOCK,
-    node,
-    dynamic: newDynamic(),
-    effect: [],
-    operation: [],
-    returns: [],
-  }
-
+  const fallback: BlockIRNode = newBlock(node)
   const exitBlock = context.enterBlock(fallback)
   context.reference()
   return [fallback, exitBlock]
