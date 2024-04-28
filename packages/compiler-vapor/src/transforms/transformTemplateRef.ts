@@ -9,7 +9,7 @@ import { normalizeBindShorthand } from './vBind'
 import { findProp, isConstantExpression } from '../utils'
 import { EMPTY_EXPRESSION } from './utils'
 
-export const transformRef: NodeTransform = (node, context) => {
+export const transformTemplateRef: NodeTransform = (node, context) => {
   if (node.type !== NodeTypes.ELEMENT) return
 
   const dir = findProp(node, 'ref', false, true)
@@ -32,17 +32,12 @@ export const transformRef: NodeTransform = (node, context) => {
         type: IRNodeTypes.DECLARE_OLD_REF,
         id,
       })
-    context.registerEffect(
-      [value],
-      [
-        {
-          type: IRNodeTypes.SET_REF,
-          element: id,
-          value,
-          refFor: !!context.inVFor,
-          effect,
-        },
-      ],
-    )
+    context.registerEffect([value], {
+      type: IRNodeTypes.SET_TEMPLATE_REF,
+      element: id,
+      value,
+      refFor: !!context.inVFor,
+      effect,
+    })
   }
 }

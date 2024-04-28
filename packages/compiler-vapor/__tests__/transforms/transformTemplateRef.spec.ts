@@ -5,7 +5,7 @@ import {
   type IfIRNode,
   transformChildren,
   transformElement,
-  transformRef,
+  transformTemplateRef,
   transformVFor,
   transformVIf,
 } from '../../src'
@@ -15,7 +15,7 @@ const compileWithTransformRef = makeCompile({
   nodeTransforms: [
     transformVIf,
     transformVFor,
-    transformRef,
+    transformTemplateRef,
     transformElement,
     transformChildren,
   ],
@@ -31,16 +31,19 @@ describe('compiler: template ref transform', () => {
       flags: DynamicFlag.REFERENCED,
     })
     expect(ir.template).toEqual(['<div></div>'])
-    expect(ir.block.operation).toMatchObject([
-      {
-        type: IRNodeTypes.SET_REF,
-        element: 0,
-        value: {
-          content: 'foo',
-          isStatic: true,
+    expect(ir.block.operation).lengthOf(1)
+    expect(ir.block.operation[0]).toMatchObject({
+      type: IRNodeTypes.SET_TEMPLATE_REF,
+      element: 0,
+      value: {
+        content: 'foo',
+        isStatic: true,
+        loc: {
+          start: { line: 1, column: 10, offset: 9 },
+          end: { line: 1, column: 15, offset: 14 },
         },
       },
-    ])
+    })
     expect(code).contains('_setRef(n0, "foo")')
   })
 
@@ -63,7 +66,7 @@ describe('compiler: template ref transform', () => {
       {
         operations: [
           {
-            type: IRNodeTypes.SET_REF,
+            type: IRNodeTypes.SET_TEMPLATE_REF,
             element: 0,
             value: {
               content: 'foo',
@@ -88,7 +91,7 @@ describe('compiler: template ref transform', () => {
     const { positive } = ir.block.operation[0] as IfIRNode
     expect(positive.operation).toMatchObject([
       {
-        type: IRNodeTypes.SET_REF,
+        type: IRNodeTypes.SET_TEMPLATE_REF,
         element: 2,
         value: {
           content: 'foo',
@@ -109,7 +112,7 @@ describe('compiler: template ref transform', () => {
     const { render } = ir.block.operation[0] as ForIRNode
     expect(render.operation).toMatchObject([
       {
-        type: IRNodeTypes.SET_REF,
+        type: IRNodeTypes.SET_TEMPLATE_REF,
         element: 2,
         value: {
           content: 'foo',
