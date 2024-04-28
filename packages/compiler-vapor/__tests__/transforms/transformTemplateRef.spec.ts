@@ -25,7 +25,6 @@ describe('compiler: template ref transform', () => {
   test('static ref', () => {
     const { ir, code } = compileWithTransformRef(`<div ref="foo" />`)
 
-    expect(code).matchSnapshot()
     expect(ir.block.dynamic.children[0]).toMatchObject({
       id: 0,
       flags: DynamicFlag.REFERENCED,
@@ -44,13 +43,13 @@ describe('compiler: template ref transform', () => {
         },
       },
     })
+    expect(code).matchSnapshot()
     expect(code).contains('_setRef(n0, "foo")')
   })
 
   test('dynamic ref', () => {
     const { ir, code } = compileWithTransformRef(`<div :ref="foo" />`)
 
-    expect(code).matchSnapshot()
     expect(ir.block.dynamic.children[0]).toMatchObject({
       id: 0,
       flags: DynamicFlag.REFERENCED,
@@ -76,6 +75,7 @@ describe('compiler: template ref transform', () => {
         ],
       },
     ])
+    expect(code).matchSnapshot()
     expect(code).contains('_setRef(n0, _ctx.foo, r0)')
   })
 
@@ -84,7 +84,6 @@ describe('compiler: template ref transform', () => {
       `<div ref="foo" v-if="true" />`,
     )
 
-    expect(code).matchSnapshot()
     expect(ir.block.operation).lengthOf(1)
     expect(ir.block.operation[0].type).toBe(IRNodeTypes.IF)
 
@@ -100,6 +99,7 @@ describe('compiler: template ref transform', () => {
         effect: false,
       },
     ])
+    expect(code).matchSnapshot()
     expect(code).contains('_setRef(n2, "foo")')
   })
 
@@ -108,7 +108,6 @@ describe('compiler: template ref transform', () => {
       `<div ref="foo" v-for="item in [1,2,3]" />`,
     )
 
-    expect(code).matchSnapshot()
     const { render } = ir.block.operation[0] as ForIRNode
     expect(render.operation).toMatchObject([
       {
@@ -122,6 +121,7 @@ describe('compiler: template ref transform', () => {
         effect: false,
       },
     ])
+    expect(code).matchSnapshot()
     expect(code).contains('_setRef(n2, "foo", void 0, true)')
   })
 })
