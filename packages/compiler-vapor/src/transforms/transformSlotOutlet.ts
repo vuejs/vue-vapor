@@ -37,48 +37,44 @@ export const transformSlotOutlet: NodeTransform = (node, context) => {
 
   let name: SimpleExpressionNode | undefined
   const nonNameProps: (AttributeNode | DirectiveNode)[] = []
-  const customDirectives: DirectiveNode[] = []
-  for (const p of props) {
-    if (p.type === NodeTypes.ATTRIBUTE) {
-      if (p.value) {
-        if (p.name === 'name') {
-          name = createSimpleExpression(p.value.content, true, p.loc)
+  const directives: DirectiveNode[] = []
+  for (const prop of props) {
+    if (prop.type === NodeTypes.ATTRIBUTE) {
+      if (prop.value) {
+        if (prop.name === 'name') {
+          name = createSimpleExpression(prop.value.content, true, prop.loc)
         } else {
-          p.name = camelize(p.name)
-          nonNameProps.push(p)
+          prop.name = camelize(prop.name)
+          nonNameProps.push(prop)
         }
       }
+    } else if (prop.name === 'bind' && isStaticArgOf(prop.arg, 'name')) {
+      if (prop.exp) {
+        name = (prop as VaporDirectiveNode).exp!
+      } else if (prop.arg && prop.arg.type === NodeTypes.SIMPLE_EXPRESSION) {
+        // v-bind shorthand syntax
+        name = createSimpleExpression(
+          camelize(prop.arg.content),
+          false,
+          prop.arg.loc,
+        )
+        name.ast = null
+      }
+    } else if (!isBuiltInDirective(prop.name)) {
+      directives.push(prop)
     } else {
-      if (p.name === 'bind' && isStaticArgOf(p.arg, 'name')) {
-        if (p.exp) {
-          name = (p as VaporDirectiveNode).exp!
-        } else if (p.arg && p.arg.type === NodeTypes.SIMPLE_EXPRESSION) {
-          // v-bind shorthand syntax
-          name = createSimpleExpression(
-            camelize(p.arg.content),
-            false,
-            p.arg.loc,
-          )
-          name.ast = null
-        }
-      } else {
-        if (!isBuiltInDirective(p.name)) {
-          customDirectives.push(p)
-        } else {
-          if (p.name === 'bind' && p.arg && isStaticExp(p.arg)) {
-            p.arg.content = camelize(p.arg.content)
-          }
-          nonNameProps.push(p)
-        }
+      if (prop.name === 'bind' && prop.arg && isStaticExp(prop.arg)) {
+        prop.arg.content = camelize(prop.arg.content)
       }
+      nonNameProps.push(prop)
     }
   }
 
-  if (customDirectives.length) {
+  if (directives.length) {
     context.options.onError(
       createCompilerError(
         ErrorCodes.X_V_SLOT_UNEXPECTED_DIRECTIVE_ON_SLOT_OUTLET,
-        customDirectives[0].loc,
+        directives[0].loc,
       ),
     )
   }
@@ -109,9 +105,9 @@ export const transformSlotOutlet: NodeTransform = (node, context) => {
 function createFallback(
   node: ElementNode,
   context: TransformContext<ElementNode>,
-): [BlockIRNode | undefined, (() => void) | undefined] {
+): [block?: BlockIRNode, exit?: () => void] {
   if (!node.children.length) {
-    return [undefined, undefined]
+    return []
   }
 
   context.node = node = extend({}, node, {
