@@ -1,22 +1,17 @@
-import {
-  type BlockIRNode,
-  IRNodeTypes,
-  type OperationNode,
-  type WithDirectiveIRNode,
-} from '../ir'
+import type { BlockIRNode } from '../ir'
 import {
   type CodeFragment,
   INDENT_END,
   INDENT_START,
   NEWLINE,
+  SEGMENTS_ARRAY,
   buildCodeFragment,
   genCall,
+  genMulti,
 } from './utils'
 import type { CodegenContext } from '../generate'
-import { genWithDirective } from './directive'
 import { genEffects, genOperations } from './operation'
 import { genChildren } from './template'
-import { genMulti } from './utils'
 
 export function genBlock(
   oper: BlockIRNode,
@@ -38,12 +33,14 @@ export function genBlock(
 }
 
 export function genBlockContent(
-  { dynamic, effect, operation, returns }: BlockIRNode,
+  block: BlockIRNode,
   context: CodegenContext,
   root?: boolean,
   customReturns?: (returns: CodeFragment[]) => CodeFragment[],
 ): CodeFragment[] {
   const [frag, push] = buildCodeFragment()
+  const { dynamic, effect, operation, returns } = block
+  const resetBlock = context.enterBlock(block)
 
   if (root)
     for (const name of context.ir.component) {
@@ -61,10 +58,6 @@ export function genBlockContent(
     push(...genChildren(child, context, child.id!))
   }
 
-  for (const directives of groupDirective(operation)) {
-    push(...genWithDirective(directives, context))
-  }
-
   push(...genOperations(operation, context))
   push(
     ...(context.genEffects.length
@@ -76,23 +69,10 @@ export function genBlockContent(
 
   const returnsCode: CodeFragment[] =
     returns.length > 1
-      ? genMulti(['[', ']', ', '], ...returns.map(n => `n${n}`))
+      ? genMulti(SEGMENTS_ARRAY, ...returns.map(n => `n${n}`))
       : [`n${returns[0]}`]
   push(...(customReturns ? customReturns(returnsCode) : returnsCode))
 
+  resetBlock()
   return frag
-}
-
-function groupDirective(operation: OperationNode[]): WithDirectiveIRNode[][] {
-  const directiveOps = operation.filter(
-    (oper): oper is WithDirectiveIRNode =>
-      oper.type === IRNodeTypes.WITH_DIRECTIVE,
-  )
-
-  const directiveMap: Record<number, WithDirectiveIRNode[]> = {}
-  for (const oper of directiveOps) {
-    if (!directiveMap[oper.element]) directiveMap[oper.element] = []
-    directiveMap[oper.element].push(oper)
-  }
-  return Object.values(directiveMap)
 }

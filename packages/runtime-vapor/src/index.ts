@@ -41,6 +41,10 @@ export {
   getCurrentWatcher,
 } from '@vue/reactivity'
 
+import { NOOP } from '@vue/shared'
+import { warn as _warn } from './warning'
+export const warn = (__DEV__ ? _warn : NOOP) as typeof _warn
+
 export { nextTick } from './scheduler'
 export {
   getCurrentInstance,
@@ -106,8 +110,8 @@ export {
   onUnmounted,
   // onActivated,
   // onDeactivated,
-  // onRenderTracked,
-  // onRenderTriggered,
+  onRenderTracked,
+  onRenderTriggered,
   onErrorCaptured,
   // onServerPrefetch,
 } from './apiLifecycle'

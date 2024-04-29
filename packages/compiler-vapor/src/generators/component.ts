@@ -3,9 +3,9 @@ import type { CodegenContext } from '../generate'
 import type { CreateComponentIRNode, IRProp } from '../ir'
 import {
   type CodeFragment,
-  INDENT_END,
-  INDENT_START,
   NEWLINE,
+  SEGMENTS_ARRAY,
+  SEGMENTS_OBJECT_NEWLINE,
   genCall,
   genMulti,
 } from './utils'
@@ -13,7 +13,7 @@ import { genExpression } from './expression'
 import { genPropKey } from './prop'
 import { createSimpleExpression } from '@vue/compiler-dom'
 import { genEventHandler } from './event'
-import { genDirectiveModifiers } from './directive'
+import { genDirectiveModifiers, genDirectivesForElement } from './directive'
 import { genModelHandler } from './modelValue'
 
 // TODO: generate component slots
@@ -36,6 +36,7 @@ export function genCreateComponent(
       rawProps || (isRoot ? 'null' : false),
       isRoot && 'true',
     ),
+    ...genDirectivesForElement(oper.id, context),
   ]
 
   function genTag() {
@@ -63,17 +64,13 @@ export function genCreateComponent(
       })
       .filter(Boolean)
     if (props.length) {
-      return genMulti(['[', ']', ', '], ...props)
+      return genMulti(SEGMENTS_ARRAY, ...props)
     }
   }
 
   function genStaticProps(props: IRProp[]) {
     return genMulti(
-      [
-        ['{', INDENT_START, NEWLINE],
-        [INDENT_END, NEWLINE, '}'],
-        [', ', NEWLINE],
-      ],
+      SEGMENTS_OBJECT_NEWLINE,
       ...props.map(prop => {
         return [
           ...genPropKey(prop, context),

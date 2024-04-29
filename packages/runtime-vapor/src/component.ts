@@ -1,5 +1,5 @@
 import { EffectScope, isRef } from '@vue/reactivity'
-import { EMPTY_OBJ, isArray, isFunction } from '@vue/shared'
+import { EMPTY_OBJ, hasOwn, isArray, isFunction } from '@vue/shared'
 import type { Block } from './apiRender'
 import type { DirectiveBinding } from './directives'
 import {
@@ -31,7 +31,10 @@ import type { Data } from '@vue/shared'
 export type Component = FunctionalComponent | ObjectComponent
 
 export type SetupFn = (props: any, ctx: SetupContext) => Block | Data | void
-export type FunctionalComponent = SetupFn & Omit<ObjectComponent, 'setup'>
+export type FunctionalComponent = SetupFn &
+  Omit<ObjectComponent, 'setup'> & {
+    displayName?: string
+  }
 
 export type SetupContext<E = EmitsOptions> = E extends any
   ? {
@@ -96,13 +99,44 @@ export function createSetupContext(
   }
 }
 
-export interface ObjectComponent {
-  props?: ComponentPropsOptions
-  inheritAttrs?: boolean
-  emits?: EmitsOptions
+export interface ObjectComponent extends ComponentInternalOptions {
   setup?: SetupFn
+  inheritAttrs?: boolean
+  props?: ComponentPropsOptions
+  emits?: EmitsOptions
   render?(ctx: any): Block
+
+  name?: string
   vapor?: boolean
+}
+
+// Note: can't mark this whole interface internal because some public interfaces
+// extend it.
+export interface ComponentInternalOptions {
+  /**
+   * @internal
+   */
+  __scopeId?: string
+  /**
+   * @internal
+   */
+  __cssModules?: Data
+  /**
+   * @internal
+   */
+  __hmrId?: string
+  /**
+   * Compat build only, for bailing out of certain compatibility behavior
+   */
+  __isBuiltIn?: boolean
+  /**
+   * This one should be exposed so that devtools can make use of it
+   */
+  __file?: string
+  /**
+   * name inferred from filename
+   */
+  __name?: string
 }
 
 type LifecycleHook<TFn = Function> = TFn[] | null
@@ -121,7 +155,7 @@ export interface ComponentInternalInstance {
 
   provides: Data
   scope: EffectScope
-  component: FunctionalComponent | ObjectComponent
+  component: Component
   comps: Set<ComponentInternalInstance>
   dirs: Map<Node, DirectiveBinding[]>
 
@@ -325,6 +359,12 @@ export function createComponentInstance(
   instance.emit = emit.bind(null, instance)
 
   return instance
+}
+
+export function isVaporComponent(
+  val: unknown,
+): val is ComponentInternalInstance {
+  return !!val && hasOwn(val, componentKey)
 }
 
 function getAttrsProxy(instance: ComponentInternalInstance): Data {
