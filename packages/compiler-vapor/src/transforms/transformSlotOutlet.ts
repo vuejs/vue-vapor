@@ -44,8 +44,7 @@ export const transformSlotOutlet: NodeTransform = (node, context) => {
         if (prop.name === 'name') {
           name = createSimpleExpression(prop.value.content, true, prop.loc)
         } else {
-          prop.name = camelize(prop.name)
-          nonNameProps.push(prop)
+          nonNameProps.push(extend({}, prop, { name: camelize(prop.name) }))
         }
       }
     } else if (prop.name === 'bind' && isStaticArgOf(prop.arg, 'name')) {
@@ -63,10 +62,13 @@ export const transformSlotOutlet: NodeTransform = (node, context) => {
     } else if (!isBuiltInDirective(prop.name)) {
       directives.push(prop)
     } else {
-      if (prop.name === 'bind' && prop.arg && isStaticExp(prop.arg)) {
-        prop.arg.content = camelize(prop.arg.content)
+      const nonProp = extend({}, prop)
+      if (nonProp.name === 'bind' && nonProp.arg && isStaticExp(nonProp.arg)) {
+        nonProp.arg = extend({}, nonProp.arg, {
+          content: camelize(nonProp.arg.content),
+        })
       }
-      nonNameProps.push(prop)
+      nonNameProps.push(nonProp)
     }
   }
 
