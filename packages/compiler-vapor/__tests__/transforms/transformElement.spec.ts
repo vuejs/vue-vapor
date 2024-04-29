@@ -691,6 +691,54 @@ describe('compiler: element transform', () => {
     expect(code).contains('_setDynamicEvents(n0, _ctx.obj)')
   })
 
+  test('component with dynamic prop arguments', () => {
+    const { code, ir } = compileWithElementTransform(
+      `<Foo :[foo-bar]="bar" :[baz]="qux" />`,
+    )
+    expect(code).toMatchSnapshot()
+    expect(ir.block.operation).toMatchObject([
+      {
+        type: IRNodeTypes.CREATE_COMPONENT_NODE,
+        tag: 'Foo',
+        props: [
+          {
+            key: { content: 'foo-bar' },
+            values: [{ content: 'bar' }],
+          },
+          {
+            key: { content: 'baz' },
+            values: [{ content: 'qux' }],
+          },
+        ],
+      },
+    ])
+  })
+
+  test('component with dynamic event arguments', () => {
+    const { code, ir } = compileWithElementTransform(
+      `<Foo @[foo-bar]="bar" @[baz]="qux" />`,
+    )
+    expect(code).toMatchSnapshot()
+    expect(ir.block.operation).toMatchObject([
+      {
+        type: IRNodeTypes.CREATE_COMPONENT_NODE,
+        tag: 'Foo',
+        props: [
+          {
+            key: { content: 'foo-bar' },
+            values: [{ content: 'bar' }],
+            handler: true,
+          },
+          {
+            key: { content: 'baz' },
+            values: [{ content: 'qux' }],
+            handler: true,
+          },
+        ],
+      },
+    ])
+  })
+
   test('invalid html nesting', () => {
     const { code, ir } = compileWithElementTransform(
       `<p><div>123</div></p>

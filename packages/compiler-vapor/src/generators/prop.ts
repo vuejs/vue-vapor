@@ -73,7 +73,9 @@ export function genDynamicProps(
         props =>
           Array.isArray(props)
             ? genLiteralObjectProps(props, context) // static and dynamic arg props
-            : genExpression(props.value, context), // v-bind=""
+            : 'key' in props
+              ? genLiteralObjectProps([props], context) // dynamic arg props
+              : genExpression(props.value, context), // v-bind=""
       ),
     ),
   ]

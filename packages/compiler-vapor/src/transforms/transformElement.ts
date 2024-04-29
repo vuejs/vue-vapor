@@ -241,8 +241,15 @@ function buildProps(
 
     const result = transformProp(prop, node, context)
     if (result) {
-      results.push(result)
       dynamicExpr.push(result.key, result.value)
+      if (isComponent && !result.key.isStatic) {
+        // v-bind:[name]="value" or v-on:[name]="value"
+        pushMergeArg()
+        dynamicArgs.push(normalizeIRProp(result))
+      } else {
+        // other static props
+        results.push(result)
+      }
     }
   }
 

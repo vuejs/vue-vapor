@@ -62,14 +62,15 @@ exports[`compiler: vModel transform > component > v-model with dynamic arguments
 
 export function render(_ctx) {
   const _component_Comp = _resolveComponent("Comp")
-  const n0 = _createComponent(_component_Comp, [{
-    [_ctx.foo]: () => (_ctx.foo),
+  const n0 = _createComponent(_component_Comp, [() => ({
+    [_ctx.foo]: _ctx.foo,
     ["onUpdate:" + _ctx.foo]: () => $event => (_ctx.foo = $event),
-    [_ctx.foo + "Modifiers"]: () => ({ trim: true }), 
-    [_ctx.bar]: () => (_ctx.bar),
+    [_ctx.foo + "Modifiers"]: () => ({ trim: true })
+  }), () => ({
+    [_ctx.bar]: _ctx.bar,
     ["onUpdate:" + _ctx.bar]: () => $event => (_ctx.bar = $event),
     [_ctx.bar + "Modifiers"]: () => ({ number: true })
-  }], true)
+  })], true)
   return n0
 }"
 `;
@@ -79,10 +80,10 @@ exports[`compiler: vModel transform > component > v-model with dynamic arguments
 
 export function render(_ctx) {
   const _component_Comp = _resolveComponent("Comp")
-  const n0 = _createComponent(_component_Comp, [{
-    [_ctx.arg]: () => (_ctx.foo),
+  const n0 = _createComponent(_component_Comp, [() => ({
+    [_ctx.arg]: _ctx.foo,
     ["onUpdate:" + _ctx.arg]: () => $event => (_ctx.foo = $event)
-  }], true)
+  })], true)
   return n0
 }"
 `;

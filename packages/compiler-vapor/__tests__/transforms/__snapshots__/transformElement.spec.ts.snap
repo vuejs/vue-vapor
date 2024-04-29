@@ -179,6 +179,35 @@ export function render(_ctx) {
 }"
 `;
 
+exports[`compiler: element transform > component with dynamic event arguments 1`] = `
+"import { toHandlerKey as _toHandlerKey } from 'vue';
+import { resolveComponent as _resolveComponent, createComponent as _createComponent } from 'vue/vapor';
+
+export function render(_ctx) {
+  const _component_Foo = _resolveComponent("Foo")
+  const n0 = _createComponent(_component_Foo, [() => ({
+    [_toHandlerKey(_ctx.foo-_ctx.bar)]: () => _ctx.bar
+  }), () => ({
+    [_toHandlerKey(_ctx.baz)]: () => _ctx.qux
+  })], true)
+  return n0
+}"
+`;
+
+exports[`compiler: element transform > component with dynamic prop arguments 1`] = `
+"import { resolveComponent as _resolveComponent, createComponent as _createComponent } from 'vue/vapor';
+
+export function render(_ctx) {
+  const _component_Foo = _resolveComponent("Foo")
+  const n0 = _createComponent(_component_Foo, [() => ({
+    [_ctx.foo-_ctx.bar]: _ctx.bar
+  }), () => ({
+    [_ctx.baz]: _ctx.qux
+  })], true)
+  return n0
+}"
+`;
+
 exports[`compiler: element transform > invalid html nesting 1`] = `
 "import { insert as _insert, template as _template } from 'vue/vapor';
 const t0 = _template("<div>123</div>")

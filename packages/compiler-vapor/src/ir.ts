@@ -83,12 +83,11 @@ export interface ForIRNode extends BaseIRNode {
 export interface IRProp extends Omit<DirectiveTransformResult, 'value'> {
   values: SimpleExpressionNode[]
 }
-export type IRProps =
-  | IRProp[]
-  | {
-      value: SimpleExpressionNode
-      handler?: boolean
-    }
+export interface IRDynamicProps {
+  value: SimpleExpressionNode
+  handler?: boolean
+}
+export type IRProps = IRProp[] | IRProp | IRDynamicProps
 
 export interface SetPropIRNode extends BaseIRNode {
   type: IRNodeTypes.SET_PROP
