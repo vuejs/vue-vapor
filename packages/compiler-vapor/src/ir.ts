@@ -83,11 +83,25 @@ export interface ForIRNode extends BaseIRNode {
 export interface IRProp extends Omit<DirectiveTransformResult, 'value'> {
   values: SimpleExpressionNode[]
 }
-export interface IRDynamicProps {
+
+export enum DynamicPropsKind {
+  EXPRESSION, // v-bind="value"
+  ATTRIBUTE, // v-bind:[foo]="value"
+}
+
+export type IRPropsStatic = IRProp[]
+export interface IRPropsDynamicExpression {
+  kind: DynamicPropsKind.EXPRESSION
   value: SimpleExpressionNode
   handler?: boolean
 }
-export type IRProps = IRProp[] | IRProp | IRDynamicProps
+export interface IRPropsDynamicAttribute extends IRProp {
+  kind: DynamicPropsKind.ATTRIBUTE
+}
+export type IRProps =
+  | IRPropsStatic
+  | IRPropsDynamicAttribute
+  | IRPropsDynamicExpression
 
 export interface SetPropIRNode extends BaseIRNode {
   type: IRNodeTypes.SET_PROP
