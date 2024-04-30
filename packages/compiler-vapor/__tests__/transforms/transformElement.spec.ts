@@ -198,10 +198,12 @@ describe('compiler: element transform', () => {
       )
 
       expect(code).toMatchSnapshot()
-      expect(code).contains('_createComponent(_component_Foo, [{')
-      expect(code).contains('  id: () => ("foo")')
-      expect(code).contains('  class: () => ("bar")')
-      expect(code).contains('}], true)')
+      expect(code).contains(`[
+    {
+      id: () => ("foo"), 
+      class: () => ("bar")
+    }
+  ]`)
 
       expect(ir.block.operation).toMatchObject([
         {
@@ -248,7 +250,9 @@ describe('compiler: element transform', () => {
     test('v-bind="obj"', () => {
       const { code, ir } = compileWithElementTransform(`<Foo v-bind="obj" />`)
       expect(code).toMatchSnapshot()
-      expect(code).contains('[() => (_ctx.obj)]')
+      expect(code).contains(`[
+    () => (_ctx.obj)
+  ]`)
       expect(ir.block.operation).toMatchObject([
         {
           type: IRNodeTypes.CREATE_COMPONENT_NODE,
@@ -263,8 +267,10 @@ describe('compiler: element transform', () => {
         `<Foo id="foo" v-bind="obj" />`,
       )
       expect(code).toMatchSnapshot()
-      expect(code).contains('id: () => ("foo")')
-      expect(code).contains('}, () => (_ctx.obj)]')
+      expect(code).contains(`[
+    { id: () => ("foo") }, 
+    () => (_ctx.obj)
+  ]`)
       expect(ir.block.operation).toMatchObject([
         {
           type: IRNodeTypes.CREATE_COMPONENT_NODE,
@@ -282,8 +288,10 @@ describe('compiler: element transform', () => {
         `<Foo v-bind="obj" id="foo" />`,
       )
       expect(code).toMatchSnapshot()
-      expect(code).contains('[() => (_ctx.obj), {')
-      expect(code).contains('id: () => ("foo")')
+      expect(code).contains(`[
+    () => (_ctx.obj), 
+    { id: () => ("foo") }
+  ]`)
       expect(ir.block.operation).toMatchObject([
         {
           type: IRNodeTypes.CREATE_COMPONENT_NODE,
@@ -301,9 +309,11 @@ describe('compiler: element transform', () => {
         `<Foo id="foo" v-bind="obj" class="bar" />`,
       )
       expect(code).toMatchSnapshot()
-      expect(code).contains('id: () => ("foo")')
-      expect(code).contains('}, () => (_ctx.obj), {')
-      expect(code).contains('class: () => ("bar")')
+      expect(code).contains(`[
+    { id: () => ("foo") }, 
+    () => (_ctx.obj), 
+    { class: () => ("bar") }
+  ]`)
       expect(ir.block.operation).toMatchObject([
         {
           type: IRNodeTypes.CREATE_COMPONENT_NODE,
@@ -356,7 +366,9 @@ describe('compiler: element transform', () => {
     test('v-on="obj"', () => {
       const { code, ir } = compileWithElementTransform(`<Foo v-on="obj" />`)
       expect(code).toMatchSnapshot()
-      expect(code).contains('[() => (_toHandlers(_ctx.obj))]')
+      expect(code).contains(`[
+    () => (_toHandlers(_ctx.obj))
+  ]`)
       expect(ir.block.operation).toMatchObject([
         {
           type: IRNodeTypes.CREATE_COMPONENT_NODE,

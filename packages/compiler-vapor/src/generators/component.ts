@@ -1,10 +1,17 @@
 import { camelize, extend, isArray } from '@vue/shared'
 import type { CodegenContext } from '../generate'
-import type { CreateComponentIRNode, IRProp, IRProps } from '../ir'
+import {
+  type CreateComponentIRNode,
+  DynamicPropsKind,
+  type IRProp,
+  type IRProps,
+  type IRPropsStatic,
+} from '../ir'
 import {
   type CodeFragment,
   NEWLINE,
-  SEGMENTS_ARRAY,
+  SEGMENTS_ARRAY_NEWLINE,
+  SEGMENTS_OBJECT,
   SEGMENTS_OBJECT_NEWLINE,
   genCall,
   genMulti,
@@ -59,11 +66,8 @@ export function genRawProps(props: IRProps[], context: CodegenContext) {
         return genStaticProps(props, context)
       } else {
         let expr: CodeFragment[]
-        if ('key' in props)
-          expr = genMulti(
-            SEGMENTS_OBJECT_NEWLINE,
-            genProp(props, context, false),
-          )
+        if (props.kind === DynamicPropsKind.ATTRIBUTE)
+          expr = genMulti(SEGMENTS_OBJECT, genProp(props, context))
         else {
           expr = genExpression(props.value, context)
           if (props.handler) expr = genCall(context.helper('toHandlers'), expr)
@@ -75,27 +79,27 @@ export function genRawProps(props: IRProps[], context: CodegenContext) {
       Boolean as any as (v: CodeFragment[] | undefined) => v is CodeFragment[],
     )
   if (frag.length) {
-    return genMulti(SEGMENTS_ARRAY, ...frag)
+    return genMulti(SEGMENTS_ARRAY_NEWLINE, ...frag)
   }
 }
 
 function genStaticProps(
-  props: IRProp[],
+  props: IRPropsStatic,
   context: CodegenContext,
 ): CodeFragment[] {
   return genMulti(
-    SEGMENTS_OBJECT_NEWLINE,
+    props.length > 1 ? SEGMENTS_OBJECT_NEWLINE : SEGMENTS_OBJECT,
     ...props.map(prop => genProp(prop, context, true)),
   )
 }
 
-function genProp(prop: IRProp, context: CodegenContext, isStaticArg: boolean) {
+function genProp(prop: IRProp, context: CodegenContext, isStatic?: boolean) {
   return [
     ...genPropKey(prop, context),
     ': ',
     ...(prop.handler
       ? genEventHandler(context, prop.values[0])
-      : isStaticArg
+      : isStatic
         ? ['() => (', ...genExpression(prop.values[0], context), ')']
         : genExpression(prop.values[0], context)),
     ...(prop.model
