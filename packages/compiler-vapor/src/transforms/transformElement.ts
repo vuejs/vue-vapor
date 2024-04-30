@@ -24,7 +24,7 @@ import type {
 } from '../transform'
 import {
   DynamicFlag,
-  DynamicPropsKind,
+  IRDynamicPropsKind,
   IRNodeTypes,
   type IRProp,
   type IRProps,
@@ -208,7 +208,7 @@ function buildProps(
           dynamicExpr.push(prop.exp)
           pushMergeArg()
           dynamicArgs.push({
-            kind: DynamicPropsKind.EXPRESSION,
+            kind: IRDynamicPropsKind.EXPRESSION,
             value: prop.exp,
           })
         } else {
@@ -224,7 +224,7 @@ function buildProps(
             dynamicExpr.push(prop.exp)
             pushMergeArg()
             dynamicArgs.push({
-              kind: DynamicPropsKind.EXPRESSION,
+              kind: IRDynamicPropsKind.EXPRESSION,
               value: prop.exp,
               handler: true,
             })
@@ -256,7 +256,7 @@ function buildProps(
         pushMergeArg()
         dynamicArgs.push(
           extend(resolveDirectiveResult(result), {
-            kind: DynamicPropsKind.ATTRIBUTE,
+            kind: IRDynamicPropsKind.ATTRIBUTE,
           }) as IRPropsDynamicAttribute,
         )
       } else {

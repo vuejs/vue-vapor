@@ -5,7 +5,7 @@ import {
 } from '@vue/compiler-core'
 import type { CodegenContext } from '../generate'
 import {
-  DynamicPropsKind,
+  IRDynamicPropsKind,
   type IRProp,
   type SetDynamicPropsIRNode,
   type SetPropIRNode,
@@ -74,7 +74,7 @@ export function genDynamicProps(
         props =>
           Array.isArray(props)
             ? genLiteralObjectProps(props, context) // static and dynamic arg props
-            : props.kind === DynamicPropsKind.ATTRIBUTE
+            : props.kind === IRDynamicPropsKind.ATTRIBUTE
               ? genLiteralObjectProps([props], context) // dynamic arg props
               : genExpression(props.value, context), // v-bind=""
       ),

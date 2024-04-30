@@ -1,5 +1,6 @@
 import { makeCompile } from './_utils'
 import {
+  IRDynamicPropsKind,
   IRNodeTypes,
   transformChildren,
   transformElement,
@@ -257,7 +258,12 @@ describe('compiler: element transform', () => {
         {
           type: IRNodeTypes.CREATE_COMPONENT_NODE,
           tag: 'Foo',
-          props: [{ value: { content: 'obj', isStatic: false } }],
+          props: [
+            {
+              kind: IRDynamicPropsKind.EXPRESSION,
+              value: { content: 'obj', isStatic: false },
+            },
+          ],
         },
       ])
     })
@@ -277,7 +283,10 @@ describe('compiler: element transform', () => {
           tag: 'Foo',
           props: [
             [{ key: { content: 'id' }, values: [{ content: 'foo' }] }],
-            { value: { content: 'obj' } },
+            {
+              kind: IRDynamicPropsKind.EXPRESSION,
+              value: { content: 'obj' },
+            },
           ],
         },
       ])
@@ -297,7 +306,10 @@ describe('compiler: element transform', () => {
           type: IRNodeTypes.CREATE_COMPONENT_NODE,
           tag: 'Foo',
           props: [
-            { value: { content: 'obj' } },
+            {
+              kind: IRDynamicPropsKind.EXPRESSION,
+              value: { content: 'obj' },
+            },
             [{ key: { content: 'id' }, values: [{ content: 'foo' }] }],
           ],
         },
@@ -320,7 +332,10 @@ describe('compiler: element transform', () => {
           tag: 'Foo',
           props: [
             [{ key: { content: 'id' }, values: [{ content: 'foo' }] }],
-            { value: { content: 'obj' } },
+            {
+              kind: IRDynamicPropsKind.EXPRESSION,
+              value: { content: 'obj' },
+            },
             [{ key: { content: 'class' }, values: [{ content: 'bar' }] }],
           ],
         },
@@ -373,7 +388,13 @@ describe('compiler: element transform', () => {
         {
           type: IRNodeTypes.CREATE_COMPONENT_NODE,
           tag: 'Foo',
-          props: [{ value: { content: 'obj' }, handler: true }],
+          props: [
+            {
+              kind: IRDynamicPropsKind.EXPRESSION,
+              value: { content: 'obj' },
+              handler: true,
+            },
+          ],
         },
       ])
     })
@@ -444,6 +465,7 @@ describe('compiler: element transform', () => {
             element: 0,
             props: [
               {
+                kind: IRDynamicPropsKind.EXPRESSION,
                 value: {
                   type: NodeTypes.SIMPLE_EXPRESSION,
                   content: 'obj',
@@ -479,6 +501,7 @@ describe('compiler: element transform', () => {
             props: [
               [{ key: { content: 'id' }, values: [{ content: 'foo' }] }],
               {
+                kind: IRDynamicPropsKind.EXPRESSION,
                 value: {
                   type: NodeTypes.SIMPLE_EXPRESSION,
                   content: 'obj',
@@ -506,7 +529,10 @@ describe('compiler: element transform', () => {
             type: IRNodeTypes.SET_DYNAMIC_PROPS,
             element: 0,
             props: [
-              { value: { content: 'obj' } },
+              {
+                kind: IRDynamicPropsKind.EXPRESSION,
+                value: { content: 'obj' },
+              },
               [{ key: { content: 'id' }, values: [{ content: 'foo' }] }],
             ],
           },
@@ -530,7 +556,10 @@ describe('compiler: element transform', () => {
             element: 0,
             props: [
               [{ key: { content: 'id' }, values: [{ content: 'foo' }] }],
-              { value: { content: 'obj' } },
+              {
+                kind: IRDynamicPropsKind.EXPRESSION,
+                value: { content: 'obj' },
+              },
               [{ key: { content: 'class' }, values: [{ content: 'bar' }] }],
             ],
           },
@@ -714,10 +743,12 @@ describe('compiler: element transform', () => {
         tag: 'Foo',
         props: [
           {
+            kind: IRDynamicPropsKind.ATTRIBUTE,
             key: { content: 'foo-bar' },
             values: [{ content: 'bar' }],
           },
           {
+            kind: IRDynamicPropsKind.ATTRIBUTE,
             key: { content: 'baz' },
             values: [{ content: 'qux' }],
           },
@@ -737,11 +768,13 @@ describe('compiler: element transform', () => {
         tag: 'Foo',
         props: [
           {
+            kind: IRDynamicPropsKind.ATTRIBUTE,
             key: { content: 'foo-bar' },
             values: [{ content: 'bar' }],
             handler: true,
           },
           {
+            kind: IRDynamicPropsKind.ATTRIBUTE,
             key: { content: 'baz' },
             values: [{ content: 'qux' }],
             handler: true,

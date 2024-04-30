@@ -2,7 +2,7 @@ import { camelize, extend, isArray } from '@vue/shared'
 import type { CodegenContext } from '../generate'
 import {
   type CreateComponentIRNode,
-  DynamicPropsKind,
+  IRDynamicPropsKind,
   type IRProp,
   type IRProps,
   type IRPropsStatic,
@@ -66,7 +66,7 @@ export function genRawProps(props: IRProps[], context: CodegenContext) {
         return genStaticProps(props, context)
       } else {
         let expr: CodeFragment[]
-        if (props.kind === DynamicPropsKind.ATTRIBUTE)
+        if (props.kind === IRDynamicPropsKind.ATTRIBUTE)
           expr = genMulti(SEGMENTS_OBJECT, genProp(props, context))
         else {
           expr = genExpression(props.value, context)
