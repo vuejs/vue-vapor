@@ -3,7 +3,7 @@ import { type Block, type Fragment, fragmentKey } from './apiRender'
 import { type EffectScope, effectScope } from '@vue/reactivity'
 import { createComment, createTextNode, insert, remove } from './dom/element'
 
-type BlockFn = () => Block
+export type BlockFn = () => Block
 
 /*! #__NO_SIDE_EFFECTS__ */
 export const createIf = (

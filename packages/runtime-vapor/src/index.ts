@@ -125,6 +125,7 @@ export {
 export { createIf } from './apiCreateIf'
 export { createFor } from './apiCreateFor'
 export { createComponent } from './apiCreateComponent'
+export { createOnce } from './apiCreateOnce'
 
 export { resolveComponent, resolveDirective } from './helpers/resolveAssets'
 

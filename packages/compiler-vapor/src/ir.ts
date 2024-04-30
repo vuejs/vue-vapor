@@ -35,6 +35,7 @@ export enum IRNodeTypes {
 
   IF,
   FOR,
+  ONCE,
 }
 
 export interface BaseIRNode {
@@ -78,6 +79,12 @@ export interface ForIRNode extends BaseIRNode {
   index?: SimpleExpressionNode
   keyProp?: SimpleExpressionNode
   render: BlockIRNode
+}
+
+export interface OnceIRNode extends BaseIRNode {
+  type: IRNodeTypes.ONCE
+  id: number
+  block: BlockIRNode
 }
 
 export interface IRProp extends Omit<DirectiveTransformResult, 'value'> {
@@ -211,6 +218,7 @@ export type OperationNode =
   | IfIRNode
   | ForIRNode
   | CreateComponentIRNode
+  | OnceIRNode
 
 export enum DynamicFlag {
   NONE = 0,
