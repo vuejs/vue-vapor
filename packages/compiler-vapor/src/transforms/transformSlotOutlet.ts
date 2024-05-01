@@ -18,8 +18,9 @@ import {
   IRNodeTypes,
   type IRProps,
   type VaporDirectiveNode,
+  type WithDirectiveIRNode,
 } from '../ir'
-import { camelize, extend, isBuiltInDirective } from '@vue/shared'
+import { camelize, extend } from '@vue/shared'
 import { newBlock } from './utils'
 import { buildProps } from './transformElement'
 
@@ -37,7 +38,6 @@ export const transformSlotOutlet: NodeTransform = (node, context) => {
 
   let name: SimpleExpressionNode | undefined
   const nonNameProps: (AttributeNode | DirectiveNode)[] = []
-  const directives: DirectiveNode[] = []
   for (const prop of props) {
     if (prop.type === NodeTypes.ATTRIBUTE) {
       if (prop.value) {
@@ -59,8 +59,6 @@ export const transformSlotOutlet: NodeTransform = (node, context) => {
         )
         name.ast = null
       }
-    } else if (!isBuiltInDirective(prop.name)) {
-      directives.push(prop)
     } else {
       const nonProp = extend({}, prop)
       if (nonProp.name === 'bind' && nonProp.arg && isStaticExp(nonProp.arg)) {
@@ -72,15 +70,6 @@ export const transformSlotOutlet: NodeTransform = (node, context) => {
     }
   }
 
-  if (directives.length) {
-    context.options.onError(
-      createCompilerError(
-        ErrorCodes.X_V_SLOT_UNEXPECTED_DIRECTIVE_ON_SLOT_OUTLET,
-        directives[0].loc,
-      ),
-    )
-  }
-
   name ||= createSimpleExpression('default', true)
   let irProps: IRProps[] = []
   if (nonNameProps.length > 0) {
@@ -90,6 +79,20 @@ export const transformSlotOutlet: NodeTransform = (node, context) => {
       true,
     )
     irProps = isDynamic ? props : [props]
+
+    const { operation } = context.block
+    const directives = operation.filter(
+      oper => oper.type === IRNodeTypes.WITH_DIRECTIVE,
+    ) as WithDirectiveIRNode[]
+
+    if (directives.length) {
+      context.options.onError(
+        createCompilerError(
+          ErrorCodes.X_V_SLOT_UNEXPECTED_DIRECTIVE_ON_SLOT_OUTLET,
+          directives[0].dir.loc,
+        ),
+      )
+    }
   }
 
   return () => {

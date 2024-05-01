@@ -7,6 +7,7 @@ import {
   transformText,
   transformVBind,
   transformVOn,
+  transformVShow,
 } from '../../src'
 import { makeCompile } from './_utils'
 
@@ -20,6 +21,7 @@ const compileWithSlotsOutlet = makeCompile({
   directiveTransforms: {
     bind: transformVBind,
     on: transformVOn,
+    show: transformVShow,
   },
 })
 
@@ -226,6 +228,29 @@ describe('compiler: transform <slot> outlets', () => {
           offset: index + 5,
           line: 1,
           column: index + 6,
+        },
+      },
+    })
+  })
+
+  test('error on unexpected custom directive with v-show on <slot>', () => {
+    const onError = vi.fn()
+    const source = `<slot v-show="ok" />`
+    const index = source.indexOf('v-show="ok"')
+    const { code } = compileWithSlotsOutlet(source, { onError })
+    expect(code).toMatchSnapshot()
+    expect(onError.mock.calls[0][0]).toMatchObject({
+      code: ErrorCodes.X_V_SLOT_UNEXPECTED_DIRECTIVE_ON_SLOT_OUTLET,
+      loc: {
+        start: {
+          offset: index,
+          line: 1,
+          column: index + 1,
+        },
+        end: {
+          offset: index + 11,
+          line: 1,
+          column: index + 12,
         },
       },
     })

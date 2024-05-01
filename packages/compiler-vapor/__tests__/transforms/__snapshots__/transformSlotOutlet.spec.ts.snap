@@ -26,11 +26,13 @@ exports[`compiler: transform <slot> outlets > default slot outlet with props 1`]
 "import { createSlot as _createSlot } from 'vue/vapor';
 
 export function render(_ctx) {
-  const n0 = _createSlot("default", [{
-    foo: () => ("bar"), 
-    baz: () => (_ctx.qux), 
-    fooBar: () => (_ctx.foo-_ctx.bar)
-  }])
+  const n0 = _createSlot("default", [
+    {
+      foo: () => ("bar"), 
+      baz: () => (_ctx.qux), 
+      fooBar: () => (_ctx.foo-_ctx.bar)
+    }
+  ])
   return n0
 }"
 `;
@@ -54,6 +56,15 @@ export function render(_ctx) {
 `;
 
 exports[`compiler: transform <slot> outlets > error on unexpected custom directive on <slot> 1`] = `
+"import { createSlot as _createSlot } from 'vue/vapor';
+
+export function render(_ctx) {
+  const n0 = _createSlot("default", null)
+  return n0
+}"
+`;
+
+exports[`compiler: transform <slot> outlets > error on unexpected custom directive with v-show on <slot> 1`] = `
 "import { createSlot as _createSlot } from 'vue/vapor';
 
 export function render(_ctx) {
@@ -88,10 +99,12 @@ exports[`compiler: transform <slot> outlets > statically named slot outlet with 
 "import { createSlot as _createSlot } from 'vue/vapor';
 
 export function render(_ctx) {
-  const n0 = _createSlot("foo", [{
-    foo: () => ("bar"), 
-    baz: () => (_ctx.qux)
-  }])
+  const n0 = _createSlot("foo", [
+    {
+      foo: () => ("bar"), 
+      baz: () => (_ctx.qux)
+    }
+  ])
   return n0
 }"
 `;
@@ -100,11 +113,11 @@ exports[`compiler: transform <slot> outlets > statically named slot outlet with 
 "import { createSlot as _createSlot } from 'vue/vapor';
 
 export function render(_ctx) {
-  const n0 = _createSlot("foo", [{
-    foo: () => ("bar")
-  }, () => (_ctx.obj), {
-    baz: () => (_ctx.qux)
-  }])
+  const n0 = _createSlot("foo", [
+    { foo: () => ("bar") }, 
+    () => (_ctx.obj), 
+    { baz: () => (_ctx.qux) }
+  ])
   return n0
 }"
 `;
@@ -114,11 +127,11 @@ exports[`compiler: transform <slot> outlets > statically named slot outlet with 
 import { createSlot as _createSlot } from 'vue/vapor';
 
 export function render(_ctx) {
-  const n0 = _createSlot("default", [{
-    onClick: () => _ctx.foo
-  }, () => (_toHandlers(_ctx.bar)), {
-    baz: () => (_ctx.qux)
-  }])
+  const n0 = _createSlot("default", [
+    { onClick: () => _ctx.foo }, 
+    () => (_toHandlers(_ctx.bar)), 
+    { baz: () => (_ctx.qux) }
+  ])
   return n0
 }"
 `;
