@@ -19,8 +19,9 @@ export function genSlotOutlet(oper: SlotOutletIRNode, context: CodegenContext) {
     fallbackArg = genBlock(fallback, context)
   }
 
-  push(NEWLINE, `const n${id} = `)
   push(
+    NEWLINE,
+    `const n${id} = `,
     ...genCall(
       vaporHelper('createSlot'),
       nameExpr,
