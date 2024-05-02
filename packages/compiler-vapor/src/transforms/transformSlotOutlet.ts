@@ -81,15 +81,15 @@ export const transformSlotOutlet: NodeTransform = (node, context) => {
     irProps = isDynamic ? props : [props]
 
     const { operation } = context.block
-    const directives = operation.filter(
+    const hasDirectives = operation.filter(
       oper => oper.type === IRNodeTypes.WITH_DIRECTIVE,
     ) as WithDirectiveIRNode[]
 
-    if (directives.length) {
+    if (hasDirectives.length) {
       context.options.onError(
         createCompilerError(
           ErrorCodes.X_V_SLOT_UNEXPECTED_DIRECTIVE_ON_SLOT_OUTLET,
-          directives[0].dir.loc,
+          hasDirectives[0].dir.loc,
         ),
       )
     }
