@@ -1,6 +1,5 @@
 import {
   type AttributeNode,
-  type DirectiveNode,
   type ElementNode,
   ElementTypes,
   ErrorCodes,
@@ -29,7 +28,7 @@ export const transformSlotOutlet: NodeTransform = (node, context) => {
     return
   }
   const id = context.reference()
-  context.dynamic.flags |= DynamicFlag.INSERT
+  context.dynamic.flags |= DynamicFlag.INSERT | DynamicFlag.NON_TEMPLATE
   const [fallback, exitBlock] = createFallback(
     node,
     context as TransformContext<ElementNode>,
@@ -124,10 +123,10 @@ function createFallback(
     tag: 'template',
     props: [],
     tagType: ElementTypes.TEMPLATE,
-    children: [...node.children],
+    children: node.children,
   })
 
-  const fallback: BlockIRNode = newBlock(node)
+  const fallback = newBlock(node)
   const exitBlock = context.enterBlock(fallback)
   context.reference()
   return [fallback, exitBlock]
