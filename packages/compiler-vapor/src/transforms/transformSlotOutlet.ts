@@ -28,7 +28,6 @@ export const transformSlotOutlet: NodeTransform = (node, context) => {
   if (node.type !== NodeTypes.ELEMENT || node.tag !== 'slot') {
     return
   }
-  const { props } = node
   const id = context.reference()
   context.dynamic.flags |= DynamicFlag.INSERT
   const [fallback, exitBlock] = createFallback(
@@ -36,60 +35,65 @@ export const transformSlotOutlet: NodeTransform = (node, context) => {
     context as TransformContext<ElementNode>,
   )
 
-  let name: SimpleExpressionNode | undefined
-  const nonNameProps: (AttributeNode | DirectiveNode)[] = []
-  for (const prop of props) {
+  let slotName: SimpleExpressionNode | undefined
+  const slotProps: (AttributeNode | VaporDirectiveNode)[] = []
+  for (const prop of node.props as (AttributeNode | VaporDirectiveNode)[]) {
     if (prop.type === NodeTypes.ATTRIBUTE) {
       if (prop.value) {
         if (prop.name === 'name') {
-          name = createSimpleExpression(prop.value.content, true, prop.loc)
+          slotName = createSimpleExpression(prop.value.content, true, prop.loc)
         } else {
-          nonNameProps.push(extend({}, prop, { name: camelize(prop.name) }))
+          slotProps.push(extend({}, prop, { name: camelize(prop.name) }))
         }
       }
     } else if (prop.name === 'bind' && isStaticArgOf(prop.arg, 'name')) {
       if (prop.exp) {
-        name = (prop as VaporDirectiveNode).exp!
-      } else if (prop.arg && prop.arg.type === NodeTypes.SIMPLE_EXPRESSION) {
+        slotName = prop.exp!
+      } else {
         // v-bind shorthand syntax
-        name = createSimpleExpression(
-          camelize(prop.arg.content),
+        slotName = createSimpleExpression(
+          camelize(prop.arg!.content),
           false,
-          prop.arg.loc,
+          prop.arg!.loc,
         )
-        name.ast = null
+        slotName.ast = null
       }
     } else {
-      const nonProp = extend({}, prop)
-      if (nonProp.name === 'bind' && nonProp.arg && isStaticExp(nonProp.arg)) {
-        nonProp.arg = extend({}, nonProp.arg, {
-          content: camelize(nonProp.arg.content),
+      let slotProp = prop
+      if (
+        slotProp.name === 'bind' &&
+        slotProp.arg &&
+        isStaticExp(slotProp.arg)
+      ) {
+        slotProp = extend({}, prop, {
+          arg: extend({}, slotProp.arg, {
+            content: camelize(slotProp.arg!.content),
+          }),
         })
       }
-      nonNameProps.push(nonProp)
+      slotProps.push(slotProp)
     }
   }
 
-  name ||= createSimpleExpression('default', true)
+  slotName ||= createSimpleExpression('default', true)
   let irProps: IRProps[] = []
-  if (nonNameProps.length > 0) {
+  if (slotProps.length) {
     const [isDynamic, props] = buildProps(
-      extend({}, node, { props: nonNameProps }),
+      extend({}, node, { props: slotProps }),
       context as TransformContext<ElementNode>,
       true,
     )
     irProps = isDynamic ? props : [props]
 
-    const { operation } = context.block
-    const hasDirectives = operation.filter(
-      oper => oper.type === IRNodeTypes.WITH_DIRECTIVE,
-    ) as WithDirectiveIRNode[]
-
-    if (hasDirectives.length) {
+    const runtimeDirective = context.block.operation.find(
+      (oper): oper is WithDirectiveIRNode =>
+        oper.type === IRNodeTypes.WITH_DIRECTIVE && oper.element === id,
+    )
+    if (runtimeDirective) {
       context.options.onError(
         createCompilerError(
           ErrorCodes.X_V_SLOT_UNEXPECTED_DIRECTIVE_ON_SLOT_OUTLET,
-          hasDirectives[0].dir.loc,
+          runtimeDirective.dir.loc,
         ),
       )
     }
@@ -100,7 +104,7 @@ export const transformSlotOutlet: NodeTransform = (node, context) => {
     context.registerOperation({
       type: IRNodeTypes.SLOT_OUTLET_NODE,
       id,
-      name,
+      name: slotName,
       props: irProps,
       fallback,
     })
