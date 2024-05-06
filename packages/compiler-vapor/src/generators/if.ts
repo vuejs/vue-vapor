@@ -37,7 +37,7 @@ export function genIf(
       conditionExpr,
       positiveArg,
       negativeArg,
-      once ? String(once) : '',
+      once && 'true',
     ),
   )
 

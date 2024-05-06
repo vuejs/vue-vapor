@@ -10,7 +10,7 @@ export const createIf = (
   condition: () => any,
   b1: BlockFn,
   b2?: BlockFn,
-  once?: Boolean,
+  once?: boolean,
   // hydrationNode?: Node,
 ): Fragment => {
   let newValue: any
@@ -32,8 +32,9 @@ export const createIf = (
   //   setCurrentHydrationNode(hydrationNode!)
   // }
 
-  if (once) doIf()
-  else {
+  if (once) {
+    doIf()
+  } else {
     renderEffect(() => doIf())
   }
 

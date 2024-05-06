@@ -146,9 +146,10 @@ describe('compiler: v-once', () => {
   })
 
   test.todo('with hoistStatic: true')
+
   test('with v-if/else', () => {
     const { ir, code, helpers } = compileWithOnce(
-      `<div v-if="BOOLEAN" v-once /><p v-else/>`,
+      `<div v-if="expr" v-once /><p v-else/>`,
     )
     expect(code).toMatchSnapshot()
     expect(helpers).lengthOf(0)
@@ -160,7 +161,7 @@ describe('compiler: v-once', () => {
         once: true,
         condition: {
           type: NodeTypes.SIMPLE_EXPRESSION,
-          content: 'BOOLEAN',
+          content: 'expr',
           isStatic: false,
         },
         positive: {
@@ -178,5 +179,6 @@ describe('compiler: v-once', () => {
       },
     ])
   })
+
   test.todo('with v-for')
 })

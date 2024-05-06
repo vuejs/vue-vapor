@@ -53,7 +53,7 @@ const t0 = _template("<div></div>")
 const t1 = _template("<p></p>")
 
 export function render(_ctx) {
-  const n0 = _createIf(() => (_ctx.BOOLEAN), () => {
+  const n0 = _createIf(() => (_ctx.expr), () => {
     const n2 = t0()
     return n2
   }, () => {
