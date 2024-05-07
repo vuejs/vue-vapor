@@ -29,6 +29,7 @@ import { transformVFor } from './transforms/vFor'
 import { transformComment } from './transforms/transformComment'
 import { transformSlotOutlet } from './transforms/transformSlotOutlet'
 import type { HackOptions } from './ir'
+import { transformVSlot } from './transforms/vSlot'
 
 export { wrapTemplate } from './transforms/utils'
 
@@ -108,6 +109,7 @@ export function getBaseTransformPreset(
       transformTemplateRef,
       transformText,
       transformElement,
+      transformVSlot,
       transformComment,
       transformChildren,
     ],

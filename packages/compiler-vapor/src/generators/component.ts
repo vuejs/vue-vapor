@@ -22,8 +22,8 @@ import { createSimpleExpression } from '@vue/compiler-dom'
 import { genEventHandler } from './event'
 import { genDirectiveModifiers, genDirectivesForElement } from './directive'
 import { genModelHandler } from './modelValue'
+import { genBlock } from './block'
 
-// TODO: generate component slots
 export function genCreateComponent(
   oper: CreateComponentIRNode,
   context: CodegenContext,
@@ -40,7 +40,9 @@ export function genCreateComponent(
     ...genCall(
       vaporHelper('createComponent'),
       tag,
-      rawProps || (isRoot ? 'null' : false),
+      rawProps || (oper.slots || isRoot ? 'null' : false),
+      oper.slots ? genSlots(oper, context) : isRoot ? 'null' : false,
+      isRoot && 'null',
       isRoot && 'true',
     ),
     ...genDirectivesForElement(oper.id, context),
@@ -133,4 +135,14 @@ function genModelModifiers(
 
   const modifiersVal = genDirectiveModifiers(modelModifiers)
   return [',', NEWLINE, ...modifiersKey, `: () => ({ ${modifiersVal} })`]
+}
+
+function genSlots(oper: CreateComponentIRNode, context: CodegenContext) {
+  const slotList = Object.entries(oper.slots!)
+  return genMulti(
+    slotList.length > 1 ? SEGMENTS_OBJECT_NEWLINE : SEGMENTS_OBJECT,
+    ...slotList.map(([name, slot]) => {
+      return [name, ': ', ...genBlock(slot, context)]
+    }),
+  )
 }

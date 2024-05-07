@@ -13,6 +13,9 @@ import {
 import { DynamicFlag, type IRDynamicInfo, IRNodeTypes } from '../ir'
 
 export const transformChildren: NodeTransform = (node, context) => {
+  const isComponent =
+    node.type === NodeTypes.ELEMENT && node.tagType === ElementTypes.COMPONENT
+
   const isFragment =
     node.type === NodeTypes.ROOT ||
     (node.type === NodeTypes.ELEMENT && node.tagType === ElementTypes.TEMPLATE)
@@ -27,7 +30,7 @@ export const transformChildren: NodeTransform = (node, context) => {
     )
     transformNode(childContext)
 
-    if (isFragment) {
+    if (isFragment || isComponent) {
       childContext.reference()
       childContext.registerTemplate()
 
@@ -44,7 +47,7 @@ export const transformChildren: NodeTransform = (node, context) => {
     context.dynamic.children[i] = childContext.dynamic
   }
 
-  if (!isFragment) {
+  if (!(isFragment || isComponent)) {
     processDynamicChildren(context as TransformContext<ElementNode>)
   }
 }

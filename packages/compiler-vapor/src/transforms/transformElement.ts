@@ -104,7 +104,9 @@ function transformComponentElement(
     props: propsResult[0] ? propsResult[1] : [propsResult[1]],
     resolve,
     root,
+    slots: context.slots || undefined,
   })
+  context.slots = null
 }
 
 function resolveSetupReference(name: string, context: TransformContext) {
