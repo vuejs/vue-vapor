@@ -6,6 +6,7 @@ import {
   type IRProp,
   type IRProps,
   type IRPropsStatic,
+  type SlotContent,
 } from '../ir'
 import {
   type CodeFragment,
@@ -22,6 +23,7 @@ import { createSimpleExpression } from '@vue/compiler-dom'
 import { genEventHandler } from './event'
 import { genDirectiveModifiers, genDirectivesForElement } from './directive'
 import { genModelHandler } from './modelValue'
+import { genBlock } from './block'
 
 // TODO: generate component slots
 export function genCreateComponent(
@@ -32,6 +34,7 @@ export function genCreateComponent(
 
   const tag = genTag()
   const isRoot = oper.root
+  const { slots, dynamicSlots } = oper
   const rawProps = genRawProps(oper.props, context)
 
   return [
@@ -41,6 +44,8 @@ export function genCreateComponent(
       vaporHelper('createComponent'),
       tag,
       rawProps || (isRoot ? 'null' : false),
+      slots ? genSlots(slots, context) : isRoot ? 'null' : false,
+      dynamicSlots ? genSlots(dynamicSlots, context) : isRoot ? 'null' : false,
       isRoot && 'true',
     ),
     ...genDirectivesForElement(oper.id, context),
@@ -133,4 +138,23 @@ function genModelModifiers(
 
   const modifiersVal = genDirectiveModifiers(modelModifiers)
   return [',', NEWLINE, ...modifiersKey, `: () => ({ ${modifiersVal} })`]
+}
+
+function genSlots(
+  slots: SlotContent[],
+  context: CodegenContext,
+): CodeFragment[] {
+  const frags = genMulti(
+    SEGMENTS_OBJECT_NEWLINE,
+    ...slots.map(({ name: key, block }) => {
+      return [
+        ...(key.isStatic
+          ? [key.content]
+          : ['[', ...genExpression(key, context), ']']),
+        ':',
+        ...genBlock(block, context),
+      ]
+    }),
+  )
+  return frags
 }

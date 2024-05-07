@@ -18,6 +18,11 @@ export const transformChildren: NodeTransform = (node, context) => {
     (node.type === NodeTypes.ELEMENT && node.tagType === ElementTypes.TEMPLATE)
 
   if (!isFragment && node.type !== NodeTypes.ELEMENT) return
+  if (
+    node.type === NodeTypes.ELEMENT &&
+    node.tagType === ElementTypes.COMPONENT
+  )
+    return
 
   for (const [i, child] of node.children.entries()) {
     const childContext = createContext(

@@ -1,3 +1,4 @@
+import { DynamicSlot } from './../../runtime-vapor/src/componentSlots'
 import type {
   BindingTypes,
   CompoundExpressionNode,
@@ -31,6 +32,7 @@ export enum IRNodeTypes {
   CREATE_TEXT_NODE,
   CREATE_COMPONENT_NODE,
   SLOT_OUTLET_NODE,
+  DYNAMIC_SLOTS,
 
   WITH_DIRECTIVE,
   DECLARE_OLD_REF, // consider make it more general
@@ -199,12 +201,23 @@ export interface WithDirectiveIRNode extends BaseIRNode {
   builtin?: VaporHelper
 }
 
+export interface SlotContent {
+  name: SimpleExpressionNode
+  block: BlockIRNode
+}
+
+export interface DynamicSlotContent extends SlotContent {
+  key?: SimpleExpressionNode
+}
+
 export interface CreateComponentIRNode extends BaseIRNode {
   type: IRNodeTypes.CREATE_COMPONENT_NODE
   id: number
   tag: string
   props: IRProps[]
   // TODO slots
+  slots?: SlotContent[]
+  dynamicSlots?: DynamicSlotContent[]
 
   resolve: boolean
   root: boolean

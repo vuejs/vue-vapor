@@ -6,6 +6,7 @@ import {
   ErrorCodes,
   NodeTypes,
   type SimpleExpressionNode,
+  type TemplateChildNode,
   createCompilerError,
   createSimpleExpression,
 } from '@vue/compiler-dom'
@@ -17,22 +18,26 @@ import {
   isVoidTag,
   makeMap,
 } from '@vue/shared'
-import type {
-  DirectiveTransformResult,
-  NodeTransform,
-  TransformContext,
+import {
+  type DirectiveTransformResult,
+  type NodeTransform,
+  type TransformContext,
+  transformNode,
 } from '../transform'
 import {
+  type BlockIRNode,
   DynamicFlag,
+  type DynamicSlotContent,
   IRDynamicPropsKind,
   IRNodeTypes,
   type IRProp,
   type IRProps,
   type IRPropsDynamicAttribute,
   type IRPropsStatic,
+  type SlotContent,
   type VaporDirectiveNode,
 } from '../ir'
-import { EMPTY_EXPRESSION } from './utils'
+import { EMPTY_EXPRESSION, newBlock } from './utils'
 
 export const isReservedProp = /*#__PURE__*/ makeMap(
   // the leading comma is intentional so empty string "" is also included
@@ -97,6 +102,10 @@ function transformComponentElement(
   const root =
     context.root === context.parent && context.parent.node.children.length === 1
 
+  const [slots, dynamicSlots] = buildSlotContent(
+    context as TransformContext<ElementNode>,
+  )
+
   context.registerOperation({
     type: IRNodeTypes.CREATE_COMPONENT_NODE,
     id: context.reference(),
@@ -104,6 +113,8 @@ function transformComponentElement(
     props: propsResult[0] ? propsResult[1] : [propsResult[1]],
     resolve,
     root,
+    slots,
+    dynamicSlots,
   })
 }
 
@@ -349,4 +360,131 @@ function resolveDirectiveResult(prop: DirectiveTransformResult): IRProp {
 function mergePropValues(existing: IRProp, incoming: IRProp) {
   const newValues = incoming.values
   existing.values.push(...newValues)
+}
+
+function buildSlotContent(
+  context: TransformContext<ElementNode>,
+): [slots?: SlotContent[], dynamicSlots?: DynamicSlotContent[]] {
+  const node = context.node
+  const slots: SlotContent[] = []
+  const dynamicSlots: DynamicSlotContent[] = []
+  if (!node.children.length) return []
+  let explictlyNamedDefaultSlot = false
+  const defaultTemplateNodes: TemplateChildNode[] = []
+
+  for (let i = 0; i < node.children.length; i++) {
+    const child = node.children[i]
+    if (
+      child.type === NodeTypes.ELEMENT &&
+      child.tagType === ElementTypes.TEMPLATE
+    ) {
+      let slotDirective: VaporDirectiveNode | undefined
+      let slotKey: SimpleExpressionNode | undefined
+      let isVIf = false
+      let isVFor = false
+      for (const prop of child.props as (
+        | AttributeNode
+        | VaporDirectiveNode
+      )[]) {
+        if (
+          !slotDirective &&
+          prop.type === NodeTypes.DIRECTIVE &&
+          prop.name === 'slot'
+        ) {
+          slotDirective = prop
+        } else if (
+          prop.type === NodeTypes.DIRECTIVE &&
+          prop.name === 'if' &&
+          prop.exp
+        ) {
+          isVIf = true
+        } else if (
+          prop.type === NodeTypes.DIRECTIVE &&
+          prop.name === 'for' &&
+          prop.exp
+        ) {
+          isVFor = true
+        } else if (
+          prop.type === NodeTypes.ATTRIBUTE &&
+          prop.name === 'key' &&
+          prop.value
+        ) {
+          slotKey = createSimpleExpression(prop.value?.content, true)
+        } else if (
+          prop.type === NodeTypes.DIRECTIVE &&
+          prop.name === 'bind' &&
+          prop.arg &&
+          prop.arg.content === 'key' &&
+          prop.exp
+        ) {
+          slotKey = prop.exp
+        }
+      }
+      const isDynamicSlot = isVIf || (isVFor && !slotDirective?.arg?.isStatic)
+      const slotArg = slotDirective?.arg
+      if (slotArg?.content === 'default') explictlyNamedDefaultSlot = true
+      if (slotArg?.content) {
+        const slotNode = isDynamicSlot
+          ? child
+          : extend({}, child, {
+              type: NodeTypes.ELEMENT,
+              tag: 'template',
+              props: [],
+              tagType: ElementTypes.TEMPLATE,
+              children: child.children,
+            })
+        const slotBlock = buildSlotBlock(context, slotNode)
+        if (isDynamicSlot) {
+          dynamicSlots.push(
+            extend(
+              {
+                name: slotArg,
+                block: slotBlock,
+              },
+              slotKey ? { key: slotKey } : {},
+            ),
+          )
+        } else {
+          slots.push({
+            name: slotArg,
+            block: slotBlock,
+          })
+        }
+        continue
+      } else if (!explictlyNamedDefaultSlot) {
+        !isDynamicSlot && defaultTemplateNodes.push(...child.children)
+      }
+    } else if (!explictlyNamedDefaultSlot) {
+      defaultTemplateNodes.push(child)
+    }
+  }
+
+  if (!explictlyNamedDefaultSlot) {
+    const defaultSlotNode = extend({}, node, {
+      type: NodeTypes.ELEMENT,
+      tag: 'template',
+      props: [],
+      tagType: ElementTypes.TEMPLATE,
+      children: defaultTemplateNodes,
+    })
+    slots.push({
+      name: createSimpleExpression('default', true),
+      block: buildSlotBlock(context, defaultSlotNode),
+    })
+  }
+
+  return [slots, dynamicSlots]
+}
+
+function buildSlotBlock(
+  context: TransformContext<ElementNode>,
+  slotNode: ElementNode,
+): BlockIRNode {
+  const block = newBlock(slotNode)
+  const exit = context.enterBlock(block)
+  context.node = slotNode
+  context.reference()
+  transformNode(context)
+  exit()
+  return block
 }
