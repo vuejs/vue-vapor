@@ -1,6 +1,5 @@
-import { createSimpleExpression } from '@vue/compiler-dom'
+import { ErrorCodes, NodeTypes } from '@vue/compiler-core'
 import {
-  type CreateComponentIRNode,
   IRNodeTypes,
   transformChildren,
   transformElement,
@@ -36,10 +35,22 @@ describe('compiler: transform slot', () => {
     expect(code).toMatchSnapshot()
 
     expect(ir.template).toEqual(['<div></div>'])
-    expect(ir.block.operation[0].type).toBe(IRNodeTypes.CREATE_COMPONENT_NODE)
-    const slots = (ir.block.operation[0] as CreateComponentIRNode).slots!
-    expect(slots.length).toBe(1)
-    expect(slots[0].name.content).toBe('default')
+    expect(ir.block.operation).toMatchObject([
+      {
+        type: IRNodeTypes.CREATE_COMPONENT_NODE,
+        id: 1,
+        tag: 'Comp',
+        props: [[]],
+        slots: {
+          default: {
+            type: IRNodeTypes.BLOCK,
+            dynamic: {
+              children: [{ template: 0 }],
+            },
+          },
+        },
+      },
+    ])
     expect(ir.block.returns).toEqual([1])
     expect(ir.block.dynamic).toMatchObject({
       children: [{ id: 1 }],
@@ -55,11 +66,28 @@ describe('compiler: transform slot', () => {
     expect(code).toMatchSnapshot()
 
     expect(ir.template).toEqual(['foo', 'bar', '<span></span>'])
-    expect(ir.block.operation[0].type).toBe(IRNodeTypes.CREATE_COMPONENT_NODE)
-    const slots = (ir.block.operation[0] as CreateComponentIRNode).slots!
-    expect(slots.length).toBe(2)
-    expect(slots[0].name.content).toBe('one')
-    expect(slots[1].name.content).toBe('default')
+    expect(ir.block.operation).toMatchObject([
+      {
+        type: IRNodeTypes.CREATE_COMPONENT_NODE,
+        id: 4,
+        tag: 'Comp',
+        props: [[]],
+        slots: {
+          one: {
+            type: IRNodeTypes.BLOCK,
+            dynamic: {
+              children: [{ template: 0 }],
+            },
+          },
+          default: {
+            type: IRNodeTypes.BLOCK,
+            dynamic: {
+              children: [{}, { template: 1 }, { template: 2 }],
+            },
+          },
+        },
+      },
+    ])
   })
 
   test('nested slots', () => {
@@ -72,13 +100,75 @@ describe('compiler: transform slot', () => {
   })
 
   test('dynamic slots name', () => {
-    const { ir, code } = compileWithSlots(`<Comp>
-        <template #[dynamicName]>foo</template>
-      </Comp>`)
-    expect(ir.block.operation[0].type).toBe(IRNodeTypes.CREATE_COMPONENT_NODE)
-    const slots = (ir.block.operation[0] as CreateComponentIRNode).slots!
-    expect(slots.length).toBe(1)
-    expect(slots[0].name.isStatic).toBe(false)
+    const { ir, code } = compileWithSlots(
+      `<Comp>
+        <template #[name]>foo</template>
+      </Comp>`,
+    )
     expect(code).toMatchSnapshot()
+    expect(ir.block.operation[0].type).toBe(IRNodeTypes.CREATE_COMPONENT_NODE)
+    expect(ir.block.operation).toMatchObject([
+      {
+        type: IRNodeTypes.CREATE_COMPONENT_NODE,
+        tag: 'Comp',
+        slots: undefined,
+        dynamicSlots: [
+          {
+            name: {
+              type: NodeTypes.SIMPLE_EXPRESSION,
+              content: 'name',
+              isStatic: false,
+            },
+            fn: { type: IRNodeTypes.BLOCK },
+          },
+        ],
+      },
+    ])
+  })
+
+  describe('errors', () => {
+    test('error on extraneous children w/ named default slot', () => {
+      const onError = vi.fn()
+      const source = `<Comp><template #default>foo</template>bar</Comp>`
+      compileWithSlots(source, { onError })
+      const index = source.indexOf('bar')
+      expect(onError.mock.calls[0][0]).toMatchObject({
+        code: ErrorCodes.X_V_SLOT_EXTRANEOUS_DEFAULT_SLOT_CHILDREN,
+        loc: {
+          start: {
+            offset: index,
+            line: 1,
+            column: index + 1,
+          },
+          end: {
+            offset: index + 3,
+            line: 1,
+            column: index + 4,
+          },
+        },
+      })
+    })
+
+    test('error on duplicated slot names', () => {
+      const onError = vi.fn()
+      const source = `<Comp><template #foo></template><template #foo></template></Comp>`
+      compileWithSlots(source, { onError })
+      const index = source.lastIndexOf('#foo')
+      expect(onError.mock.calls[0][0]).toMatchObject({
+        code: ErrorCodes.X_V_SLOT_DUPLICATE_SLOT_NAMES,
+        loc: {
+          start: {
+            offset: index,
+            line: 1,
+            column: index + 1,
+          },
+          end: {
+            offset: index + 4,
+            line: 1,
+            column: index + 5,
+          },
+        },
+      })
+    })
   })
 })

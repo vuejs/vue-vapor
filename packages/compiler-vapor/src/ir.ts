@@ -199,12 +199,10 @@ export interface WithDirectiveIRNode extends BaseIRNode {
   builtin?: VaporHelper
 }
 
-export interface ComponentStaticSlot {
-  name: SimpleExpressionNode
-  block: ComponentSlotBlockIRNode
+export interface ComponentSlotBlockIRNode extends BlockIRNode {
+  // TODO slot props
 }
-
-export interface ComponentSlotBlockIRNode extends BlockIRNode {}
+export type ComponentSlots = Record<string, ComponentSlotBlockIRNode>
 export interface ComponentDynamicSlot {
   name: SimpleExpressionNode
   fn: ComponentSlotBlockIRNode
@@ -217,7 +215,7 @@ export interface CreateComponentIRNode extends BaseIRNode {
   tag: string
   props: IRProps[]
 
-  slots?: ComponentStaticSlot[]
+  slots?: ComponentSlots
   dynamicSlots?: ComponentDynamicSlot[]
 
   resolve: boolean

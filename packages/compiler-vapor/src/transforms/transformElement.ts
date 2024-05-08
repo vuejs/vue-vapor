@@ -105,8 +105,10 @@ function transformComponentElement(
     resolve,
     root,
     slots: context.slots || undefined,
+    dynamicSlots: context.dynamicSlots || undefined,
   })
   context.slots = null
+  context.dynamicSlots = null
 }
 
 function resolveSetupReference(name: string, context: TransformContext) {
