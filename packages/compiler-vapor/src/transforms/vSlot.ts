@@ -2,6 +2,7 @@ import {
   type ElementNode,
   ElementTypes,
   NodeTypes,
+  createSimpleExpression,
   isTemplateNode,
   isVSlot,
 } from '@vue/compiler-core'
@@ -35,12 +36,16 @@ export const transformVSlot: NodeTransform = (node, context) => {
       context as TransformContext<ElementNode>,
     )
 
-    const slots = (context.slots ||= {})
+    const slots = (context.slots ||= [])
 
     return () => {
       onExit()
-      if (hasDefalutSlot) slots.default = block
-      if (Object.keys(slots).length) context.slots = slots
+      if (hasDefalutSlot)
+        slots.push({
+          name: createSimpleExpression('default', true),
+          block,
+        })
+      if (slots.length) context.slots = slots
     }
   } else if (isSlotTemplate && (dir = findDir(node, 'slot', true))) {
     context.dynamic.flags |= DynamicFlag.NON_TEMPLATE
@@ -52,7 +57,10 @@ export const transformVSlot: NodeTransform = (node, context) => {
       context as TransformContext<ElementNode>,
     )
 
-    slots[dir.arg!.content] = block
+    slots.push({
+      name: dir.arg!,
+      block,
+    })
     return () => onExit()
   }
 }

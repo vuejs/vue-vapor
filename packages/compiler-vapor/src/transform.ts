@@ -16,7 +16,7 @@ import {
 import { EMPTY_OBJ, NOOP, extend, isArray, isString } from '@vue/shared'
 import {
   type BlockIRNode,
-  type ComponentSlotBlockIRNode,
+  type ComponentStaticSlot,
   DynamicFlag,
   type HackOptions,
   type IRDynamicInfo,
@@ -78,7 +78,7 @@ export class TransformContext<T extends AllNode = AllNode> {
 
   comment: CommentNode[] = []
   component: Set<string> = this.ir.component
-  slots: Record<string, ComponentSlotBlockIRNode> | null = null
+  slots: ComponentStaticSlot[] | null = null
 
   private globalId = 0
 

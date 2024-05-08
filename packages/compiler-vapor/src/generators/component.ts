@@ -138,11 +138,17 @@ function genModelModifiers(
 }
 
 function genSlots(oper: CreateComponentIRNode, context: CodegenContext) {
-  const slotList = Object.entries(oper.slots!)
+  const slotList = oper.slots!
   return genMulti(
     slotList.length > 1 ? SEGMENTS_OBJECT_NEWLINE : SEGMENTS_OBJECT,
-    ...slotList.map(([name, slot]) => {
-      return [name, ': ', ...genBlock(slot, context)]
+    ...slotList.map(({ name, block }) => {
+      return [
+        ...(name.isStatic
+          ? [name.content]
+          : ['[', ...genExpression(name, context), ']']),
+        ': ',
+        ...genBlock(block, context),
+      ]
     }),
   )
 }

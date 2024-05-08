@@ -1,5 +1,19 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`compiler: transform slot > dynamic slots name 1`] = `
+"import { resolveComponent as _resolveComponent, createComponent as _createComponent, template as _template } from 'vue/vapor';
+const t0 = _template("foo")
+
+export function render(_ctx) {
+  const _component_Comp = _resolveComponent("Comp")
+  const n2 = _createComponent(_component_Comp, null, { [_ctx.dynamicName]: () => {
+    const n0 = t0()
+    return n0
+  } }, null, true)
+  return n2
+}"
+`;
+
 exports[`compiler: transform slot > implicit default slot 1`] = `
 "import { resolveComponent as _resolveComponent, createComponent as _createComponent, template as _template } from 'vue/vapor';
 const t0 = _template("<div></div>")
