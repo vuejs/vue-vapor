@@ -1,0 +1,49 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`compiler: v-memo > basic 1`] = `
+"import { setText as _setText, createMemo as _createMemo, template as _template } from 'vue/vapor';
+const t0 = _template("<div></div>")
+
+export function render(_ctx) {
+  const n0 = _createMemo(() => ([_ctx.x]), (_cache) => {
+    const n2 = t0()
+    _setText(n2, _ctx.y)
+    return n2
+  }, 0)
+  return n0
+}"
+`;
+
+exports[`compiler: v-memo > nested v-memo on normal element 1`] = `
+"import { createTextNode as _createTextNode, setText as _setText, createMemo as _createMemo, insert as _insert, template as _template } from 'vue/vapor';
+const t0 = _template("<div></div>")
+
+export function render(_ctx) {
+  const n0 = _createMemo(() => ([_ctx.x]), (_cache) => {
+    const n6 = t0()
+    const n2 = _createTextNode([_ctx.y, " "])
+    const n3 = _createMemo(() => ([_ctx.z]), (_cache) => {
+      const n5 = t0()
+      _setText(n5, _ctx.k)
+      return n5
+    }, 1, _cache)
+    _insert([n2, n3], n6)
+    return n6
+  }, 0)
+  return n0
+}"
+`;
+
+exports[`compiler: v-memo > on normal element 1`] = `
+"import { setText as _setText, createMemo as _createMemo, template as _template } from 'vue/vapor';
+const t0 = _template("<div></div>")
+
+export function render(_ctx) {
+  const n0 = _createMemo(() => ([_ctx.x]), (_cache) => {
+    const n2 = t0()
+    _setText(n2, _ctx.y)
+    return n2
+  }, 0)
+  return n0
+}"
+`;

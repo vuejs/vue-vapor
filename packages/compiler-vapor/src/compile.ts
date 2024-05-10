@@ -15,6 +15,7 @@ import {
 import { type VaporCodegenResult, generate } from './generate'
 import { transformChildren } from './transforms/transformChildren'
 import { transformOnce } from './transforms/vOnce'
+import { transformMemo } from './transforms/vMemo'
 import { transformElement } from './transforms/transformElement'
 import { transformVHtml } from './transforms/vHtml'
 import { transformVText } from './transforms/vText'
@@ -102,6 +103,7 @@ export function getBaseTransformPreset(
   return [
     [
       transformOnce,
+      transformMemo,
       transformVIf,
       transformVFor,
       transformSlotOutlet,

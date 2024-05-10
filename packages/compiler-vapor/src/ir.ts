@@ -37,6 +37,7 @@ export enum IRNodeTypes {
 
   IF,
   FOR,
+  MEMO,
 }
 
 export interface BaseIRNode {
@@ -80,6 +81,14 @@ export interface ForIRNode extends BaseIRNode {
   index?: SimpleExpressionNode
   keyProp?: SimpleExpressionNode
   render: BlockIRNode
+}
+
+export interface MemoIRNode extends BaseIRNode {
+  type: IRNodeTypes.MEMO
+  id: number
+  memo: SimpleExpressionNode
+  render: BlockIRNode
+  level: number
 }
 
 export interface IRProp extends Omit<DirectiveTransformResult, 'value'> {
@@ -242,6 +251,7 @@ export type OperationNode =
   | CreateComponentIRNode
   | DeclareOldRefIRNode
   | SlotOutletIRNode
+  | MemoIRNode
 
 export enum DynamicFlag {
   NONE = 0,

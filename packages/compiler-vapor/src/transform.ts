@@ -73,6 +73,8 @@ export class TransformContext<T extends AllNode = AllNode> {
   dynamic: IRDynamicInfo = this.ir.block.dynamic
 
   inVOnce: boolean = false
+  inVMemo: number = 0
+
   inVFor: number = 0
 
   comment: CommentNode[] = []
@@ -133,7 +135,7 @@ export class TransformContext<T extends AllNode = AllNode> {
     ...operations: OperationNode[]
   ) {
     expressions = expressions.filter(exp => !isConstantExpression(exp))
-    if (this.inVOnce || expressions.length === 0) {
+    if (this.inVOnce || this.inVMemo > 0 || expressions.length === 0) {
       return this.registerOperation(...operations)
     }
     const existing = this.block.effect.find(e =>

@@ -56,7 +56,10 @@ function processTextLike(context: TransformContext<InterpolationNode>) {
     type: IRNodeTypes.CREATE_TEXT_NODE,
     id,
     values,
-    effect: !values.every(isConstantExpression) && !context.inVOnce,
+    effect:
+      !values.every(isConstantExpression) &&
+      !context.inVOnce &&
+      context.inVMemo === 0,
   })
 }
 
