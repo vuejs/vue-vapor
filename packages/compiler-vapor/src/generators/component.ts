@@ -34,7 +34,7 @@ export function genCreateComponent(
   const { vaporHelper } = context
 
   const tag = genTag()
-  const { root: isRoot, slots, dynamicSlots } = oper
+  const { root, slots, dynamicSlots } = oper
   const rawProps = genRawProps(oper.props, context)
 
   return [
@@ -43,18 +43,14 @@ export function genCreateComponent(
     ...genCall(
       vaporHelper('createComponent'),
       tag,
-      rawProps || (slots || dynamicSlots || isRoot ? 'null' : false),
-      slots
-        ? genSlots(slots, context)
-        : dynamicSlots || isRoot
-          ? 'null'
-          : false,
+      rawProps || (slots || dynamicSlots || root ? 'null' : false),
+      slots ? genSlots(slots, context) : dynamicSlots || root ? 'null' : false,
       dynamicSlots
         ? genDynamicSlots(dynamicSlots, context)
-        : isRoot
+        : root
           ? 'null'
           : false,
-      isRoot && 'true',
+      root && 'true',
     ),
     ...genDirectivesForElement(oper.id, context),
   ]
@@ -149,12 +145,10 @@ function genModelModifiers(
 }
 
 function genSlots(slots: ComponentSlots, context: CodegenContext) {
-  const slotList = Object.entries(slots!)
+  const slotList = Object.entries(slots)
   return genMulti(
     slotList.length > 1 ? SEGMENTS_OBJECT_NEWLINE : SEGMENTS_OBJECT,
-    ...slotList.map(([name, slot]) => {
-      return [name, ': ', ...genBlock(slot, context)]
-    }),
+    ...slotList.map(([name, slot]) => [name, ': ', ...genBlock(slot, context)]),
   )
 }
 
@@ -164,13 +158,13 @@ function genDynamicSlots(
 ) {
   const slotsExpr = genMulti(
     dynamicSlots.length > 1 ? SEGMENTS_ARRAY_NEWLINE : SEGMENTS_ARRAY,
-    ...dynamicSlots.map(({ name, fn }) => {
-      return genMulti(
+    ...dynamicSlots.map(({ name, fn }) =>
+      genMulti(
         SEGMENTS_OBJECT_NEWLINE,
         ['name: ', ...genExpression(name, context)],
         ['fn: ', ...genBlock(fn, context)],
-      )
-    }),
+      ),
+    ),
   )
   return ['() => ', ...slotsExpr]
 }
