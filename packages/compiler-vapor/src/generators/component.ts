@@ -21,7 +21,11 @@ import {
 } from './utils'
 import { genExpression } from './expression'
 import { genPropKey } from './prop'
-import { createSimpleExpression } from '@vue/compiler-dom'
+import {
+  type SimpleExpressionNode,
+  createForLoopParams,
+  createSimpleExpression,
+} from '@vue/compiler-dom'
 import { genEventHandler } from './event'
 import { genDirectiveModifiers, genDirectivesForElement } from './directive'
 import { genModelHandler } from './modelValue'
@@ -158,13 +162,50 @@ function genDynamicSlots(
 ) {
   const slotsExpr = genMulti(
     dynamicSlots.length > 1 ? SEGMENTS_ARRAY_NEWLINE : SEGMENTS_ARRAY,
-    ...dynamicSlots.map(({ name, fn }) =>
-      genMulti(
-        SEGMENTS_OBJECT_NEWLINE,
-        ['name: ', ...genExpression(name, context)],
-        ['fn: ', ...genBlock(fn, context)],
-      ),
-    ),
+    ...dynamicSlots.map(slot => {
+      const { name, fn, forResult } = slot
+      return forResult
+        ? genForSlot(slot, context)
+        : genMulti(
+            SEGMENTS_OBJECT_NEWLINE,
+            ['name: ', ...genExpression(name, context)],
+            ['fn: ', ...genBlock(fn, context)],
+          )
+    }),
   )
   return ['() => ', ...slotsExpr]
+}
+
+function genForSlot(slot: ComponentDynamicSlot, context: CodegenContext) {
+  const { name, fn, forResult } = slot
+  const { value, key, index, source } = forResult!
+  const rawValue = value && value.content
+  const rawKey = key && key.content
+  const rawIndex = index && index.content
+
+  const idMap: Record<string, string> = {}
+  if (rawValue) idMap[rawValue] = rawValue
+  if (rawKey) idMap[rawKey] = rawKey
+  if (rawIndex) idMap[rawIndex] = rawIndex
+  const slotExpr = genMulti(
+    SEGMENTS_OBJECT_NEWLINE,
+    ['name: ', ...context.withId(() => genExpression(name, context), idMap)],
+    ['fn: ', ...context.withId(() => genBlock(fn, context), idMap)],
+  )
+  return [
+    ...genCall(
+      context.vaporHelper('createForSlots'),
+      ['() => (', ...genExpression(source, context), ')'],
+      [
+        `(`,
+        [value, key, index]
+          .filter(Boolean)
+          .map(exp => exp?.content)
+          .join(', '),
+        ') => (',
+        ...slotExpr,
+        ')',
+      ],
+    ),
+  ]
 }

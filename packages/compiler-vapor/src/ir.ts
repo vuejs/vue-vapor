@@ -71,6 +71,14 @@ export interface IfIRNode extends BaseIRNode {
   negative?: BlockIRNode | IfIRNode
 }
 
+export type VaporForParseResult = {
+  source: SimpleExpressionNode
+  value: SimpleExpressionNode | undefined
+  key: SimpleExpressionNode | undefined
+  index: SimpleExpressionNode | undefined
+  finalized: boolean
+}
+
 export interface ForIRNode extends BaseIRNode {
   type: IRNodeTypes.FOR
   id: number
@@ -207,6 +215,7 @@ export interface ComponentDynamicSlot {
   name: SimpleExpressionNode
   fn: ComponentSlotBlockIRNode
   key?: string
+  forResult?: VaporForParseResult
 }
 
 export interface CreateComponentIRNode extends BaseIRNode {

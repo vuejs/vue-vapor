@@ -123,7 +123,7 @@ export {
   type AppContext,
 } from './apiCreateVaporApp'
 export { createIf } from './apiCreateIf'
-export { createFor } from './apiCreateFor'
+export { createFor, createForSlots } from './apiCreateFor'
 export { createComponent } from './apiCreateComponent'
 
 export { resolveComponent, resolveDirective } from './helpers/resolveAssets'

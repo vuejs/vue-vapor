@@ -10,7 +10,12 @@ import {
 } from '@vue/compiler-core'
 import type { NodeTransform, TransformContext } from '../transform'
 import { newBlock } from './utils'
-import { type BlockIRNode, DynamicFlag, type VaporDirectiveNode } from '../ir'
+import {
+  type BlockIRNode,
+  DynamicFlag,
+  type VaporDirectiveNode,
+  type VaporForParseResult,
+} from '../ir'
 import { findDir, resolveExpression } from '../utils'
 
 // TODO dynamic slots
@@ -93,9 +98,11 @@ export const transformVSlot: NodeTransform = (node, context) => {
         slots[slotName] = block
       }
     } else {
+      const vFor = findDir(node, 'for')
       dynamicSlots.push({
         name: arg,
         fn: block,
+        forResult: vFor?.forParseResult as VaporForParseResult,
       })
     }
     return () => onExit()
