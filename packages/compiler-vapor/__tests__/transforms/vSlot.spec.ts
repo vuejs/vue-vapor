@@ -126,6 +126,39 @@ describe('compiler: transform slot', () => {
     ])
   })
 
+  test('dynamic slots name w/ v-for', () => {
+    const { ir, code } = compileWithSlots(
+      `<Comp>
+        <template v-for="item in list" #[i]>foo</template>
+      </Comp>`,
+    )
+    expect(code).toMatchSnapshot()
+    expect(ir.block.operation[0].type).toBe(IRNodeTypes.CREATE_COMPONENT_NODE)
+    expect(ir.block.operation).toMatchObject([
+      {
+        type: IRNodeTypes.CREATE_COMPONENT_NODE,
+        tag: 'Comp',
+        slots: undefined,
+        dynamicSlots: [
+          {
+            name: {
+              type: NodeTypes.SIMPLE_EXPRESSION,
+              content: 'i',
+              isStatic: false,
+            },
+            fn: { type: IRNodeTypes.BLOCK },
+            forResult: {
+              source: { content: 'list' },
+              value: { content: 'item' },
+              key: undefined,
+              index: undefined,
+            },
+          },
+        ],
+      },
+    ])
+  })
+
   describe('errors', () => {
     test('error on extraneous children w/ named default slot', () => {
       const onError = vi.fn()
