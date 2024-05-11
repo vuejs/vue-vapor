@@ -21,11 +21,7 @@ import {
 } from './utils'
 import { genExpression } from './expression'
 import { genPropKey } from './prop'
-import {
-  type SimpleExpressionNode,
-  createForLoopParams,
-  createSimpleExpression,
-} from '@vue/compiler-dom'
+import { createSimpleExpression } from '@vue/compiler-dom'
 import { genEventHandler } from './event'
 import { genDirectiveModifiers, genDirectivesForElement } from './directive'
 import { genModelHandler } from './modelValue'
