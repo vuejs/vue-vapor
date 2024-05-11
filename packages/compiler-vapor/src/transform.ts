@@ -85,7 +85,7 @@ export class TransformContext<T extends AllNode = AllNode> {
   private globalId = 0
 
   constructor(
-    private ir: RootIRNode,
+    public ir: RootIRNode,
     public node: T,
     options: TransformOptions = {},
   ) {
