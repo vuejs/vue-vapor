@@ -1,5 +1,6 @@
 import { ErrorCodes, NodeTypes } from '@vue/compiler-core'
 import {
+  DynamicSlotType,
   IRNodeTypes,
   transformChildren,
   transformElement,
@@ -152,6 +153,44 @@ describe('compiler: transform slot', () => {
               value: { content: 'item' },
               key: undefined,
               index: undefined,
+            },
+          },
+        ],
+      },
+    ])
+  })
+
+  test('dynamic slots name w/ v-if / v-else[-if]', () => {
+    const { ir, code } = compileWithSlots(
+      `<Comp>
+        <template v-if="condition" #condition>condition slot</template>
+        <template v-else-if="anotherCondition" #condition>another condition</template>
+        <template v-else #condition>else condition</template>
+      </Comp>`,
+    )
+    expect(code).toMatchSnapshot()
+    expect(ir.block.operation[0].type).toBe(IRNodeTypes.CREATE_COMPONENT_NODE)
+    expect(ir.block.operation).toMatchObject([
+      {
+        type: IRNodeTypes.CREATE_COMPONENT_NODE,
+        tag: 'Comp',
+        slots: undefined,
+        dynamicSlots: [
+          {
+            slotType: DynamicSlotType.CONDITIONAL,
+            condition: { content: 'condition' },
+            positive: {
+              slotType: DynamicSlotType.BASIC,
+              key: 0,
+            },
+            negative: {
+              slotType: DynamicSlotType.CONDITIONAL,
+              condition: { content: 'anotherCondition' },
+              positive: {
+                slotType: DynamicSlotType.BASIC,
+                key: 1,
+              },
+              negative: { slotType: DynamicSlotType.BASIC, key: 2 },
             },
           },
         ],

@@ -1,9 +1,13 @@
 import { camelize, extend, isArray } from '@vue/shared'
 import type { CodegenContext } from '../generate'
 import {
+  type ComponentBasicDynamicSlot,
+  type ComponentConditionalDynamicSlot,
   type ComponentDynamicSlot,
+  type ComponentLoopDynamicSlot,
   type ComponentSlots,
   type CreateComponentIRNode,
+  DynamicSlotType,
   IRDynamicPropsKind,
   type IRProp,
   type IRProps,
@@ -11,6 +15,8 @@ import {
 } from '../ir'
 import {
   type CodeFragment,
+  INDENT_END,
+  INDENT_START,
   NEWLINE,
   SEGMENTS_ARRAY,
   SEGMENTS_ARRAY_NEWLINE,
@@ -158,21 +164,42 @@ function genDynamicSlots(
 ) {
   const slotsExpr = genMulti(
     dynamicSlots.length > 1 ? SEGMENTS_ARRAY_NEWLINE : SEGMENTS_ARRAY,
-    ...dynamicSlots.map(slot => {
-      const { name, fn, forResult } = slot
-      return forResult
-        ? genForSlot(slot, context)
-        : genMulti(
-            SEGMENTS_OBJECT_NEWLINE,
-            ['name: ', ...genExpression(name, context)],
-            ['fn: ', ...genBlock(fn, context)],
-          )
-    }),
+    ...dynamicSlots.map(slot => genDynamicSlot(slot, context)),
   )
   return ['() => ', ...slotsExpr]
 }
 
-function genForSlot(slot: ComponentDynamicSlot, context: CodegenContext) {
+function genDynamicSlot(
+  slot: ComponentDynamicSlot,
+  context: CodegenContext,
+): CodeFragment[] {
+  switch (slot.slotType) {
+    case DynamicSlotType.BASIC:
+      return genBasicDynamicSlot(slot, context)
+    case DynamicSlotType.LOOP:
+      return genLoopSlot(slot, context)
+    case DynamicSlotType.CONDITIONAL:
+      return genConditionalSlot(slot, context)
+  }
+}
+
+function genBasicDynamicSlot(
+  slot: ComponentBasicDynamicSlot,
+  context: CodegenContext,
+): CodeFragment[] {
+  const { name, fn, key } = slot
+  return genMulti(
+    SEGMENTS_OBJECT_NEWLINE,
+    ['name: ', ...genExpression(name, context)],
+    ['fn: ', ...genBlock(fn, context)],
+    ...(key !== undefined ? [`key: "${key}"`] : []),
+  )
+}
+
+function genLoopSlot(
+  slot: ComponentLoopDynamicSlot,
+  context: CodegenContext,
+): CodeFragment[] {
   const { name, fn, forResult } = slot
   const { value, key, index, source } = forResult!
   const rawValue = value && value.content
@@ -191,7 +218,7 @@ function genForSlot(slot: ComponentDynamicSlot, context: CodegenContext) {
   return [
     ...genCall(
       context.vaporHelper('createForSlots'),
-      ['() => (', ...genExpression(source, context), ')'],
+      genExpression(source, context),
       [
         `(`,
         [value, key, index]
@@ -203,5 +230,23 @@ function genForSlot(slot: ComponentDynamicSlot, context: CodegenContext) {
         ')',
       ],
     ),
+  ]
+}
+
+function genConditionalSlot(
+  slot: ComponentConditionalDynamicSlot,
+  context: CodegenContext,
+): CodeFragment[] {
+  const { condition, positive, negative } = slot
+  return [
+    ...genExpression(condition, context),
+    INDENT_START,
+    NEWLINE,
+    '? ',
+    ...genDynamicSlot(positive, context),
+    NEWLINE,
+    ': ',
+    ...(negative ? [...genDynamicSlot(negative, context)] : ['void 0']),
+    INDENT_END,
   ]
 }
