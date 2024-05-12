@@ -36,7 +36,7 @@ export function genIf(
       vaporHelper('createIf'),
       conditionExpr,
       positiveArg,
-      negativeArg,
+      negativeArg || (once ? 'null' : false),
       once && 'true',
     ),
   )
