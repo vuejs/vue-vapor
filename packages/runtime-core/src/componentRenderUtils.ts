@@ -14,13 +14,8 @@ import {
   normalizeVNode,
 } from './vnode'
 import { ErrorCodes, handleError } from './errorHandling'
-import {
-  type Data,
-  PatchFlags,
-  ShapeFlags,
-  isModelListener,
-  isOn,
-} from '@vue/shared'
+import { PatchFlags, ShapeFlags, isModelListener, isOn } from '@vue/shared'
+import type { Data } from '@vue/runtime-shared'
 import { warn } from './warning'
 import { isHmrUpdating } from './hmr'
 import type { NormalizedProps } from './componentProps'
@@ -121,7 +116,7 @@ export function renderComponentRoot(
                 ? {
                     get attrs() {
                       markAttrsAccessed()
-                      return attrs
+                      return shallowReadonly(attrs)
                     },
                     slots,
                     emit,
@@ -171,7 +166,7 @@ export function renderComponentRoot(
             propsOptions,
           )
         }
-        root = cloneVNode(root, fallthroughAttrs)
+        root = cloneVNode(root, fallthroughAttrs, false, true)
       } else if (__DEV__ && !accessedAttrs && root.type !== Comment) {
         const allAttrs = Object.keys(attrs)
         const eventAttrs: string[] = []
@@ -226,10 +221,15 @@ export function renderComponentRoot(
           getComponentName(instance.type),
         )
       }
-      root = cloneVNode(root, {
-        class: cls,
-        style: style,
-      })
+      root = cloneVNode(
+        root,
+        {
+          class: cls,
+          style: style,
+        },
+        false,
+        true,
+      )
     }
   }
 
@@ -242,7 +242,7 @@ export function renderComponentRoot(
       )
     }
     // clone before mutating since the root may be a hoisted vnode
-    root = cloneVNode(root)
+    root = cloneVNode(root, null, false, true)
     root.dirs = root.dirs ? root.dirs.concat(vnode.dirs) : vnode.dirs
   }
   // inherit transition data

@@ -104,11 +104,11 @@ function transformComponentElement(
     props: propsResult[0] ? propsResult[1] : [propsResult[1]],
     resolve,
     root,
-    slots: context.slots || undefined,
-    dynamicSlots: context.dynamicSlots || undefined,
+    slots: context.slots,
+    dynamicSlots: context.dynamicSlots,
   })
-  context.slots = null
-  context.dynamicSlots = null
+  context.slots = undefined
+  context.dynamicSlots = undefined
 }
 
 function resolveSetupReference(name: string, context: TransformContext) {

@@ -79,13 +79,13 @@ export class TransformContext<T extends AllNode = AllNode> {
 
   comment: CommentNode[] = []
   component: Set<string> = this.ir.component
-  slots: ComponentSlots | null = null
-  dynamicSlots: ComponentDynamicSlot[] | null = null
+  slots?: ComponentSlots
+  dynamicSlots?: ComponentDynamicSlot[]
 
   private globalId = 0
 
   constructor(
-    private ir: RootIRNode,
+    public ir: RootIRNode,
     public node: T,
     options: TransformOptions = {},
   ) {
@@ -100,8 +100,8 @@ export class TransformContext<T extends AllNode = AllNode> {
     this.dynamic = ir.dynamic
     this.template = ''
     this.childrenTemplate = []
-    this.slots = null
-    this.dynamicSlots = null
+    this.slots = undefined
+    this.dynamicSlots = undefined
     isVFor && this.inVFor++
     return () => {
       // exit

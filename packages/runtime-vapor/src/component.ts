@@ -26,7 +26,7 @@ import {
 import { VaporLifecycleHooks } from './apiLifecycle'
 import { warn } from './warning'
 import { type AppContext, createAppContext } from './apiCreateVaporApp'
-import type { Data } from '@vue/shared'
+import type { Data } from '@vue/runtime-shared'
 
 export type Component = FunctionalComponent | ObjectComponent
 
@@ -249,7 +249,7 @@ export const setCurrentInstance = (instance: ComponentInternalInstance) => {
 }
 
 export const unsetCurrentInstance = () => {
-  currentInstance?.scope.off()
+  currentInstance && currentInstance.scope.off()
   currentInstance = null
 }
 
@@ -259,10 +259,10 @@ let uid = 0
 export function createComponentInstance(
   component: ObjectComponent | FunctionalComponent,
   rawProps: RawProps | null,
-  slots: Slots | null = null,
-  dynamicSlots: DynamicSlots | null = null,
+  slots: Slots | null,
+  dynamicSlots: DynamicSlots | null,
   // application root node only
-  appContext: AppContext | null = null,
+  appContext?: AppContext,
 ): ComponentInternalInstance {
   const parent = getCurrentInstance()
   const _appContext =

@@ -8,7 +8,6 @@ import {
   currentInstance,
 } from './component'
 import {
-  type Data,
   type LooseRequired,
   NOOP,
   type Prettify,
@@ -19,6 +18,7 @@ import {
   isPromise,
   isString,
 } from '@vue/shared'
+import type { Data } from '@vue/runtime-shared'
 import { type Ref, getCurrentScope, isRef, traverse } from '@vue/reactivity'
 import { computed } from './apiComputed'
 import {
@@ -63,7 +63,7 @@ import type {
 import type { Directive } from './directives'
 import {
   type ComponentPublicInstance,
-  type CreateComponentPublicInstance,
+  type CreateComponentPublicInstanceWithMixins,
   type IntersectionMixin,
   type UnwrapMixinsType,
   isReservedPrefix,
@@ -264,7 +264,7 @@ export type ComponentOptions<
   Provide
 > &
   ThisType<
-    CreateComponentPublicInstance<
+    CreateComponentPublicInstanceWithMixins<
       {},
       RawBindings,
       D,
@@ -373,7 +373,7 @@ interface LegacyOptions<
   // since that leads to some sort of circular inference and breaks ThisType
   // for the entire component.
   data?: (
-    this: CreateComponentPublicInstance<
+    this: CreateComponentPublicInstanceWithMixins<
       Props,
       {},
       {},
@@ -382,7 +382,7 @@ interface LegacyOptions<
       Mixin,
       Extends
     >,
-    vm: CreateComponentPublicInstance<
+    vm: CreateComponentPublicInstanceWithMixins<
       Props,
       {},
       {},
@@ -1153,7 +1153,7 @@ export type ComponentOptionsWithoutProps<
    */
   __typeEmits?: TE
 } & ThisType<
-    CreateComponentPublicInstance<
+    CreateComponentPublicInstanceWithMixins<
       PE,
       RawBindings,
       D,
@@ -1215,7 +1215,7 @@ export type ComponentOptionsWithArrayProps<
 > & {
   props: PropNames[]
 } & ThisType<
-    CreateComponentPublicInstance<
+    CreateComponentPublicInstanceWithMixins<
       Props,
       RawBindings,
       D,
@@ -1278,7 +1278,7 @@ export type ComponentOptionsWithObjectProps<
 > & {
   props: PropsOptions & ThisType<void>
 } & ThisType<
-    CreateComponentPublicInstance<
+    CreateComponentPublicInstanceWithMixins<
       Props,
       RawBindings,
       D,

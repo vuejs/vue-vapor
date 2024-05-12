@@ -1,10 +1,4 @@
-import {
-  type ElementNode,
-  ElementTypes,
-  NodeTypes,
-  type RootNode,
-  type TemplateChildNode,
-} from '@vue/compiler-dom'
+import { type ElementNode, ElementTypes, NodeTypes } from '@vue/compiler-dom'
 import {
   type NodeTransform,
   type TransformContext,
@@ -18,16 +12,14 @@ export const transformChildren: NodeTransform = (node, context) => {
 
   const isFragment =
     node.type === NodeTypes.ROOT ||
-    (node.type === NodeTypes.ELEMENT && node.tagType === ElementTypes.TEMPLATE)
+    (node.type === NodeTypes.ELEMENT &&
+      (node.tagType === ElementTypes.TEMPLATE ||
+        node.tagType === ElementTypes.COMPONENT))
 
   if (!isFragment && node.type !== NodeTypes.ELEMENT) return
 
   for (const [i, child] of node.children.entries()) {
-    const childContext = createContext(
-      child,
-      context as TransformContext<RootNode | ElementNode>,
-      i,
-    )
+    const childContext = context.create(child, i)
     transformNode(childContext)
 
     if (isFragment || isComponent) {
@@ -96,12 +88,4 @@ function processDynamicChildren(context: TransformContext<ElementNode>) {
       parent: context.reference(),
     })
   }
-}
-
-function createContext<T extends TemplateChildNode>(
-  node: T,
-  parent: TransformContext<RootNode | ElementNode>,
-  index: number,
-): TransformContext<T> {
-  return parent.create(node, index)
 }
