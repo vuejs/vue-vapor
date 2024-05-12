@@ -219,14 +219,14 @@ export enum DynamicSlotType {
   CONDITIONAL,
 }
 
-export type ComponentBasicDynamicSlot = {
+export interface ComponentBasicDynamicSlot {
   slotType: DynamicSlotType.BASIC
   name: SimpleExpressionNode
   fn: ComponentSlotBlockIRNode
   key?: number
 }
 
-export type ComponentLoopDynamicSlot = {
+export interface ComponentLoopDynamicSlot {
   slotType: DynamicSlotType.LOOP
   name: SimpleExpressionNode
   fn: ComponentSlotBlockIRNode
