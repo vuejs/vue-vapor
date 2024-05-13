@@ -60,6 +60,7 @@ export interface RootIRNode {
   source: string
   template: string[]
   component: Set<string>
+  directive: Set<string>
   block: BlockIRNode
 }
 
@@ -205,7 +206,9 @@ export interface WithDirectiveIRNode extends BaseIRNode {
   type: IRNodeTypes.WITH_DIRECTIVE
   element: number
   dir: VaporDirectiveNode
-  builtin?: VaporHelper
+  name: string
+  builtin?: boolean
+  asset?: boolean
 }
 
 export interface ComponentSlotBlockIRNode extends BlockIRNode {
@@ -254,7 +257,7 @@ export interface CreateComponentIRNode extends BaseIRNode {
   slots?: ComponentSlots
   dynamicSlots?: ComponentDynamicSlot[]
 
-  resolve: boolean
+  asset: boolean
   root: boolean
 }
 

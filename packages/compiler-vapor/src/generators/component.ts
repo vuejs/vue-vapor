@@ -15,19 +15,19 @@ import {
 } from '../ir'
 import {
   type CodeFragment,
+  DELIMITERS_ARRAY,
+  DELIMITERS_ARRAY_NEWLINE,
+  DELIMITERS_OBJECT,
+  DELIMITERS_OBJECT_NEWLINE,
   INDENT_END,
   INDENT_START,
   NEWLINE,
-  SEGMENTS_ARRAY,
-  SEGMENTS_ARRAY_NEWLINE,
-  SEGMENTS_OBJECT,
-  SEGMENTS_OBJECT_NEWLINE,
   genCall,
   genMulti,
 } from './utils'
 import { genExpression } from './expression'
 import { genPropKey } from './prop'
-import { createSimpleExpression } from '@vue/compiler-dom'
+import { createSimpleExpression, toValidAssetId } from '@vue/compiler-dom'
 import { genEventHandler } from './event'
 import { genDirectiveModifiers, genDirectivesForElement } from './directive'
 import { genModelHandler } from './modelValue'
@@ -49,21 +49,17 @@ export function genCreateComponent(
     ...genCall(
       vaporHelper('createComponent'),
       tag,
-      rawProps || (slots || dynamicSlots || root ? 'null' : false),
-      slots ? genSlots(slots, context) : dynamicSlots || root ? 'null' : false,
-      dynamicSlots
-        ? genDynamicSlots(dynamicSlots, context)
-        : root
-          ? 'null'
-          : false,
+      rawProps,
+      slots && genSlots(slots, context),
+      dynamicSlots && genDynamicSlots(dynamicSlots, context),
       root && 'true',
     ),
     ...genDirectivesForElement(oper.id, context),
   ]
 
   function genTag() {
-    if (oper.resolve) {
-      return [`_component_${oper.tag}`]
+    if (oper.asset) {
+      return toValidAssetId(oper.tag, 'component')
     } else {
       return genExpression(
         extend(createSimpleExpression(oper.tag, false), { ast: null }),
@@ -83,7 +79,7 @@ export function genRawProps(props: IRProps[], context: CodegenContext) {
       } else {
         let expr: CodeFragment[]
         if (props.kind === IRDynamicPropsKind.ATTRIBUTE)
-          expr = genMulti(SEGMENTS_OBJECT, genProp(props, context))
+          expr = genMulti(DELIMITERS_OBJECT, genProp(props, context))
         else {
           expr = genExpression(props.value, context)
           if (props.handler) expr = genCall(vaporHelper('toHandlers'), expr)
@@ -95,7 +91,7 @@ export function genRawProps(props: IRProps[], context: CodegenContext) {
       Boolean as any as (v: CodeFragment[] | undefined) => v is CodeFragment[],
     )
   if (frag.length) {
-    return genMulti(SEGMENTS_ARRAY_NEWLINE, ...frag)
+    return genMulti(DELIMITERS_ARRAY_NEWLINE, ...frag)
   }
 }
 
@@ -104,7 +100,7 @@ function genStaticProps(
   context: CodegenContext,
 ): CodeFragment[] {
   return genMulti(
-    props.length > 1 ? SEGMENTS_OBJECT_NEWLINE : SEGMENTS_OBJECT,
+    props.length > 1 ? DELIMITERS_OBJECT_NEWLINE : DELIMITERS_OBJECT,
     ...props.map(prop => genProp(prop, context, true)),
   )
 }
@@ -153,7 +149,7 @@ function genModelModifiers(
 function genSlots(slots: ComponentSlots, context: CodegenContext) {
   const slotList = Object.entries(slots)
   return genMulti(
-    slotList.length > 1 ? SEGMENTS_OBJECT_NEWLINE : SEGMENTS_OBJECT,
+    slotList.length > 1 ? DELIMITERS_OBJECT_NEWLINE : DELIMITERS_OBJECT,
     ...slotList.map(([name, slot]) => [name, ': ', ...genBlock(slot, context)]),
   )
 }
@@ -163,7 +159,7 @@ function genDynamicSlots(
   context: CodegenContext,
 ) {
   const slotsExpr = genMulti(
-    dynamicSlots.length > 1 ? SEGMENTS_ARRAY_NEWLINE : SEGMENTS_ARRAY,
+    dynamicSlots.length > 1 ? DELIMITERS_ARRAY_NEWLINE : DELIMITERS_ARRAY,
     ...dynamicSlots.map(slot => genDynamicSlot(slot, context)),
   )
   return ['() => ', ...slotsExpr]
@@ -189,7 +185,7 @@ function genBasicDynamicSlot(
 ): CodeFragment[] {
   const { name, fn, key } = slot
   return genMulti(
-    SEGMENTS_OBJECT_NEWLINE,
+    DELIMITERS_OBJECT_NEWLINE,
     ['name: ', ...genExpression(name, context)],
     ['fn: ', ...genBlock(fn, context)],
     ...(key !== undefined ? [`key: "${key}"`] : []),
@@ -211,7 +207,7 @@ function genLoopSlot(
   if (rawKey) idMap[rawKey] = rawKey
   if (rawIndex) idMap[rawIndex] = rawIndex
   const slotExpr = genMulti(
-    SEGMENTS_OBJECT_NEWLINE,
+    DELIMITERS_OBJECT_NEWLINE,
     ['name: ', ...context.withId(() => genExpression(name, context), idMap)],
     ['fn: ', ...context.withId(() => genBlock(fn, context), idMap)],
   )

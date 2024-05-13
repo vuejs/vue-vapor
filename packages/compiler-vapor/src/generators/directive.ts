@@ -1,11 +1,16 @@
-import { createSimpleExpression, isSimpleIdentifier } from '@vue/compiler-dom'
-import { camelize } from '@vue/shared'
+import {
+  createSimpleExpression,
+  isSimpleIdentifier,
+  toValidAssetId,
+} from '@vue/compiler-dom'
+import { extend } from '@vue/shared'
 import { genExpression } from './expression'
 import type { CodegenContext } from '../generate'
 import {
   type CodeFragment,
+  type CodeFragmentDelimiters,
+  DELIMITERS_ARRAY,
   NEWLINE,
-  SEGMENTS_ARRAY,
   genCall,
   genMulti,
 } from './utils'
@@ -28,52 +33,46 @@ export function genWithDirective(
 
   const element = `n${opers[0].element}`
   const directiveItems = opers.map(genDirective)
-  const directives = genMulti(SEGMENTS_ARRAY, ...directiveItems)
+  const directives = genMulti(DELIMITERS_ARRAY, ...directiveItems)
 
   return [
     NEWLINE,
     ...genCall(vaporHelper('withDirectives'), element, directives),
   ]
 
-  function genDirective({ dir, builtin }: WithDirectiveIRNode): CodeFragment[] {
-    const NULL = 'void 0'
-
+  function genDirective({
+    dir,
+    name,
+    builtin,
+    asset,
+  }: WithDirectiveIRNode): CodeFragment[] {
     const directive = genDirective()
-    const value = dir.exp
-      ? ['() => ', ...genExpression(dir.exp, context)]
-      : dir.arg || dir.modifiers.length
-        ? NULL
-        : false
-    const argument = dir.arg
-      ? genExpression(dir.arg, context)
-      : dir.modifiers.length
-        ? NULL
-        : false
-    const modifiers = dir.modifiers.length
-      ? ['{ ', genDirectiveModifiers(dir.modifiers), ' }']
-      : false
+    const value = dir.exp && ['() => ', ...genExpression(dir.exp, context)]
+    const argument = dir.arg && genExpression(dir.arg, context)
+    const modifiers = !!dir.modifiers.length && [
+      '{ ',
+      genDirectiveModifiers(dir.modifiers),
+      ' }',
+    ]
 
-    return genMulti(SEGMENTS_ARRAY, directive, value, argument, modifiers)
+    return genMulti(
+      DELIMITERS_ARRAY.concat('void 0') as CodeFragmentDelimiters,
+      directive,
+      value,
+      argument,
+      modifiers,
+    )
 
     function genDirective() {
-      const {
-        vaporHelper,
-        options: { bindingMetadata },
-      } = context
-      if (dir.name === 'show') {
-        return [vaporHelper('vShow')]
-      } else if (builtin) {
-        return [vaporHelper(builtin)]
+      if (builtin) {
+        return vaporHelper(name as any)
+      } else if (asset) {
+        return toValidAssetId(name, 'directive')
       } else {
-        const directiveReference = camelize(`v-${dir.name}`)
-        // TODO resolve directive
-        if (bindingMetadata[directiveReference]) {
-          const directiveExpression = createSimpleExpression(directiveReference)
-          directiveExpression.ast = null
-          return genExpression(directiveExpression, context)
-        } else {
-          return `${vaporHelper('resolveDirective')}("${directiveReference}")`
-        }
+        return genExpression(
+          extend(createSimpleExpression(name, false), { ast: null }),
+          context,
+        )
       }
     }
   }
