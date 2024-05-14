@@ -24,10 +24,8 @@ describe('e2e: todomvc', () => {
   }
 
   async function testTodomvc(apiType: 'classic' | 'composition') {
-    const baseUrl = `file://${path.resolve(
-      __dirname,
-      `../../examples/${apiType}/todomvc.html`,
-    )}`
+    let baseUrl = `../../examples/${apiType}/todomvc.html`
+    baseUrl = `file://${path.resolve(__dirname, baseUrl)}`
 
     await page().goto(baseUrl)
     expect(await isVisible('.main')).toBe(false)

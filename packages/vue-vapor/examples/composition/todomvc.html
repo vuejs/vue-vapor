@@ -4,7 +4,7 @@
 <div id="app"></div>
 
 <script>
-const { render, defineComponent, reactive, computed, watchEffect, onMounted, onUnmounted } = VueVapor
+const { createVaporApp, defineComponent, reactive, computed, watchEffect, onMounted, onUnmounted } = VueVapor
 
 const STORAGE_KEY = 'todos-vuejs-3.x'
 const todoStorage = {
@@ -63,11 +63,11 @@ const _sfc_main = defineComponent({
           return state.remaining === 0
         },
         set: function (value) {
-          state.todos.forEach((todo) => {
+          state.todos.forEach(todo => {
             todo.completed = value
           })
-        }
-      })
+        },
+      }),
     })
 
     watchEffect(() => {
@@ -101,7 +101,7 @@ const _sfc_main = defineComponent({
       state.todos.push({
         id: todoStorage.uid++,
         title: value,
-        completed: false
+        completed: false,
       })
       state.newTodo = ''
     }
@@ -135,12 +135,6 @@ const _sfc_main = defineComponent({
       state.todos = filters.active(state.todos)
     }
 
-    function vTodoFocus (el, { value }) {
-      if (value) {
-        el.focus()
-      }
-    }
-
     return {
       state,
       addTodo,
@@ -149,12 +143,11 @@ const _sfc_main = defineComponent({
       doneEdit,
       cancelEdit,
       removeCompleted,
-      vTodoFocus
     }
   },
 })
 
-const { children : _children, next : _next, vModelText : _vModelText, withDirectives : _withDirectives, vModelCheckbox : _vModelCheckbox, vShow : _vShow, on : _on, delegate : _delegate, resolveDirective : _resolveDirective, setText : _setText, setClass : _setClass, renderEffect : _renderEffect, createFor : _createFor, insert : _insert, setDynamicProp : _setDynamicProp, delegateEvents : _delegateEvents, template : _template } = VueVapor
+const { resolveDirective: _resolveDirective, children: _children, vModelText: _vModelText, withDirectives: _withDirectives, vShow: _vShow, vModelCheckbox: _vModelCheckbox, next: _next, delegate: _delegate, on: _on, setText: _setText, setClass: _setClass, renderEffect: _renderEffect, createFor: _createFor, insert: _insert, setDynamicProp: _setDynamicProp, delegateEvents: _delegateEvents, template: _template } = VueVapor
 const t0 = _template("<li><div class=\"view\"><input class=\"toggle\" type=\"checkbox\"><label></label><button class=\"destroy\"></button></div><input class=\"edit\" type=\"text\"></li>")
 const t1 = _template("<section class=\"todoapp\"><header class=\"header\"><h1>todos</h1><input class=\"new-todo\" autofocus autocomplete=\"off\" placeholder=\"What needs to be done?\"></header><section class=\"main\"><input id=\"toggle-all\" class=\"toggle-all\" type=\"checkbox\"><label for=\"toggle-all\">Mark all as complete</label><ul class=\"todo-list\"></ul></section><footer class=\"footer\"><span class=\"todo-count\"><strong></strong><span></span></span><ul class=\"filters\"><li><a href=\"#/all\">All</a></li><li><a href=\"#/active\">Active</a></li><li><a href=\"#/completed\">Completed</a></li></ul><button class=\"clear-completed\"> Clear completed </button></footer></section>")
 _delegateEvents("keyup", "dblclick", "click")
@@ -162,39 +155,39 @@ _delegateEvents("keyup", "dblclick", "click")
 function _sfc_render(_ctx) {
   const n18 = t1()
   const n0 = _children(n18, 0, 1)
+  _withDirectives(n0, [[_vModelText, () => _ctx.state.newTodo]])
   const n10 = _children(n18, 1)
+  _withDirectives(n10, [[_vShow, () => _ctx.state.todos.length]])
   const n1 = n10.firstChild
+  _withDirectives(n1, [[_vModelCheckbox, () => _ctx.state.allDone]])
   const n9 = _next(n1, 2)
   const n17 = n10.nextSibling
+  _withDirectives(n17, [[_vShow, () => _ctx.state.todos.length]])
   const n11 = _children(n17, 0, 0)
   const n12 = n11.nextSibling
   const n13 = _children(n17, 1, 0, 0)
   const n14 = _children(n17, 1, 1, 0)
   const n15 = _children(n17, 1, 2, 0)
   const n16 = _children(n17, 2)
-  _withDirectives(n0, [[_vModelText, () => _ctx.state.newTodo]])
-  _withDirectives(n1, [[_vModelCheckbox, () => _ctx.state.allDone]])
-  _withDirectives(n10, [[_vShow, () => _ctx.state.todos.length]])
   _withDirectives(n16, [[_vShow, () => _ctx.state.todos.length > _ctx.state.remaining]])
-  _withDirectives(n17, [[_vShow, () => _ctx.state.todos.length]])
-  _on(n0, "update:modelValue", () => $event => (_ctx.state.newTodo = $event))
+  _delegate(n0, "update:modelValue", () => $event => (_ctx.state.newTodo = $event))
   _delegate(n0, "keyup", () => _ctx.addTodo, {
     keys: ["enter"]
   })
-  _on(n1, "update:modelValue", () => $event => (_ctx.state.allDone = $event))
+  _delegate(n1, "update:modelValue", () => $event => (_ctx.state.allDone = $event))
   _on(n1, "change", () => $event => (_ctx.state.allDone = $event.target.checked))
   const n2 = _createFor(() => (_ctx.state.filteredTodos), (_block) => {
     const n8 = t0()
     const n4 = _children(n8, 0, 0)
+    _withDirectives(n4, [[_vModelCheckbox, () => _block.s[0].completed]])
     const n5 = n4.nextSibling
     const n6 = n5.nextSibling
     const n7 = _children(n8, 1)
-    _withDirectives(n4, [[_vModelCheckbox, () => _block.s[0].completed]])
     _withDirectives(n7, [[_vModelText, () => _block.s[0].title], [_ctx.vTodoFocus, () => _block.s[0] === _ctx.state.editedTodo]])
-    _on(n4, "update:modelValue", () => $event => (_block.s[0].completed))
+    _delegate(n4, "update:modelValue", () => $event => (_block.s[0].completed = $event))
     _delegate(n5, "dblclick", () => $event => (_ctx.editTodo(_block.s[0])))
     _delegate(n6, "click", () => $event => (_ctx.removeTodo(_block.s[0])))
-    _on(n7, "update:modelValue", () => $event => (_block.s[0].title))
+    _delegate(n7, "update:modelValue", () => $event => (_block.s[0].title = $event))
     _on(n7, "blur", () => $event => (_ctx.doneEdit(_block.s[0])))
     _delegate(n7, "keyup", () => $event => (_ctx.doneEdit(_block.s[0])), {
       keys: ["enter"]
@@ -225,5 +218,6 @@ function _sfc_render(_ctx) {
 }
 
 _sfc_main.render = _sfc_render
-render(_sfc_main, {}, '#app')
+const app = createVaporApp(_sfc_main, {})
+app.mount('#app')
 </script>
