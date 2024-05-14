@@ -81,6 +81,7 @@ export function initProps(
   instance: ComponentInternalInstance,
   rawProps: RawProps,
   isStateful: boolean,
+  once: boolean,
 ) {
   if (!rawProps) rawProps = []
   else if (!isArray(rawProps)) rawProps = [rawProps]
@@ -97,16 +98,24 @@ export function initProps(
       for (const key in options) {
         const getter = () =>
           getDynamicPropValue(rawProps as NormalizedRawProps, key)
-        registerProp(instance, props, key, getter, true)
+        registerProp(instance, props, key, getter, true, false, once)
       }
     } else {
       const staticProps = rawProps[0] as StaticProps
       for (const key in options) {
         const rawKey = staticProps && getRawKey(staticProps, key)
         if (rawKey) {
-          registerProp(instance, props, key, staticProps[rawKey])
+          registerProp(
+            instance,
+            props,
+            key,
+            staticProps[rawKey],
+            false,
+            false,
+            once,
+          )
         } else {
-          registerProp(instance, props, key, undefined, false, true)
+          registerProp(instance, props, key, undefined, false, true, once)
         }
       }
     }
@@ -138,6 +147,7 @@ function registerProp(
   getter?: (() => unknown) | (() => DynamicPropResult),
   isDynamic?: boolean,
   isAbsent?: boolean,
+  once?: boolean,
 ) {
   const key = camelize(rawKey)
   if (key in props) return
@@ -158,10 +168,16 @@ function registerProp(
         ? () => withCast(getter!())
         : getter!
 
-    Object.defineProperty(props, key, {
-      get,
-      enumerable: true,
-    })
+    const descriptor = once
+      ? {
+          value: get(),
+          enumerable: true,
+        }
+      : {
+          get,
+          enumerable: true,
+        }
+    Object.defineProperty(props, key, descriptor)
   }
 }
 
