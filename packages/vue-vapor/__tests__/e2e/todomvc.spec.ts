@@ -167,7 +167,7 @@ describe('e2e: todomvc', () => {
     expect(await count('.todo:not(.completed)')).toBe(3)
   }
 
-  test.fails(
+  test(
     'composition',
     async () => {
       await testTodomvc('composition')

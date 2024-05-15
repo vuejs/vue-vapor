@@ -6,6 +6,7 @@ import {
   watchEffect,
   onMounted,
   onUnmounted,
+  nextTick,
 } from 'vue/vapor'
 
 import 'todomvc-app-css/index.css'
@@ -114,9 +115,11 @@ export default defineComponent({
       state.todos.splice(state.todos.indexOf(todo), 1)
     }
 
-    function editTodo(todo) {
+    async function editTodo(todo) {
       state.beforeEditCache = todo.title
       state.editedTodo = todo
+      await nextTick()
+      document.getElementById(`todo-${todo.id}-input`).focus()
     }
 
     function doneEdit(todo) {
@@ -149,14 +152,6 @@ export default defineComponent({
       removeCompleted,
     }
   },
-
-  directives: {
-    'todo-focus': (el, { value }) => {
-      if (value) {
-        el.focus()
-      }
-    },
-  },
 })
 </script>
 
@@ -178,7 +173,6 @@ export default defineComponent({
         id="toggle-all"
         class="toggle-all"
         type="checkbox"
-        v-model="state.allDone"
         :checked="state.allDone"
         @change="state.allDone = $event.target.checked"
       />
@@ -194,15 +188,21 @@ export default defineComponent({
           }"
         >
           <div class="view">
-            <input class="toggle" type="checkbox" v-model="todo.completed" />
+            <input
+              class="toggle"
+              type="checkbox"
+              :checked="todo.completed"
+              @change="todo.completed = $event.target.checked"
+            />
             <label @dblclick="editTodo(todo)">{{ todo.title }}</label>
             <button class="destroy" @click="removeTodo(todo)"></button>
           </div>
           <input
+            :id="`todo-${todo.id}-input`"
             class="edit"
             type="text"
-            v-model="todo.title"
-            v-todo-focus="todo === state.editedTodo"
+            :value="todo.title"
+            @input="todo.title = $event.target.value"
             @blur="doneEdit(todo)"
             @keyup.enter="doneEdit(todo)"
             @keyup.escape="cancelEdit(todo)"
