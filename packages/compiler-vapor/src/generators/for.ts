@@ -74,9 +74,9 @@ export function genFor(
       vaporHelper('createFor'),
       sourceExpr,
       blockFn,
-      once ? (!!getKeyFn ? getKeyFn : 'void 0') : getKeyFn,
-      once && 'void 0', // todo: getMemo
-      once && 'void 0', // todo: hydrationNode
+      getKeyFn,
+      false, // todo: getMemo
+      false, // todo: hydrationNode
       once && 'true',
     ),
   ]

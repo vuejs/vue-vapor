@@ -46,7 +46,7 @@ export function genCreateComponent(
       rawProps,
       slots && genSlots(slots, context),
       dynamicSlots && genDynamicSlots(dynamicSlots, context),
-      once ? (root ? 'true' : 'false') : root && 'true',
+      root ? 'true' : false,
       once && 'true',
     ),
     ...genDirectivesForElement(oper.id, context),
