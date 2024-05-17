@@ -98,24 +98,16 @@ export function initProps(
       for (const key in options) {
         const getter = () =>
           getDynamicPropValue(rawProps as NormalizedRawProps, key)
-        registerProp(instance, props, key, getter, true, false, once)
+        registerProp(instance, once, props, key, getter, true)
       }
     } else {
       const staticProps = rawProps[0] as StaticProps
       for (const key in options) {
         const rawKey = staticProps && getRawKey(staticProps, key)
         if (rawKey) {
-          registerProp(
-            instance,
-            props,
-            key,
-            staticProps[rawKey],
-            false,
-            false,
-            once,
-          )
+          registerProp(instance, once, props, key, staticProps[rawKey])
         } else {
-          registerProp(instance, props, key, undefined, false, true, once)
+          registerProp(instance, once, props, key, undefined, false, true)
         }
       }
     }
@@ -142,12 +134,12 @@ export function initProps(
 
 function registerProp(
   instance: ComponentInternalInstance,
+  once: boolean,
   props: Data,
   rawKey: string,
   getter?: (() => unknown) | (() => DynamicPropResult),
   isDynamic?: boolean,
   isAbsent?: boolean,
-  once?: boolean,
 ) {
   const key = camelize(rawKey)
   if (key in props) return
@@ -168,15 +160,8 @@ function registerProp(
         ? () => withCast(getter!())
         : getter!
 
-    const descriptor = once
-      ? {
-          value: get(),
-          enumerable: true,
-        }
-      : {
-          get,
-          enumerable: true,
-        }
+    const descriptor: PropertyDescriptor = once ? { value: get() } : { get }
+    descriptor.enumerable = true
     Object.defineProperty(props, key, descriptor)
   }
 }
