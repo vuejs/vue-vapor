@@ -21,6 +21,8 @@ export function createVaporApp(
   }
 
   const context = createAppContext()
+  const installedPlugins = new WeakSet()
+
   let instance: ComponentInternalInstance
 
   const app: App = {
@@ -40,6 +42,24 @@ export function createVaporApp(
       }
     },
 
+    use(plugin: Plugin, ...options: any[]) {
+      if (installedPlugins.has(plugin)) {
+        __DEV__ && warn(`Plugin has already been applied to target app.`)
+      } else if (plugin && isFunction(plugin.install)) {
+        installedPlugins.add(plugin)
+        plugin.install(app, ...options)
+      } else if (isFunction(plugin)) {
+        installedPlugins.add(plugin)
+        plugin(app, ...options)
+      } else if (__DEV__) {
+        warn(
+          `A plugin must either be a function or an object with an "install" ` +
+            `function.`,
+        )
+      }
+      return app
+    },
+
     mount(rootContainer): any {
       if (!instance) {
         instance = createComponentInstance(
@@ -47,6 +67,7 @@ export function createVaporApp(
           rootProps,
           null,
           null,
+          false,
           context,
         )
         setupComponent(instance)
@@ -100,14 +121,35 @@ export function createAppContext(): AppContext {
     config: {
       errorHandler: undefined,
       warnHandler: undefined,
+      globalProperties: {},
     },
     provides: Object.create(null),
   }
 }
 
+type PluginInstallFunction<Options = any[]> = Options extends unknown[]
+  ? (app: App, ...options: Options) => any
+  : (app: App, options: Options) => any
+
+export type ObjectPlugin<Options = any[]> = {
+  install: PluginInstallFunction<Options>
+}
+export type FunctionPlugin<Options = any[]> = PluginInstallFunction<Options> &
+  Partial<ObjectPlugin<Options>>
+
+export type Plugin<Options = any[]> =
+  | FunctionPlugin<Options>
+  | ObjectPlugin<Options>
+
 export interface App {
   version: string
   config: AppConfig
+
+  use<Options extends unknown[]>(
+    plugin: Plugin<Options>,
+    ...options: Options
+  ): this
+  use<Options>(plugin: Plugin<Options>, options: Options): this
 
   mount(
     rootContainer: ParentNode | string,
@@ -131,6 +173,7 @@ export interface AppConfig {
     instance: ComponentInternalInstance | null,
     trace: string,
   ) => void
+  globalProperties: ComponentCustomProperties & Record<string, any>
 }
 
 export interface AppContext {
@@ -144,3 +187,30 @@ export interface AppContext {
  * `app.runWithContext()`.
  */
 export let currentApp: App | null = null
+
+/**
+ * Custom properties added to component instances in any way and can be accessed through `this`
+ *
+ * @example
+ * Here is an example of adding a property `$router` to every component instance:
+ * ```ts
+ * import { createApp } from 'vue'
+ * import { Router, createRouter } from 'vue-router'
+ *
+ * declare module '@vue/runtime-core' {
+ *   interface ComponentCustomProperties {
+ *     $router: Router
+ *   }
+ * }
+ *
+ * // effectively adding the router to every component instance
+ * const app = createApp({})
+ * const router = createRouter()
+ * app.config.globalProperties.$router = router
+ *
+ * const vm = app.mount('#app')
+ * // we can access the router from the instance
+ * vm.$router.push('/')
+ * ```
+ */
+export interface ComponentCustomProperties {}
