@@ -1,4 +1,11 @@
 import {
+  type DebuggerEvent,
+  ITERATE_KEY,
+  TrackOpTypes,
+  TriggerOpTypes,
+  reactive,
+} from '@vue/reactivity'
+import {
   type InjectionKey,
   type Ref,
   createComponent,
@@ -337,49 +344,97 @@ describe('api: lifecycle hooks', () => {
   })
 
   test('onRenderTracked', async () => {
-    const onTrackedFn = vi.fn()
-    const count = ref(0)
-    const { host, render } = define({
+    const events: DebuggerEvent[] = []
+    const onTrack = vi.fn((e: DebuggerEvent) => {
+      events.push(e)
+    })
+    const obj = reactive({ foo: 1, bar: 2 })
+
+    const { render } = define({
       setup() {
-        onRenderTracked(onTrackedFn)
+        onRenderTracked(onTrack)
         return (() => {
           const n0 = createTextNode()
           renderEffect(() => {
-            setText(n0, count.value)
+            setText(n0, [obj.foo, 'bar' in obj, Object.keys(obj).join('')])
           })
           return n0
         })()
       },
     })
+
     render()
-    await nextTick()
-    expect(onTrackedFn).toBeCalled()
-    expect(host.innerHTML).toBe('0')
-    // TODO: compatibility with packages/runtime-core/__tests__/apiLifecycle.spec.ts
+    expect(onTrack).toHaveBeenCalledTimes(3)
+    expect(events).toMatchObject([
+      {
+        target: obj,
+        type: TrackOpTypes.GET,
+        key: 'foo',
+      },
+      {
+        target: obj,
+        type: TrackOpTypes.HAS,
+        key: 'bar',
+      },
+      {
+        target: obj,
+        type: TrackOpTypes.ITERATE,
+        key: ITERATE_KEY,
+      },
+    ])
   })
 
   test('onRenderTrigger', async () => {
-    const onRenderTriggerFn = vi.fn()
-    const count = ref(0)
-    const { host, render } = define({
+    const events: DebuggerEvent[] = []
+    const onTrigger = vi.fn((e: DebuggerEvent) => {
+      events.push(e)
+    })
+    const obj = reactive<{
+      foo: number
+      bar?: number
+    }>({ foo: 1, bar: 2 })
+
+    const { render } = define({
       setup() {
-        onRenderTriggered(onRenderTriggerFn)
+        onRenderTriggered(onTrigger)
         return (() => {
           const n0 = createTextNode()
           renderEffect(() => {
-            setText(n0, count.value)
+            setText(n0, [obj.foo, 'bar' in obj, Object.keys(obj).join('')])
           })
           return n0
         })()
       },
     })
+
     render()
-    count.value++
+
+    obj.foo++
     await nextTick()
-    expect(onRenderTriggerFn).toBeCalled()
-    expect(onRenderTriggerFn).toHaveBeenCalledOnce()
-    expect(host.innerHTML).toBe('1')
-    // TODO: compatibility with packages/runtime-core/__tests__/apiLifecycle.spec.ts
+    expect(onTrigger).toHaveBeenCalledTimes(1)
+    expect(events[0]).toMatchObject({
+      type: TriggerOpTypes.SET,
+      key: 'foo',
+      oldValue: 1,
+      newValue: 2,
+    })
+
+    delete obj.bar
+    await nextTick()
+    expect(onTrigger).toHaveBeenCalledTimes(2)
+    expect(events[1]).toMatchObject({
+      type: TriggerOpTypes.DELETE,
+      key: 'bar',
+      oldValue: 2,
+    })
+    ;(obj as any).baz = 3
+    await nextTick()
+    expect(onTrigger).toHaveBeenCalledTimes(3)
+    expect(events[2]).toMatchObject({
+      type: TriggerOpTypes.ADD,
+      key: 'baz',
+      newValue: 3,
+    })
   })
 
   it('runs shared hook fn for each instance', async () => {
