@@ -67,6 +67,7 @@ import {
   extend,
   getGlobalThis,
   isArray,
+  isBuiltInTag,
   isFunction,
   isObject,
   isPromise,
@@ -760,8 +761,6 @@ export const unsetCurrentInstance = () => {
   currentInstance && currentInstance.scope.off()
   internalSetCurrentInstance(null)
 }
-
-const isBuiltInTag = /*#__PURE__*/ makeMap('slot,component')
 
 export function validateComponentName(
   name: string,

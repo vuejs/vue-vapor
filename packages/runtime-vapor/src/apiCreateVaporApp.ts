@@ -1,14 +1,16 @@
-import { isFunction, isObject } from '@vue/shared'
+import { NO, isFunction, isObject } from '@vue/shared'
 import {
   type Component,
   type ComponentInternalInstance,
   createComponentInstance,
+  validateComponentName,
 } from './component'
 import { warn } from './warning'
-import { version } from '.'
+import { type Directive, version } from '.'
 import { render, setupComponent, unmountComponent } from './apiRender'
 import type { InjectionKey } from './apiInject'
 import type { RawProps } from './componentProps'
+import { validateDirectiveName } from './directives'
 
 export function createVaporApp(
   rootComponent: Component,
@@ -57,6 +59,35 @@ export function createVaporApp(
             `function.`,
         )
       }
+      return app
+    },
+
+    component(name: string, component?: Component): any {
+      if (__DEV__) {
+        validateComponentName(name, context.config)
+      }
+      if (!component) {
+        return context.comps[name]
+      }
+      if (__DEV__ && context.comps[name]) {
+        warn(`Component "${name}" has already been registered in target app.`)
+      }
+      context.comps[name] = component
+      return app
+    },
+
+    directive(name: string, directive?: Directive) {
+      if (__DEV__) {
+        validateDirectiveName(name)
+      }
+
+      if (!directive) {
+        return context.dirs[name] as any
+      }
+      if (__DEV__ && context.dirs[name]) {
+        warn(`Directive "${name}" has already been registered in target app.`)
+      }
+      context.dirs[name] = directive
       return app
     },
 
@@ -119,11 +150,14 @@ export function createAppContext(): AppContext {
   return {
     app: null as any,
     config: {
+      isNativeTag: NO,
       errorHandler: undefined,
       warnHandler: undefined,
       globalProperties: {},
     },
     provides: Object.create(null),
+    comps: {},
+    dirs: {},
   }
 }
 
@@ -151,6 +185,11 @@ export interface App {
   ): this
   use<Options>(plugin: Plugin<Options>, options: Options): this
 
+  component(name: string): Component | undefined
+  component<T extends Component>(name: string, component: T): this
+  directive<T = any, V = any>(name: string): Directive<T, V> | undefined
+  directive<T = any, V = any>(name: string, directive: Directive<T, V>): this
+
   mount(
     rootContainer: ParentNode | string,
     isHydrate?: boolean,
@@ -163,6 +202,9 @@ export interface App {
 }
 
 export interface AppConfig {
+  // @private
+  readonly isNativeTag: (tag: string) => boolean
+
   errorHandler?: (
     err: unknown,
     instance: ComponentInternalInstance | null,
@@ -180,6 +222,17 @@ export interface AppContext {
   app: App // for devtools
   config: AppConfig
   provides: Record<string | symbol, any>
+
+  /**
+   * Resolved component registry, only for components with mixins or extends
+   * @internal
+   */
+  comps: Record<string, Component>
+  /**
+   * Resolved directive registry, only for components with mixins or extends
+   * @internal
+   */
+  dirs: Record<string, Directive>
 }
 
 /**
