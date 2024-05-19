@@ -1,5 +1,5 @@
 import { EffectScope, isRef } from '@vue/reactivity'
-import { EMPTY_OBJ, hasOwn, isArray, isFunction } from '@vue/shared'
+import { EMPTY_OBJ, hasOwn, isArray, isFunction, makeMap } from '@vue/shared'
 import type { Block } from './apiRender'
 import type { DirectiveBinding } from './directives'
 import {
@@ -25,7 +25,11 @@ import {
 } from './componentSlots'
 import { VaporLifecycleHooks } from './apiLifecycle'
 import { warn } from './warning'
-import { type AppContext, createAppContext } from './apiCreateVaporApp'
+import {
+  type AppConfig,
+  type AppContext,
+  createAppContext,
+} from './apiCreateVaporApp'
 import type { Data } from '@vue/runtime-shared'
 
 export type Component = FunctionalComponent | ObjectComponent
@@ -360,6 +364,19 @@ export function createComponentInstance(
   instance.emit = emit.bind(null, instance)
 
   return instance
+}
+
+const isBuiltInTag = /*#__PURE__*/ makeMap('slot,component')
+
+export function validateComponentName(
+  name: string,
+  { isNativeTag }: AppConfig,
+) {
+  if (isBuiltInTag(name) || isNativeTag(name)) {
+    warn(
+      'Do not use built-in or reserved HTML elements as component id: ' + name,
+    )
+  }
 }
 
 export function isVaporComponent(
