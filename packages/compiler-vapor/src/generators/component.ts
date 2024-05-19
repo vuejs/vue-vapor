@@ -219,13 +219,9 @@ function genLoopSlot(
       [
         ...genMulti(
           ['(', ')', ', '],
-          value?.content
-            ? value.content
-            : key?.content || index?.content
-              ? '_'
-              : undefined,
-          key?.content ? key.content : index?.content ? '__' : undefined,
-          index?.content,
+          rawValue ? rawValue : rawKey || rawIndex ? '_' : undefined,
+          rawKey ? rawKey : rawIndex ? '__' : undefined,
+          rawIndex,
         ),
         ' => (',
         ...slotExpr,
