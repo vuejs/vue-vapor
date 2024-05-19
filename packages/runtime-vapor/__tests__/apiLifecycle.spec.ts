@@ -1,13 +1,10 @@
 import {
   type DebuggerEvent,
   ITERATE_KEY,
-  TrackOpTypes,
-  TriggerOpTypes,
-  reactive,
-} from '@vue/reactivity'
-import {
   type InjectionKey,
   type Ref,
+  TrackOpTypes,
+  TriggerOpTypes,
   createComponent,
   createIf,
   createTextNode,
@@ -23,6 +20,7 @@ import {
   onUnmounted,
   onUpdated,
   provide,
+  reactive,
   ref,
   renderEffect,
   setText,
