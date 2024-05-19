@@ -1,6 +1,5 @@
 import { camelize, capitalize } from '@vue/shared'
 import {
-  Component,
   type ComponentInternalInstance,
   currentInstance,
   getComponentName,
