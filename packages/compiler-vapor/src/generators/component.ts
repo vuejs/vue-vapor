@@ -217,12 +217,17 @@ function genLoopSlot(
       context.vaporHelper('createForSlots'),
       genExpression(source, context),
       [
-        `(`,
-        [value, key, index]
-          .filter(Boolean)
-          .map(exp => exp!.content)
-          .join(', '),
-        ') => (',
+        ...genMulti(
+          ['(', ')', ', '],
+          value?.content
+            ? value.content
+            : key?.content || index?.content
+              ? '_'
+              : undefined,
+          key?.content ? key.content : index?.content ? '__' : undefined,
+          index?.content,
+        ),
+        ' => (',
         ...slotExpr,
         ')',
       ],

@@ -130,7 +130,7 @@ describe('compiler: transform slot', () => {
   test('dynamic slots name w/ v-for', () => {
     const { ir, code } = compileWithSlots(
       `<Comp>
-        <template v-for="item in list" #[i]>foo</template>
+        <template v-for="item in list" #[item]>foo</template>
       </Comp>`,
     )
     expect(code).toMatchSnapshot()
@@ -144,7 +144,7 @@ describe('compiler: transform slot', () => {
           {
             name: {
               type: NodeTypes.SIMPLE_EXPRESSION,
-              content: 'i',
+              content: 'item',
               isStatic: false,
             },
             fn: { type: IRNodeTypes.BLOCK },
@@ -153,6 +153,41 @@ describe('compiler: transform slot', () => {
               value: { content: 'item' },
               key: undefined,
               index: undefined,
+            },
+          },
+        ],
+      },
+    ])
+  })
+
+  test('dynamic slots name w/ v-for and provide absent key', () => {
+    const { ir, code } = compileWithSlots(
+      `<Comp>
+        <template v-for="(,,index) in list" #[index]>foo</template>
+      </Comp>`,
+    )
+    expect(code).toMatchSnapshot()
+    expect(ir.block.operation[0].type).toBe(IRNodeTypes.CREATE_COMPONENT_NODE)
+    expect(ir.block.operation).toMatchObject([
+      {
+        type: IRNodeTypes.CREATE_COMPONENT_NODE,
+        tag: 'Comp',
+        slots: undefined,
+        dynamicSlots: [
+          {
+            name: {
+              type: NodeTypes.SIMPLE_EXPRESSION,
+              content: 'index',
+              isStatic: false,
+            },
+            fn: { type: IRNodeTypes.BLOCK },
+            loop: {
+              source: { content: 'list' },
+              value: undefined,
+              key: undefined,
+              index: {
+                type: NodeTypes.SIMPLE_EXPRESSION,
+              },
             },
           },
         ],
