@@ -220,7 +220,7 @@ function genLoopSlot(
         `(`,
         [value, key, index]
           .filter(Boolean)
-          .map(exp => exp?.content)
+          .map(exp => exp!.content)
           .join(', '),
         ') => (',
         ...slotExpr,

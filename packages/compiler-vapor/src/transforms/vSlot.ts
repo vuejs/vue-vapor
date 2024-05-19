@@ -103,73 +103,75 @@ export const transformVSlot: NodeTransform = (node, context) => {
       } else {
         slots[slotName] = block
       }
-    } else {
-      if (vIf) {
-        dynamicSlots.push({
-          slotType: DynamicSlotType.CONDITIONAL,
-          condition: vIf.exp!,
-          positive: {
-            slotType: DynamicSlotType.BASIC,
-            name: arg!,
-            fn: block,
-            key: 0,
-          },
-        })
-      } else if (vElse) {
-        const vIfIR = dynamicSlots[dynamicSlots.length - 1]
-        if (vIfIR.slotType === DynamicSlotType.CONDITIONAL) {
-          let ifNode = vIfIR
-          while (ifNode.negative?.slotType === DynamicSlotType.CONDITIONAL)
-            ifNode = ifNode.negative
-          const negative:
-            | ComponentBasicDynamicSlot
-            | ComponentConditionalDynamicSlot = vElse.exp
-            ? {
-                slotType: DynamicSlotType.CONDITIONAL,
-                condition: vElse.exp,
-                positive: {
-                  slotType: DynamicSlotType.BASIC,
-                  name: arg!,
-                  fn: block,
-                  key: ifNode.positive.key! + 1,
-                },
-              }
-            : {
+    } else if (vIf) {
+      dynamicSlots.push({
+        slotType: DynamicSlotType.CONDITIONAL,
+        condition: vIf.exp!,
+        positive: {
+          slotType: DynamicSlotType.BASIC,
+          name: arg!,
+          fn: block,
+          key: 0,
+        },
+      })
+    } else if (vElse) {
+      const vIfIR = dynamicSlots[dynamicSlots.length - 1]
+      if (vIfIR.slotType === DynamicSlotType.CONDITIONAL) {
+        let ifNode = vIfIR
+        while (
+          ifNode.negative &&
+          ifNode.negative.slotType === DynamicSlotType.CONDITIONAL
+        )
+          ifNode = ifNode.negative
+        const negative:
+          | ComponentBasicDynamicSlot
+          | ComponentConditionalDynamicSlot = vElse.exp
+          ? {
+              slotType: DynamicSlotType.CONDITIONAL,
+              condition: vElse.exp,
+              positive: {
                 slotType: DynamicSlotType.BASIC,
                 name: arg!,
                 fn: block,
                 key: ifNode.positive.key! + 1,
-              }
-          ifNode.negative = negative
-        } else {
-          context.options.onError(
-            createCompilerError(ErrorCodes.X_V_ELSE_NO_ADJACENT_IF, vElse.loc),
-          )
-        }
-      } else if (vFor) {
-        if (vFor.forParseResult) {
-          dynamicSlots.push({
-            slotType: DynamicSlotType.LOOP,
-            name: arg!,
-            fn: block,
-            loop: vFor.forParseResult as IRFor,
-          })
-        } else {
-          context.options.onError(
-            createCompilerError(
-              ErrorCodes.X_V_FOR_MALFORMED_EXPRESSION,
-              vFor.loc,
-            ),
-          )
-        }
+              },
+            }
+          : {
+              slotType: DynamicSlotType.BASIC,
+              name: arg!,
+              fn: block,
+              key: ifNode.positive.key! + 1,
+            }
+        ifNode.negative = negative
       } else {
+        context.options.onError(
+          createCompilerError(ErrorCodes.X_V_ELSE_NO_ADJACENT_IF, vElse.loc),
+        )
+      }
+    } else if (vFor) {
+      if (vFor.forParseResult) {
         dynamicSlots.push({
-          slotType: DynamicSlotType.BASIC,
+          slotType: DynamicSlotType.LOOP,
           name: arg!,
           fn: block,
+          loop: vFor.forParseResult as IRFor,
         })
+      } else {
+        context.options.onError(
+          createCompilerError(
+            ErrorCodes.X_V_FOR_MALFORMED_EXPRESSION,
+            vFor.loc,
+          ),
+        )
       }
+    } else {
+      dynamicSlots.push({
+        slotType: DynamicSlotType.BASIC,
+        name: arg!,
+        fn: block,
+      })
     }
+
     return () => onExit()
   }
 }

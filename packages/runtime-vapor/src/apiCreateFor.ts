@@ -304,12 +304,12 @@ export const createFor = (
   }
 }
 
-export const createForSlots = (
+export function createForSlots(
   source: any[] | Record<any, any> | number | Set<any> | Map<any, any>,
   getSlot: (item: any, key: any, index?: number) => DynamicSlot,
-) => {
+): DynamicSlot[] {
   const sourceLength = getLength(source)
-  const slots = new Array(sourceLength)
+  const slots = new Array<DynamicSlot>(sourceLength)
   for (let i = 0; i < sourceLength; i++) {
     const [item, key, index] = getItem(source, i)
     slots[i] = getSlot(item, key, index)
