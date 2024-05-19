@@ -197,8 +197,8 @@ function genLoopSlot(
   slot: ComponentLoopDynamicSlot,
   context: CodegenContext,
 ): CodeFragment[] {
-  const { name, fn, forResult } = slot
-  const { value, key, index, source } = forResult!
+  const { name, fn, loop } = slot
+  const { value, key, index, source } = loop
   const rawValue = value && value.content
   const rawKey = key && key.content
   const rawIndex = index && index.content

@@ -16,8 +16,8 @@ import {
   type ComponentConditionalDynamicSlot,
   DynamicFlag,
   DynamicSlotType,
+  type IRFor,
   type VaporDirectiveNode,
-  type VaporForParseResult,
 } from '../ir'
 import { findDir, resolveExpression } from '../utils'
 
@@ -152,7 +152,7 @@ export const transformVSlot: NodeTransform = (node, context) => {
             slotType: DynamicSlotType.LOOP,
             name: arg!,
             fn: block,
-            forResult: vFor.forParseResult as VaporForParseResult,
+            loop: vFor.forParseResult as IRFor,
           })
         } else {
           context.options.onError(
