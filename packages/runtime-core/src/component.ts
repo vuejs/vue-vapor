@@ -71,7 +71,6 @@ import {
   isFunction,
   isObject,
   isPromise,
-  makeMap,
 } from '@vue/shared'
 import type { Data } from '@vue/runtime-shared'
 import type { SuspenseBoundary } from './components/Suspense'
