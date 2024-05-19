@@ -148,7 +148,7 @@ describe('compiler: transform slot', () => {
               isStatic: false,
             },
             fn: { type: IRNodeTypes.BLOCK },
-            forResult: {
+            loop: {
               source: { content: 'list' },
               value: { content: 'item' },
               key: undefined,
