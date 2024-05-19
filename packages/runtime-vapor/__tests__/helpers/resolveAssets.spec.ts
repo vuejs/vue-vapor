@@ -10,6 +10,9 @@
 // const define = makeRender()
 
 describe('resolveAssets', () => {
+  test('todo', () => {
+    expect(true).toBeTruthy()
+  })
   //   test('should work', () => {
   //     const FooBar = () => null
   //     const BarBaz = { mounted: () => null }
