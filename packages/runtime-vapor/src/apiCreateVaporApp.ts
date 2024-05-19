@@ -102,6 +102,7 @@ export function createAppContext(): AppContext {
       warnHandler: undefined,
     },
     provides: Object.create(null),
+    components: {},
   }
 }
 
@@ -137,6 +138,7 @@ export interface AppContext {
   app: App // for devtools
   config: AppConfig
   provides: Record<string | symbol, any>
+  components: Record<string, Component>
 }
 
 /**

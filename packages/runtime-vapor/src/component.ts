@@ -45,6 +45,12 @@ export type SetupContext<E = EmitsOptions> = E extends any
     }
   : never
 
+export const getComponentName = (component: Component) => {
+  return isFunction(component)
+    ? component.displayName || component.name
+    : component.name
+}
+
 export function createSetupContext(
   instance: ComponentInternalInstance,
 ): SetupContext {
@@ -157,6 +163,7 @@ export interface ComponentInternalInstance {
   scope: EffectScope
   component: Component
   comps: Set<ComponentInternalInstance>
+  components: Record<string, Component>
   dirs: Map<Node, DirectiveBinding[]>
 
   rawProps: NormalizedRawProps
@@ -283,6 +290,7 @@ export function createComponentInstance(
     provides: parent ? parent.provides : Object.create(_appContext.provides),
     component,
     comps: new Set(),
+    components: {},
     dirs: new Map(),
 
     // resolved props and emits options
