@@ -341,7 +341,7 @@ describe('api: lifecycle hooks', () => {
     // ])
   })
 
-  test('onRenderTracked', async () => {
+  it('onRenderTracked', async () => {
     const events: DebuggerEvent[] = []
     const onTrack = vi.fn((e: DebuggerEvent) => {
       events.push(e)
@@ -382,7 +382,7 @@ describe('api: lifecycle hooks', () => {
     ])
   })
 
-  test('onRenderTrigger', async () => {
+  it('onRenderTrigger', async () => {
     const events: DebuggerEvent[] = []
     const onTrigger = vi.fn((e: DebuggerEvent) => {
       events.push(e)
@@ -462,7 +462,7 @@ describe('api: lifecycle hooks', () => {
   })
 
   // #136
-  test('should trigger updated hooks across components. (parent -> child)', async () => {
+  it('should trigger updated hooks across components. (parent -> child)', async () => {
     const handleUpdated = vi.fn()
     const handleUpdatedChild = vi.fn()
 
@@ -507,7 +507,7 @@ describe('api: lifecycle hooks', () => {
   })
 
   // #136
-  test('should trigger updated hooks across components. (child -> parent)', async () => {
+  it('should trigger updated hooks across components. (child -> parent)', async () => {
     const handleUpdated = vi.fn()
     const handleUpdatedChild = vi.fn()
 
