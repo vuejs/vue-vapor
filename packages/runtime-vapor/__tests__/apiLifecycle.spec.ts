@@ -1,6 +1,5 @@
 import {
   type DebuggerEvent,
-  ITERATE_KEY,
   type InjectionKey,
   type Ref,
   TrackOpTypes,
@@ -27,6 +26,7 @@ import {
   template,
 } from '../src'
 import { makeRender } from './_utils'
+import { ITERATE_KEY } from '@vue/reactivity'
 
 const define = makeRender<any>()
 

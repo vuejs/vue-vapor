@@ -5,7 +5,6 @@ export {
   // core
   type Ref,
   type DebuggerEvent,
-  ITERATE_KEY,
   TrackOpTypes,
   TriggerOpTypes,
   reactive,
