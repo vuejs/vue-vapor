@@ -107,11 +107,10 @@ export function withDirectives<T extends ComponentInternalInstance | Node>(
   const parentScope = getCurrentScope() as BlockEffectScope
 
   if (__DEV__ && !isRenderEffectScope(parentScope)) {
-    warn(`v-directive should be used inside RenderEffectScope`)
+    warn(`Directives should be used inside of RenderEffectScope.`)
   }
 
   const directivesMap = (parentScope.dirs ||= new Map())
-
   if (!(bindings = directivesMap.get(node))) {
     directivesMap.set(node, (bindings = []))
   }

@@ -13,7 +13,7 @@ import { queueJob, queuePostFlushCb } from './scheduler'
 
 /**
  * used in createIf and createFor
- * manages Directives of child fragments in the component dom.
+ * manage directives of child fragments in components.
  */
 export function createChildFragmentDirectives(
   anchor: Node,
