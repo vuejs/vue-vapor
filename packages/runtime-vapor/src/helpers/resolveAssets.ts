@@ -2,15 +2,14 @@ import { camelize, capitalize } from '@vue/shared'
 import { type Directive, warn } from '..'
 import { type Component, currentInstance } from '../component'
 import { getComponentName } from '../warning'
-import { currentRenderingInstance } from '../componentRenderContext'
 
-export const COMPONENTS = 'comps'
-export const DIRECTIVES = 'dirs'
+export const COMPONENTS = 'components'
+export const DIRECTIVES = 'directives'
 
 export type AssetTypes = typeof COMPONENTS | typeof DIRECTIVES
 
-export function resolveComponent(name: string) {
-  return resolveAsset(COMPONENTS, name)
+export function resolveComponent(name: string, maybeSelfReference?: boolean) {
+  return resolveAsset(COMPONENTS, name, true, maybeSelfReference) || name
 }
 
 export function resolveDirective(name: string) {
@@ -39,7 +38,7 @@ function resolveAsset(
   warnMissing = true,
   maybeSelfReference = false,
 ) {
-  const instance = currentRenderingInstance || currentInstance
+  const instance = currentInstance
   if (instance) {
     const Component = instance.component
 
@@ -60,9 +59,6 @@ function resolveAsset(
     }
 
     const res =
-      // local registration
-      // check instance[type] first which is resolved for options API
-      resolve(instance[type], name) ||
       // global registration
       resolve(instance.appContext[type], name)
 

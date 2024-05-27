@@ -67,12 +67,12 @@ export function createVaporApp(
         validateComponentName(name, context.config)
       }
       if (!component) {
-        return context.comps[name]
+        return context.components[name]
       }
-      if (__DEV__ && context.comps[name]) {
+      if (__DEV__ && context.components[name]) {
         warn(`Component "${name}" has already been registered in target app.`)
       }
-      context.comps[name] = component
+      context.components[name] = component
       return app
     },
 
@@ -82,12 +82,12 @@ export function createVaporApp(
       }
 
       if (!directive) {
-        return context.dirs[name] as any
+        return context.directives[name] as any
       }
-      if (__DEV__ && context.dirs[name]) {
+      if (__DEV__ && context.directives[name]) {
         warn(`Directive "${name}" has already been registered in target app.`)
       }
-      context.dirs[name] = directive
+      context.directives[name] = directive
       return app
     },
 
@@ -156,8 +156,8 @@ export function createAppContext(): AppContext {
       globalProperties: {},
     },
     provides: Object.create(null),
-    comps: {},
-    dirs: {},
+    components: {},
+    directives: {},
   }
 }
 
@@ -227,12 +227,12 @@ export interface AppContext {
    * Resolved component registry, only for components with mixins or extends
    * @internal
    */
-  comps: Record<string, Component>
+  components: Record<string, Component>
   /**
    * Resolved directive registry, only for components with mixins or extends
    * @internal
    */
-  dirs: Record<string, Directive>
+  directives: Record<string, Directive>
 }
 
 /**
