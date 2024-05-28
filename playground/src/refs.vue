@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { Data } from '@vue/shared'
+import type { Data } from '@vue/runtime-shared'
+import type { ComponentPublicInstance } from '@vue/runtime-core'
 import { ref, onMounted } from 'vue/vapor'
 
 const inputRef = ref()
 const buttonRef = ref()
 
-function handleSetRef(el: HTMLButtonElement, refs: Data) {
+function handleSetRef(el: Element | ComponentPublicInstance | null, refs: Data) {
   buttonRef.value = el
   console.log(el, refs)
 }
