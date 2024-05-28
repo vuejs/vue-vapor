@@ -1,12 +1,11 @@
 <script setup lang="ts">
 import type { Data } from '@vue/runtime-shared'
-import type { ComponentPublicInstance } from '@vue/runtime-core'
 import { ref, onMounted } from 'vue/vapor'
 
-const inputRef = ref()
-const buttonRef = ref()
+const inputRef = ref<HTMLInputElement>()
+const buttonRef = ref<HTMLButtonElement>()
 
-function handleSetRef(el: Element | ComponentPublicInstance | null, refs: Data) {
+function handleSetRef(el: HTMLButtonElement, refs: Data) {
   buttonRef.value = el
   console.log(el, refs)
 }
@@ -19,6 +18,7 @@ onMounted(() => {
 <template>
   <div>
     <input type="text" ref="inputRef" />
+    <!-- @vue-expect-error TODO fix types -->
     <button :ref="handleSetRef">Button</button>
   </div>
 </template>
