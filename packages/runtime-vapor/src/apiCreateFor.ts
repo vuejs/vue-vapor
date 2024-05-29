@@ -346,7 +346,8 @@ export const createFor = (
       newItem !== item.value ||
       newKey !== key.value ||
       newIndex !== index.value ||
-      !isReactive(newItem)
+      // shallowRef list
+      (!isReactive(newItem) && isObject(newItem))
 
     if (needsUpdate) setState(block, newItem, newKey, newIndex)
     invokeWithUpdate(block.scope)

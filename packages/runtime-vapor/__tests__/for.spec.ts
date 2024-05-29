@@ -216,6 +216,9 @@ describe('createFor', () => {
         const n2 = t0()
         const n3 = children(n2, 0)
         withDirectives(n3, [[vDirective, () => ctx0[0]]])
+        renderEffect(() => {
+          calls.push(`${ctx0[0]} effecting`)
+        })
         return n2
       })
       renderEffect(() => update.value)
@@ -224,7 +227,12 @@ describe('createFor', () => {
 
     await nextTick()
     // `${item index} ${hook name}`
-    expect(calls).toEqual(['0 created', '0 beforeMount', '0 mounted'])
+    expect(calls).toEqual([
+      '0 created',
+      '0 effecting',
+      '0 beforeMount',
+      '0 mounted',
+    ])
     calls.length = 0
     expect(spySrcFn).toHaveBeenCalledTimes(1)
 
@@ -233,6 +241,7 @@ describe('createFor', () => {
     expect(calls).toEqual([
       '0 beforeUpdate',
       '1 created',
+      '1 effecting',
       '1 beforeMount',
       '0 updated',
       '1 mounted',
@@ -245,6 +254,8 @@ describe('createFor', () => {
     expect(calls).toEqual([
       '1 beforeUpdate',
       '0 beforeUpdate',
+      '1 effecting',
+      '0 effecting',
       '1 updated',
       '0 updated',
     ])
@@ -265,6 +276,23 @@ describe('createFor', () => {
     calls.length = 0
     expect(spySrcFn).toHaveBeenCalledTimes(4)
 
+    // change item
+    list.value[1] = 2
+    await nextTick()
+    expect(calls).toEqual([
+      '0 beforeUpdate',
+      '2 beforeUpdate',
+      '2 effecting',
+      '0 updated',
+      '2 updated',
+    ])
+    expect(spySrcFn).toHaveBeenCalledTimes(5)
+    list.value[1] = 1
+    await nextTick()
+    calls.length = 0
+    expect(spySrcFn).toHaveBeenCalledTimes(6)
+
+    // remove the last item
     list.value.pop()
     await nextTick()
     expect(calls).toEqual([
@@ -274,11 +302,11 @@ describe('createFor', () => {
       '1 unmounted',
     ])
     calls.length = 0
-    expect(spySrcFn).toHaveBeenCalledTimes(5)
+    expect(spySrcFn).toHaveBeenCalledTimes(7)
 
     unmountComponent(instance)
     expect(calls).toEqual(['0 beforeUnmount', '0 unmounted'])
-    expect(spySrcFn).toHaveBeenCalledTimes(5)
+    expect(spySrcFn).toHaveBeenCalledTimes(7)
   })
 
   test('de-structured value', async () => {
