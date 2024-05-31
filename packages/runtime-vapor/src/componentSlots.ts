@@ -33,7 +33,9 @@ export interface DynamicSlot {
   key?: string
 }
 
-export type DynamicSlots = () => (DynamicSlot | DynamicSlot[])[]
+type DynamicSlotFn = () => DynamicSlot | DynamicSlot[]
+
+export type DynamicSlots = DynamicSlotFn[]
 
 export function initSlots(
   instance: ComponentInternalInstance,
