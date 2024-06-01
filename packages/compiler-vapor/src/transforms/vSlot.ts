@@ -11,9 +11,9 @@ import {
 import type { NodeTransform, TransformContext } from '../transform'
 import { newBlock } from './utils'
 import {
-  type BlockIRNode,
   type ComponentBasicDynamicSlot,
   type ComponentConditionalDynamicSlot,
+  type ComponentSlotBlockIRNode,
   DynamicFlag,
   DynamicSlotType,
   type IRFor,
@@ -25,19 +25,18 @@ import { findDir, resolveExpression } from '../utils'
 export const transformVSlot: NodeTransform = (node, context) => {
   if (node.type !== NodeTypes.ELEMENT) return
 
-  let dir: VaporDirectiveNode | undefined
+  const dir = findDir(node, 'slot', true)
   const { tagType, children } = node
   const { parent } = context
 
-  const isDefaultSlot = tagType === ElementTypes.COMPONENT && children.length
+  const isComponent = tagType === ElementTypes.COMPONENT
   const isSlotTemplate =
     isTemplateNode(node) &&
     parent &&
     parent.node.type === NodeTypes.ELEMENT &&
     parent.node.tagType === ElementTypes.COMPONENT
 
-  if (isDefaultSlot) {
-    dir = findDir(node, 'slot', true)
+  if (isComponent && children.length) {
     const slotName = dir && dir.arg ? dir.arg.content : 'default'
 
     const nonSlotChildren = children.filter(
@@ -48,6 +47,7 @@ export const transformVSlot: NodeTransform = (node, context) => {
 
     const [block, onExit] = createSlotBlock(
       node,
+      dir,
       context as TransformContext<ElementNode>,
     )
 
@@ -78,9 +78,14 @@ export const transformVSlot: NodeTransform = (node, context) => {
               nonSlotChildren[0].loc,
             ),
           )
-        } else {
+        } else if (!dir || !dir.arg || dir.arg.isStatic) {
           slots[slotName] = block
-          slots[slotName].props = dir && dir.exp
+        } else {
+          dynamicSlots.push({
+            slotType: DynamicSlotType.BASIC,
+            name: dir.arg,
+            fn: block,
+          })
         }
         context.slots = slots
       } else if (hasOtherSlots) {
@@ -89,7 +94,7 @@ export const transformVSlot: NodeTransform = (node, context) => {
 
       if (dynamicSlots.length) context.dynamicSlots = dynamicSlots
     }
-  } else if (isSlotTemplate && (dir = findDir(node, 'slot', true))) {
+  } else if (isSlotTemplate && dir) {
     let { arg, exp } = dir
 
     context.dynamic.flags |= DynamicFlag.NON_TEMPLATE
@@ -102,6 +107,7 @@ export const transformVSlot: NodeTransform = (node, context) => {
 
     const [block, onExit] = createSlotBlock(
       node,
+      dir,
       context as TransformContext<ElementNode>,
     )
 
@@ -191,16 +197,22 @@ export const transformVSlot: NodeTransform = (node, context) => {
     }
 
     return () => onExit()
+  } else if (!isComponent && dir) {
+    context.options.onError(
+      createCompilerError(ErrorCodes.X_V_SLOT_MISPLACED, dir.loc),
+    )
   }
 }
 
 function createSlotBlock(
   slotNode: ElementNode,
+  dir: VaporDirectiveNode | undefined,
   context: TransformContext<ElementNode>,
-): [BlockIRNode, () => void] {
-  const branch: BlockIRNode = newBlock(slotNode)
-  const exitBlock = context.enterBlock(branch)
-  return [branch, exitBlock]
+): [ComponentSlotBlockIRNode, () => void] {
+  const block: ComponentSlotBlockIRNode = newBlock(slotNode)
+  block.props = dir && dir.exp
+  const exitBlock = context.enterBlock(block)
+  return [block, exitBlock]
 }
 
 function isNonWhitespaceContent(node: TemplateChildNode): boolean {
