@@ -59,6 +59,11 @@ export class CodegenContext {
     return () => (this.block = parent)
   }
 
+  depthOfIdsScope: number = 0
+  enterNestingScope() {
+    return [this.depthOfIdsScope++, () => this.depthOfIdsScope--] as const
+  }
+
   constructor(
     public ir: RootIRNode,
     options: CodegenOptions,

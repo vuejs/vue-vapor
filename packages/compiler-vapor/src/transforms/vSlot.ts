@@ -37,7 +37,10 @@ export const transformVSlot: NodeTransform = (node, context) => {
     parent.node.tagType === ElementTypes.COMPONENT
 
   if (isDefaultSlot) {
-    const defaultChildren = children.filter(
+    dir = findDir(node, 'slot', true)
+    const slotName = dir && dir.arg ? dir.arg.content : 'default'
+
+    const nonSlotChildren = children.filter(
       n =>
         isNonWhitespaceContent(node) &&
         !(n.type === NodeTypes.ELEMENT && n.props.some(isVSlot)),
@@ -54,26 +57,40 @@ export const transformVSlot: NodeTransform = (node, context) => {
     return () => {
       onExit()
 
-      if (defaultChildren.length) {
+      let hasOtherSlots = !!Object.keys(slots).length
+
+      if (dir && (hasOtherSlots || dynamicSlots.length)) {
+        // already has on-component slot - this is incorrect usage.
+        context.options.onError(
+          createCompilerError(ErrorCodes.X_V_SLOT_MIXED_SLOT_USAGE, dir.loc),
+        )
+        // discarding other slots, referenced how compiler-core implements
+        Object.keys(slots).forEach(slotName => delete slots[slotName])
+        dynamicSlots.length = 0
+        hasOtherSlots = false
+      }
+
+      if (nonSlotChildren.length) {
         if (slots.default) {
           context.options.onError(
             createCompilerError(
               ErrorCodes.X_V_SLOT_EXTRANEOUS_DEFAULT_SLOT_CHILDREN,
-              defaultChildren[0].loc,
+              nonSlotChildren[0].loc,
             ),
           )
         } else {
-          slots.default = block
+          slots[slotName] = block
+          slots[slotName].props = dir && dir.exp
         }
         context.slots = slots
-      } else if (Object.keys(slots).length) {
+      } else if (hasOtherSlots) {
         context.slots = slots
       }
 
       if (dynamicSlots.length) context.dynamicSlots = dynamicSlots
     }
   } else if (isSlotTemplate && (dir = findDir(node, 'slot', true))) {
-    let { arg } = dir
+    let { arg, exp } = dir
 
     context.dynamic.flags |= DynamicFlag.NON_TEMPLATE
 
@@ -102,6 +119,7 @@ export const transformVSlot: NodeTransform = (node, context) => {
         )
       } else {
         slots[slotName] = block
+        slots[slotName].props = exp
       }
     } else if (vIf) {
       dynamicSlots.push({

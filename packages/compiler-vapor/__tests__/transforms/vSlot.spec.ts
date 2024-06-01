@@ -58,6 +58,63 @@ describe('compiler: transform slot', () => {
     })
   })
 
+  test('on-component default slot', () => {
+    const { ir, code } = compileWithSlots(
+      `<Comp v-slot="{ foo }">{{ foo + bar }}</Comp>`,
+    )
+    expect(code).toMatchSnapshot()
+
+    expect(code).contains(`({ foo }) => [foo]`)
+    expect(code).contains(`_ctx0[0] + _ctx.bar`)
+
+    expect(ir.block.operation).toMatchObject([
+      {
+        type: IRNodeTypes.CREATE_COMPONENT_NODE,
+        tag: 'Comp',
+        props: [[]],
+        slots: {
+          default: {
+            type: IRNodeTypes.BLOCK,
+            props: {
+              type: NodeTypes.SIMPLE_EXPRESSION,
+              content: '{ foo }',
+              ast: {
+                type: 'ArrowFunctionExpression',
+                params: [{ type: 'ObjectPattern' }],
+              },
+            },
+          },
+        },
+      },
+    ])
+  })
+
+  test('on component named slot', () => {
+    const { ir, code } = compileWithSlots(
+      `<Comp v-slot:named="{ foo }">{{ foo + bar }}</Comp>`,
+    )
+    expect(code).toMatchSnapshot()
+
+    expect(code).contains(`({ foo }) => [foo]`)
+    expect(code).contains(`_ctx0[0] + _ctx.bar`)
+
+    expect(ir.block.operation).toMatchObject([
+      {
+        type: IRNodeTypes.CREATE_COMPONENT_NODE,
+        tag: 'Comp',
+        slots: {
+          named: {
+            type: IRNodeTypes.BLOCK,
+            props: {
+              type: NodeTypes.SIMPLE_EXPRESSION,
+              content: '{ foo }',
+            },
+          },
+        },
+      },
+    ])
+  })
+
   test('named slots w/ implicit default slot', () => {
     const { ir, code } = compileWithSlots(
       `<Comp>
@@ -91,13 +148,54 @@ describe('compiler: transform slot', () => {
     ])
   })
 
-  test('nested slots', () => {
-    const { code } = compileWithSlots(
-      `<Foo>
-        <template #one><Bar><div/></Bar></template>
-      </Foo>`,
+  test('nested slots scoping', () => {
+    const { ir, code } = compileWithSlots(
+      `<Comp>
+        <template #default="{ foo }">
+          <Inner v-slot="{ bar }">
+            {{ foo + bar + baz }}
+          </Inner>
+          {{ foo + bar + baz }}
+        </template>
+      </Comp>`,
     )
     expect(code).toMatchSnapshot()
+    expect(code).contains(`({ foo }) => [foo]`)
+    expect(code).contains(`({ bar }) => [bar]`)
+    expect(code).contains(`_ctx0[0] + _ctx1[0] + _ctx.baz`)
+    expect(code).contains(`_ctx0[0] + _ctx.bar + _ctx.baz`)
+
+    expect(ir.block.operation).toMatchObject([
+      {
+        type: IRNodeTypes.CREATE_COMPONENT_NODE,
+        tag: 'Comp',
+        props: [[]],
+        slots: {
+          default: {
+            type: IRNodeTypes.BLOCK,
+            props: {
+              type: NodeTypes.SIMPLE_EXPRESSION,
+              content: '{ foo }',
+            },
+          },
+        },
+      },
+    ])
+    expect(
+      (ir.block.operation[0] as any).slots.default.operation[0],
+    ).toMatchObject({
+      type: IRNodeTypes.CREATE_COMPONENT_NODE,
+      tag: 'Inner',
+      slots: {
+        default: {
+          type: IRNodeTypes.BLOCK,
+          props: {
+            type: NodeTypes.SIMPLE_EXPRESSION,
+            content: '{ bar }',
+          },
+        },
+      },
+    })
   })
 
   test('dynamic slots name', () => {
@@ -273,6 +371,28 @@ describe('compiler: transform slot', () => {
             offset: index + 4,
             line: 1,
             column: index + 5,
+          },
+        },
+      })
+    })
+
+    test('error on invalid mixed slot usage', () => {
+      const onError = vi.fn()
+      const source = `<Comp v-slot="foo"><template #foo></template></Comp>`
+      compileWithSlots(source, { onError })
+      const index = source.lastIndexOf('v-slot="foo"')
+      expect(onError.mock.calls[0][0]).toMatchObject({
+        code: ErrorCodes.X_V_SLOT_MIXED_SLOT_USAGE,
+        loc: {
+          start: {
+            offset: index,
+            line: 1,
+            column: index + 1,
+          },
+          end: {
+            offset: index + 12,
+            line: 1,
+            column: index + 13,
           },
         },
       })
