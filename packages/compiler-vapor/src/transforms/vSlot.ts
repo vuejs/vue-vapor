@@ -37,9 +37,10 @@ export const transformVSlot: NodeTransform = (node, context) => {
     parent.node.tagType === ElementTypes.COMPONENT
 
   if (isComponent && children.length) {
-    const slotName = dir && dir.arg ? dir.arg.content : 'default'
+    const arg = dir && dir.arg
+    const slotName = arg ? arg.content : 'default'
 
-    const nonSlotChildren = children.filter(
+    const nonSlotTemplateChildren = children.filter(
       n =>
         isNonWhitespaceContent(node) &&
         !(n.type === NodeTypes.ELEMENT && n.props.some(isVSlot)),
@@ -70,20 +71,20 @@ export const transformVSlot: NodeTransform = (node, context) => {
         hasOtherSlots = false
       }
 
-      if (nonSlotChildren.length) {
+      if (nonSlotTemplateChildren.length) {
         if (slots.default) {
           context.options.onError(
             createCompilerError(
               ErrorCodes.X_V_SLOT_EXTRANEOUS_DEFAULT_SLOT_CHILDREN,
-              nonSlotChildren[0].loc,
+              nonSlotTemplateChildren[0].loc,
             ),
           )
-        } else if (!dir || !dir.arg || dir.arg.isStatic) {
+        } else if (!arg || arg.isStatic) {
           slots[slotName] = block
         } else {
           dynamicSlots.push({
             slotType: DynamicSlotType.BASIC,
-            name: dir.arg,
+            name: arg,
             fn: block,
           })
         }
@@ -95,7 +96,7 @@ export const transformVSlot: NodeTransform = (node, context) => {
       if (dynamicSlots.length) context.dynamicSlots = dynamicSlots
     }
   } else if (isSlotTemplate && dir) {
-    let { arg, exp } = dir
+    let { arg } = dir
 
     context.dynamic.flags |= DynamicFlag.NON_TEMPLATE
 
@@ -125,7 +126,6 @@ export const transformVSlot: NodeTransform = (node, context) => {
         )
       } else {
         slots[slotName] = block
-        slots[slotName].props = exp
       }
     } else if (vIf) {
       dynamicSlots.push({
