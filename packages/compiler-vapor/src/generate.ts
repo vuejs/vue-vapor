@@ -59,9 +59,9 @@ export class CodegenContext {
     return () => (this.block = parent)
   }
 
-  depthOfIdsScope: number = 0
-  enterNestingScope() {
-    return [this.depthOfIdsScope++, () => this.depthOfIdsScope--] as const
+  scopeLevel: number = 0
+  enterScope() {
+    return [this.scopeLevel++, () => this.scopeLevel--] as const
   }
 
   constructor(

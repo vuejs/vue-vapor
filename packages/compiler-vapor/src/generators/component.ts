@@ -276,7 +276,7 @@ function genSlotBlockWithProps(
   if (props) {
     rawProps = props.content
     if ((isDestructureAssignment = !!props.ast)) {
-      ;[depth, exitScope] = context.enterNestingScope()
+      ;[depth, exitScope] = context.enterScope()
       propsName = `_ctx${depth}`
       walkIdentifiers(
         props.ast,

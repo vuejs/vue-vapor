@@ -41,7 +41,7 @@ export function genFor(
     }
   }
 
-  const [depth, exitScope] = context.enterNestingScope()
+  const [depth, exitScope] = context.enterScope()
   const propsName = `_ctx${depth}`
   const idMap: Record<string, string | null> = {}
   Array.from(idsOfValue).forEach(
