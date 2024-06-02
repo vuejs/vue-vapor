@@ -88,7 +88,7 @@ export function initSlots(
         // delete stale slots
         for (const key in slotRecord) {
           if (
-            slotRecord &&
+            slotRecord[key] &&
             !(dynamicSlot && isArray(dynamicSlot)
               ? dynamicSlot.some(s => s.name === key)
               : dynamicSlot.name === key)
