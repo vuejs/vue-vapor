@@ -37,6 +37,7 @@ import {
 } from './apiCreateVaporApp'
 import type { Data } from '@vue/runtime-shared'
 import { BlockEffectScope } from './blockEffectScope'
+import type { ComponentPublicInstance } from './componentPublicInstance'
 
 export type Component = FunctionalComponent | ObjectComponent
 
@@ -164,6 +165,7 @@ export interface ComponentInternalInstance {
   parent: ComponentInternalInstance | null
 
   provides: Data
+  accessCache: Data | null
   scope: BlockEffectScope
   component: Component
   comps: Set<ComponentInternalInstance>
@@ -173,6 +175,7 @@ export interface ComponentInternalInstance {
   emitsOptions: ObjectEmitsOptions | null
 
   // state
+  ctx: Data
   setupState: Data
   setupContext: SetupContext | null
   props: Data
@@ -183,6 +186,9 @@ export interface ComponentInternalInstance {
   refs: Data
   // exposed properties via expose()
   exposed?: Record<string, any>
+
+  // main proxy that serves as the public instance (`this`)
+  proxy: ComponentPublicInstance | null
 
   attrsProxy?: Data
   slotsProxy?: Slots
@@ -287,18 +293,20 @@ export function createComponentInstance(
     container: null!,
 
     parent,
-
+    proxy: null,
     scope: null!,
     provides: parent ? parent.provides : Object.create(_appContext.provides),
+    accessCache: null!,
     component,
     comps: new Set(),
 
     // resolved props and emits options
-    rawProps: null!, // set later
+    rawProps: null!,
     propsOptions: normalizePropsOptions(component),
     emitsOptions: normalizeEmitsOptions(component),
 
     // state
+    ctx: EMPTY_OBJ,
     setupState: EMPTY_OBJ,
     setupContext: null,
     props: EMPTY_OBJ,
@@ -357,11 +365,8 @@ export function createComponentInstance(
      * @internal
      */
     [VaporLifecycleHooks.ERROR_CAPTURED]: null,
-    /**
-     * @internal
-     */
-    // [VaporLifecycleHooks.SERVER_PREFETCH]: null,
   }
+  instance.ctx = { _: instance }
   instance.scope = new BlockEffectScope(instance, parent && parent.scope)
   initProps(instance, rawProps, !isFunction(component), once)
   initSlots(instance, slots, dynamicSlots)

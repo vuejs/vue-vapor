@@ -17,6 +17,7 @@ import {
 import { isArray, isFunction, isObject } from '@vue/shared'
 import { fallThroughAttrs } from './componentAttrs'
 import { VaporErrorCodes, callWithErrorHandling } from './errorHandling'
+import { PublicInstanceProxyHandlers } from './componentPublicInstance'
 
 export const fragmentKey = Symbol(__DEV__ ? `fragmentKey` : ``)
 
@@ -65,7 +66,11 @@ export function setupComponent(
     }
     if (!block && component.render) {
       pauseTracking()
-      block = component.render(instance.setupState)
+      // 0. create render proxy property access cache
+      instance.accessCache = Object.create(null)
+      // 1. create public instance / render proxy
+      instance.proxy = new Proxy(instance.ctx, PublicInstanceProxyHandlers)
+      block = component.render.call(instance.proxy, instance.proxy)
       resetTracking()
     }
 

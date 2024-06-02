@@ -1,4 +1,4 @@
-import { type IfAny, isArray, isFunction } from '@vue/shared'
+import { type IfAny, type Prettify, isArray, isFunction } from '@vue/shared'
 import {
   type EffectScope,
   effectScope,
@@ -16,6 +16,24 @@ import { createComment, createTextNode, insert, remove } from './dom/element'
 import { VaporErrorCodes, callWithAsyncErrorHandling } from './errorHandling'
 
 // TODO: SSR
+
+export type UnwrapSlotsType<
+  S extends SlotsType,
+  T = NonNullable<S[typeof SlotSymbol]>,
+> = [keyof S] extends [never]
+  ? Slots
+  : Readonly<
+      Prettify<{
+        [K in keyof T]: NonNullable<T[K]> extends (...args: any[]) => any
+          ? T[K]
+          : Slot<T[K]>
+      }>
+    >
+
+declare const SlotSymbol: unique symbol
+export type SlotsType<T extends Record<string, any> = Record<string, any>> = {
+  [SlotSymbol]?: T
+}
 
 export type Slot<T extends any = any> = (
   ...args: IfAny<T, any[], [T] | (T extends undefined ? [] : never)>
