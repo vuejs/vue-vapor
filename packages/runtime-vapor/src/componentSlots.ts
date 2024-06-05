@@ -1,8 +1,17 @@
-import { type IfAny, isArray, isFunction } from '@vue/shared'
+import {
+  type IfAny,
+  isArray,
+  isFunction,
+  isOn,
+  normalizeClass,
+  normalizeStyle,
+} from '@vue/shared'
 import {
   type EffectScope,
   effectScope,
   isReactive,
+  pauseTracking,
+  resetTracking,
   shallowReactive,
 } from '@vue/reactivity'
 import {
@@ -14,6 +23,8 @@ import { type Block, type Fragment, fragmentKey } from './apiRender'
 import { firstEffect, renderEffect } from './renderEffect'
 import { createComment, createTextNode, insert, remove } from './dom/element'
 import { VaporErrorCodes, callWithAsyncErrorHandling } from './errorHandling'
+import type { NormalizedRawProps } from './componentProps'
+import type { Data } from '@vue/runtime-shared'
 
 // TODO: SSR
 
@@ -106,7 +117,7 @@ export function initSlots(
 
 export function createSlot(
   name: string | (() => string),
-  binds?: Record<string, (() => unknown) | undefined>,
+  binds?: NormalizedRawProps,
   fallback?: () => Block,
 ): Block {
   let block: Block | undefined
@@ -120,7 +131,7 @@ export function createSlot(
 
   // When not using dynamic slots, simplify the process to improve performance
   if (!isDynamicName && !isReactive(slots)) {
-    if ((branch = slots[name] || fallback)) {
+    if ((branch = withProps(slots[name]) || fallback)) {
       return branch(binds)
     } else {
       return []
@@ -137,7 +148,7 @@ export function createSlot(
 
   // TODO lifecycle hooks
   renderEffect(() => {
-    if ((branch = getSlot() || fallback) !== oldBranch) {
+    if ((branch = withProps(getSlot()) || fallback) !== oldBranch) {
       parent ||= anchor.parentNode
       if (block) {
         scope!.stop()
@@ -155,4 +166,68 @@ export function createSlot(
   })
 
   return fragment
+
+  function withProps(fn: Slot | undefined): Slot | undefined {
+    if (fn)
+      return (binds?: NormalizedRawProps) =>
+        fn(binds && normalizeSlotProps(binds))
+  }
+}
+
+function normalizeSlotProps(rawPropsList: NormalizedRawProps) {
+  const ret = shallowReactive<Data>({})
+
+  for (let i = 0; i < rawPropsList.length; i++) {
+    const rawProps = rawPropsList[i]
+    if (isFunction(rawProps)) {
+      renderEffect(() => {
+        const props = rawProps()
+        for (const key in props) {
+          setValue(key, props[key])
+        }
+      })
+    } else {
+      for (const key in rawProps) {
+        const valueSource = rawProps[key]
+        renderEffect(() => {
+          setValue(key, valueSource())
+        })
+      }
+    }
+  }
+  return ret
+
+  // In multiple effects, get and set the same reactive may cause stack overflow.
+  // So we need to pause tracking before get and reset tracking after set.
+  function getValue(key: string) {
+    pauseTracking()
+    const value = ret[key]
+    resetTracking()
+    return value
+  }
+
+  function setValue(key: string, value: unknown) {
+    if (key === 'class') {
+      const existing = getValue('class')
+      if (existing !== value) {
+        ret.class = normalizeClass([existing, value])
+      }
+    } else if (key === 'style') {
+      ret.style = normalizeStyle([getValue('class'), value])
+    } else if (isOn(key)) {
+      const existing = getValue(key)
+      const incoming = value
+      if (
+        incoming &&
+        existing !== incoming &&
+        !(isArray(existing) && existing.includes(incoming))
+      ) {
+        ret[key] = existing
+          ? [].concat(existing as any, incoming as any)
+          : incoming
+      }
+    } else if (key !== '') {
+      ret[key] = value
+    }
+  }
 }

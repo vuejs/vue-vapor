@@ -13,6 +13,7 @@ import {
   renderEffect,
   setText,
   template,
+  withDestructure,
 } from '../src'
 import { makeRender } from './_utils'
 
@@ -319,7 +320,7 @@ describe('component: slots', () => {
       const Comp = defineComponent(() => {
         const n0 = template('<div></div>')()
         insert(
-          createSlot('header', { title: () => 'header' }),
+          createSlot('header', [{ title: () => 'header' }]),
           n0 as any as ParentNode,
         )
         return n0
@@ -330,13 +331,16 @@ describe('component: slots', () => {
           Comp,
           {},
           {
-            header: ({ title }) => {
-              const el = template('<h1></h1>')()
-              renderEffect(() => {
-                setText(el, title())
-              })
-              return el
-            },
+            header: withDestructure(
+              ({ title }) => [title],
+              ctx => {
+                const el = template('<h1></h1>')()
+                renderEffect(() => {
+                  setText(el, ctx[0])
+                })
+                return el
+              },
+            ),
           },
         )
       }).render()
@@ -349,7 +353,7 @@ describe('component: slots', () => {
         const n0 = template('<div></div>')()
         prepend(
           n0 as any as ParentNode,
-          createSlot('header', { title: () => 'header' }),
+          createSlot('header', [{ title: () => 'header' }]),
         )
         return n0
       })
@@ -359,7 +363,7 @@ describe('component: slots', () => {
         return createComponent(Comp, {}, {}, [
           () => ({
             name: 'header',
-            fn: ({ title }) => template(`${title()}`)(),
+            fn: props => template(props.title)(),
           }),
         ])
       }).render()
@@ -374,7 +378,7 @@ describe('component: slots', () => {
           n0 as any as ParentNode,
           createSlot(
             () => 'header', // dynamic slot outlet name
-            { title: () => 'header' },
+            [{ title: () => 'header' }],
           ),
         )
         return n0
@@ -384,7 +388,7 @@ describe('component: slots', () => {
         return createComponent(
           Comp,
           {},
-          { header: ({ title }) => template(`${title()}`)() },
+          { header: props => template(props.title)() },
         )
       }).render()
 
@@ -395,7 +399,7 @@ describe('component: slots', () => {
       const Comp = defineComponent(() => {
         const n0 = template('<div></div>')()
         insert(
-          createSlot('header', {}, () => template('fallback')()),
+          createSlot('header', undefined, () => template('fallback')()),
           n0 as any as ParentNode,
         )
         return n0
@@ -415,8 +419,8 @@ describe('component: slots', () => {
         const temp0 = template('<p></p>')
         const el0 = temp0()
         const el1 = temp0()
-        const slot1 = createSlot('one', {}, () => template('one fallback')())
-        const slot2 = createSlot('two', {}, () => template('two fallback')())
+        const slot1 = createSlot('one', [], () => template('one fallback')())
+        const slot2 = createSlot('two', [], () => template('two fallback')())
         insert(slot1, el0 as any as ParentNode)
         insert(slot2, el1 as any as ParentNode)
         return [el0, el1]
@@ -458,7 +462,7 @@ describe('component: slots', () => {
         const el0 = temp0()
         const slot1 = createSlot(
           () => slotOutletName.value,
-          {},
+          undefined,
           () => template('fallback')(),
         )
         insert(slot1, el0 as any as ParentNode)
