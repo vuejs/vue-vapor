@@ -348,6 +348,31 @@ describe('component: slots', () => {
       expect(host.innerHTML).toBe('<div><h1>header</h1></div>')
     })
 
+    test('slot class binding should be merged', async () => {
+      let props: any
+
+      const enable = ref(true)
+      const Comp = defineComponent(() =>
+        createSlot('default', [
+          { class: () => 'foo' },
+          () => ({ class: ['baz', 'qux'] }),
+          { class: () => ({ bar: enable.value }) },
+        ]),
+      )
+      define(() =>
+        createComponent(
+          Comp,
+          {},
+          { default: _props => ((props = _props), []) },
+        ),
+      ).render()
+
+      expect(props).toEqual({ class: 'foo baz qux bar' })
+      enable.value = false
+      await nextTick()
+      expect(props).toEqual({ class: 'foo baz qux' })
+    })
+
     test('dynamic slot should be render correctly with binds', async () => {
       const Comp = defineComponent(() => {
         const n0 = template('<div></div>')()

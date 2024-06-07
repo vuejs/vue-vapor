@@ -1,17 +1,8 @@
-import {
-  type IfAny,
-  isArray,
-  isFunction,
-  isOn,
-  normalizeClass,
-  normalizeStyle,
-} from '@vue/shared'
+import { type IfAny, isArray, isFunction } from '@vue/shared'
 import {
   type EffectScope,
   effectScope,
   isReactive,
-  pauseTracking,
-  resetTracking,
   shallowReactive,
 } from '@vue/reactivity'
 import {
@@ -25,6 +16,7 @@ import { createComment, createTextNode, insert, remove } from './dom/element'
 import { VaporErrorCodes, callWithAsyncErrorHandling } from './errorHandling'
 import type { NormalizedRawProps } from './componentProps'
 import type { Data } from '@vue/runtime-shared'
+import { mergeProps } from './dom/prop'
 
 // TODO: SSR
 
@@ -176,58 +168,44 @@ export function createSlot(
 
 function normalizeSlotProps(rawPropsList: NormalizedRawProps) {
   const ret = shallowReactive<Data>({})
+  const { length } = rawPropsList
+  const isNeedToMerge = length > 1
+  const dataCache = isNeedToMerge ? shallowReactive<Data[]>([]) : undefined
 
-  for (let i = 0; i < rawPropsList.length; i++) {
+  for (let i = 0; i < length; i++) {
     const rawProps = rawPropsList[i]
     if (isFunction(rawProps)) {
       renderEffect(() => {
         const props = rawProps()
-        for (const key in props) {
-          setValue(key, props[key])
+        if (isNeedToMerge) {
+          dataCache![i] = props
+        } else {
+          for (const key in props) {
+            ret[key] = props[key]
+          }
         }
       })
     } else {
+      const itemRet = isNeedToMerge
+        ? (dataCache![i] = shallowReactive<Data>({}))
+        : ret
       for (const key in rawProps) {
         const valueSource = rawProps[key]
         renderEffect(() => {
-          setValue(key, valueSource())
+          itemRet[key] = valueSource()
         })
       }
     }
   }
+
+  if (isNeedToMerge) {
+    renderEffect(() => {
+      const props = mergeProps(...dataCache!)
+      for (const key in props) {
+        ret[key] = props[key]
+      }
+    })
+  }
+
   return ret
-
-  // In multiple effects, get and set the same reactive may cause stack overflow.
-  // So we need to pause tracking before get and reset tracking after set.
-  function getValue(key: string) {
-    pauseTracking()
-    const value = ret[key]
-    resetTracking()
-    return value
-  }
-
-  function setValue(key: string, value: unknown) {
-    if (key === 'class') {
-      const existing = getValue('class')
-      if (existing !== value) {
-        ret.class = normalizeClass([existing, value])
-      }
-    } else if (key === 'style') {
-      ret.style = normalizeStyle([getValue('class'), value])
-    } else if (isOn(key)) {
-      const existing = getValue(key)
-      const incoming = value
-      if (
-        incoming &&
-        existing !== incoming &&
-        !(isArray(existing) && existing.includes(incoming))
-      ) {
-        ret[key] = existing
-          ? [].concat(existing as any, incoming as any)
-          : incoming
-      }
-    } else if (key !== '') {
-      ret[key] = value
-    }
-  }
 }
