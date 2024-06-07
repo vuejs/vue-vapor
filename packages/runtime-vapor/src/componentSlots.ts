@@ -159,53 +159,61 @@ export function createSlot(
 
   return fragment
 
-  function withProps(fn: Slot | undefined): Slot | undefined {
+  function withProps<T extends (p: any) => any>(fn?: T) {
     if (fn)
-      return (binds?: NormalizedRawProps) =>
+      return (binds?: NormalizedRawProps): ReturnType<T> =>
         fn(binds && normalizeSlotProps(binds))
   }
 }
 
 function normalizeSlotProps(rawPropsList: NormalizedRawProps) {
-  const ret = shallowReactive<Data>({})
   const { length } = rawPropsList
-  const isNeedToMerge = length > 1
-  const dataCache = isNeedToMerge ? shallowReactive<Data[]>([]) : undefined
+  const mergings = length > 1 ? shallowReactive<Data[]>([]) : undefined
+  const result = shallowReactive<Data>({})
 
   for (let i = 0; i < length; i++) {
     const rawProps = rawPropsList[i]
     if (isFunction(rawProps)) {
+      // dynamic props
       renderEffect(() => {
         const props = rawProps()
-        if (isNeedToMerge) {
-          dataCache![i] = props
+        if (mergings) {
+          mergings[i] = props
         } else {
-          for (const key in props) {
-            ret[key] = props[key]
-          }
+          setDynamicProps(props)
         }
       })
     } else {
-      const itemRet = isNeedToMerge
-        ? (dataCache![i] = shallowReactive<Data>({}))
-        : ret
+      // static props
+      const props = mergings
+        ? (mergings[i] = shallowReactive<Data>({}))
+        : result
       for (const key in rawProps) {
         const valueSource = rawProps[key]
         renderEffect(() => {
-          itemRet[key] = valueSource()
+          props[key] = valueSource()
         })
       }
     }
   }
 
-  if (isNeedToMerge) {
+  if (mergings) {
     renderEffect(() => {
-      const props = mergeProps(...dataCache!)
-      for (const key in props) {
-        ret[key] = props[key]
-      }
+      setDynamicProps(mergeProps(...mergings))
     })
   }
 
-  return ret
+  return result
+
+  function setDynamicProps(props: Data) {
+    const otherExistingKeys = new Set(Object.keys(result))
+    for (const key in props) {
+      result[key] = props[key]
+      otherExistingKeys.delete(key)
+    }
+    // delete other stale props
+    for (const key of otherExistingKeys) {
+      delete result[key]
+    }
+  }
 }

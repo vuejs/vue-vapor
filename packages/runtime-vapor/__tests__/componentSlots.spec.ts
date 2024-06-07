@@ -348,15 +348,69 @@ describe('component: slots', () => {
       expect(host.innerHTML).toBe('<div><h1>header</h1></div>')
     })
 
+    test('dynamic slot props', async () => {
+      let props: any
+
+      const bindObj = ref<Record<string, any>>({ foo: 1, baz: 'qux' })
+      const Comp = defineComponent(() =>
+        createSlot('default', [() => bindObj.value]),
+      )
+      define(() =>
+        createComponent(
+          Comp,
+          {},
+          { default: _props => ((props = _props), []) },
+        ),
+      ).render()
+
+      expect(props).toEqual({ foo: 1, baz: 'qux' })
+
+      bindObj.value.foo = 2
+      await nextTick()
+      expect(props).toEqual({ foo: 2, baz: 'qux' })
+
+      delete bindObj.value.baz
+      await nextTick()
+      expect(props).toEqual({ foo: 2 })
+    })
+
+    test('dynamic slot props with static slot props', async () => {
+      let props: any
+
+      const foo = ref(0)
+      const bindObj = ref<Record<string, any>>({ foo: 100, baz: 'qux' })
+      const Comp = defineComponent(() =>
+        createSlot('default', [{ foo: () => foo.value }, () => bindObj.value]),
+      )
+      define(() =>
+        createComponent(
+          Comp,
+          {},
+          { default: _props => ((props = _props), []) },
+        ),
+      ).render()
+
+      expect(props).toEqual({ foo: 100, baz: 'qux' })
+
+      foo.value = 2
+      await nextTick()
+      expect(props).toEqual({ foo: 100, baz: 'qux' })
+
+      delete bindObj.value.foo
+      await nextTick()
+      expect(props).toEqual({ foo: 2, baz: 'qux' })
+    })
+
     test('slot class binding should be merged', async () => {
       let props: any
 
-      const enable = ref(true)
+      const className = ref('foo')
+      const classObj = ref({ bar: true })
       const Comp = defineComponent(() =>
         createSlot('default', [
-          { class: () => 'foo' },
+          { class: () => className.value },
           () => ({ class: ['baz', 'qux'] }),
-          { class: () => ({ bar: enable.value }) },
+          { class: () => classObj.value },
         ]),
       )
       define(() =>
@@ -368,9 +422,51 @@ describe('component: slots', () => {
       ).render()
 
       expect(props).toEqual({ class: 'foo baz qux bar' })
-      enable.value = false
+
+      classObj.value.bar = false
       await nextTick()
       expect(props).toEqual({ class: 'foo baz qux' })
+
+      className.value = ''
+      await nextTick()
+      expect(props).toEqual({ class: 'baz qux' })
+    })
+
+    test('slot style binding should be merged', async () => {
+      let props: any
+
+      const style = ref<any>({ fontSize: '12px' })
+      const Comp = defineComponent(() =>
+        createSlot('default', [
+          { style: () => style.value },
+          () => ({ style: { width: '100px', color: 'blue' } }),
+          { style: () => 'color: red' },
+        ]),
+      )
+      define(() =>
+        createComponent(
+          Comp,
+          {},
+          { default: _props => ((props = _props), []) },
+        ),
+      ).render()
+
+      expect(props).toEqual({
+        style: {
+          fontSize: '12px',
+          width: '100px',
+          color: 'red',
+        },
+      })
+
+      style.value = null
+      await nextTick()
+      expect(props).toEqual({
+        style: {
+          width: '100px',
+          color: 'red',
+        },
+      })
     })
 
     test('dynamic slot should be render correctly with binds', async () => {
