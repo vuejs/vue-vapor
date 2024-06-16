@@ -18,6 +18,7 @@ import {
 import { isArray, isFunction, isObject } from '@vue/shared'
 import { fallThroughAttrs } from './componentAttrs'
 import { VaporErrorCodes, callWithErrorHandling } from './errorHandling'
+import { endMeasure, startMeasure } from './profiling'
 
 export const fragmentKey = Symbol(__DEV__ ? `fragmentKey` : ``)
 
@@ -32,6 +33,9 @@ export function setupComponent(
   instance: ComponentInternalInstance,
   singleRoot: boolean = false,
 ): void {
+  if (__DEV__) {
+    startMeasure(instance, `init`)
+  }
   const reset = setCurrentInstance(instance)
   instance.scope.run(() => {
     const { component, props } = instance
@@ -93,6 +97,9 @@ export function setupComponent(
     return block
   })
   reset()
+  if (__DEV__) {
+    endMeasure(instance, `init`)
+  }
 }
 
 export function render(
@@ -118,6 +125,10 @@ function mountComponent(
   // hook: beforeMount
   invokeLifecycle(instance, VaporLifecycleHooks.BEFORE_MOUNT, 'beforeMount')
 
+  if (__DEV__) {
+    startMeasure(instance, 'mount')
+  }
+
   insert(instance.block!, instance.container)
 
   // hook: mounted
@@ -128,6 +139,11 @@ function mountComponent(
     instance => (instance.isMounted = true),
     true,
   )
+
+  if (__DEV__) {
+    endMeasure(instance, 'mount')
+  }
+
   return instance
 }
 
