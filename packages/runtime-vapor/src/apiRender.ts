@@ -122,12 +122,12 @@ function mountComponent(
 ) {
   instance.container = container
 
-  // hook: beforeMount
-  invokeLifecycle(instance, VaporLifecycleHooks.BEFORE_MOUNT, 'beforeMount')
-
   if (__DEV__) {
     startMeasure(instance, 'mount')
   }
+
+  // hook: beforeMount
+  invokeLifecycle(instance, VaporLifecycleHooks.BEFORE_MOUNT, 'beforeMount')
 
   insert(instance.block!, instance.container)
 
