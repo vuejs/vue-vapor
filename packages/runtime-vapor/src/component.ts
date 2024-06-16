@@ -413,7 +413,6 @@ function getAttrsProxy(instance: ComponentInternalInstance): Data {
     ))
   )
 }
-
 const classifyRE = /(?:^|[-_])(\w)/g
 const classify = (str: string): string =>
   str.replace(classifyRE, c => c.toUpperCase()).replace(/[-_]/g, '')
@@ -427,7 +426,6 @@ export function getComponentName(
     : Component.name || (includeInferred && Component.__name)
 }
 
-/* istanbul ignore next */
 export function formatComponentName(
   instance: ComponentInternalInstance | null,
   Component: Component,
@@ -441,19 +439,22 @@ export function formatComponentName(
     }
   }
 
-  if (!name && instance && instance.parent) {
-    // try to infer the name based on reverse resolution
-    const inferFromRegistry = (registry: Record<string, any> | undefined) => {
-      for (const key in registry) {
-        if (registry[key] === Component) {
-          return key
-        }
-      }
-    }
-    name =
-      inferFromRegistry(instance.comps) ||
-      inferFromRegistry(instance.appContext.components)
-  }
+  // TODO registry
+  // if (!name && instance && instance.parent) {
+  //   // try to infer the name based on reverse resolution
+  //   const inferFromRegistry = (registry: Record<string, any> | undefined) => {
+  //     for (const key in registry) {
+  //       if (registry[key] === Component) {
+  //         return key
+  //       }
+  //     }
+  //   }
+  //   name =
+  //     inferFromRegistry(
+  //       instance.components ||
+  //         (instance.parent.type as ComponentOptions).components,
+  //     ) || inferFromRegistry(instance.appContext.components)
+  // }
 
   return name ? classify(name) : isRoot ? `App` : `Anonymous`
 }
