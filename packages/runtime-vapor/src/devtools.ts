@@ -60,9 +60,10 @@ export function setDevtoolsHook(hook: DevtoolsHook, target: any) {
     // (#4815)
     typeof window !== 'undefined' &&
     // some envs mock window but not fully
-    window.HTMLElement // &&
+    window.HTMLElement &&
     // also exclude jsdom
-    // !window.navigator?.userAgent?.includes('jsdom')
+    // eslint-disable-next-line no-restricted-syntax
+    !window.navigator?.userAgent?.includes('jsdom')
   ) {
     const replay = (target.__VUE_DEVTOOLS_HOOK_REPLAY__ =
       target.__VUE_DEVTOOLS_HOOK_REPLAY__ || [])
@@ -86,10 +87,7 @@ export function setDevtoolsHook(hook: DevtoolsHook, target: any) {
 }
 
 export function devtoolsInitApp(app: App, version: string) {
-  emit(DevtoolsHooks.APP_INIT, app, version, {
-    Text,
-    Comment,
-  })
+  emit(DevtoolsHooks.APP_INIT, app, version, {})
 }
 
 export function devtoolsUnmountApp(app: App) {

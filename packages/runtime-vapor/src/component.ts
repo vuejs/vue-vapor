@@ -413,9 +413,20 @@ function getAttrsProxy(instance: ComponentInternalInstance): Data {
     ))
   )
 }
-const classifyRE = /(?:^|[-_])(\w)/g
-const classify = (str: string): string =>
-  str.replace(classifyRE, c => c.toUpperCase()).replace(/[-_]/g, '')
+
+/**
+ * Dev-only
+ */
+function getSlotsProxy(instance: ComponentInternalInstance): Slots {
+  return (
+    instance.slotsProxy ||
+    (instance.slotsProxy = new Proxy(instance.slots, {
+      get(target, key: string) {
+        return target[key]
+      },
+    }))
+  )
+}
 
 export function getComponentName(
   Component: Component,
@@ -454,16 +465,6 @@ export function formatComponentName(
   return name ? classify(name) : isRoot ? `App` : `Anonymous`
 }
 
-/**
- * Dev-only
- */
-function getSlotsProxy(instance: ComponentInternalInstance): Slots {
-  return (
-    instance.slotsProxy ||
-    (instance.slotsProxy = new Proxy(instance.slots, {
-      get(target, key: string) {
-        return target[key]
-      },
-    }))
-  )
-}
+const classifyRE = /(?:^|[-_])(\w)/g
+const classify = (str: string): string =>
+  str.replace(classifyRE, c => c.toUpperCase()).replace(/[-_]/g, '')
