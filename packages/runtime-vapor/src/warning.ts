@@ -1,5 +1,4 @@
 import {
-  type Component,
   type ComponentInternalInstance,
   currentInstance,
   formatComponentName,
