@@ -12,7 +12,6 @@ import {
   resolveDirective,
   withDirectives,
 } from '../src'
-import { perf } from '../src/profiling'
 import { warn } from '../src/warning'
 import { makeRender } from './_utils'
 
@@ -313,6 +312,10 @@ describe('api: createVaporApp', () => {
   })
 
   describe('config.performance', () => {
+    afterEach(() => {
+      window.performance.clearMeasures()
+    })
+
     test('with performance enabled', () => {
       const { app, mount } = define({
         setup() {
@@ -321,11 +324,8 @@ describe('api: createVaporApp', () => {
       }).create()
 
       app.config.performance = true
-      perf.clearMeasures()
-
       mount()
-
-      expect(perf.getEntries().length).toBeGreaterThan(0)
+      expect(window.performance.getEntries()).lengthOf(2)
     })
 
     test('with performance disabled', () => {
@@ -336,11 +336,8 @@ describe('api: createVaporApp', () => {
       }).create()
 
       app.config.performance = false
-      perf.clearMeasures()
-
       mount()
-
-      expect(perf.getEntries().length).toBe(0)
+      expect(window.performance.getEntries()).lengthOf(0)
     })
   })
 })
