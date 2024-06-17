@@ -1,5 +1,6 @@
 import {
   type App,
+  type Component,
   type ComponentInternalInstance,
   type ObjectComponent,
   type SetupFn,
@@ -67,4 +68,11 @@ export function makeRender<Component = ObjectComponent | SetupFn>(
   }
 
   return define
+}
+
+const define = makeRender<any>()
+
+export function renderToString(comp: Component) {
+  const { mount } = define(comp).create()
+  return mount().host.innerHTML
 }
