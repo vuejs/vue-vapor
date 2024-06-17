@@ -12,6 +12,7 @@ import {
   resolveDirective,
   withDirectives,
 } from '../src'
+import { perf } from '../src/profiling'
 import { warn } from '../src/warning'
 import { makeRender } from './_utils'
 
@@ -308,6 +309,38 @@ describe('api: createVaporApp', () => {
       expect(
         `Do not use built-in or reserved HTML elements as component id: div`,
       ).toHaveBeenWarned()
+    })
+  })
+
+  describe('config.performance', () => {
+    test('with performance enabled', () => {
+      const { app, mount } = define({
+        setup() {
+          return document.createTextNode(`hello`)
+        },
+      }).create()
+
+      app.config.performance = true
+      perf.clearMeasures()
+
+      mount()
+
+      expect(perf.getEntries().length).toBeGreaterThan(0)
+    })
+
+    test('with performance disabled', () => {
+      const { app, mount } = define({
+        setup() {
+          return document.createTextNode(`hello`)
+        },
+      }).create()
+
+      app.config.performance = false
+      perf.clearMeasures()
+
+      mount()
+
+      expect(perf.getEntries().length).toBe(0)
     })
   })
 })

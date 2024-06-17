@@ -6,7 +6,7 @@ import {
 import { devtoolsPerfEnd, devtoolsPerfStart } from './devtools'
 
 let supported: boolean
-let perf: Performance
+export let perf: Performance
 
 export function startMeasure(
   instance: ComponentInternalInstance,
