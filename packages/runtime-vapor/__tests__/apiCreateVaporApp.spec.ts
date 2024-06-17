@@ -317,11 +317,7 @@ describe('api: createVaporApp', () => {
     })
 
     test('with performance enabled', () => {
-      const { app, mount } = define({
-        setup() {
-          return document.createTextNode(`hello`)
-        },
-      }).create()
+      const { app, mount } = define({}).create()
 
       app.config.performance = true
       mount()
@@ -329,11 +325,7 @@ describe('api: createVaporApp', () => {
     })
 
     test('with performance disabled', () => {
-      const { app, mount } = define({
-        setup() {
-          return document.createTextNode(`hello`)
-        },
-      }).create()
+      const { app, mount } = define({}).create()
 
       app.config.performance = false
       mount()
