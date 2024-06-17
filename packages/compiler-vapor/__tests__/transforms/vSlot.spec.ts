@@ -42,14 +42,16 @@ describe('compiler: transform slot', () => {
         id: 1,
         tag: 'Comp',
         props: [[]],
-        slots: {
-          default: {
-            type: IRNodeTypes.BLOCK,
-            dynamic: {
-              children: [{ template: 0 }],
+        slots: [
+          {
+            default: {
+              type: IRNodeTypes.BLOCK,
+              dynamic: {
+                children: [{ template: 0 }],
+              },
             },
           },
-        },
+        ],
       },
     ])
     expect(ir.block.returns).toEqual([1])
@@ -73,19 +75,21 @@ describe('compiler: transform slot', () => {
         type: IRNodeTypes.CREATE_COMPONENT_NODE,
         tag: 'Comp',
         props: [[]],
-        slots: {
-          default: {
-            type: IRNodeTypes.BLOCK,
-            props: {
-              type: NodeTypes.SIMPLE_EXPRESSION,
-              content: '{ foo }',
-              ast: {
-                type: 'ArrowFunctionExpression',
-                params: [{ type: 'ObjectPattern' }],
+        slots: [
+          {
+            default: {
+              type: IRNodeTypes.BLOCK,
+              props: {
+                type: NodeTypes.SIMPLE_EXPRESSION,
+                content: '{ foo }',
+                ast: {
+                  type: 'ArrowFunctionExpression',
+                  params: [{ type: 'ObjectPattern' }],
+                },
               },
             },
           },
-        },
+        ],
       },
     ])
   })
@@ -103,15 +107,17 @@ describe('compiler: transform slot', () => {
       {
         type: IRNodeTypes.CREATE_COMPONENT_NODE,
         tag: 'Comp',
-        slots: {
-          named: {
-            type: IRNodeTypes.BLOCK,
-            props: {
-              type: NodeTypes.SIMPLE_EXPRESSION,
-              content: '{ foo }',
+        slots: [
+          {
+            named: {
+              type: IRNodeTypes.BLOCK,
+              props: {
+                type: NodeTypes.SIMPLE_EXPRESSION,
+                content: '{ foo }',
+              },
             },
           },
-        },
+        ],
       },
     ])
   })
@@ -130,21 +136,23 @@ describe('compiler: transform slot', () => {
       {
         type: IRNodeTypes.CREATE_COMPONENT_NODE,
         tag: 'Comp',
-        dynamicSlots: [
-          {
-            name: {
-              type: NodeTypes.SIMPLE_EXPRESSION,
-              content: 'named',
-              isStatic: false,
-            },
-            fn: {
-              type: IRNodeTypes.BLOCK,
-              props: {
+        slots: [
+          [
+            {
+              name: {
                 type: NodeTypes.SIMPLE_EXPRESSION,
-                content: '{ foo }',
+                content: 'named',
+                isStatic: false,
+              },
+              fn: {
+                type: IRNodeTypes.BLOCK,
+                props: {
+                  type: NodeTypes.SIMPLE_EXPRESSION,
+                  content: '{ foo }',
+                },
               },
             },
-          },
+          ],
         ],
       },
     ])
@@ -165,20 +173,22 @@ describe('compiler: transform slot', () => {
         id: 4,
         tag: 'Comp',
         props: [[]],
-        slots: {
-          one: {
-            type: IRNodeTypes.BLOCK,
-            dynamic: {
-              children: [{ template: 0 }],
+        slots: [
+          {
+            one: {
+              type: IRNodeTypes.BLOCK,
+              dynamic: {
+                children: [{ template: 0 }],
+              },
+            },
+            default: {
+              type: IRNodeTypes.BLOCK,
+              dynamic: {
+                children: [{}, { template: 1 }, { template: 2 }],
+              },
             },
           },
-          default: {
-            type: IRNodeTypes.BLOCK,
-            dynamic: {
-              children: [{}, { template: 1 }, { template: 2 }],
-            },
-          },
-        },
+        ],
       },
     ])
   })
@@ -207,31 +217,35 @@ describe('compiler: transform slot', () => {
         type: IRNodeTypes.CREATE_COMPONENT_NODE,
         tag: 'Comp',
         props: [[]],
-        slots: {
+        slots: [
+          {
+            default: {
+              type: IRNodeTypes.BLOCK,
+              props: {
+                type: NodeTypes.SIMPLE_EXPRESSION,
+                content: '{ foo }',
+              },
+            },
+          },
+        ],
+      },
+    ])
+    expect(
+      (ir.block.operation[0] as any).slots[0].default.operation[0],
+    ).toMatchObject({
+      type: IRNodeTypes.CREATE_COMPONENT_NODE,
+      tag: 'Inner',
+      slots: [
+        {
           default: {
             type: IRNodeTypes.BLOCK,
             props: {
               type: NodeTypes.SIMPLE_EXPRESSION,
-              content: '{ foo }',
+              content: '{ bar }',
             },
           },
         },
-      },
-    ])
-    expect(
-      (ir.block.operation[0] as any).slots.default.operation[0],
-    ).toMatchObject({
-      type: IRNodeTypes.CREATE_COMPONENT_NODE,
-      tag: 'Inner',
-      slots: {
-        default: {
-          type: IRNodeTypes.BLOCK,
-          props: {
-            type: NodeTypes.SIMPLE_EXPRESSION,
-            content: '{ bar }',
-          },
-        },
-      },
+      ],
     })
   })
 
@@ -247,16 +261,17 @@ describe('compiler: transform slot', () => {
       {
         type: IRNodeTypes.CREATE_COMPONENT_NODE,
         tag: 'Comp',
-        slots: undefined,
-        dynamicSlots: [
-          {
-            name: {
-              type: NodeTypes.SIMPLE_EXPRESSION,
-              content: 'name',
-              isStatic: false,
+        slots: [
+          [
+            {
+              name: {
+                type: NodeTypes.SIMPLE_EXPRESSION,
+                content: 'name',
+                isStatic: false,
+              },
+              fn: { type: IRNodeTypes.BLOCK },
             },
-            fn: { type: IRNodeTypes.BLOCK },
-          },
+          ],
         ],
       },
     ])
@@ -278,21 +293,22 @@ describe('compiler: transform slot', () => {
       {
         type: IRNodeTypes.CREATE_COMPONENT_NODE,
         tag: 'Comp',
-        slots: undefined,
-        dynamicSlots: [
-          {
-            name: {
-              type: NodeTypes.SIMPLE_EXPRESSION,
-              content: 'item',
-              isStatic: false,
+        slots: [
+          [
+            {
+              name: {
+                type: NodeTypes.SIMPLE_EXPRESSION,
+                content: 'item',
+                isStatic: false,
+              },
+              fn: { type: IRNodeTypes.BLOCK },
+              loop: {
+                source: { content: 'list' },
+                value: { content: 'item' },
+                index: undefined,
+              },
             },
-            fn: { type: IRNodeTypes.BLOCK },
-            loop: {
-              source: { content: 'list' },
-              value: { content: 'item' },
-              index: undefined,
-            },
-          },
+          ],
         ],
       },
     ])
@@ -310,23 +326,24 @@ describe('compiler: transform slot', () => {
       {
         type: IRNodeTypes.CREATE_COMPONENT_NODE,
         tag: 'Comp',
-        slots: undefined,
-        dynamicSlots: [
-          {
-            name: {
-              type: NodeTypes.SIMPLE_EXPRESSION,
-              content: 'index',
-              isStatic: false,
-            },
-            fn: { type: IRNodeTypes.BLOCK },
-            loop: {
-              source: { content: 'list' },
-              value: undefined,
-              index: {
+        slots: [
+          [
+            {
+              name: {
                 type: NodeTypes.SIMPLE_EXPRESSION,
+                content: 'index',
+                isStatic: false,
+              },
+              fn: { type: IRNodeTypes.BLOCK },
+              loop: {
+                source: { content: 'list' },
+                value: undefined,
+                index: {
+                  type: NodeTypes.SIMPLE_EXPRESSION,
+                },
               },
             },
-          },
+          ],
         ],
       },
     ])
@@ -350,23 +367,24 @@ describe('compiler: transform slot', () => {
       {
         type: IRNodeTypes.CREATE_COMPONENT_NODE,
         tag: 'Comp',
-        slots: undefined,
-        dynamicSlots: [
-          {
-            slotType: DynamicSlotType.CONDITIONAL,
-            condition: { content: 'condition' },
-            positive: {
-              slotType: DynamicSlotType.BASIC,
-            },
-            negative: {
+        slots: [
+          [
+            {
               slotType: DynamicSlotType.CONDITIONAL,
-              condition: { content: 'anotherCondition' },
+              condition: { content: 'condition' },
               positive: {
                 slotType: DynamicSlotType.BASIC,
               },
-              negative: { slotType: DynamicSlotType.BASIC },
+              negative: {
+                slotType: DynamicSlotType.CONDITIONAL,
+                condition: { content: 'anotherCondition' },
+                positive: {
+                  slotType: DynamicSlotType.BASIC,
+                },
+                negative: { slotType: DynamicSlotType.BASIC },
+              },
             },
-          },
+          ],
         ],
       },
     ])

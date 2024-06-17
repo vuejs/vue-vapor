@@ -3,6 +3,7 @@ import {
   ElementTypes,
   ErrorCodes,
   NodeTypes,
+  type SimpleExpressionNode,
   type TemplateChildNode,
   createCompilerError,
   isTemplateNode,
@@ -11,17 +12,21 @@ import {
 import type { NodeTransform, TransformContext } from '../transform'
 import { newBlock } from './utils'
 import {
-  type ComponentBasicDynamicSlot,
-  type ComponentConditionalDynamicSlot,
-  type ComponentSlotBlockIRNode,
   DynamicFlag,
   DynamicSlotType,
   type IRFor,
+  type IRSlotDynamic,
+  type IRSlotDynamicBasic,
+  type IRSlotDynamicConditional,
+  type IRSlots,
+  type IRSlotsDynamic,
+  type IRSlotsStatic,
+  type SlotBlockIRNode,
   type VaporDirectiveNode,
 } from '../ir'
 import { findDir, resolveExpression } from '../utils'
+import { isArray } from '@vue/shared'
 
-// TODO dynamic slots
 export const transformVSlot: NodeTransform = (node, context) => {
   if (node.type !== NodeTypes.ELEMENT) return
 
@@ -38,8 +43,6 @@ export const transformVSlot: NodeTransform = (node, context) => {
 
   if (isComponent && children.length) {
     const arg = dir && dir.arg
-    const slotName = arg ? arg.content : 'default'
-
     const nonSlotTemplateChildren = children.filter(
       n =>
         isNonWhitespaceContent(node) &&
@@ -52,72 +55,53 @@ export const transformVSlot: NodeTransform = (node, context) => {
       context as TransformContext<ElementNode>,
     )
 
-    const slots = (context.slots ||= {})
-    const dynamicSlots = (context.dynamicSlots ||= [])
+    const slots = context.slots
 
     return () => {
       onExit()
 
-      let hasOtherSlots = !!Object.keys(slots).length
-
-      if (dir && (hasOtherSlots || dynamicSlots.length)) {
+      const hasOtherSlots = !!slots.length
+      if (dir && hasOtherSlots) {
         // already has on-component slot - this is incorrect usage.
         context.options.onError(
           createCompilerError(ErrorCodes.X_V_SLOT_MIXED_SLOT_USAGE, dir.loc),
         )
-        // discarding other slots, referenced how compiler-core implements
-        Object.keys(slots).forEach(slotName => delete slots[slotName])
-        dynamicSlots.length = 0
-        hasOtherSlots = false
+        // TODO remove old one
       }
 
       if (nonSlotTemplateChildren.length) {
-        if (slots.default) {
+        if (hasStaticSlot(slots, 'default')) {
           context.options.onError(
             createCompilerError(
               ErrorCodes.X_V_SLOT_EXTRANEOUS_DEFAULT_SLOT_CHILDREN,
               nonSlotTemplateChildren[0].loc,
             ),
           )
-        } else if (!arg || arg.isStatic) {
-          slots[slotName] = block
         } else {
-          dynamicSlots.push({
-            slotType: DynamicSlotType.BASIC,
-            name: arg,
-            fn: block,
-          })
+          registerSlot(slots, arg, block)
+          context.slots = slots
         }
-        context.slots = slots
       } else if (hasOtherSlots) {
         context.slots = slots
       }
-
-      if (dynamicSlots.length) context.dynamicSlots = dynamicSlots
     }
   } else if (isSlotTemplate && dir) {
-    let { arg } = dir
-
     context.dynamic.flags |= DynamicFlag.NON_TEMPLATE
 
+    const arg = dir.arg && resolveExpression(dir.arg)
     const vFor = findDir(node, 'for')
     const vIf = findDir(node, 'if')
     const vElse = findDir(node, /^else(-if)?$/, true /* allowEmpty */)
-    const slots = context.slots!
-    const dynamicSlots = context.dynamicSlots!
-
+    const slots = context.slots
     const [block, onExit] = createSlotBlock(
       node,
       dir,
       context as TransformContext<ElementNode>,
     )
 
-    arg &&= resolveExpression(arg)
-
-    if ((!arg || arg.isStatic) && !vFor && !vIf && !vElse) {
-      const slotName = arg ? arg.content : 'default'
-
-      if (slots[slotName]) {
+    if (!vFor && !vIf && !vElse) {
+      const slotName = arg ? arg.isStatic && arg.content : 'default'
+      if (slotName && hasStaticSlot(slots, slotName)) {
         context.options.onError(
           createCompilerError(
             ErrorCodes.X_V_SLOT_DUPLICATE_SLOT_NAMES,
@@ -125,10 +109,10 @@ export const transformVSlot: NodeTransform = (node, context) => {
           ),
         )
       } else {
-        slots[slotName] = block
+        registerSlot(slots, arg, block)
       }
     } else if (vIf) {
-      dynamicSlots.push({
+      registerDynamicSlot(slots, {
         slotType: DynamicSlotType.CONDITIONAL,
         condition: vIf.exp!,
         positive: {
@@ -138,31 +122,31 @@ export const transformVSlot: NodeTransform = (node, context) => {
         },
       })
     } else if (vElse) {
-      const vIfIR = dynamicSlots[dynamicSlots.length - 1]
-      if (vIfIR.slotType === DynamicSlotType.CONDITIONAL) {
-        let ifNode = vIfIR
+      const lastSlots = slots[slots.length - 1] as IRSlotsDynamic
+      const vIfSlot = lastSlots[lastSlots.length - 1]
+      if (vIfSlot.slotType === DynamicSlotType.CONDITIONAL) {
+        let ifNode = vIfSlot
         while (
           ifNode.negative &&
           ifNode.negative.slotType === DynamicSlotType.CONDITIONAL
         )
           ifNode = ifNode.negative
-        const negative:
-          | ComponentBasicDynamicSlot
-          | ComponentConditionalDynamicSlot = vElse.exp
-          ? {
-              slotType: DynamicSlotType.CONDITIONAL,
-              condition: vElse.exp,
-              positive: {
+        const negative: IRSlotDynamicBasic | IRSlotDynamicConditional =
+          vElse.exp
+            ? {
+                slotType: DynamicSlotType.CONDITIONAL,
+                condition: vElse.exp,
+                positive: {
+                  slotType: DynamicSlotType.BASIC,
+                  name: arg!,
+                  fn: block,
+                },
+              }
+            : {
                 slotType: DynamicSlotType.BASIC,
                 name: arg!,
                 fn: block,
-              },
-            }
-          : {
-              slotType: DynamicSlotType.BASIC,
-              name: arg!,
-              fn: block,
-            }
+              }
         ifNode.negative = negative
       } else {
         context.options.onError(
@@ -171,7 +155,7 @@ export const transformVSlot: NodeTransform = (node, context) => {
       }
     } else if (vFor) {
       if (vFor.forParseResult) {
-        dynamicSlots.push({
+        registerDynamicSlot(slots, {
           slotType: DynamicSlotType.LOOP,
           name: arg!,
           fn: block,
@@ -185,15 +169,9 @@ export const transformVSlot: NodeTransform = (node, context) => {
           ),
         )
       }
-    } else {
-      dynamicSlots.push({
-        slotType: DynamicSlotType.BASIC,
-        name: arg!,
-        fn: block,
-      })
     }
 
-    return () => onExit()
+    return onExit
   } else if (!isComponent && dir) {
     context.options.onError(
       createCompilerError(ErrorCodes.X_V_SLOT_MISPLACED, dir.loc),
@@ -201,12 +179,61 @@ export const transformVSlot: NodeTransform = (node, context) => {
   }
 }
 
+// <Foo v-slot:default>
+// function transformComponentSlot(
+//   node: ElementNode,
+//   dir: VaporDirectiveNode | undefined,
+//   context: TransformContext,
+// ) {
+//   const { children } = node
+//   const { slots } = context
+
+// }
+
+function ensureSlots(slots: IRSlots[], isStatic: boolean): IRSlots {
+  let lastSlots = slots[slots.length - 1]
+  const isLastSlotsStatic = !isArray(lastSlots)
+  if (!slots.length || isStatic !== isLastSlotsStatic) {
+    slots.push((lastSlots = isStatic ? {} : []))
+  }
+  return lastSlots
+}
+
+function registerSlot(
+  allSlots: IRSlots[],
+  name: SimpleExpressionNode | undefined,
+  block: SlotBlockIRNode,
+) {
+  const isStatic = !name || name.isStatic
+  const slots = ensureSlots(allSlots, isStatic)
+  if (isStatic) {
+    ;(slots as IRSlotsStatic)[name ? name.content : 'default'] = block
+  } else {
+    ;(slots as IRSlotsDynamic).push({
+      slotType: DynamicSlotType.BASIC,
+      name: name!,
+      fn: block,
+    })
+  }
+}
+
+function registerDynamicSlot(allSlots: IRSlots[], dynamic: IRSlotDynamic) {
+  const slots = ensureSlots(allSlots, false) as IRSlotsDynamic
+  slots.push(dynamic)
+}
+
+function hasStaticSlot(slots: IRSlots[], name: string) {
+  return slots.some(slots => {
+    if (!isArray(slots)) return !!slots[name]
+  })
+}
+
 function createSlotBlock(
   slotNode: ElementNode,
   dir: VaporDirectiveNode | undefined,
   context: TransformContext<ElementNode>,
-): [ComponentSlotBlockIRNode, () => void] {
-  const block: ComponentSlotBlockIRNode = newBlock(slotNode)
+): [SlotBlockIRNode, () => void] {
+  const block: SlotBlockIRNode = newBlock(slotNode)
   block.props = dir && dir.exp
   const exitBlock = context.enterBlock(block)
   return [block, exitBlock]

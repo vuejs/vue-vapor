@@ -98,11 +98,14 @@ describe('component: slots', () => {
 
     const { render } = define({
       render() {
-        return createComponent(Child, {}, { _: 2 as any }, [
-          () =>
-            flag1.value
-              ? { name: 'one', fn: () => template('<span></span>')() }
-              : { name: 'two', fn: () => template('<div></div>')() },
+        return createComponent(Child, {}, [
+          { _: 2 as any },
+          [
+            () =>
+              flag1.value
+                ? { name: 'one', fn: () => template('<span></span>')() }
+                : { name: 'two', fn: () => template('<div></div>')() },
+          ],
         ])
       },
     })
@@ -134,11 +137,13 @@ describe('component: slots', () => {
 
     const { render } = define({
       setup() {
-        return createComponent(Child, {}, {}, [
-          () =>
-            flag1.value
-              ? [{ name: 'header', fn: () => template('header')() }]
-              : [{ name: 'footer', fn: () => template('footer')() }],
+        return createComponent(Child, {}, [
+          [
+            () =>
+              flag1.value
+                ? { name: 'header', fn: () => template('header')() }
+                : { name: 'footer', fn: () => template('footer')() },
+          ],
         ])
       },
     })
@@ -172,9 +177,7 @@ describe('component: slots', () => {
 
     const { instance } = define({
       render() {
-        return createComponent(
-          Comp,
-          {},
+        return createComponent(Comp, {}, [
           {
             default: () => {
               instanceInDefaultSlot = getCurrentInstance()
@@ -182,25 +185,22 @@ describe('component: slots', () => {
             },
           },
           [
-            () => [
-              {
-                name: 'inVFor',
-                fn: () => {
-                  instanceInVForSlot = getCurrentInstance()
-                  return template('content')()
-                },
+            () => ({
+              name: 'inVFor',
+              fn: () => {
+                instanceInVForSlot = getCurrentInstance()
+                return template('content')()
               },
-            ],
+            }),
             () => ({
               name: 'inVIf',
-              key: '1',
               fn: () => {
                 instanceInVIfSlot = getCurrentInstance()
                 return template('content')()
               },
             }),
           ],
-        )
+        ])
       },
     }).render()
 
@@ -223,19 +223,21 @@ describe('component: slots', () => {
 
     const { render } = define({
       render() {
-        return createComponent(Child, {}, {}, [
-          () => {
-            slotFn1()
-            return flag1.value
-              ? { name: 'one', fn: () => template('one')() }
-              : { name: 'two', fn: () => template('two')() }
-          },
-          () => {
-            slotFn2()
-            return flag2.value
-              ? { name: 'three', fn: () => template('three')() }
-              : { name: 'four', fn: () => template('four')() }
-          },
+        return createComponent(Child, {}, [
+          [
+            () => {
+              slotFn1()
+              return flag1.value
+                ? { name: 'one', fn: () => template('one')() }
+                : { name: 'two', fn: () => template('two')() }
+            },
+            () => {
+              slotFn2()
+              return flag2.value
+                ? { name: 'three', fn: () => template('three')() }
+                : { name: 'four', fn: () => template('four')() }
+            },
+          ],
         ])
       },
     })
@@ -253,15 +255,15 @@ describe('component: slots', () => {
     expect(instance.slots).toHaveProperty('two')
     expect(instance.slots).toHaveProperty('three')
     expect(slotFn1).toHaveBeenCalledTimes(2)
-    expect(slotFn2).toHaveBeenCalledTimes(1)
+    expect(slotFn2).toHaveBeenCalledTimes(2)
 
     flag2.value = false
     await nextTick()
 
     expect(instance.slots).toHaveProperty('two')
     expect(instance.slots).toHaveProperty('four')
-    expect(slotFn1).toHaveBeenCalledTimes(2)
-    expect(slotFn2).toHaveBeenCalledTimes(2)
+    expect(slotFn1).toHaveBeenCalledTimes(3)
+    expect(slotFn2).toHaveBeenCalledTimes(3)
   })
 
   test.todo('should respect $stable flag', async () => {
@@ -313,7 +315,7 @@ describe('component: slots', () => {
         return createComponent(Comp, {}, { header: () => template('header')() })
       }).render()
 
-      expect(host.innerHTML).toBe('<div>header</div>')
+      expect(host.innerHTML).toBe('<div>header<!--slot--></div>')
     })
 
     test('slot should be render correctly with binds', async () => {
@@ -327,9 +329,7 @@ describe('component: slots', () => {
       })
 
       const { host } = define(() => {
-        return createComponent(
-          Comp,
-          {},
+        return createComponent(Comp, {}, [
           {
             header: withDestructure(
               ({ title }) => [title],
@@ -342,10 +342,10 @@ describe('component: slots', () => {
               },
             ),
           },
-        )
+        ])
       }).render()
 
-      expect(host.innerHTML).toBe('<div><h1>header</h1></div>')
+      expect(host.innerHTML).toBe('<div><h1>header</h1><!--slot--></div>')
     })
 
     test('dynamic slot props', async () => {
@@ -481,11 +481,13 @@ describe('component: slots', () => {
 
       const { host } = define(() => {
         // dynamic slot
-        return createComponent(Comp, {}, {}, [
-          () => ({
-            name: 'header',
-            fn: props => template(props.title)(),
-          }),
+        return createComponent(Comp, {}, [
+          [
+            () => ({
+              name: 'header',
+              fn: (props: any) => template(props.title)(),
+            }),
+          ],
         ])
       }).render()
 
@@ -530,7 +532,7 @@ describe('component: slots', () => {
         return createComponent(Comp, {}, {})
       }).render()
 
-      expect(host.innerHTML).toBe('<div>fallback</div>')
+      expect(host.innerHTML).toBe('<div>fallback<!--slot--></div>')
     })
 
     test('dynamic slot should be updated correctly', async () => {
@@ -548,11 +550,13 @@ describe('component: slots', () => {
       })
 
       const { host } = define(() => {
-        return createComponent(Child, {}, {}, [
-          () =>
-            flag1.value
-              ? { name: 'one', fn: () => template('one content')() }
-              : { name: 'two', fn: () => template('two content')() },
+        return createComponent(Child, {}, [
+          [
+            () =>
+              flag1.value
+                ? { name: 'one', fn: () => template('one content')() }
+                : { name: 'two', fn: () => template('two content')() },
+          ],
         ])
       }).render()
 

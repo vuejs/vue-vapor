@@ -33,7 +33,7 @@ export function render(_ctx) {
   const _component_Comp = _resolveComponent("Comp")
   const _directive_hello = _resolveDirective("hello")
   const _directive_test = _resolveDirective("test")
-  const n4 = _createComponent(_component_Comp, null, { default: () => {
+  const n4 = _createComponent(_component_Comp, null, [{ default: () => {
     const n0 = _createIf(() => (true), () => {
       const n3 = t0()
       const n2 = _createComponent(_component_Bar)
@@ -42,7 +42,7 @@ export function render(_ctx) {
       return n3
     })
     return n0
-  } }, null, true)
+  } }], true)
   _withDirectives(n4, [[_directive_test]])
   return n4
 }"

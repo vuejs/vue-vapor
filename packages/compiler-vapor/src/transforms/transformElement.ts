@@ -97,6 +97,7 @@ function transformComponentElement(
   const root =
     context.root === context.parent && context.parent.node.children.length === 1
 
+  // console.log(context.slots)
   context.registerOperation({
     type: IRNodeTypes.CREATE_COMPONENT_NODE,
     id: context.reference(),
@@ -105,11 +106,9 @@ function transformComponentElement(
     asset,
     root,
     slots: context.slots,
-    dynamicSlots: context.dynamicSlots,
     once: context.inVOnce,
   })
-  context.slots = undefined
-  context.dynamicSlots = undefined
+  context.slots = []
 }
 
 function resolveSetupReference(name: string, context: TransformContext) {
