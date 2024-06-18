@@ -40,7 +40,7 @@ export function initSlots(
   if (!rawSlots) return
   if (!isArray(rawSlots)) rawSlots = [rawSlots]
 
-  if (rawSlots.length === 0 && !isArray(rawSlots[0])) {
+  if (rawSlots.length === 1 && !isArray(rawSlots[0])) {
     instance.slots = rawSlots[0]
     return
   }
