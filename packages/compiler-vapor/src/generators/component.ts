@@ -157,7 +157,7 @@ function genModelModifiers(
 function genRawSlots(slots: IRSlots[], context: CodegenContext) {
   if (!slots.length) return
   return genMulti(
-    slots.length > 1 ? DELIMITERS_ARRAY_NEWLINE : DELIMITERS_ARRAY,
+    DELIMITERS_ARRAY_NEWLINE,
     ...slots.map(slot =>
       isStaticSlotIR(slot)
         ? genStaticSlots(slot, context)
@@ -169,7 +169,7 @@ function genRawSlots(slots: IRSlots[], context: CodegenContext) {
 function genStaticSlots(slots: IRSlotsStatic, context: CodegenContext) {
   const names = Object.keys(slots)
   return genMulti(
-    names.length > 1 ? DELIMITERS_OBJECT_NEWLINE : DELIMITERS_OBJECT,
+    DELIMITERS_OBJECT_NEWLINE,
     ...names.map(name => [
       `${name}: `,
       ...genSlotBlockWithProps(slots[name], context),
