@@ -1,4 +1,3 @@
-import { isOn } from '@vue/shared'
 import {
   type App,
   type Component,
@@ -9,13 +8,6 @@ import {
   defineComponent,
 } from '../src'
 import type { RawProps } from '../src/componentProps'
-import {
-  TestComment,
-  TestElement,
-  TestNode,
-  TestNodeTypes,
-  TestText,
-} from './nodeOps'
 
 export function makeRender<Component = ObjectComponent | SetupFn>(
   initHost = () => {
