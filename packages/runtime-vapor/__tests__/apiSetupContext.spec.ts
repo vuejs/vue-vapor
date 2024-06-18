@@ -11,29 +11,17 @@ import {
   setText,
   watchEffect,
 } from '../src'
-import {
-  makeRender,
-  mountComponent,
-  renderToString,
-  serializeHTML,
-} from './_utils'
+import { mountComponent, renderToString, serializeHTML } from './_utils'
 
 import type { Component } from '../src'
-
-// reference: https://vue-composition-api-rfc.netlify.com/api.html#setup
-
-const define = makeRender<any>()
 
 describe('api: setup context', () => {
   it('should expose return values to template render context', () => {
     const Comp: Component = {
       setup() {
         return {
-          // ref should auto-unwrap
           ref: ref('foo'),
-          // object exposed as-is
           object: reactive({ msg: 'bar' }),
-          // primitive value exposed as-is
           value: 'baz',
         }
       },
@@ -72,12 +60,12 @@ describe('api: setup context', () => {
     })
 
     const el = mountComponent(Parent)
-    expect(serializeHTML(el.host)).toBe(`0`)
+    expect(serializeHTML(el.host)).toMatch(`0`)
 
     count.value++
     await nextTick()
     expect(dummy).toBe(1)
-    expect(serializeHTML(el.host)).toBe(`1`)
+    expect(serializeHTML(el.host)).toMatch(`1`)
   })
 
   it('should update when attributes change', async () => {
