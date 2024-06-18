@@ -97,7 +97,6 @@ function transformComponentElement(
   const root =
     context.root === context.parent && context.parent.node.children.length === 1
 
-  // console.log(context.slots)
   context.registerOperation({
     type: IRNodeTypes.CREATE_COMPONENT_NODE,
     id: context.reference(),

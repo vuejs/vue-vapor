@@ -29,9 +29,9 @@ export type DynamicSlotFn = () => DynamicSlot | DynamicSlot[] | undefined
 export type NormalizedRawSlots = Array<StaticSlots | DynamicSlotFn>
 export type RawSlots = NormalizedRawSlots | StaticSlots | null
 
-export const isDynamicSlotFn = (
+export const isDynamicSlotFn = isFunction as (
   val: StaticSlots | DynamicSlotFn,
-): val is DynamicSlotFn => isFunction(val)
+) => val is DynamicSlotFn
 
 export function initSlots(
   instance: ComponentInternalInstance,

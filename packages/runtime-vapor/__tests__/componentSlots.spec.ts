@@ -100,7 +100,6 @@ describe('component: slots', () => {
     const { render } = define({
       render() {
         return createComponent(Child, {}, [
-          { _: 2 as any },
           () =>
             flag1.value
               ? { name: 'one', fn: () => template('<span></span>')() }
