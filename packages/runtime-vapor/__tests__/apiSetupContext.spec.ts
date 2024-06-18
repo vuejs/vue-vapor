@@ -1,5 +1,6 @@
 import {
   createComponent,
+  createSlot,
   createTextNode,
   defineComponent,
   nextTick,
@@ -9,23 +10,14 @@ import {
   setDynamicProps,
   watchEffect,
 } from '../src'
-import { makeRender, renderToString } from './_utils'
+import {
+  makeRender,
+  mountComponent,
+  renderToString,
+  serializeHTML,
+} from './_utils'
 
 import type { Component } from '../src'
-import { render } from '../src/apiRender'
-
-// import {
-//   type TestElement,
-//   defineComponent,
-//   h,
-//   nextTick,
-//   nodeOps,
-//   render,
-//   renderToString,
-//   serializeInner,
-//   triggerEvent,
-//   watchEffect,
-// } from '@vue/runtime-test'
 
 // reference: https://vue-composition-api-rfc.netlify.com/api.html#setup
 
@@ -60,7 +52,7 @@ describe('api: setup context', () => {
     expect(renderToString(Comp)).toMatch(`hello`)
   })
 
-  it('props', async () => {
+  it('should update when props change', async () => {
     const count = ref(0)
     let dummy
 
@@ -78,19 +70,16 @@ describe('api: setup context', () => {
       },
     })
 
-    const { host, mount } = define(Parent).create()
+    const el = mountComponent(Parent)
+    expect(serializeHTML(el.host)).toBe(`0`)
 
-    mount()
-    expect(host.innerHTML).toBe(`0`)
-
-    // props should be reactive
     count.value++
     await nextTick()
     expect(dummy).toBe(1)
-    expect(host.innerHTML).toBe(`1`)
+    expect(serializeHTML(el.host)).toBe(`1`)
   })
 
-  it('context.attrs', async () => {
+  it('should update when attributes change', async () => {
     const toggle = ref(true)
 
     const Parent: Component = {
@@ -111,82 +100,45 @@ describe('api: setup context', () => {
       },
     }
 
-    const { mount } = define(Parent).create()
-
-    const root = document.createElement('div')
-
-    mount(root)
-    expect(root?.innerHTML).toMatch(`<div id="foo"></div>`)
+    const el = mountComponent(Parent)
+    expect(serializeHTML(el.host)).toMatch(`<div id="foo"></div>`)
 
     toggle.value = false
     await nextTick()
-    expect(root?.innerHTML).toMatch(`<div class="baz"></div>`)
+    expect(serializeHTML(el.host)).toMatch(`<div class="baz"></div>`)
   })
 
-  // // #4161
-  // it('context.attrs in child component slots', async () => {
-  //   const toggle = ref(true)
+  it('should update when slots content change', async () => {
+    const id = ref('foo')
 
-  //   const Parent = {
-  //     render: () => h(Child, toggle.value ? { id: 'foo' } : { class: 'baz' }),
-  //   }
+    const Parent = {
+      render() {
+        return createComponent(Child, null, null, [
+          () => ({
+            name: 'foo',
+            fn: () => createTextNode([id.value]),
+          }),
+          () => ({
+            name: 'bar',
+            fn: () => createTextNode(['bar']),
+          }),
+        ])
+      },
+    }
 
-  //   const Wrapper = {
-  //     render(this: any) {
-  //       return this.$slots.default()
-  //     },
-  //   }
+    const Child: Component = {
+      render() {
+        return [createSlot('foo'), createSlot('bar')]
+      },
+    }
 
-  //   const Child = {
-  //     inheritAttrs: false,
-  //     setup(_: any, { attrs }: any) {
-  //       return () => {
-  //         const vnode = h(Wrapper, null, {
-  //           default: () => [h('div', attrs)],
-  //           _: 1, // mark stable slots
-  //         })
-  //         vnode.dynamicChildren = [] // force optimized mode
-  //         return vnode
-  //       }
-  //     },
-  //   }
+    const el = mountComponent(Parent)
+    expect(serializeHTML(el.host)).toMatch(`foobar`)
 
-  //   const root = nodeOps.createElement('div')
-  //   render(h(Parent), root)
-  //   expect(serializeInner(root)).toMatch(`<div id="foo"></div>`)
-
-  //   // should update even though it's not reactive
-  //   toggle.value = false
-  //   await nextTick()
-  //   expect(serializeInner(root)).toMatch(`<div class="baz"></div>`)
-  // })
-
-  // it('context.slots', async () => {
-  //   const id = ref('foo')
-
-  //   const Parent = {
-  //     render: () =>
-  //       h(Child, null, {
-  //         foo: () => id.value,
-  //         bar: () => 'bar',
-  //       }),
-  //   }
-
-  //   const Child = {
-  //     setup(props: any, { slots }: any) {
-  //       return () => h('div', [...slots.foo(), ...slots.bar()])
-  //     },
-  //   }
-
-  //   const root = nodeOps.createElement('div')
-  //   render(h(Parent), root)
-  //   expect(serializeInner(root)).toMatch(`<div>foobar</div>`)
-
-  //   // should update even though it's not reactive
-  //   id.value = 'baz'
-  //   await nextTick()
-  //   expect(serializeInner(root)).toMatch(`<div>bazbar</div>`)
-  // })
+    id.value = 'baz'
+    await nextTick()
+    expect(serializeHTML(el.host)).toMatch(`bazbar`)
+  })
 
   // it('context.emit', async () => {
   //   const count = ref(0)
