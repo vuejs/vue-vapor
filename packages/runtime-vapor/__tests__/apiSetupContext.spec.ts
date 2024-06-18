@@ -8,6 +8,7 @@ import {
   ref,
   renderEffect,
   setDynamicProps,
+  setText,
   watchEffect,
 } from '../src'
 import {
@@ -140,48 +141,45 @@ describe('api: setup context', () => {
     expect(serializeHTML(el.host)).toMatch(`bazbar`)
   })
 
-  // it('context.emit', async () => {
-  //   const count = ref(0)
-  //   const spy = vi.fn()
+  it('should update when children emit event', async () => {
+    const count = ref(0)
+    const spy = vi.fn()
 
-  //   const Parent = {
-  //     render: () =>
-  //       h(Child, {
-  //         count: count.value,
-  //         onInc: (newVal: number) => {
-  //           spy()
-  //           count.value = newVal
-  //         },
-  //       }),
-  //   }
+    const Parent = {
+      render: () =>
+        createComponent(Child, () => ({
+          count: count.value,
+          onInc: (newVal: number) => {
+            spy()
+            count.value = newVal
+          },
+        })),
+    }
 
-  //   const Child = defineComponent({
-  //     props: {
-  //       count: {
-  //         type: Number,
-  //         default: 1,
-  //       },
-  //     },
-  //     setup(props, { emit }) {
-  //       return () =>
-  //         h(
-  //           'div',
-  //           {
-  //             onClick: () => emit('inc', props.count + 1),
-  //           },
-  //           props.count,
-  //         )
-  //     },
-  //   })
+    const Child = defineComponent({
+      props: {
+        count: {
+          type: Number,
+          default: 1,
+        },
+      },
+      setup(props, { emit }) {
+        const el = document.createElement('div')
+        el.classList.add('foo')
+        el.addEventListener('click', () => emit('inc', props.count + 1))
+        renderEffect(() => {
+          setText(el, props.count)
+        })
+        return el
+      },
+    })
 
-  //   const root = nodeOps.createElement('div')
-  //   render(h(Parent), root)
-  //   expect(serializeInner(root)).toMatch(`<div>0</div>`)
+    const el = mountComponent(Parent)
+    expect(serializeHTML(el.host)).toMatch(`<div class="foo">0</div>`)
 
-  //   // emit should trigger parent handler
-  //   triggerEvent(root.children[0] as TestElement, 'click')
-  //   expect(spy).toHaveBeenCalled()
-  //   await nextTick()
-  //   expect(serializeInner(root)).toMatch(`<div>1</div>`)
-  // })
+    el.host.querySelector<HTMLElement>('.foo')?.click()
+    expect(spy).toHaveBeenCalled()
+    await nextTick()
+    expect(serializeHTML(el.host)).toMatch(`<div class="foo">1</div>`)
+  })
 })
