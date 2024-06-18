@@ -19,13 +19,12 @@ import {
   type IRSlotDynamicBasic,
   type IRSlotDynamicConditional,
   type IRSlots,
-  type IRSlotsDynamic,
   type IRSlotsStatic,
   type SlotBlockIRNode,
   type VaporDirectiveNode,
+  isStaticSlotIR,
 } from '../ir'
 import { findDir, resolveExpression } from '../utils'
-import { isArray } from '@vue/shared'
 
 export const transformVSlot: NodeTransform = (node, context) => {
   if (node.type !== NodeTypes.ELEMENT) return
@@ -122,8 +121,7 @@ export const transformVSlot: NodeTransform = (node, context) => {
         },
       })
     } else if (vElse) {
-      const lastSlots = slots[slots.length - 1] as IRSlotsDynamic
-      const vIfSlot = lastSlots[lastSlots.length - 1]
+      const vIfSlot = slots[slots.length - 1] as IRSlotDynamic
       if (vIfSlot.slotType === DynamicSlotType.CONDITIONAL) {
         let ifNode = vIfSlot
         while (
@@ -190,11 +188,10 @@ export const transformVSlot: NodeTransform = (node, context) => {
 
 // }
 
-function ensureSlots(slots: IRSlots[], isStatic: boolean): IRSlots {
+function ensureStaticSlots(slots: IRSlots[]): IRSlots {
   let lastSlots = slots[slots.length - 1]
-  const isLastSlotsStatic = !isArray(lastSlots)
-  if (!slots.length || isStatic !== isLastSlotsStatic) {
-    slots.push((lastSlots = isStatic ? {} : []))
+  if (!slots.length || !isStaticSlotIR(lastSlots)) {
+    slots.push((lastSlots = {}))
   }
   return lastSlots
 }
@@ -205,11 +202,11 @@ function registerSlot(
   block: SlotBlockIRNode,
 ) {
   const isStatic = !name || name.isStatic
-  const slots = ensureSlots(allSlots, isStatic)
+  const slots = isStatic ? ensureStaticSlots(allSlots) : allSlots
   if (isStatic) {
     ;(slots as IRSlotsStatic)[name ? name.content : 'default'] = block
   } else {
-    ;(slots as IRSlotsDynamic).push({
+    ;(slots as IRSlots[]).push({
       slotType: DynamicSlotType.BASIC,
       name: name!,
       fn: block,
@@ -218,13 +215,12 @@ function registerSlot(
 }
 
 function registerDynamicSlot(allSlots: IRSlots[], dynamic: IRSlotDynamic) {
-  const slots = ensureSlots(allSlots, false) as IRSlotsDynamic
-  slots.push(dynamic)
+  allSlots.push(dynamic)
 }
 
 function hasStaticSlot(slots: IRSlots[], name: string) {
-  return slots.some(slots => {
-    if (!isArray(slots)) return !!slots[name]
+  return slots.some(slot => {
+    if (isStaticSlotIR(slot)) return !!slot[name]
   })
 }
 

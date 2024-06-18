@@ -137,22 +137,20 @@ describe('compiler: transform slot', () => {
         type: IRNodeTypes.CREATE_COMPONENT_NODE,
         tag: 'Comp',
         slots: [
-          [
-            {
-              name: {
+          {
+            name: {
+              type: NodeTypes.SIMPLE_EXPRESSION,
+              content: 'named',
+              isStatic: false,
+            },
+            fn: {
+              type: IRNodeTypes.BLOCK,
+              props: {
                 type: NodeTypes.SIMPLE_EXPRESSION,
-                content: 'named',
-                isStatic: false,
-              },
-              fn: {
-                type: IRNodeTypes.BLOCK,
-                props: {
-                  type: NodeTypes.SIMPLE_EXPRESSION,
-                  content: '{ foo }',
-                },
+                content: '{ foo }',
               },
             },
-          ],
+          },
         ],
       },
     ])
@@ -262,16 +260,14 @@ describe('compiler: transform slot', () => {
         type: IRNodeTypes.CREATE_COMPONENT_NODE,
         tag: 'Comp',
         slots: [
-          [
-            {
-              name: {
-                type: NodeTypes.SIMPLE_EXPRESSION,
-                content: 'name',
-                isStatic: false,
-              },
-              fn: { type: IRNodeTypes.BLOCK },
+          {
+            name: {
+              type: NodeTypes.SIMPLE_EXPRESSION,
+              content: 'name',
+              isStatic: false,
             },
-          ],
+            fn: { type: IRNodeTypes.BLOCK },
+          },
         ],
       },
     ])
@@ -294,21 +290,19 @@ describe('compiler: transform slot', () => {
         type: IRNodeTypes.CREATE_COMPONENT_NODE,
         tag: 'Comp',
         slots: [
-          [
-            {
-              name: {
-                type: NodeTypes.SIMPLE_EXPRESSION,
-                content: 'item',
-                isStatic: false,
-              },
-              fn: { type: IRNodeTypes.BLOCK },
-              loop: {
-                source: { content: 'list' },
-                value: { content: 'item' },
-                index: undefined,
-              },
+          {
+            name: {
+              type: NodeTypes.SIMPLE_EXPRESSION,
+              content: 'item',
+              isStatic: false,
             },
-          ],
+            fn: { type: IRNodeTypes.BLOCK },
+            loop: {
+              source: { content: 'list' },
+              value: { content: 'item' },
+              index: undefined,
+            },
+          },
         ],
       },
     ])
@@ -327,23 +321,21 @@ describe('compiler: transform slot', () => {
         type: IRNodeTypes.CREATE_COMPONENT_NODE,
         tag: 'Comp',
         slots: [
-          [
-            {
-              name: {
+          {
+            name: {
+              type: NodeTypes.SIMPLE_EXPRESSION,
+              content: 'index',
+              isStatic: false,
+            },
+            fn: { type: IRNodeTypes.BLOCK },
+            loop: {
+              source: { content: 'list' },
+              value: undefined,
+              index: {
                 type: NodeTypes.SIMPLE_EXPRESSION,
-                content: 'index',
-                isStatic: false,
-              },
-              fn: { type: IRNodeTypes.BLOCK },
-              loop: {
-                source: { content: 'list' },
-                value: undefined,
-                index: {
-                  type: NodeTypes.SIMPLE_EXPRESSION,
-                },
               },
             },
-          ],
+          },
         ],
       },
     ])
@@ -368,23 +360,21 @@ describe('compiler: transform slot', () => {
         type: IRNodeTypes.CREATE_COMPONENT_NODE,
         tag: 'Comp',
         slots: [
-          [
-            {
+          {
+            slotType: DynamicSlotType.CONDITIONAL,
+            condition: { content: 'condition' },
+            positive: {
+              slotType: DynamicSlotType.BASIC,
+            },
+            negative: {
               slotType: DynamicSlotType.CONDITIONAL,
-              condition: { content: 'condition' },
+              condition: { content: 'anotherCondition' },
               positive: {
                 slotType: DynamicSlotType.BASIC,
               },
-              negative: {
-                slotType: DynamicSlotType.CONDITIONAL,
-                condition: { content: 'anotherCondition' },
-                positive: {
-                  slotType: DynamicSlotType.BASIC,
-                },
-                negative: { slotType: DynamicSlotType.BASIC },
-              },
+              negative: { slotType: DynamicSlotType.BASIC },
             },
-          ],
+          },
         ],
       },
     ])

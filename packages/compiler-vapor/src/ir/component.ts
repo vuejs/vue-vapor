@@ -59,5 +59,8 @@ export type IRSlotDynamic =
   | IRSlotDynamicBasic
   | IRSlotDynamicLoop
   | IRSlotDynamicConditional
-export type IRSlotsDynamic = IRSlotDynamic[]
-export type IRSlots = IRSlotsStatic | IRSlotsDynamic
+export type IRSlots = IRSlotsStatic | IRSlotDynamic
+
+export function isStaticSlotIR(slot: IRSlots): slot is IRSlotsStatic {
+  return !('slotType' in slot)
+}

@@ -14,6 +14,7 @@ import {
   type IRSlots,
   type IRSlotsStatic,
   type SlotBlockIRNode,
+  isStaticSlotIR,
 } from '../ir'
 import {
   type CodeFragment,
@@ -157,10 +158,10 @@ function genRawSlots(slots: IRSlots[], context: CodegenContext) {
   if (!slots.length) return
   return genMulti(
     slots.length > 1 ? DELIMITERS_ARRAY_NEWLINE : DELIMITERS_ARRAY,
-    ...slots.map(slots =>
-      isArray(slots)
-        ? genDynamicSlots(slots, context)
-        : genStaticSlots(slots, context),
+    ...slots.map(slot =>
+      isStaticSlotIR(slot)
+        ? genStaticSlots(slot, context)
+        : genDynamicSlot(slot, context, true),
     ),
   )
 }
@@ -173,16 +174,6 @@ function genStaticSlots(slots: IRSlotsStatic, context: CodegenContext) {
       `${name}: `,
       ...genSlotBlockWithProps(slots[name], context),
     ]),
-  )
-}
-
-function genDynamicSlots(
-  dynamicSlots: IRSlotDynamic[],
-  context: CodegenContext,
-) {
-  return genMulti(
-    dynamicSlots.length > 1 ? DELIMITERS_ARRAY_NEWLINE : DELIMITERS_ARRAY,
-    ...dynamicSlots.map(slot => genDynamicSlot(slot, context, true)),
   )
 }
 

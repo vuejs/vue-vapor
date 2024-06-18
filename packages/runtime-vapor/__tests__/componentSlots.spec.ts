@@ -247,15 +247,15 @@ describe('component: slots', () => {
     expect(instance.slots).toHaveProperty('two')
     expect(instance.slots).toHaveProperty('three')
     expect(slotFn1).toHaveBeenCalledTimes(2)
-    expect(slotFn2).toHaveBeenCalledTimes(2)
+    expect(slotFn2).toHaveBeenCalledTimes(1)
 
     flag2.value = false
     await nextTick()
 
     expect(instance.slots).toHaveProperty('two')
     expect(instance.slots).toHaveProperty('four')
-    expect(slotFn1).toHaveBeenCalledTimes(3)
-    expect(slotFn2).toHaveBeenCalledTimes(3)
+    expect(slotFn1).toHaveBeenCalledTimes(2)
+    expect(slotFn2).toHaveBeenCalledTimes(2)
   })
 
   test.todo('should respect $stable flag', async () => {

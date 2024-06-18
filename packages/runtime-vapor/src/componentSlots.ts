@@ -24,9 +24,14 @@ export type Slot<T extends any = any> = (
 ) => Block
 
 export type StaticSlots = Record<string, Slot>
-export type DynamicSlot = () => { name: string; fn: Slot } | undefined
-export type NormalizedRawSlots = Array<StaticSlots | DynamicSlot>
+export type DynamicSlot = { name: string; fn: Slot }
+export type DynamicSlotFn = () => DynamicSlot | DynamicSlot[] | undefined
+export type NormalizedRawSlots = Array<StaticSlots | DynamicSlotFn>
 export type RawSlots = NormalizedRawSlots | StaticSlots | null
+
+export const isDynamicSlotFn = (
+  val: StaticSlots | DynamicSlotFn,
+): val is DynamicSlotFn => isFunction(val)
 
 export function initSlots(
   instance: ComponentInternalInstance,
@@ -35,36 +40,52 @@ export function initSlots(
   if (!rawSlots) return
   if (!isArray(rawSlots)) rawSlots = [rawSlots]
 
-  if (rawSlots.length === 1 && !isFunction(rawSlots[0])) {
+  if (rawSlots.length === 1 && !isDynamicSlotFn(rawSlots[0])) {
     instance.slots = rawSlots[0]
     return
   }
 
   const resolved: StaticSlots = (instance.slots = shallowReactive({}))
-  firstEffect(instance, () => {
-    const keys = new Set<string>()
-    for (const slots of rawSlots) {
-      if (isFunction(slots)) {
-        const dynamicSlot = slots()
-        dynamicSlot && registerSlot(dynamicSlot.name, dynamicSlot.fn)
-      } else {
-        for (const name in slots) {
-          registerSlot(name, slots[name])
+  const keys: Set<string>[] = []
+  rawSlots.forEach((slots, index) => {
+    const isDynamicSlot = isDynamicSlotFn(slots)
+    if (isDynamicSlot) {
+      firstEffect(instance, () => {
+        const recordNames = keys[index] || (keys[index] = new Set())
+        let dynamicSlot: ReturnType<DynamicSlotFn>
+        if (isDynamicSlotFn(slots)) {
+          dynamicSlot = slots()
+          if (isArray(dynamicSlot)) {
+            for (const slot of dynamicSlot) {
+              registerSlot(slot.name, slot.fn, recordNames)
+            }
+          } else if (dynamicSlot) {
+            registerSlot(dynamicSlot.name, dynamicSlot.fn, recordNames)
+          }
+        } else {
         }
+        for (const name of recordNames) {
+          if (
+            !(isArray(dynamicSlot)
+              ? dynamicSlot.some(s => s.name === name)
+              : dynamicSlot && dynamicSlot.name === name)
+          ) {
+            recordNames.delete(name)
+            delete resolved[name]
+          }
+        }
+      })
+    } else {
+      for (const name in slots) {
+        registerSlot(name, slots[name])
       }
-    }
-
-    for (const key in resolved) {
-      if (!keys.has(key)) {
-        delete resolved[key]
-      }
-    }
-
-    function registerSlot(name: string, fn: Slot) {
-      resolved[name] = withCtx(fn)
-      keys.add(name)
     }
   })
+
+  function registerSlot(name: string, fn: Slot, recordNames?: Set<string>) {
+    resolved[name] = withCtx(fn)
+    recordNames && recordNames.add(name)
+  }
 
   function withCtx(fn: Slot): Slot {
     return (...args: any[]) => {
