@@ -85,7 +85,7 @@ function transformComponentSlot(
       context.options.onError(
         createCompilerError(ErrorCodes.X_V_SLOT_MIXED_SLOT_USAGE, dir.loc),
       )
-      // TODO remove old one
+      return
     }
 
     if (nonSlotTemplateChildren.length) {
