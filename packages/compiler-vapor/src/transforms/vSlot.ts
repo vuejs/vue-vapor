@@ -13,16 +13,15 @@ import type { NodeTransform, TransformContext } from '../transform'
 import { newBlock } from './utils'
 import {
   DynamicFlag,
-  DynamicSlotType,
   type IRFor,
   type IRSlotDynamic,
   type IRSlotDynamicBasic,
   type IRSlotDynamicConditional,
+  IRSlotType,
   type IRSlots,
   type IRSlotsStatic,
   type SlotBlockIRNode,
   type VaporDirectiveNode,
-  isStaticSlotIR,
 } from '../ir'
 import { findDir, resolveExpression } from '../utils'
 
@@ -112,36 +111,36 @@ export const transformVSlot: NodeTransform = (node, context) => {
       }
     } else if (vIf) {
       registerDynamicSlot(slots, {
-        slotType: DynamicSlotType.CONDITIONAL,
+        slotType: IRSlotType.CONDITIONAL,
         condition: vIf.exp!,
         positive: {
-          slotType: DynamicSlotType.BASIC,
+          slotType: IRSlotType.DYNAMIC,
           name: arg!,
           fn: block,
         },
       })
     } else if (vElse) {
       const vIfSlot = slots[slots.length - 1] as IRSlotDynamic
-      if (vIfSlot.slotType === DynamicSlotType.CONDITIONAL) {
+      if (vIfSlot.slotType === IRSlotType.CONDITIONAL) {
         let ifNode = vIfSlot
         while (
           ifNode.negative &&
-          ifNode.negative.slotType === DynamicSlotType.CONDITIONAL
+          ifNode.negative.slotType === IRSlotType.CONDITIONAL
         )
           ifNode = ifNode.negative
         const negative: IRSlotDynamicBasic | IRSlotDynamicConditional =
           vElse.exp
             ? {
-                slotType: DynamicSlotType.CONDITIONAL,
+                slotType: IRSlotType.CONDITIONAL,
                 condition: vElse.exp,
                 positive: {
-                  slotType: DynamicSlotType.BASIC,
+                  slotType: IRSlotType.DYNAMIC,
                   name: arg!,
                   fn: block,
                 },
               }
             : {
-                slotType: DynamicSlotType.BASIC,
+                slotType: IRSlotType.DYNAMIC,
                 name: arg!,
                 fn: block,
               }
@@ -154,7 +153,7 @@ export const transformVSlot: NodeTransform = (node, context) => {
     } else if (vFor) {
       if (vFor.forParseResult) {
         registerDynamicSlot(slots, {
-          slotType: DynamicSlotType.LOOP,
+          slotType: IRSlotType.LOOP,
           name: arg!,
           fn: block,
           loop: vFor.forParseResult as IRFor,
@@ -188,26 +187,31 @@ export const transformVSlot: NodeTransform = (node, context) => {
 
 // }
 
-function ensureStaticSlots(slots: IRSlots[]): IRSlots {
+function ensureStaticSlots(slots: IRSlots[]): IRSlotsStatic['slots'] {
   let lastSlots = slots[slots.length - 1]
-  if (!slots.length || !isStaticSlotIR(lastSlots)) {
-    slots.push((lastSlots = {}))
+  if (!slots.length || lastSlots.slotType !== IRSlotType.STATIC) {
+    slots.push(
+      (lastSlots = {
+        slotType: IRSlotType.STATIC,
+        slots: {},
+      }),
+    )
   }
-  return lastSlots
+  return lastSlots.slots
 }
 
 function registerSlot(
-  allSlots: IRSlots[],
+  slots: IRSlots[],
   name: SimpleExpressionNode | undefined,
   block: SlotBlockIRNode,
 ) {
   const isStatic = !name || name.isStatic
-  const slots = isStatic ? ensureStaticSlots(allSlots) : allSlots
   if (isStatic) {
-    ;(slots as IRSlotsStatic)[name ? name.content : 'default'] = block
+    const staticSlots = ensureStaticSlots(slots)
+    staticSlots[name ? name.content : 'default'] = block
   } else {
-    ;(slots as IRSlots[]).push({
-      slotType: DynamicSlotType.BASIC,
+    slots.push({
+      slotType: IRSlotType.DYNAMIC,
       name: name!,
       fn: block,
     })
@@ -220,7 +224,7 @@ function registerDynamicSlot(allSlots: IRSlots[], dynamic: IRSlotDynamic) {
 
 function hasStaticSlot(slots: IRSlots[], name: string) {
   return slots.some(slot => {
-    if (isStaticSlotIR(slot)) return !!slot[name]
+    if (slot.slotType === IRSlotType.STATIC) return !!slot.slots[name]
   })
 }
 

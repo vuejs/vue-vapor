@@ -1,7 +1,7 @@
 import { ErrorCodes, NodeTypes } from '@vue/compiler-core'
 import {
-  DynamicSlotType,
   IRNodeTypes,
+  IRSlotType,
   transformChildren,
   transformElement,
   transformSlotOutlet,
@@ -44,10 +44,13 @@ describe('compiler: transform slot', () => {
         props: [[]],
         slots: [
           {
-            default: {
-              type: IRNodeTypes.BLOCK,
-              dynamic: {
-                children: [{ template: 0 }],
+            slotType: IRSlotType.STATIC,
+            slots: {
+              default: {
+                type: IRNodeTypes.BLOCK,
+                dynamic: {
+                  children: [{ template: 0 }],
+                },
               },
             },
           },
@@ -77,14 +80,17 @@ describe('compiler: transform slot', () => {
         props: [[]],
         slots: [
           {
-            default: {
-              type: IRNodeTypes.BLOCK,
-              props: {
-                type: NodeTypes.SIMPLE_EXPRESSION,
-                content: '{ foo }',
-                ast: {
-                  type: 'ArrowFunctionExpression',
-                  params: [{ type: 'ObjectPattern' }],
+            slotType: IRSlotType.STATIC,
+            slots: {
+              default: {
+                type: IRNodeTypes.BLOCK,
+                props: {
+                  type: NodeTypes.SIMPLE_EXPRESSION,
+                  content: '{ foo }',
+                  ast: {
+                    type: 'ArrowFunctionExpression',
+                    params: [{ type: 'ObjectPattern' }],
+                  },
                 },
               },
             },
@@ -109,11 +115,14 @@ describe('compiler: transform slot', () => {
         tag: 'Comp',
         slots: [
           {
-            named: {
-              type: IRNodeTypes.BLOCK,
-              props: {
-                type: NodeTypes.SIMPLE_EXPRESSION,
-                content: '{ foo }',
+            slotType: IRSlotType.STATIC,
+            slots: {
+              named: {
+                type: IRNodeTypes.BLOCK,
+                props: {
+                  type: NodeTypes.SIMPLE_EXPRESSION,
+                  content: '{ foo }',
+                },
               },
             },
           },
@@ -173,16 +182,19 @@ describe('compiler: transform slot', () => {
         props: [[]],
         slots: [
           {
-            one: {
-              type: IRNodeTypes.BLOCK,
-              dynamic: {
-                children: [{ template: 0 }],
+            slotType: IRSlotType.STATIC,
+            slots: {
+              one: {
+                type: IRNodeTypes.BLOCK,
+                dynamic: {
+                  children: [{ template: 0 }],
+                },
               },
-            },
-            default: {
-              type: IRNodeTypes.BLOCK,
-              dynamic: {
-                children: [{}, { template: 1 }, { template: 2 }],
+              default: {
+                type: IRNodeTypes.BLOCK,
+                dynamic: {
+                  children: [{}, { template: 1 }, { template: 2 }],
+                },
               },
             },
           },
@@ -217,11 +229,14 @@ describe('compiler: transform slot', () => {
         props: [[]],
         slots: [
           {
-            default: {
-              type: IRNodeTypes.BLOCK,
-              props: {
-                type: NodeTypes.SIMPLE_EXPRESSION,
-                content: '{ foo }',
+            slotType: IRSlotType.STATIC,
+            slots: {
+              default: {
+                type: IRNodeTypes.BLOCK,
+                props: {
+                  type: NodeTypes.SIMPLE_EXPRESSION,
+                  content: '{ foo }',
+                },
               },
             },
           },
@@ -229,17 +244,20 @@ describe('compiler: transform slot', () => {
       },
     ])
     expect(
-      (ir.block.operation[0] as any).slots[0].default.operation[0],
+      (ir.block.operation[0] as any).slots[0].slots.default.operation[0],
     ).toMatchObject({
       type: IRNodeTypes.CREATE_COMPONENT_NODE,
       tag: 'Inner',
       slots: [
         {
-          default: {
-            type: IRNodeTypes.BLOCK,
-            props: {
-              type: NodeTypes.SIMPLE_EXPRESSION,
-              content: '{ bar }',
+          slotType: IRSlotType.STATIC,
+          slots: {
+            default: {
+              type: IRNodeTypes.BLOCK,
+              props: {
+                type: NodeTypes.SIMPLE_EXPRESSION,
+                content: '{ bar }',
+              },
             },
           },
         },
@@ -361,18 +379,18 @@ describe('compiler: transform slot', () => {
         tag: 'Comp',
         slots: [
           {
-            slotType: DynamicSlotType.CONDITIONAL,
+            slotType: IRSlotType.CONDITIONAL,
             condition: { content: 'condition' },
             positive: {
-              slotType: DynamicSlotType.BASIC,
+              slotType: IRSlotType.DYNAMIC,
             },
             negative: {
-              slotType: DynamicSlotType.CONDITIONAL,
+              slotType: IRSlotType.CONDITIONAL,
               condition: { content: 'anotherCondition' },
               positive: {
-                slotType: DynamicSlotType.BASIC,
+                slotType: IRSlotType.DYNAMIC,
               },
-              negative: { slotType: DynamicSlotType.BASIC },
+              negative: { slotType: IRSlotType.DYNAMIC },
             },
           },
         ],

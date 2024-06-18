@@ -30,26 +30,30 @@ export type IRProps =
 export interface SlotBlockIRNode extends BlockIRNode {
   props?: SimpleExpressionNode
 }
-export type IRSlotsStatic = Record<string, SlotBlockIRNode>
 
-export enum DynamicSlotType {
-  BASIC,
+export enum IRSlotType {
+  STATIC,
+  DYNAMIC,
   LOOP,
   CONDITIONAL,
 }
+export type IRSlotsStatic = {
+  slotType: IRSlotType.STATIC
+  slots: Record<string, SlotBlockIRNode>
+}
 export interface IRSlotDynamicBasic {
-  slotType: DynamicSlotType.BASIC
+  slotType: IRSlotType.DYNAMIC
   name: SimpleExpressionNode
   fn: SlotBlockIRNode
 }
 export interface IRSlotDynamicLoop {
-  slotType: DynamicSlotType.LOOP
+  slotType: IRSlotType.LOOP
   name: SimpleExpressionNode
   fn: SlotBlockIRNode
   loop: IRFor
 }
 export interface IRSlotDynamicConditional {
-  slotType: DynamicSlotType.CONDITIONAL
+  slotType: IRSlotType.CONDITIONAL
   condition: SimpleExpressionNode
   positive: IRSlotDynamicBasic
   negative?: IRSlotDynamicBasic | IRSlotDynamicConditional
@@ -60,7 +64,3 @@ export type IRSlotDynamic =
   | IRSlotDynamicLoop
   | IRSlotDynamicConditional
 export type IRSlots = IRSlotsStatic | IRSlotDynamic
-
-export function isStaticSlotIR(slot: IRSlots): slot is IRSlotsStatic {
-  return !('slotType' in slot)
-}

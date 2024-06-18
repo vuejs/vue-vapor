@@ -2,7 +2,6 @@ import { camelize, extend, isArray } from '@vue/shared'
 import type { CodegenContext } from '../generate'
 import {
   type CreateComponentIRNode,
-  DynamicSlotType,
   IRDynamicPropsKind,
   type IRProp,
   type IRProps,
@@ -11,10 +10,10 @@ import {
   type IRSlotDynamicBasic,
   type IRSlotDynamicConditional,
   type IRSlotDynamicLoop,
+  IRSlotType,
   type IRSlots,
   type IRSlotsStatic,
   type SlotBlockIRNode,
-  isStaticSlotIR,
 } from '../ir'
 import {
   type CodeFragment,
@@ -159,14 +158,14 @@ function genRawSlots(slots: IRSlots[], context: CodegenContext) {
   return genMulti(
     DELIMITERS_ARRAY_NEWLINE,
     ...slots.map(slot =>
-      isStaticSlotIR(slot)
+      slot.slotType === IRSlotType.STATIC
         ? genStaticSlots(slot, context)
         : genDynamicSlot(slot, context, true),
     ),
   )
 }
 
-function genStaticSlots(slots: IRSlotsStatic, context: CodegenContext) {
+function genStaticSlots({ slots }: IRSlotsStatic, context: CodegenContext) {
   const names = Object.keys(slots)
   return genMulti(
     DELIMITERS_OBJECT_NEWLINE,
@@ -184,13 +183,13 @@ function genDynamicSlot(
 ): CodeFragment[] {
   let frag: CodeFragment[]
   switch (slot.slotType) {
-    case DynamicSlotType.BASIC:
+    case IRSlotType.DYNAMIC:
       frag = genBasicDynamicSlot(slot, context)
       break
-    case DynamicSlotType.LOOP:
+    case IRSlotType.LOOP:
       frag = genLoopSlot(slot, context)
       break
-    case DynamicSlotType.CONDITIONAL:
+    case IRSlotType.CONDITIONAL:
       frag = genConditionalSlot(slot, context)
       break
   }
