@@ -3,21 +3,24 @@ import {
   createSlot,
   createTextNode,
   defineComponent,
+  delegate,
+  delegateEvents,
+  insert,
   nextTick,
   reactive,
   ref,
   renderEffect,
   setDynamicProps,
-  setText,
+  template,
   watchEffect,
 } from '../src'
-import { mountComponent, renderToString, serializeHTML } from './_utils'
+import { makeRender } from './_utils'
 
-import type { Component } from '../src'
+const define = makeRender()
 
 describe('api: setup context', () => {
   it('should expose return values to template render context', () => {
-    const Comp: Component = {
+    const { html } = define({
       setup() {
         return {
           ref: ref('foo'),
@@ -28,26 +31,22 @@ describe('api: setup context', () => {
       render(ctx) {
         return createTextNode([`${ctx.ref} ${ctx.object.msg} ${ctx.value}`])
       },
-    }
-    expect(renderToString(Comp)).toMatch(`foo bar baz`)
+    }).render()
+    expect(html()).toMatch(`foo bar baz`)
   })
 
   it('should support returning render function', () => {
-    const Comp = {
+    const { html } = define({
       setup() {
         return createTextNode([`hello`])
       },
-    }
-    expect(renderToString(Comp)).toMatch(`hello`)
+    }).render()
+    expect(html()).toMatch(`hello`)
   })
 
-  it('should update when props change', async () => {
+  it('props', async () => {
     const count = ref(0)
     let dummy
-
-    const Parent: Component = {
-      render: () => createComponent(Child, { count: () => count.value }),
-    }
 
     const Child = defineComponent({
       props: { count: Number },
@@ -59,53 +58,101 @@ describe('api: setup context', () => {
       },
     })
 
-    const el = mountComponent(Parent)
-    expect(serializeHTML(el.host)).toMatch(`0`)
+    const { html } = define({
+      render: () => createComponent(Child, { count: () => count.value }),
+    }).render()
+
+    expect(html()).toMatch(`0`)
 
     count.value++
     await nextTick()
     expect(dummy).toBe(1)
-    expect(serializeHTML(el.host)).toMatch(`1`)
+    expect(html()).toMatch(`1`)
   })
 
-  it('should update when attributes change', async () => {
+  it('context.attrs', async () => {
     const toggle = ref(true)
 
-    const Parent: Component = {
-      render: () =>
-        createComponent(Child, () =>
-          toggle.value ? { id: 'foo' } : { class: 'baz' },
-        ),
-    }
-
-    const Child = {
+    const Child = defineComponent({
       inheritAttrs: false,
-      setup(props: any, { attrs }: any) {
+      setup(props, { attrs }) {
         const el = document.createElement('div')
         renderEffect(() => {
           setDynamicProps(el, attrs)
         })
         return el
       },
-    }
+    })
 
-    const el = mountComponent(Parent)
-    expect(serializeHTML(el.host)).toMatch(`<div id="foo"></div>`)
+    const { html } = define({
+      render: () =>
+        createComponent(Child, () =>
+          toggle.value ? { id: 'foo' } : { class: 'baz' },
+        ),
+    }).render()
+
+    expect(html()).toMatch(`<div id="foo"></div>`)
 
     toggle.value = false
     await nextTick()
-    expect(serializeHTML(el.host)).toMatch(`<div class="baz"></div>`)
+    expect(html()).toMatch(`<div class="baz"></div>`)
   })
 
-  it('should update when slots content change', async () => {
+  // #4161
+  it('context.attrs in child component slots', async () => {
+    const toggle = ref(true)
+
+    const Wrapper = defineComponent({
+      setup(_, { slots }) {
+        return slots.default!()
+      },
+    })
+
+    const Child = defineComponent({
+      inheritAttrs: false,
+      setup(_: any, { attrs }: any) {
+        return createComponent(Wrapper, null, {
+          default: () => {
+            const n0 = template('<div>')() as HTMLDivElement
+            renderEffect(() => {
+              setDynamicProps(n0, attrs)
+            })
+            return n0
+          },
+        })
+      },
+    })
+
+    const { html } = define({
+      render: () =>
+        createComponent(Child, () =>
+          toggle.value ? { id: 'foo' } : { class: 'baz' },
+        ),
+    }).render()
+
+    expect(html()).toMatch(`<div id="foo"></div>`)
+
+    // should update even though it's not reactive
+    toggle.value = false
+    await nextTick()
+    expect(html()).toMatch(`<div class="baz"></div>`)
+  })
+
+  it('context.slots', async () => {
     const id = ref('foo')
 
-    const Parent = {
+    const Child = defineComponent({
+      render() {
+        return [createSlot('foo'), createSlot('bar')]
+      },
+    })
+
+    const { html } = define({
       render() {
         return createComponent(Child, null, null, [
           () => ({
             name: 'foo',
-            fn: () => createTextNode([id.value]),
+            fn: () => createTextNode(() => [id.value]),
           }),
           () => ({
             name: 'bar',
@@ -113,61 +160,54 @@ describe('api: setup context', () => {
           }),
         ])
       },
-    }
+    }).render()
 
-    const Child: Component = {
-      render() {
-        return [createSlot('foo'), createSlot('bar')]
-      },
-    }
-
-    const el = mountComponent(Parent)
-    expect(serializeHTML(el.host)).toMatch(`foobar`)
+    expect(html()).toMatch(`foo<!--slot-->bar<!--slot-->`)
 
     id.value = 'baz'
     await nextTick()
-    expect(serializeHTML(el.host)).toMatch(`bazbar`)
+    expect(html()).toMatch(`baz<!--slot-->bar<!--slot-->`)
   })
 
-  it('should update when children emit event', async () => {
+  it('context.emit', async () => {
     const count = ref(0)
     const spy = vi.fn()
 
-    const Parent = {
-      render: () =>
-        createComponent(Child, () => ({
-          count: count.value,
-          onInc: (newVal: number) => {
-            spy()
-            count.value = newVal
-          },
-        })),
-    }
+    delegateEvents('click')
 
     const Child = defineComponent({
       props: {
-        count: {
-          type: Number,
-          default: 1,
-        },
+        count: { type: Number, default: 1 },
       },
       setup(props, { emit }) {
-        const el = document.createElement('div')
-        el.classList.add('foo')
-        el.addEventListener('click', () => emit('inc', props.count + 1))
-        renderEffect(() => {
-          setText(el, props.count)
+        const n0 = template('<div>')() as HTMLDivElement
+        delegate(n0, 'click', () => () => {
+          emit('inc', props.count + 1)
         })
-        return el
+        insert(
+          createTextNode(() => [props.count]),
+          n0,
+        )
+        return n0
       },
     })
 
-    const el = mountComponent(Parent)
-    expect(serializeHTML(el.host)).toMatch(`<div class="foo">0</div>`)
+    const { host, html } = define({
+      render: () =>
+        createComponent(Child, {
+          count: () => count.value,
+          onInc: () => (newVal: number) => {
+            spy()
+            count.value = newVal
+          },
+        }),
+    }).render()
 
-    el.host.querySelector<HTMLElement>('.foo')?.click()
+    expect(html()).toMatch(`<div>0</div>`)
+    ;(host.children[0] as HTMLDivElement).click()
+
     expect(spy).toHaveBeenCalled()
     await nextTick()
-    expect(serializeHTML(el.host)).toMatch(`<div class="foo">1</div>`)
+    expect(html()).toMatch(`<div>1</div>`)
   })
 })

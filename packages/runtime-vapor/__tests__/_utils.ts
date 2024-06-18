@@ -1,6 +1,5 @@
 import {
   type App,
-  type Component,
   type ComponentInternalInstance,
   type ObjectComponent,
   type SetupFn,
@@ -53,6 +52,10 @@ export function makeRender<Component = ObjectComponent | SetupFn>(
       return res()
     }
 
+    function html() {
+      return host.innerHTML
+    }
+
     const res = () => ({
       component,
       host,
@@ -62,28 +65,11 @@ export function makeRender<Component = ObjectComponent | SetupFn>(
       mount,
       render,
       resetHost,
+      html,
     })
 
     return res()
   }
 
   return define
-}
-
-const define = makeRender<any>()
-
-export function renderToString(comp: Component) {
-  const { mount } = define(comp).create()
-  return mount().host.innerHTML
-}
-
-export function mountComponent(comp: Component, container?: HTMLElement) {
-  const { mount } = define(comp).create()
-  return mount(container)
-}
-
-export function serializeHTML(html: string | Element): string {
-  if (typeof html !== 'string') html = html.innerHTML
-  html = html.replace(/<!--[^\-]*-->/g, '')
-  return html
 }
