@@ -2,6 +2,7 @@
 
 import {
   createComponent,
+  createForSlots,
   createSlot,
   createVaporApp,
   defineComponent,
@@ -256,6 +257,39 @@ describe('component: slots', () => {
     expect(instance.slots).toHaveProperty('four')
     expect(slotFn1).toHaveBeenCalledTimes(2)
     expect(slotFn2).toHaveBeenCalledTimes(2)
+  })
+
+  test('should work with createFlorSlots', async () => {
+    const loop = ref([1, 2, 3])
+
+    let instance: any
+    const Child = () => {
+      instance = getCurrentInstance()
+      return template('child')()
+    }
+
+    const { render } = define({
+      setup() {
+        return createComponent(Child, {}, [
+          () =>
+            createForSlots(loop.value, (item, i) => ({
+              name: item,
+              fn: () => template(item + i)(),
+            })),
+        ])
+      },
+    })
+    render()
+
+    expect(instance.slots).toHaveProperty('1')
+    expect(instance.slots).toHaveProperty('2')
+    expect(instance.slots).toHaveProperty('3')
+    loop.value.push(4)
+    await nextTick()
+    expect(instance.slots).toHaveProperty('4')
+    loop.value.shift()
+    await nextTick()
+    expect(instance.slots).not.toHaveProperty('1')
   })
 
   test.todo('should respect $stable flag', async () => {
