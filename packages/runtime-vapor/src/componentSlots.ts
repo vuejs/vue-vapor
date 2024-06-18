@@ -24,13 +24,8 @@ export type Slot<T extends any = any> = (
 ) => Block
 
 export type StaticSlots = Record<string, Slot>
-export interface DynamicSlot {
-  name: string
-  fn: Slot
-}
-export type DynamicSlotFn = () => DynamicSlot | undefined
-export type DynamicSlots = DynamicSlotFn[]
-export type NormalizedRawSlots = Array<StaticSlots | DynamicSlots>
+export type DynamicSlot = () => { name: string; fn: Slot } | undefined
+export type NormalizedRawSlots = Array<StaticSlots | DynamicSlot>
 export type RawSlots = NormalizedRawSlots | StaticSlots | null
 
 export function initSlots(
@@ -40,7 +35,7 @@ export function initSlots(
   if (!rawSlots) return
   if (!isArray(rawSlots)) rawSlots = [rawSlots]
 
-  if (rawSlots.length === 1 && !isArray(rawSlots[0])) {
+  if (rawSlots.length === 1 && !isFunction(rawSlots[0])) {
     instance.slots = rawSlots[0]
     return
   }
@@ -49,11 +44,9 @@ export function initSlots(
   firstEffect(instance, () => {
     const keys = new Set<string>()
     for (const slots of rawSlots) {
-      if (isArray(slots)) {
-        for (const slot of slots) {
-          const dynamicSlot = slot()
-          dynamicSlot && registerSlot(dynamicSlot.name, dynamicSlot.fn)
-        }
+      if (isFunction(slots)) {
+        const dynamicSlot = slots()
+        dynamicSlot && registerSlot(dynamicSlot.name, dynamicSlot.fn)
       } else {
         for (const name in slots) {
           registerSlot(name, slots[name])
