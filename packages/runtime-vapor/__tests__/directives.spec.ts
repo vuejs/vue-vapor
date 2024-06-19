@@ -1,4 +1,3 @@
-import { def } from '@vue/shared'
 import {
   type DirectiveBinding,
   type DirectiveHook,
@@ -405,20 +404,19 @@ describe('directives', () => {
     expect(res!).toBe('Test')
   })
 
-  // test('should not throw with unknown directive', async () => {
-  //   const d1 = {
-  //     mounted: vi.fn(),
-  //   }
-  //   const App = {
-  //     name: 'App',
-  //     render() {
-  //       // simulates the code generated on an unknown directive
-  //       return withDirectives(h('div'), [[undefined], [d1]])
-  //     },
-  //   }
+  test('should not throw with unknown directive', async () => {
+    const d1 = {
+      mounted: vi.fn(),
+    }
+    const App = {
+      name: 'App',
+      render() {
+        // simulates the code generated on an unknown directive
+        return withDirectives(template('<div>')(), [[undefined], [d1]])
+      },
+    }
 
-  //   const root = nodeOps.createElement('div')
-  //   render(h(App), root)
-  //   expect(d1.mounted).toHaveBeenCalled()
-  // })
+    define(App).render()
+    expect(d1.mounted).toHaveBeenCalled()
+  })
 })
