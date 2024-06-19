@@ -1,3 +1,4 @@
+import { def } from '@vue/shared'
 import {
   type DirectiveBinding,
   type DirectiveHook,
@@ -323,32 +324,31 @@ describe('directives', () => {
     expect(unmounted).toHaveBeenCalledTimes(1)
   })
 
-  // // #2298
-  // it('directive merging on component root', () => {
-  //   const d1 = {
-  //     mounted: vi.fn(),
-  //   }
-  //   const d2 = {
-  //     mounted: vi.fn(),
-  //   }
-  //   const Comp = {
-  //     render() {
-  //       return withDirectives(h('div'), [[d2]])
-  //     },
-  //   }
+  // #2298
+  it('directive merging on component root', () => {
+    const d1 = {
+      mounted: vi.fn(),
+    }
+    const d2 = {
+      mounted: vi.fn(),
+    }
+    const Comp: Component = {
+      render() {
+        return withDirectives(template('<div>')(), [[d2]])
+      },
+    }
 
-  //   const App = {
-  //     name: 'App',
-  //     render() {
-  //       return h('div', [withDirectives(h(Comp), [[d1]])])
-  //     },
-  //   }
+    const App = {
+      name: 'App',
+      render() {
+        return withDirectives(createComponent(Comp), [[d1]])
+      },
+    }
 
-  //   const root = nodeOps.createElement('div')
-  //   render(h(App), root)
-  //   expect(d1.mounted).toHaveBeenCalled()
-  //   expect(d2.mounted).toHaveBeenCalled()
-  // })
+    define(App).render()
+    expect(d1.mounted).toHaveBeenCalled()
+    expect(d2.mounted).toHaveBeenCalled()
+  })
 
   // test('should disable tracking inside directive lifecycle hooks', async () => {
   //   const count = ref(0)
