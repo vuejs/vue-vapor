@@ -3,6 +3,7 @@ import {
   type DirectiveBinding,
   type DirectiveHook,
   createComponent,
+  defineComponent,
   nextTick,
   ref,
   renderEffect,
@@ -381,30 +382,28 @@ describe('directives', () => {
     expect(count.value).toBe(1)
   })
 
-  // test('should receive exposeProxy for closed instances', async () => {
-  //   let res: string
-  //   const App = defineComponent({
-  //     setup(_, { expose }) {
-  //       expose({
-  //         msg: 'Test',
-  //       })
+  test('should receive exposeProxy for closed instances', async () => {
+    let res: string
+    const App = defineComponent({
+      setup(_, { expose }) {
+        expose({
+          msg: 'Test',
+        })
 
-  //       return () =>
-  //         withDirectives(h('p', 'Lore Ipsum'), [
-  //           [
-  //             {
-  //               mounted(el, { instance }) {
-  //                 res = (instance as any).msg as string
-  //               },
-  //             },
-  //           ],
-  //         ])
-  //     },
-  //   })
-  //   const root = nodeOps.createElement('div')
-  //   render(h(App), root)
-  //   expect(res!).toBe('Test')
-  // })
+        return withDirectives(template('<p>')(), [
+          [
+            {
+              mounted(el, { instance }) {
+                res = instance.exposed!.msg
+              },
+            },
+          ],
+        ])
+      },
+    })
+    define(App).render()
+    expect(res!).toBe('Test')
+  })
 
   // test('should not throw with unknown directive', async () => {
   //   const d1 = {
