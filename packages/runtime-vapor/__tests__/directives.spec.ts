@@ -38,7 +38,7 @@ describe('directives', () => {
 
       assertBindings(binding)
 
-      expect(el).toBe(_vnode)
+      expect(el).toBe(_node)
     }) as DirectiveHook)
 
     const mounted = vi.fn(((el, binding) => {
@@ -100,18 +100,17 @@ describe('directives', () => {
     }
 
     let _instance: ComponentInternalInstance | null = null
-    let _vnode: Node | null = null
+    let _node: Node | null = null
     const Comp: Component = {
       setup() {
         _instance = currentInstance
       },
       render() {
-        const node = template('<div>')()
-        _vnode = node
+        _node = template('<div>')()
         renderEffect(() => {
-          setText(node, count.value)
+          setText(_node!, count.value)
         })
-        withDirectives(node, [
+        withDirectives(_node, [
           [
             dir,
             // value
@@ -122,7 +121,7 @@ describe('directives', () => {
             { ok: true },
           ],
         ])
-        return node
+        return _node
       },
     }
 
@@ -143,59 +142,58 @@ describe('directives', () => {
     expect(unmounted).toHaveBeenCalledTimes(1)
   })
 
-  // it('should work with a function directive', async () => {
-  //   const count = ref(0)
+  it('should work with a function directive', async () => {
+    const count = ref(0)
 
-  //   function assertBindings(binding: DirectiveBinding) {
-  //     expect(binding.value).toBe(count.value)
-  //     expect(binding.arg).toBe('foo')
-  //     expect(binding.instance).toBe(_instance && _instance.proxy)
-  //     expect(binding.modifiers && binding.modifiers.ok).toBe(true)
-  //   }
+    function assertBindings(binding: DirectiveBinding) {
+      expect(binding.value).toBe(count.value)
+      expect(binding.arg).toBe('foo')
+      expect(binding.instance).toBe(_instance)
+      expect(binding.modifiers && binding.modifiers.ok).toBe(true)
+    }
 
-  //   const fn = vi.fn(((el, binding, vnode, prevVNode) => {
-  //     expect(el.tag).toBe('div')
-  //     expect(el.parentNode).toBe(root)
+    const fn = vi.fn(((el, binding) => {
+      expect(el.tagName).toBe('DIV')
+      expect(el.parentNode).toBe(host)
 
-  //     assertBindings(binding)
+      assertBindings(binding)
+    }) as DirectiveHook)
 
-  //     expect(vnode).toBe(_vnode)
-  //     expect(prevVNode).toBe(_prevVnode)
-  //   }) as DirectiveHook)
+    let _instance: ComponentInternalInstance | null = null
+    let _node: Node | null = null
+    const Comp = {
+      setup() {
+        _instance = currentInstance
+      },
+      render() {
+        _node = template('<div>')()
+        renderEffect(() => {
+          setText(_node!, count.value)
+        })
+        withDirectives(_node, [
+          [
+            fn,
+            // value
+            () => count.value,
+            // argument
+            'foo',
+            // modifiers
+            { ok: true },
+          ],
+        ])
+        return _node
+      },
+    }
 
-  //   let _instance: ComponentInternalInstance | null = null
-  //   let _vnode: VNode | null = null
-  //   let _prevVnode: VNode | null = null
-  //   const Comp = {
-  //     setup() {
-  //       _instance = currentInstance
-  //     },
-  //     render() {
-  //       _prevVnode = _vnode
-  //       _vnode = withDirectives(h('div', count.value), [
-  //         [
-  //           fn,
-  //           // value
-  //           count.value,
-  //           // argument
-  //           'foo',
-  //           // modifiers
-  //           { ok: true },
-  //         ],
-  //       ])
-  //       return _vnode
-  //     },
-  //   }
+    const { host, render } = define(Comp)
+    render()
 
-  //   const root = nodeOps.createElement('div')
-  //   render(h(Comp), root)
+    expect(fn).toHaveBeenCalledTimes(1)
 
-  //   expect(fn).toHaveBeenCalledTimes(1)
-
-  //   count.value++
-  //   await nextTick()
-  //   expect(fn).toHaveBeenCalledTimes(2)
-  // })
+    count.value++
+    await nextTick()
+    expect(fn).toHaveBeenCalledTimes(2)
+  })
 
   // it('should work on component vnode', async () => {
   //   const count = ref(0)
