@@ -195,7 +195,7 @@ describe('directives', () => {
     expect(fn).toHaveBeenCalledTimes(2)
   })
 
-  it('should work on component vnode', async () => {
+  it('should work on components', async () => {
     const count = ref(0)
 
     function assertBindings(binding: DirectiveBinding) {
