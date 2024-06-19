@@ -10,7 +10,6 @@ import {
   template,
   withDirectives,
 } from '../src'
-import { unmountComponent } from '../src/apiRender'
 import {
   type Component,
   type ComponentInternalInstance,
@@ -102,7 +101,8 @@ describe('directives', () => {
 
     let _instance: ComponentInternalInstance | null = null
     let _node: Node | null = null
-    const Comp: Component = {
+
+    const { host, render } = define({
       setup() {
         _instance = currentInstance
       },
@@ -124,10 +124,8 @@ describe('directives', () => {
         ])
         return _node
       },
-    }
-
-    const { host, render } = define(Comp)
-    const { instance } = render()
+    })
+    const { app } = render()
 
     expect(beforeMount).toHaveBeenCalledTimes(1)
     expect(mounted).toHaveBeenCalledTimes(1)
@@ -137,7 +135,7 @@ describe('directives', () => {
     expect(beforeUpdate).toHaveBeenCalledTimes(1)
     expect(updated).toHaveBeenCalledTimes(1)
 
-    unmountComponent(instance!)
+    app.unmount()
     expect(beforeUnmount).toHaveBeenCalledTimes(1)
     expect(unmounted).toHaveBeenCalledTimes(1)
   })
@@ -290,7 +288,7 @@ describe('directives', () => {
       render() {
         _node = template('<div>')()
         return withDirectives(
-          createComponent(Child, [{ count: () => count.value }]),
+          createComponent(Child, { count: () => count.value }),
           [
             [
               dir,
