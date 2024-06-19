@@ -350,33 +350,36 @@ describe('directives', () => {
     expect(d2.mounted).toHaveBeenCalled()
   })
 
-  // test('should disable tracking inside directive lifecycle hooks', async () => {
-  //   const count = ref(0)
-  //   const text = ref('')
-  //   const beforeUpdate = vi.fn(() => count.value++)
+  test('should disable tracking inside directive lifecycle hooks', async () => {
+    const count = ref(0)
+    const text = ref('')
+    const beforeUpdate = vi.fn(() => count.value++)
 
-  //   const App = {
-  //     render() {
-  //       return withDirectives(h('p', text.value), [
-  //         [
-  //           {
-  //             beforeUpdate,
-  //           },
-  //         ],
-  //       ])
-  //     },
-  //   }
+    const App = {
+      render() {
+        const node = template('<p>')()
+        renderEffect(() => {
+          setText(node, text.value)
+        })
+        return withDirectives(node, [
+          [
+            {
+              beforeUpdate,
+            },
+          ],
+        ])
+      },
+    }
 
-  //   const root = nodeOps.createElement('div')
-  //   render(h(App), root)
-  //   expect(beforeUpdate).toHaveBeenCalledTimes(0)
-  //   expect(count.value).toBe(0)
+    define(App).render()
+    expect(beforeUpdate).toHaveBeenCalledTimes(0)
+    expect(count.value).toBe(0)
 
-  //   text.value = 'foo'
-  //   await nextTick()
-  //   expect(beforeUpdate).toHaveBeenCalledTimes(1)
-  //   expect(count.value).toBe(1)
-  // })
+    text.value = 'foo'
+    await nextTick()
+    expect(beforeUpdate).toHaveBeenCalledTimes(1)
+    expect(count.value).toBe(1)
+  })
 
   // test('should receive exposeProxy for closed instances', async () => {
   //   let res: string
