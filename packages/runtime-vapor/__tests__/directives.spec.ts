@@ -32,7 +32,6 @@ describe('directives', () => {
     }
 
     const beforeMount = vi.fn(((el, binding) => {
-      console.log(el)
       expect(el.tagName).toBe('DIV')
       // should not be inserted yet
       expect(el.parentNode).toBe(null)
@@ -138,7 +137,6 @@ describe('directives', () => {
     expect(beforeUpdate).toHaveBeenCalledTimes(1)
     expect(updated).toHaveBeenCalledTimes(1)
 
-    console.log(instance)
     unmountComponent(instance!)
     expect(beforeUnmount).toHaveBeenCalledTimes(1)
     expect(unmounted).toHaveBeenCalledTimes(1)
