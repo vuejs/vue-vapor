@@ -149,30 +149,29 @@ describe('error handling', () => {
     expect(fn).toHaveBeenCalledWith(err2, 'errorCaptured hook')
   })
 
-  // test('setup function', () => {
-  //   const err = new Error('foo')
-  //   const fn = vi.fn()
+  test('setup function', () => {
+    const err = new Error('foo')
+    const fn = vi.fn()
 
-  //   const Comp = {
-  //     setup() {
-  //       onErrorCaptured((err, instance, info) => {
-  //         fn(err, info)
-  //         return false
-  //       })
-  //       return () => h(Child)
-  //     },
-  //   }
+    const Comp = {
+      setup() {
+        onErrorCaptured((err, instance, info) => {
+          fn(err, info)
+          return false
+        })
+        return createComponent(Child)
+      },
+    }
 
-  //   const Child = {
-  //     setup() {
-  //       throw err
-  //     },
-  //     render() {},
-  //   }
+    const Child = {
+      setup() {
+        throw err
+      },
+    }
 
-  //   render(h(Comp), nodeOps.createElement('div'))
-  //   expect(fn).toHaveBeenCalledWith(err, 'setup function')
-  // })
+    define(Comp).render()
+    expect(fn).toHaveBeenCalledWith(err, 'setup function')
+  })
 
   // // unlike other lifecycle hooks, created/beforeCreate are called as part of
   // // the options API initialization process instead of by the renderer.
