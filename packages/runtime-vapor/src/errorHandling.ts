@@ -3,16 +3,15 @@
 // The ultimate aim is to uncouple this replicated code and
 // facilitate its shared use between two runtimes.
 
+import type { ComponentInternalInstance } from './component'
+import { isFunction, isPromise } from '@vue/shared'
+import { warn } from './warning'
+import { VaporLifecycleHooks } from './enums'
 import {
   BaseWatchErrorCodes,
   pauseTracking,
   resetTracking,
 } from '@vue/reactivity'
-import { isFunction, isPromise } from '@vue/shared'
-
-import type { ComponentInternalInstance } from './component'
-import { VaporLifecycleHooks } from './enums'
-import { warn } from './warning'
 
 // contexts where user provided function may be executed, in addition to
 // lifecycle hooks.
