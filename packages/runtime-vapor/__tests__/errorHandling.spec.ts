@@ -46,43 +46,42 @@ describe('error handling', () => {
     expect(fn).toHaveBeenCalledWith(err, 'mounted hook', 'child')
   })
 
-  // test('propagation stoppage', () => {
-  //   const err = new Error('foo')
-  //   const fn = vi.fn()
+  test('propagation stoppage', () => {
+    const err = new Error('foo')
+    const fn = vi.fn()
 
-  //   const Comp = {
-  //     setup() {
-  //       onErrorCaptured((err, instance, info) => {
-  //         fn(err, info, 'root')
-  //         return false
-  //       })
-  //       return () => h(Child)
-  //     },
-  //   }
+    const Comp = {
+      setup() {
+        onErrorCaptured((err, instance, info) => {
+          fn(err, info, 'root')
+          return false
+        })
+        return createComponent(Child)
+      },
+    }
 
-  //   const Child = {
-  //     setup() {
-  //       onErrorCaptured((err, instance, info) => {
-  //         fn(err, info, 'child')
-  //         return false
-  //       })
-  //       return () => h(GrandChild)
-  //     },
-  //   }
+    const Child = {
+      setup() {
+        onErrorCaptured((err, instance, info) => {
+          fn(err, info, 'child')
+          return false
+        })
+        return createComponent(GrandChild)
+      },
+    }
 
-  //   const GrandChild = {
-  //     setup() {
-  //       onMounted(() => {
-  //         throw err
-  //       })
-  //       return () => null
-  //     },
-  //   }
+    const GrandChild = {
+      setup() {
+        onMounted(() => {
+          throw err
+        })
+      },
+    }
 
-  //   render(h(Comp), nodeOps.createElement('div'))
-  //   expect(fn).toHaveBeenCalledTimes(1)
-  //   expect(fn).toHaveBeenCalledWith(err, 'mounted hook', 'child')
-  // })
+    define(Comp).render()
+    expect(fn).toHaveBeenCalledTimes(1)
+    expect(fn).toHaveBeenCalledWith(err, 'mounted hook', 'child')
+  })
 
   // test('async error handling', async () => {
   //   const err = new Error('foo')
