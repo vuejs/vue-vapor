@@ -40,12 +40,21 @@ export function initSlots(
   if (!rawSlots) return
   if (!isArray(rawSlots)) rawSlots = [rawSlots]
 
-  if (rawSlots.length === 1 && !isDynamicSlotFn(rawSlots[0])) {
-    instance.slots = rawSlots[0]
+  const hasDynamicSlots = rawSlots.length > 1 || isDynamicSlotFn(rawSlots[0])
+
+  const resolved: StaticSlots = (instance.slots = hasDynamicSlots
+    ? shallowReactive({})
+    : {})
+
+  if (!hasDynamicSlots) {
+    // with ctx
+    const slots = rawSlots[0] as StaticSlots
+    for (const name in slots) {
+      registerSlot(name, slots[name])
+    }
     return
   }
 
-  const resolved: StaticSlots = (instance.slots = shallowReactive({}))
   const keys: Set<string>[] = []
   rawSlots.forEach((slots, index) => {
     const isDynamicSlot = isDynamicSlotFn(slots)
