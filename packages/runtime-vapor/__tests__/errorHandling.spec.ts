@@ -83,34 +83,33 @@ describe('error handling', () => {
     expect(fn).toHaveBeenCalledWith(err, 'mounted hook', 'child')
   })
 
-  // test('async error handling', async () => {
-  //   const err = new Error('foo')
-  //   const fn = vi.fn()
+  test('async error handling', async () => {
+    const err = new Error('foo')
+    const fn = vi.fn()
 
-  //   const Comp = {
-  //     setup() {
-  //       onErrorCaptured((err, instance, info) => {
-  //         fn(err, info)
-  //         return false
-  //       })
-  //       return () => h(Child)
-  //     },
-  //   }
+    const Comp = {
+      setup() {
+        onErrorCaptured((err, instance, info) => {
+          fn(err, info)
+          return false
+        })
+        return createComponent(Child)
+      },
+    }
 
-  //   const Child = {
-  //     setup() {
-  //       onMounted(async () => {
-  //         throw err
-  //       })
-  //     },
-  //     render() {},
-  //   }
+    const Child = {
+      setup() {
+        onMounted(async () => {
+          throw err
+        })
+      },
+    }
 
-  //   render(h(Comp), nodeOps.createElement('div'))
-  //   expect(fn).not.toHaveBeenCalled()
-  //   await new Promise(r => setTimeout(r))
-  //   expect(fn).toHaveBeenCalledWith(err, 'mounted hook')
-  // })
+    define(Comp).render()
+    expect(fn).not.toHaveBeenCalled()
+    await new Promise(r => setTimeout(r))
+    expect(fn).toHaveBeenCalledWith(err, 'mounted hook')
+  })
 
   // test('error thrown in onErrorCaptured', () => {
   //   const err = new Error('foo')
