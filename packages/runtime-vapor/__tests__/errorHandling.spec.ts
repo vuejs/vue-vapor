@@ -111,44 +111,43 @@ describe('error handling', () => {
     expect(fn).toHaveBeenCalledWith(err, 'mounted hook')
   })
 
-  // test('error thrown in onErrorCaptured', () => {
-  //   const err = new Error('foo')
-  //   const err2 = new Error('bar')
-  //   const fn = vi.fn()
+  test('error thrown in onErrorCaptured', () => {
+    const err = new Error('foo')
+    const err2 = new Error('bar')
+    const fn = vi.fn()
 
-  //   const Comp = {
-  //     setup() {
-  //       onErrorCaptured((err, instance, info) => {
-  //         fn(err, info)
-  //         return false
-  //       })
-  //       return () => h(Child)
-  //     },
-  //   }
+    const Comp = {
+      setup() {
+        onErrorCaptured((err, instance, info) => {
+          fn(err, info)
+          return false
+        })
+        return createComponent(Child)
+      },
+    }
 
-  //   const Child = {
-  //     setup() {
-  //       onErrorCaptured(() => {
-  //         throw err2
-  //       })
-  //       return () => h(GrandChild)
-  //     },
-  //   }
+    const Child = {
+      setup() {
+        onErrorCaptured(() => {
+          throw err2
+        })
+        return createComponent(GrandChild)
+      },
+    }
 
-  //   const GrandChild = {
-  //     setup() {
-  //       onMounted(() => {
-  //         throw err
-  //       })
-  //       return () => null
-  //     },
-  //   }
+    const GrandChild = {
+      setup() {
+        onMounted(() => {
+          throw err
+        })
+      },
+    }
 
-  //   render(h(Comp), nodeOps.createElement('div'))
-  //   expect(fn).toHaveBeenCalledTimes(2)
-  //   expect(fn).toHaveBeenCalledWith(err, 'mounted hook')
-  //   expect(fn).toHaveBeenCalledWith(err2, 'errorCaptured hook')
-  // })
+    define(Comp).render()
+    expect(fn).toHaveBeenCalledTimes(2)
+    expect(fn).toHaveBeenCalledWith(err, 'mounted hook')
+    expect(fn).toHaveBeenCalledWith(err2, 'errorCaptured hook')
+  })
 
   // test('setup function', () => {
   //   const err = new Error('foo')
