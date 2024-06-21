@@ -1,7 +1,7 @@
-import { builtinModules } from 'node:module'
 import importX from 'eslint-plugin-import-x'
 import tseslint from 'typescript-eslint'
 import vitest from 'eslint-plugin-vitest'
+import { builtinModules } from 'node:module'
 
 const DOMGlobals = ['window', 'document']
 const NodeGlobals = ['module', 'require']
