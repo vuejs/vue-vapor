@@ -223,7 +223,7 @@ exports[`compile > expression parsing > v-for 1`] = `
 exports[`compile > expression parsing > v-on 1`] = `
 "(() => {
   const n0 = t0()
-  _delegate(n0, "click", () => e => fn(e,'arg'))
+  _delegate(n0, "click", () => e => fn(e,'str',...args))
   return n0
 })()"
 `;

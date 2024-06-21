@@ -194,11 +194,13 @@ describe('compile', () => {
     })
 
     test('v-on', () => {
-      const code = compile(`<div v-on:click="e => fn(e,'arg')" />`, {
+      const code = compile(`<div v-on:click="e => fn(e,'str',...args)" />`, {
         inline: true,
       })
       expect(code).matchSnapshot()
-      expect(code).contains('_delegate(n0, "click", () => e => fn(e,\'arg\'))')
+      expect(code).contains(
+        '_delegate(n0, "click", () => e => fn(e,\'str\',...args))',
+      )
     })
 
     test('v-for', () => {
