@@ -193,7 +193,47 @@ describe('compile', () => {
       expect(code).contains('_unref(foo)[key.value+1]()')
     })
 
-    // TODO: add more test for expression parsing (v-on, v-slot, v-for)
+    test('v-on', () => {
+      const code = compile(`<div v-on:click="e => fn(e,'arg')" />`, {
+        inline: true,
+      })
+      expect(code).matchSnapshot()
+      expect(code).contains('_delegate(n0, "click", () => e => fn(e,\'arg\'))')
+    })
+
+    test('v-for', () => {
+      const code = compile(
+        `<div v-for="list in lists"><div v-for="child in list.children"> {{ child }} </div></div>`,
+        {
+          inline: true,
+        },
+      )
+      expect(code).matchSnapshot()
+    })
+
+    test('v-slot', () => {
+      const code = compile(
+        `
+    <script setup lang="ts">
+    import { Foo, Bar, Baz, Qux, Fred } from './x'
+    const a = 1
+    function b() {}
+    </script>
+    <template>
+      {{ a as Foo }}
+      {{ b<Bar>() }}
+      {{ Baz }}
+      <Comp v-slot="{ data }: Qux">{{ data }}</Comp>
+      <div v-for="{ z = x as Qux } in list as Fred"/>
+    </template>
+    `,
+        {
+          inline: true,
+        },
+      )
+      expect(code).matchSnapshot()
+      expect(code).contains('[a as Foo, " ", b<Bar>(), " ", Baz, " "]')
+    })
   })
 
   describe('custom directive', () => {
