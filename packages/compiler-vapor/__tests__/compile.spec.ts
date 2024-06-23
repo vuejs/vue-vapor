@@ -216,11 +216,6 @@ describe('compile', () => {
     test('v-slot', () => {
       const code = compile(
         `
-    <script setup lang="ts">
-    import { Foo, Bar, Baz, Qux, Fred } from './x'
-    const a = 1
-    function b() {}
-    </script>
     <template>
       {{ a as Foo }}
       {{ b<Bar>() }}
