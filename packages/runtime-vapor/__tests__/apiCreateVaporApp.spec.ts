@@ -332,4 +332,18 @@ describe('api: createVaporApp', () => {
       expect(window.performance.getEntries()).lengthOf(0)
     })
   })
+
+  test('config.globalProperty', () => {
+    const { app, mount, host } = define({
+      render(ctx) {
+        const instance = getCurrentInstance()
+        return createTextNode([
+          instance?.appContext.config.globalProperties.val,
+        ])
+      },
+    }).create()
+    app.config.globalProperties.val = 'hello world'
+    mount()
+    expect(host.innerHTML).toBe('hello world')
+  })
 })
