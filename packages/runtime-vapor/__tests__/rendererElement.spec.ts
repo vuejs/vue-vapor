@@ -7,7 +7,7 @@ describe('renderer: element', () => {
   it('should create an element', () => {
     const { html } = define({
       render() {
-        return template(`<div></div>`)()
+        return template(`<div>`)()
       },
     }).render()
 
@@ -16,11 +16,8 @@ describe('renderer: element', () => {
 
   it('should create an element with props', () => {
     const { html } = define({
-      setup() {
-        const el = document.createElement('div')
-        el.id = 'foo'
-        el.className = 'bar'
-        return el
+      render() {
+        return template(`<div id="foo" class="bar">`)()
       },
     }).render()
 
