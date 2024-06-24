@@ -24,17 +24,15 @@ describe('renderer: element', () => {
     expect(html()).toBe('<div id="foo" class="bar"></div>')
   })
 
-  // it('should create an element with direct text children', () => {
-  //   const { html } = define({
-  //     setup() {
-  //       const el = document.createElement('div')
-  //       el.textContent = 'foo bar'
-  //       return el
-  //     },
-  //   }).render()
+  it('should create an element with direct text children', () => {
+    const { html } = define({
+      render() {
+        return template(`<div>foo bar`)()
+      },
+    }).render()
 
-  //   expect(html()).toBe('<div>foo bar</div>')
-  // })
+    expect(html()).toBe('<div>foo bar</div>')
+  })
 
   // it('should create an element with direct text children and props', () => {
   //   const { html } = define({
