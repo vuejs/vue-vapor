@@ -34,18 +34,15 @@ describe('renderer: element', () => {
     expect(html()).toBe('<div>foo bar</div>')
   })
 
-  // it('should create an element with direct text children and props', () => {
-  //   const { html } = define({
-  //     setup() {
-  //       const el = document.createElement('div')
-  //       el.id = 'foo'
-  //       el.textContent = 'bar'
-  //       return el
-  //     },
-  //   }).render()
+  it('should create an element with direct text children and props', () => {
+    const { html } = define({
+      render() {
+        return template(`<div id="foo">bar`)()
+      },
+    }).render()
 
-  //   expect(html()).toBe('<div id="foo">bar</div>')
-  // })
+    expect(html()).toBe('<div id="foo">bar</div>')
+  })
 
   // it('should update an element tag which is already mounted', () => {
   //   render(h('div', ['foo']), root)
