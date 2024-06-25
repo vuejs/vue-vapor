@@ -334,7 +334,7 @@ describe('api: createVaporApp', () => {
   })
 
   test('config.globalProperty', () => {
-    const { app, mount, host } = define({
+    const { app, mount, html } = define({
       render(ctx) {
         const instance = getCurrentInstance()
         return createTextNode([
@@ -344,6 +344,6 @@ describe('api: createVaporApp', () => {
     }).create()
     app.config.globalProperties.val = 'hello world'
     mount()
-    expect(host.innerHTML).toBe('hello world')
+    expect(html()).toBe('hello world')
   })
 })
