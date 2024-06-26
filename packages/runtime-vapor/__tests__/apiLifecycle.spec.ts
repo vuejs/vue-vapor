@@ -136,7 +136,7 @@ describe('api: lifecycle hooks', () => {
   it('onBeforeUnmount', async () => {
     const toggle = ref(true)
     const fn = vi.fn(() => {
-      expect(host.innerHTML).toBe('<div></div>')
+      expect(host.innerHTML).toBe('<div></div><!--if-->')
     })
     const { render, host } = define({
       setup() {
@@ -172,7 +172,7 @@ describe('api: lifecycle hooks', () => {
   it('onUnmounted', async () => {
     const toggle = ref(true)
     const fn = vi.fn(() => {
-      expect(host.innerHTML).toBe('<div></div>')
+      expect(host.innerHTML).toBe('<!--if-->')
     })
     const { render, host } = define({
       setup() {
@@ -208,7 +208,7 @@ describe('api: lifecycle hooks', () => {
   it('onBeforeUnmount in onMounted', async () => {
     const toggle = ref(true)
     const fn = vi.fn(() => {
-      expect(host.innerHTML).toBe('<div></div>')
+      expect(host.innerHTML).toBe('<div></div><!--if-->')
     })
     const { render, host } = define({
       setup() {

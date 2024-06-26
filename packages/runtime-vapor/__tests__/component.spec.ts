@@ -96,9 +96,9 @@ describe('component', () => {
       'root beforeMount',
       'mid beforeMount',
       'child beforeMount',
-      'child mounted',
-      'mid mounted',
       'root mounted',
+      'mid mounted',
+      'child mounted',
     ])
 
     calls.length = 0
@@ -134,8 +134,8 @@ describe('component', () => {
       'root beforeUpdate',
       'mid beforeUnmount',
       'child beforeUnmount',
-      'child unmounted',
       'mid unmounted',
+      'child unmounted',
       'root updated',
     ])
 
@@ -150,8 +150,8 @@ describe('component', () => {
       'child created',
       'mid beforeMount',
       'child beforeMount',
-      'child mounted',
       'mid mounted',
+      'child mounted',
       'root updated',
     ])
   })
