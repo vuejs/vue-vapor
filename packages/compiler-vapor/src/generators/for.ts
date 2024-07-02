@@ -42,7 +42,7 @@ export function genFor(
   }
 
   const [depth, exitScope] = context.enterScope()
-  let propsName = ''
+  let propsName: string
   const idMap: Record<string, string | null> = {}
   if (context.options.prefixIdentifiers) {
     propsName = `_ctx${depth}`
@@ -52,7 +52,7 @@ export function genFor(
     if (rawKey) idMap[rawKey] = `${propsName}[${idsOfValue.size}]`
     if (rawIndex) idMap[rawIndex] = `${propsName}[${idsOfValue.size + 1}]`
   } else {
-    propsName = `[${[rawValue, rawKey, rawIndex].filter(Boolean).join(', ')}]`
+    propsName = `[${[rawValue || ((rawKey || rawIndex) && '_'), rawKey || (rawIndex && '__'), rawIndex].filter(Boolean).join(', ')}]`
   }
 
   let blockFn = context.withId(

@@ -35,11 +35,11 @@ exports[`compiler: v-for > function params w/ prefixIdentifiers: false 1`] = `
 const t0 = _template("<div></div>")
 
 export function render(_ctx) {
-  const n0 = _createFor(() => (items), ([item, i]) => {
+  const n0 = _createFor(() => (items), ([item, __, k]) => {
     const n2 = t0()
     _renderEffect(() => _setText(n2, item))
     return n2
-  }, (item, i) => (i))
+  }, (item, __, k) => (k))
   return n0
 }"
 `;
