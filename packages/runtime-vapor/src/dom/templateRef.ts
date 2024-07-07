@@ -20,7 +20,6 @@ import {
 } from '@vue/shared'
 import { warn } from '../warning'
 import { queuePostFlushCb } from '../scheduler'
-import { isAsyncWrapper } from '../apiAsyncComponent'
 
 export type NodeRef = string | Ref | ((ref: Element) => void)
 export type RefEl = Element | ComponentInternalInstance
