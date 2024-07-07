@@ -2,7 +2,6 @@ import {
   type Component,
   type ComponentInternalInstance,
   currentInstance,
-  getCurrentInstance,
 } from './component'
 import { isFunction, isObject } from '@vue/shared'
 import { defineComponent } from './apiDefineComponent'
@@ -10,11 +9,9 @@ import { warn } from './warning'
 import { ref } from '@vue/reactivity'
 import { VaporErrorCodes, handleError } from './errorHandling'
 // import { isKeepAlive } from './components/KeepAlive'
-import { queueJob } from './scheduler'
 import { createComponent } from './apiCreateComponent'
-import { renderEffect } from './renderEffect'
 import { createIf } from './apiCreateIf'
-import { template } from '@vue/vapor'
+import { onMounted, onUnmounted } from './apiLifecycle'
 
 export type AsyncComponentResolveResult<T = Component> = T | { default: T } // es modules
 
@@ -38,7 +35,7 @@ export interface AsyncComponentOptions<T = any> {
 }
 
 export const isAsyncWrapper = (i: ComponentInternalInstance): boolean =>
-  !!i.component.__asyncLoader
+  !!i.type.__asyncLoader
 
 /*! #__NO_SIDE_EFFECTS__ */
 export function defineAsyncComponent<T extends Component = Component>(
@@ -197,47 +194,30 @@ export function defineAsyncComponent<T extends Component = Component>(
           error.value = err
         })
 
-      // if (loaded.value && resolvedComp) {
-      //   return createInnerComp(resolvedComp, instance)
-      // } else if (error.value && errorComponent) {
-      //   return createComponent(errorComponent, [{ error: () => error.value }])
-      // } else if (loadingComponent && !delayed.value) {
-      //   return createComponent(loadingComponent)
-      // }
-      return {
-        loaded,
-        error,
-        delayed,
-      }
-    },
-    render(ctx) {
-      const instance = getCurrentInstance()!
-      return [
-        createIf(
-          () => ctx.loaded && resolvedComp,
-          () => {
-            return createInnerComp(resolvedComp!, instance)
-          },
-          () =>
-            createIf(
-              () => ctx.error && errorComponent,
-              () =>
-                createComponent(errorComponent!, [{ error: () => ctx.error }]),
-              () =>
-                createIf(
-                  () => loadingComponent && !ctx.delayed,
-                  () => createComponent(loadingComponent!),
-                ),
-            ),
-        ),
-      ]
+      return createIf(
+        () => loaded.value && resolvedComp,
+        () => {
+          return createInnerComp(resolvedComp!, instance)
+        },
+        () =>
+          createIf(
+            () => error.value && errorComponent,
+            () =>
+              createComponent(errorComponent!, [{ error: () => error.value }]),
+            () =>
+              createIf(
+                () => loadingComponent && !delayed.value,
+                () => createComponent(loadingComponent!),
+              ),
+          ),
+      )
     },
   }) as T
 }
 
 function createInnerComp(comp: Component, parent: ComponentInternalInstance) {
-  const { rawProps: props, rawSlots, rawDynamicSlots } = parent
-  const innerComp = createComponent(comp, props, rawSlots, rawDynamicSlots)
+  const { rawProps: props, rawSlots: slots } = parent
+  const innerComp = createComponent(comp, props, slots)
   // const vnode = createVNode(comp, props, children)
   // // ensure inner component inherits the async wrapper's ref owner
   innerComp.refs = parent.refs
