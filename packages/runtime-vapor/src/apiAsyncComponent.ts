@@ -8,10 +8,8 @@ import { defineComponent } from './apiDefineComponent'
 import { warn } from './warning'
 import { ref } from '@vue/reactivity'
 import { VaporErrorCodes, handleError } from './errorHandling'
-// import { isKeepAlive } from './components/KeepAlive'
 import { createComponent } from './apiCreateComponent'
 import { createIf } from './apiCreateIf'
-import { onMounted, onUnmounted } from './apiLifecycle'
 
 export type AsyncComponentResolveResult<T = Component> = T | { default: T } // es modules
 
@@ -51,7 +49,7 @@ export function defineAsyncComponent<T extends Component = Component>(
     errorComponent,
     delay = 200,
     timeout, // undefined = never times out
-    suspensible = true,
+    // suspensible = true,
     onError: userOnError,
   } = source
 

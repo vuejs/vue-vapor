@@ -38,7 +38,7 @@ export function setRef(
   const { setupState, isUnmounted } = currentInstance
 
   const isComponent = isVaporComponent(el)
-  const isAsync = isComponent && isAsyncWrapper(currentInstance)
+  // const isAsync = isComponent && isAsyncWrapper(currentInstance)
 
   if (isUnmounted) {
     return
