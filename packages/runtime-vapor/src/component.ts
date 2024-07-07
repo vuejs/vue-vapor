@@ -22,13 +22,8 @@ import {
   emit,
   normalizeEmitsOptions,
 } from './componentEmits'
-import {
-  type DynamicSlots,
-  type InternalSlots,
-  type Slots,
-  initSlots,
-} from './componentSlots'
-import { VaporLifecycleHooks } from './apiLifecycle'
+import { type RawSlots, type StaticSlots, initSlots } from './componentSlots'
+import { VaporLifecycleHooks } from './enums'
 import { warn } from './warning'
 import {
   type AppConfig,
@@ -51,7 +46,7 @@ export type SetupContext<E = EmitsOptions> = E extends any
       attrs: Data
       emit: EmitFn<E>
       expose: (exposed?: Record<string, any>) => void
-      slots: Readonly<InternalSlots>
+      slots: Readonly<StaticSlots>
     }
   : never
 
@@ -170,13 +165,14 @@ export interface ComponentInternalInstance {
   vapor: true
   appContext: AppContext
 
+  type: Component
   block: Block | null
   container: ParentNode
   parent: ComponentInternalInstance | null
+  root: ComponentInternalInstance
 
   provides: Data
   scope: BlockEffectScope
-  component: Component
   comps: Set<ComponentInternalInstance>
 
   rawProps: NormalizedRawProps
@@ -190,15 +186,13 @@ export interface ComponentInternalInstance {
   emit: EmitFn
   emitted: Record<string, boolean> | null
   attrs: Data
-  rawSlots: InternalSlots
-  rawDynamicSlots: DynamicSlots | null
-  slots: InternalSlots
+  slots: StaticSlots
   refs: Data
   // exposed properties via expose()
   exposed?: Record<string, any>
 
   attrsProxy?: Data
-  slotsProxy?: Slots
+  slotsProxy?: StaticSlots
 
   // lifecycle
   isMounted: boolean
@@ -279,8 +273,7 @@ let uid = 0
 export function createComponentInstance(
   component: Component,
   rawProps: RawProps | null,
-  slots: Slots | null,
-  dynamicSlots: DynamicSlots | null,
+  slots: RawSlots | null,
   once: boolean = false,
   // application root node only
   appContext?: AppContext,
@@ -299,10 +292,11 @@ export function createComponentInstance(
     container: null!,
 
     parent,
+    root: null!, // set later
 
     scope: null!,
     provides: parent ? parent.provides : Object.create(_appContext.provides),
-    component,
+    type: component,
     comps: new Set(),
 
     // resolved props and emits options
@@ -317,8 +311,6 @@ export function createComponentInstance(
     emit: null!,
     emitted: null,
     attrs: EMPTY_OBJ,
-    rawSlots: slots || EMPTY_OBJ,
-    rawDynamicSlots: dynamicSlots || null,
     slots: EMPTY_OBJ,
     refs: EMPTY_OBJ,
 
@@ -376,9 +368,10 @@ export function createComponentInstance(
      */
     // [VaporLifecycleHooks.SERVER_PREFETCH]: null,
   }
+  instance.root = parent ? parent.root : instance
   instance.scope = new BlockEffectScope(instance, parent && parent.scope)
   initProps(instance, rawProps, !isFunction(component), once)
-  initSlots(instance, slots, dynamicSlots)
+  initSlots(instance, slots)
   instance.emit = emit.bind(null, instance)
 
   return instance
@@ -432,7 +425,7 @@ function getAttrsProxy(instance: ComponentInternalInstance): Data {
 /**
  * Dev-only
  */
-function getSlotsProxy(instance: ComponentInternalInstance): Slots {
+function getSlotsProxy(instance: ComponentInternalInstance): StaticSlots {
   return (
     instance.slotsProxy ||
     (instance.slotsProxy = new Proxy(instance.slots, {
