@@ -204,6 +204,40 @@ exports[`compile > expression parsing > v-bind 1`] = `
 })()"
 `;
 
+exports[`compile > expression parsing > v-for 1`] = `
+"(() => {
+  const n0 = _createFor(() => (_unref(items)), (_ctx0) => {
+    const n2 = t0()
+    _renderEffect(() => _setText(n2, _ctx0[0].name))
+    return n2
+  }, (item, index) => (item.id))
+  return n0
+})()"
+`;
+
+exports[`compile > expression parsing > v-on 1`] = `
+"(() => {
+  const n0 = t0()
+  _delegate(n0, "click", () => $event => (count.value++))
+  return n0
+})()"
+`;
+
+exports[`compile > expression parsing > v-slot 1`] = `
+"(() => {
+  const _component_Comp = _resolveComponent("Comp")
+  const n2 = _createComponent(_component_Comp, null, [
+    {
+      foo: _withDestructure(({ a, b }) => [a, b], (_ctx0) => {
+        const n0 = _createTextNode(() => [_ctx0[0], _ctx0[1]])
+        return n0
+      })
+    }
+  ], true)
+  return n2
+})()"
+`;
+
 exports[`compile > fragment 1`] = `
 "import { template as _template } from 'vue/vapor';
 const t0 = _template("<p></p>")

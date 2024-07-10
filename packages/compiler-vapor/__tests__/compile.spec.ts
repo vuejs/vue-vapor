@@ -193,7 +193,39 @@ describe('compile', () => {
       expect(code).contains('_unref(foo)[key.value+1]()')
     })
 
-    // TODO: add more test for expression parsing (v-on, v-slot, v-for)
+    test('v-on', () => {
+      const code = compile(`<div @click="count++" />`, {
+        inline: true,
+        bindingMetadata: {
+          count: BindingTypes.SETUP_REF,
+        },
+      })
+      expect(code).matchSnapshot()
+      expect(code).contains(
+        '_delegate(n0, "click", () => $event => (count.value++))',
+      )
+    })
+
+    test('v-slot', () => {
+      const code = compile(`<Comp #foo="{ a, b }">{{ a }}{{ b }}</Comp>`, {
+        inline: true,
+      })
+      expect(code).matchSnapshot()
+    })
+
+    test('v-for', () => {
+      const code = compile(
+        `<div v-for="(item, index) in items" :key="item.id">{{ item.name }}</div>`,
+        {
+          inline: true,
+          bindingMetadata: {
+            items: BindingTypes.SETUP_MAYBE_REF,
+          },
+        },
+      )
+      expect(code).matchSnapshot()
+      expect(code).contains('_unref(items)')
+    })
   })
 
   describe('custom directive', () => {
