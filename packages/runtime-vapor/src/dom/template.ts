@@ -13,8 +13,16 @@ export function template(html: string) {
 /*! #__NO_SIDE_EFFECTS__ */
 export function children(node: Node, ...paths: number[]): Node {
   for (const idx of paths) {
-    for (let i = 0; i <= idx; i++) {
-      node = node[i === 0 ? 'firstChild' : 'nextSibling']!
+    switch (idx) {
+      case 0:
+        node = node.firstChild!
+        break
+      case 1:
+        node = node.firstChild!.nextSibling!
+        break
+      default:
+        node = node.childNodes[idx]
+        break
     }
   }
   return node
