@@ -493,7 +493,7 @@ describe('error handling', () => {
   })
 
   //# 3127
-  test.todo('handle error in watch & watchEffect', async () => {
+  test.fails('handle error in watch & watchEffect', async () => {
     const error1 = new Error('error1')
     const error2 = new Error('error2')
     const error3 = new Error('error3')
@@ -538,7 +538,7 @@ describe('error handling', () => {
   })
 
   // #9574
-  test.todo('should pause tracking in error handler', async () => {
+  test.fails('should pause tracking in error handler', async () => {
     const error = new Error('error')
     const x = ref(Math.random())
 
