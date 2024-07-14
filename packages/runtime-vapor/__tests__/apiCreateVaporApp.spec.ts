@@ -335,14 +335,12 @@ describe('api: createVaporApp', () => {
 
   test('config.globalProperty', () => {
     const { app, mount, html } = define({
-      render(ctx) {
-        const instance = getCurrentInstance()
-        return createTextNode([
-          instance?.appContext.config.globalProperties.val,
-        ])
+      render() {
+        const instance = getCurrentInstance()!
+        return createTextNode([instance.appContext.config.globalProperties.msg])
       },
     }).create()
-    app.config.globalProperties.val = 'hello world'
+    app.config.globalProperties.msg = 'hello world'
     mount()
     expect(html()).toBe('hello world')
   })
