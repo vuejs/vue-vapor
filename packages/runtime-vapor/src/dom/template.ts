@@ -13,8 +13,8 @@ export function template(html: string) {
 /*! #__NO_SIDE_EFFECTS__ */
 export function children(node: Node, ...paths: number[]): Node {
   for (const idx of paths) {
-    // In different situations, choose the fastest plan
-    // see https://github.com/vuejs/core-vapor/pull/263
+    // In various situations, select the quickest approach.
+    // See https://github.com/vuejs/core-vapor/pull/263
     switch (idx) {
       case 0:
         node = node.firstChild!
