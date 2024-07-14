@@ -379,7 +379,7 @@ describe('error handling', () => {
     expect(fn).toHaveBeenCalledWith(err, 'setup function')
   })
 
-  test.skip('in component event handler via emit (async)', async () => {
+  test.todo('in component event handler via emit (async)', async () => {
     const err = new Error('foo')
     const fn = vi.fn()
 
@@ -409,7 +409,7 @@ describe('error handling', () => {
     expect(fn).toHaveBeenCalledWith(err, 'setup function')
   })
 
-  test.skip('in component event handler via emit (async + array)', async () => {
+  test.todo('in component event handler via emit (async + array)', async () => {
     const err = new Error('foo')
     const fn = vi.fn()
 
@@ -493,7 +493,7 @@ describe('error handling', () => {
   })
 
   //# 3127
-  test.skip('handle error in watch & watchEffect', async () => {
+  test.todo('handle error in watch & watchEffect', async () => {
     const error1 = new Error('error1')
     const error2 = new Error('error2')
     const error3 = new Error('error3')
@@ -538,7 +538,7 @@ describe('error handling', () => {
   })
 
   // #9574
-  test.skip('should pause tracking in error handler', async () => {
+  test.todo('should pause tracking in error handler', async () => {
     const error = new Error('error')
     const x = ref(Math.random())
 
