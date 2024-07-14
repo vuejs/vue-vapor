@@ -44,7 +44,7 @@ describe('renderer: element', () => {
     expect(html()).toBe('<div id="foo">bar</div>')
   })
 
-  it.skip('should update an element tag which is already mounted', () => {
+  it.fails('should update an element tag which is already mounted', () => {
     const { html } = define({
       render() {
         return template(`<div>foo`)()
@@ -60,7 +60,7 @@ describe('renderer: element', () => {
     expect(html()).toBe('<span>foo</span>')
   })
 
-  it.skip('should update element props which is already mounted', () => {
+  it.fails('should update element props which is already mounted', () => {
     const { html } = define({
       render() {
         return template(`<div id="baz">foo`)()
