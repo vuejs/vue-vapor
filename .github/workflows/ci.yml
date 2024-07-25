@@ -88,10 +88,9 @@ jobs:
 
       - run: pnpm install
 
-      - run: pnpm release --vapor --skipTests --tag ${{ github.ref == 'refs/heads/main' && 'latest' || 'branch' }}
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NPM_CONFIG_PROVENANCE: 'true'
+      - run: pnpm build
+
+      - run: pnpm dlx pkg-pr-new@0.0 './packages/*' --template './playground'
 
   # benchmarks:
   #   runs-on: ubuntu-latest
