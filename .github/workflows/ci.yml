@@ -84,9 +84,11 @@ jobs:
 
       - run: pnpm install
 
-      - run: pnpm build
+      - name: Build
+        run: pnpm build --withTypes
 
-      - run: pnpm dlx pkg-pr-new@0.0 publish './packages/*' --template './playground' --pnpm
+      - name: Publish
+        run: pnpm dlx pkg-pr-new@0.0 publish './packages/*' --template './playground' --pnpm
 
   # benchmarks:
   #   runs-on: ubuntu-latest
