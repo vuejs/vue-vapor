@@ -15,17 +15,12 @@ export function children(node: Node, ...paths: number[]): Node {
   for (const idx of paths) {
     // In various situations, select the quickest approach.
     // See https://github.com/vuejs/core-vapor/pull/263
-    switch (idx) {
-      case 0:
-        node = node.firstChild!
-        break
-      case 1:
-        node = node.firstChild!.nextSibling!
-        break
-      default:
-        node = node.childNodes[idx]
-        break
-    }
+    node =
+      idx === 0
+        ? node.firstChild!
+        : idx === 1
+          ? node.firstChild!.nextSibling!
+          : node.childNodes[idx]
   }
   return node
 }
