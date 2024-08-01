@@ -110,7 +110,7 @@ export function generate(
   if (inline) {
     push(`(() => {`)
   } else {
-    push(NEWLINE, `export function ${functionName}(_ctx) {`)
+    push(NEWLINE, `export function ${functionName}(_ctx, _props) {`)
   }
 
   push(INDENT_START)
