@@ -172,7 +172,7 @@ function genIdentifier(
     if (type && type.startsWith('setup')) {
       raw = `_ctx.${raw}`
     } else if (type) {
-      raw = `_${type}.${raw}`
+      raw = `$${type}.${raw}`
     } else if (canPrefix(raw)) {
       raw = `_ctx.${raw}`
     }
