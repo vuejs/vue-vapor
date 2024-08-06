@@ -82,7 +82,7 @@ async function bench() {
   >
     <button @click="bench">Benchmark mounting</button>
     <button id="run" @click="run">Create 1,000 rows</button>
-    <button id="runlots" @click="runLots">Create 10,000 rows</button>
+    <button id="runLots" @click="runLots">Create 10,000 rows</button>
     <button id="add" @click="add">Append 1,000 rows</button>
     <button id="update" @click="update">Update every 10th row</button>
     <button id="clear" @click="clear">Clear</button>

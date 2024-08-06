@@ -17,14 +17,7 @@ export function wrap(
   fn: (...args: any[]) => any,
 ): (...args: any[]) => Promise<void> {
   return async (...args) => {
-    const btns = Array.from(
-      document.querySelectorAll<HTMLButtonElement>('#control button'),
-    )
-    const timeEl = document.getElementById('time')!
-    timeEl.classList.remove('done')
-    for (const node of btns) {
-      node.disabled = true
-    }
+    document.body.classList.remove('done')
 
     const { doProfile } = globalThis
     await defer()
@@ -32,38 +25,48 @@ export function wrap(
     doProfile && console.profile(id)
     const start = performance.now()
     fn(...args)
+
     await defer()
     const time = performance.now() - start
     const prevTimes = times[id] || (times[id] = [])
     prevTimes.push(time)
-    const median = prevTimes.slice().sort((a, b) => a - b)[
-      Math.floor(prevTimes.length / 2)
-    ]
-    const mean = prevTimes.reduce((a, b) => a + b, 0) / prevTimes.length
 
+    const { min, max, median, mean, std } = compute(prevTimes)
     const msg =
-      `${id}: min: ${Math.min(...prevTimes).toFixed(2)} / ` +
-      `max: ${Math.max(...prevTimes).toFixed(2)} / ` +
-      `median: ${median.toFixed(2)}ms / ` +
-      `mean: ${mean.toFixed(2)}ms / ` +
+      `${id}: min: ${min} / ` +
+      `max: ${max} / ` +
+      `median: ${median}ms / ` +
+      `mean: ${mean}ms / ` +
       `time: ${time.toFixed(2)}ms / ` +
-      `std: ${getStandardDeviation(prevTimes).toFixed(2)} ` +
+      `std: ${std} ` +
       `over ${prevTimes.length} runs`
     doProfile && console.profileEnd(id)
     console.log(msg)
+    const timeEl = document.getElementById('time')!
     timeEl.textContent = msg
-    timeEl.classList.add('done')
 
-    for (const node of btns) {
-      node.disabled = false
-    }
+    document.body.classList.add('done')
   }
 }
 
-function getStandardDeviation(array: number[]) {
+function compute(array: number[]) {
   const n = array.length
+  const max = Math.max(...array)
+  const min = Math.min(...array)
   const mean = array.reduce((a, b) => a + b) / n
-  return Math.sqrt(
+  const std = Math.sqrt(
     array.map(x => Math.pow(x - mean, 2)).reduce((a, b) => a + b) / n,
   )
+  const median = array.slice().sort((a, b) => a - b)[Math.floor(n / 2)]
+  return {
+    max: round(max),
+    min: round(min),
+    mean: round(mean),
+    std: round(std),
+    median: round(median),
+  }
+}
+
+function round(n: number) {
+  return +n.toFixed(2)
 }

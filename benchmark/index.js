@@ -1,19 +1,28 @@
-/* eslint-disable no-restricted-syntax */
-
 // @ts-check
 import path from 'node:path'
 import { parseArgs } from 'node:util'
-import connect from 'connect'
+import { writeFile } from 'node:fs/promises'
 import Vue from '@vitejs/plugin-vue'
 import { build } from 'vite'
-import { exec } from '../scripts/utils.js'
+import connect from 'connect'
 import sirv from 'sirv'
 import { launch } from 'puppeteer'
 import colors from 'picocolors'
+import { exec } from '../scripts/utils.js'
+
+// Thanks to https://github.com/krausest/js-framework-benchmark (Apache-2.0 license)
 
 const {
-  values: { skipVapor, skipApp, port: portStr, count: countStr, headless },
+  values: {
+    skipVapor,
+    skipApp,
+    skipBench,
+    port: portStr,
+    count: countStr,
+    'no-headless': noHeadless,
+  },
 } = parseArgs({
+  allowNegative: true,
   allowPositionals: true,
   options: {
     skipVapor: {
@@ -21,6 +30,10 @@ const {
       short: 'v',
     },
     skipApp: {
+      type: 'boolean',
+      short: 'a',
+    },
+    skipBench: {
       type: 'boolean',
       short: 'a',
     },
@@ -32,12 +45,10 @@ const {
     count: {
       type: 'string',
       short: 'c',
-      default: '100',
+      default: '50',
     },
-    headless: {
+    'no-headless': {
       type: 'boolean',
-      short: 'h',
-      default: true,
     },
   },
 })
@@ -51,14 +62,12 @@ if (!skipVapor) {
 if (!skipApp) {
   await buildApp()
 }
-
 const server = startServer()
-await bench()
-server.close()
 
-process.on('SIGTERM', () => {
+if (!skipBench) {
+  await bench()
   server.close()
-})
+}
 
 async function buildVapor() {
   console.info(colors.blue('Building Vapor...'))
@@ -99,7 +108,6 @@ async function buildApp() {
   const CompilerVapor = await import(
     '../packages/compiler-vapor/dist/compiler-vapor.cjs.prod.js'
   )
-
   const vaporRuntime = path.resolve(
     import.meta.dirname,
     '../packages/vue-vapor/dist/vue-vapor.esm-browser.prod.js',
@@ -108,6 +116,12 @@ async function buildApp() {
     root: './client',
     build: {
       minify: 'terser',
+      rollupOptions: {
+        onwarn(log, handler) {
+          if (log.code === 'INVALID_ANNOTATION') return
+          handler(log)
+        },
+      },
     },
     resolve: {
       alias: {
@@ -115,6 +129,7 @@ async function buildApp() {
         '@vue/vapor': vaporRuntime,
       },
     },
+    clearScreen: false,
     plugins: [
       Vue({
         compiler: CompilerSFC,
@@ -129,10 +144,12 @@ async function buildApp() {
 function startServer() {
   const server = connect().use(sirv('./client/dist')).listen(port)
   console.info(`\n\nServer started at`, colors.blue(`http://localhost:${port}`))
+  process.on('SIGTERM', () => server.close())
   return server
 }
 
 async function bench() {
+  console.info(colors.blue('\nStarting benchmark...'))
   const disableFeatures = [
     'Translate', // avoid translation popups
     'PrivacySandboxSettings4', // avoid privacy popup
@@ -149,10 +166,13 @@ async function bench() {
     `--disable-features=${disableFeatures.join(',')}`,
   ]
 
+  const headless = !noHeadless
+  console.info('headless:', headless)
   const browser = await launch({
-    headless,
+    headless: headless,
     args,
   })
+  console.log('browser version:', colors.blue(await browser.version()))
   const page = await browser.newPage()
   await page.goto(`http://localhost:${port}/`, {
     waitUntil: 'networkidle0',
@@ -162,34 +182,45 @@ async function bench() {
 
   const t = performance.now()
   for (let i = 0; i < count; i++) {
-    await doAction('run')
-    await doAction('add')
-    await doAction('update')
-    await doAction('swaprows')
-    await doAction('clear')
+    await clickButton('run')
+    await clickButton('add')
+    await select()
+    await clickButton('update')
+    await clickButton('swaprows')
+    await clickButton('runLots')
+    await clickButton('clear')
   }
-  console.info('Total time:', performance.now() - t, 'ms')
+  console.info('Total time:', ((performance.now() - t) / 1000).toFixed(2), 's')
 
   const times = await getTimes()
-  /** @type {Record<string, { mean: string, std: string }>} */
-  const result = {}
-  for (const key in times) {
-    const mean = getMean(times[key])
-    const std = getStandardDeviation(times[key])
-    result[key] = { mean: mean.toFixed(2), std: std.toFixed(2) }
-  }
 
-  // eslint-disable-next-line no-console
+  /** @type {Record<string, { mean: number, std: number }>} */
+  const result = Object.fromEntries(
+    Object.entries(times).map(([k, v]) => [k, compute(v)]),
+  )
   console.table(result)
+  writeFile('benchmark-result.json', JSON.stringify(result))
 
-  await page.close()
   await browser.close()
 
   /**
    * @param {string} id
    */
-  async function doAction(id) {
+  async function clickButton(id) {
     await page.click(`#${id}`)
+    await wait()
+  }
+
+  async function select() {
+    for (let i = 1; i <= 10; i++) {
+      await page.click(`tbody > tr:nth-child(2) > td:nth-child(2) > a`)
+      await page.waitForSelector(`tbody > tr:nth-child(2).danger`)
+      await page.click(`tbody > tr:nth-child(2) > td:nth-child(3) > button`)
+      await wait()
+    }
+  }
+
+  async function wait() {
     await page.waitForSelector('.done')
   }
 
@@ -199,38 +230,35 @@ async function bench() {
 
   async function forceGC() {
     await page.evaluate(
-      "window.gc({type:'major',execution:'sync',flavor:'last-resort'})",
+      `window.gc({type:'major',execution:'sync',flavor:'last-resort'})`,
     )
   }
 }
 
 /**
- * @param {number[]} nums
- * @returns {number}
+ * @param {number[]} array
  */
-function getMean(nums) {
-  return (
-    nums.reduce(
-      /**
-       * @param {number} a
-       * @param {number} b
-       * @returns {number}
-       */
-      (a, b) => a + b,
-      0,
-    ) / nums.length
+function compute(array) {
+  const n = array.length
+  const max = Math.max(...array)
+  const min = Math.min(...array)
+  const mean = array.reduce((a, b) => a + b) / n
+  const std = Math.sqrt(
+    array.map(x => Math.pow(x - mean, 2)).reduce((a, b) => a + b) / n,
   )
+  const median = array.slice().sort((a, b) => a - b)[Math.floor(n / 2)]
+  return {
+    max: round(max),
+    min: round(min),
+    mean: round(mean),
+    std: round(std),
+    median: round(median),
+  }
 }
 
 /**
- *
- * @param {number[]} array
- * @returns
+ * @param {number} n
  */
-function getStandardDeviation(array) {
-  const n = array.length
-  const mean = array.reduce((a, b) => a + b) / n
-  return Math.sqrt(
-    array.map(x => Math.pow(x - mean, 2)).reduce((a, b) => a + b) / n,
-  )
+function round(n) {
+  return +n.toFixed(2)
 }
