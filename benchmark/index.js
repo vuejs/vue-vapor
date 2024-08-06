@@ -1,14 +1,14 @@
 // @ts-check
 import path from 'node:path'
 import { parseArgs } from 'node:util'
-import { writeFile } from 'node:fs/promises'
+import { mkdir, writeFile } from 'node:fs/promises'
 import Vue from '@vitejs/plugin-vue'
 import { build } from 'vite'
 import connect from 'connect'
 import sirv from 'sirv'
 import { launch } from 'puppeteer'
 import colors from 'picocolors'
-import { exec } from '../scripts/utils.js'
+import { exec, getSha } from '../scripts/utils.js'
 
 // Thanks to https://github.com/krausest/js-framework-benchmark (Apache-2.0 license)
 
@@ -79,17 +79,21 @@ async function buildVapor() {
   const [{ ok }, { ok: ok2 }, { ok: ok3 }] = await Promise.all([
     exec(
       'pnpm',
-      'run build shared compiler-core compiler-dom compiler-vapor -pf cjs'.split(
+      'run --silent build shared compiler-core compiler-dom compiler-vapor -pf cjs'.split(
         ' ',
       ),
       options,
     ),
     exec(
       'pnpm',
-      'run build compiler-sfc compiler-ssr -f cjs'.split(' '),
+      'run --silent build compiler-sfc compiler-ssr -f cjs'.split(' '),
       options,
     ),
-    exec('pnpm', 'run build vue-vapor -pf esm-browser'.split(' '), options),
+    exec(
+      'pnpm',
+      'run --silent build vue-vapor -pf esm-browser'.split(' '),
+      options,
+    ),
   ])
 
   if (!ok || !ok2 || !ok3) {
@@ -190,7 +194,11 @@ async function bench() {
     await clickButton('runLots')
     await clickButton('clear')
   }
-  console.info('Total time:', ((performance.now() - t) / 1000).toFixed(2), 's')
+  console.info(
+    'Total time:',
+    colors.cyan(((performance.now() - t) / 1000).toFixed(2)),
+    's',
+  )
 
   const times = await getTimes()
 
@@ -199,7 +207,12 @@ async function bench() {
     Object.entries(times).map(([k, v]) => [k, compute(v)]),
   )
   console.table(result)
-  writeFile('benchmark-result.json', JSON.stringify(result))
+
+  await mkdir('results', { recursive: true }).catch(() => {})
+  writeFile(
+    `results/benchmark-${await getSha(true)}.json`,
+    JSON.stringify(result),
+  )
 
   await browser.close()
 

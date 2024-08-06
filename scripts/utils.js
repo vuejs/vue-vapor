@@ -108,3 +108,12 @@ export async function exec(command, args, options) {
     })
   })
 }
+
+/**
+ * @param {boolean=} short
+ */
+export async function getSha(short) {
+  return (
+    await exec('git', ['rev-parse', ...(short ? ['--short'] : []), 'HEAD'])
+  ).stdout
+}
