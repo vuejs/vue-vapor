@@ -1,4 +1,5 @@
-import { createVaporApp } from '@vue/vapor'
-import App from './App.vue'
-
-createVaporApp(App).mount('#app')
+if (import.meta.env.IS_VAPOR) {
+  import('./vapor')
+} else {
+  import('./vdom')
+}

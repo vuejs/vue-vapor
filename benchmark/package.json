@@ -8,7 +8,7 @@
     "start": "node index.js"
   },
   "dependencies": {
-    "@vitejs/plugin-vue": "npm:@vue-vapor/vite-plugin-vue@0.0.0-alpha.4",
+    "@vitejs/plugin-vue": "npm:@vue-vapor/vite-plugin-vue@0.0.0-alpha.6",
     "connect": "^3.7.0",
     "sirv": "^2.0.4",
     "vite": "^5.0.12"

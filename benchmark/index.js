@@ -1,7 +1,7 @@
 // @ts-check
 import path from 'node:path'
 import { parseArgs } from 'node:util'
-import { mkdir, writeFile } from 'node:fs/promises'
+import { mkdir, rm, writeFile } from 'node:fs/promises'
 import Vue from '@vitejs/plugin-vue'
 import { build } from 'vite'
 import connect from 'connect'
@@ -14,18 +14,20 @@ import { exec, getSha } from '../scripts/utils.js'
 
 const {
   values: {
-    skipVapor,
+    skipLib,
     skipApp,
     skipBench,
+    vdom,
+    noVapor,
     port: portStr,
     count: countStr,
-    'no-headless': noHeadless,
+    noHeadless,
   },
 } = parseArgs({
   allowNegative: true,
   allowPositionals: true,
   options: {
-    skipVapor: {
+    skipLib: {
       type: 'boolean',
       short: 'v',
     },
@@ -35,7 +37,14 @@ const {
     },
     skipBench: {
       type: 'boolean',
-      short: 'a',
+      short: 'b',
+    },
+    noVapor: {
+      type: 'boolean',
+    },
+    vdom: {
+      type: 'boolean',
+      short: 'v',
     },
     port: {
       type: 'string',
@@ -47,7 +56,7 @@ const {
       short: 'c',
       default: '50',
     },
-    'no-headless': {
+    noHeadless: {
       type: 'boolean',
     },
   },
@@ -56,27 +65,29 @@ const {
 const port = +(/** @type {string}*/ (portStr))
 const count = +(/** @type {string}*/ (countStr))
 
-if (!skipVapor) {
-  await buildVapor()
+if (!skipLib) {
+  await buildLib()
 }
 if (!skipApp) {
-  await buildApp()
+  await rm('client/dist', { recursive: true }).catch(() => {})
+  vdom && (await buildApp(false))
+  !noVapor && (await buildApp(true))
 }
 const server = startServer()
 
 if (!skipBench) {
-  await bench()
+  await benchmark()
   server.close()
 }
 
-async function buildVapor() {
-  console.info(colors.blue('Building Vapor...'))
+async function buildLib() {
+  console.info(colors.blue('Building lib...'))
 
   const options = {
     cwd: path.resolve(import.meta.dirname, '..'),
     stdio: 'inherit',
   }
-  const [{ ok }, { ok: ok2 }, { ok: ok3 }] = await Promise.all([
+  const [{ ok }, { ok: ok2 }, { ok: ok3 }, { ok: ok4 }] = await Promise.all([
     exec(
       'pnpm',
       'run --silent build shared compiler-core compiler-dom compiler-vapor -pf cjs'.split(
@@ -94,32 +105,52 @@ async function buildVapor() {
       'run --silent build vue-vapor -pf esm-browser'.split(' '),
       options,
     ),
+    exec(
+      'pnpm',
+      'run --silent build vue -pf esm-browser-runtime'.split(' '),
+      options,
+    ),
   ])
 
-  if (!ok || !ok2 || !ok3) {
+  if (!ok || !ok2 || !ok3 || !ok4) {
     console.error('Failed to build')
     process.exit(1)
   }
 }
 
-async function buildApp() {
-  console.info(colors.blue('\nBuilding app...\n'))
+/** @param {boolean} isVapor */
+async function buildApp(isVapor) {
+  console.info(
+    colors.blue(`\nBuilding ${isVapor ? 'Vapor' : 'Virtual DOM'} app...\n`),
+  )
 
   process.env.NODE_ENV = 'production'
   const CompilerSFC = await import(
     '../packages/compiler-sfc/dist/compiler-sfc.cjs.js'
   )
-  const CompilerVapor = await import(
-    '../packages/compiler-vapor/dist/compiler-vapor.cjs.prod.js'
+  /** @type {any} */
+  const TemplateCompiler = await import(
+    isVapor
+      ? '../packages/compiler-vapor/dist/compiler-vapor.cjs.prod.js'
+      : '../packages/compiler-dom/dist/compiler-dom.cjs.prod.js'
   )
-  const vaporRuntime = path.resolve(
+  const runtimePath = path.resolve(
     import.meta.dirname,
-    '../packages/vue-vapor/dist/vue-vapor.esm-browser.prod.js',
+    isVapor
+      ? '../packages/vue-vapor/dist/vue-vapor.esm-browser.prod.js'
+      : '../packages/vue/dist/vue.runtime.esm-browser.prod.js',
   )
+
+  const mode = isVapor ? 'vapor' : 'vdom'
   await build({
     root: './client',
+    base: `/${mode}`,
+    define: {
+      'import.meta.env.IS_VAPOR': String(isVapor),
+    },
     build: {
       minify: 'terser',
+      outDir: path.resolve('./client/dist', mode),
       rollupOptions: {
         onwarn(log, handler) {
           if (log.code === 'INVALID_ANNOTATION') return
@@ -129,17 +160,16 @@ async function buildApp() {
     },
     resolve: {
       alias: {
-        'vue/vapor': vaporRuntime,
-        '@vue/vapor': vaporRuntime,
+        '@vue/vapor': runtimePath,
+        'vue/vapor': runtimePath,
+        vue: runtimePath,
       },
     },
     clearScreen: false,
     plugins: [
       Vue({
         compiler: CompilerSFC,
-        template: {
-          compiler: /** @type {any} */ (CompilerVapor),
-        },
+        template: { compiler: TemplateCompiler },
       }),
     ],
   })
@@ -152,8 +182,96 @@ function startServer() {
   return server
 }
 
-async function bench() {
-  console.info(colors.blue('\nStarting benchmark...'))
+async function benchmark() {
+  console.info(colors.blue(`\nStarting benchmark...`))
+
+  const browser = await initBrowser()
+
+  await mkdir('results', { recursive: true }).catch(() => {})
+  if (!noVapor) {
+    await doBench(browser, true)
+  }
+  if (vdom) {
+    await doBench(browser, false)
+  }
+
+  await browser.close()
+}
+
+/**
+ *
+ * @param {import('puppeteer').Browser} browser
+ * @param {boolean} isVapor
+ */
+async function doBench(browser, isVapor) {
+  const mode = isVapor ? 'vapor' : 'vdom'
+  console.info('\n\nmode:', mode)
+
+  const page = await browser.newPage()
+  await page.goto(`http://localhost:${port}/${mode}`, {
+    waitUntil: 'networkidle0',
+  })
+
+  await forceGC()
+  const t = performance.now()
+  for (let i = 0; i < count; i++) {
+    await clickButton('run')
+    await clickButton('add')
+    await select()
+    await clickButton('update')
+    await clickButton('swaprows')
+    await clickButton('runLots')
+    await clickButton('clear')
+  }
+  console.info(
+    'Total time:',
+    colors.cyan(((performance.now() - t) / 1000).toFixed(2)),
+    's',
+  )
+  const times = await getTimes()
+
+  const result =
+    /** @type {Record<string, typeof compute>} */
+    Object.fromEntries(Object.entries(times).map(([k, v]) => [k, compute(v)]))
+
+  console.table(result)
+  writeFile(
+    `results/benchmark-${await getSha(true)}-${mode}.json`,
+    JSON.stringify(result, undefined, 2),
+  )
+  return result
+
+  function getTimes() {
+    return page.evaluate(() => /** @type {any} */ (globalThis).times)
+  }
+
+  async function forceGC() {
+    await page.evaluate(
+      `window.gc({type:'major',execution:'sync',flavor:'last-resort'})`,
+    )
+  }
+
+  /** @param {string} id */
+  async function clickButton(id) {
+    await page.click(`#${id}`)
+    await wait()
+  }
+
+  async function select() {
+    for (let i = 1; i <= 10; i++) {
+      await page.click(`tbody > tr:nth-child(2) > td:nth-child(2) > a`)
+      await page.waitForSelector(`tbody > tr:nth-child(2).danger`)
+      await page.click(`tbody > tr:nth-child(2) > td:nth-child(3) > button`)
+      await wait()
+    }
+  }
+
+  async function wait() {
+    await page.waitForSelector('.done')
+  }
+}
+
+async function initBrowser() {
   const disableFeatures = [
     'Translate', // avoid translation popups
     'PrivacySandboxSettings4', // avoid privacy popup
@@ -177,80 +295,11 @@ async function bench() {
     args,
   })
   console.log('browser version:', colors.blue(await browser.version()))
-  const page = await browser.newPage()
-  await page.goto(`http://localhost:${port}/`, {
-    waitUntil: 'networkidle0',
-  })
 
-  await forceGC()
-
-  const t = performance.now()
-  for (let i = 0; i < count; i++) {
-    await clickButton('run')
-    await clickButton('add')
-    await select()
-    await clickButton('update')
-    await clickButton('swaprows')
-    await clickButton('runLots')
-    await clickButton('clear')
-  }
-  console.info(
-    'Total time:',
-    colors.cyan(((performance.now() - t) / 1000).toFixed(2)),
-    's',
-  )
-
-  const times = await getTimes()
-
-  /** @type {Record<string, { mean: number, std: number }>} */
-  const result = Object.fromEntries(
-    Object.entries(times).map(([k, v]) => [k, compute(v)]),
-  )
-  console.table(result)
-
-  await mkdir('results', { recursive: true }).catch(() => {})
-  writeFile(
-    `results/benchmark-${await getSha(true)}.json`,
-    JSON.stringify(result),
-  )
-
-  await browser.close()
-
-  /**
-   * @param {string} id
-   */
-  async function clickButton(id) {
-    await page.click(`#${id}`)
-    await wait()
-  }
-
-  async function select() {
-    for (let i = 1; i <= 10; i++) {
-      await page.click(`tbody > tr:nth-child(2) > td:nth-child(2) > a`)
-      await page.waitForSelector(`tbody > tr:nth-child(2).danger`)
-      await page.click(`tbody > tr:nth-child(2) > td:nth-child(3) > button`)
-      await wait()
-    }
-  }
-
-  async function wait() {
-    await page.waitForSelector('.done')
-  }
-
-  function getTimes() {
-    return page.evaluate(() => /** @type {any} */ (globalThis).times)
-  }
-
-  async function forceGC() {
-    await page.evaluate(
-      `window.gc({type:'major',execution:'sync',flavor:'last-resort'})`,
-    )
-  }
+  return browser
 }
 
-/**
- * @param {number[]} array
- */
+/** @param {number[]} array */
 function compute(array) {
   const n = array.length
   const max = Math.max(...array)
@@ -269,9 +318,7 @@ function compute(array) {
   }
 }
 
-/**
- * @param {number} n
- */
+/** @param {number} n */
 function round(n) {
   return +n.toFixed(2)
 }

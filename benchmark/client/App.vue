@@ -3,6 +3,8 @@ import { ref, shallowRef } from '@vue/vapor'
 import { buildData } from './data'
 import { defer, wrap } from './profiling'
 
+const isVapor = !!import.meta.env.IS_VAPOR
+
 const selected = ref<number>()
 const rows = shallowRef<
   {
@@ -75,7 +77,7 @@ async function bench() {
 </script>
 
 <template>
-  <h1>Vue.js Vapor Benchmark</h1>
+  <h1>Vue.js ({{ isVapor ? 'Vapor' : 'Virtual DOM' }}) Benchmark</h1>
   <div
     id="control"
     style="display: flex; flex-direction: column; width: fit-content; gap: 6px"
