@@ -1,25 +1,32 @@
-// @ts-expect-error
+/* eslint-disable no-console */
+/* eslint-disable no-restricted-syntax */
+/* eslint-disable no-restricted-globals */
+
+declare module globalThis {
+  let doProfile: boolean
+  let times: Record<string, number[]>
+}
+
 globalThis.doProfile = false
-// const defer = nextTick
-const ric =
-  typeof requestIdleCallback === 'undefined' ? setTimeout : requestIdleCallback
-export const defer = () => new Promise(r => ric(r))
+export const defer = () => new Promise(r => requestIdleCallback(r))
 
-const times: Record<string, number[]> = {}
+const times: Record<string, number[]> = (globalThis.times = {})
 
-export const wrap = (
+export function wrap(
   id: string,
   fn: (...args: any[]) => any,
-): ((...args: any[]) => Promise<void>) => {
-  if (import.meta.env.PROD) return fn
+): (...args: any[]) => Promise<void> {
   return async (...args) => {
     const btns = Array.from(
       document.querySelectorAll<HTMLButtonElement>('#control button'),
     )
+    const timeEl = document.getElementById('time')!
+    timeEl.classList.remove('done')
     for (const node of btns) {
       node.disabled = true
     }
-    const doProfile = (globalThis as any).doProfile
+
+    const { doProfile } = globalThis
     await defer()
 
     doProfile && console.profile(id)
@@ -33,6 +40,7 @@ export const wrap = (
       Math.floor(prevTimes.length / 2)
     ]
     const mean = prevTimes.reduce((a, b) => a + b, 0) / prevTimes.length
+
     const msg =
       `${id}: min: ${Math.min(...prevTimes).toFixed(2)} / ` +
       `max: ${Math.max(...prevTimes).toFixed(2)} / ` +
@@ -43,7 +51,8 @@ export const wrap = (
       `over ${prevTimes.length} runs`
     doProfile && console.profileEnd(id)
     console.log(msg)
-    document.getElementById('time')!.textContent = msg
+    timeEl.textContent = msg
+    timeEl.classList.add('done')
 
     for (const node of btns) {
       node.disabled = false

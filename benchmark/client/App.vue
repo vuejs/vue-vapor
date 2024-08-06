@@ -1,5 +1,5 @@
-<script setup lang="ts">
-import { ref, shallowRef } from 'vue'
+<script setup lang="ts" vapor>
+import { ref, shallowRef } from '@vue/vapor'
 import { buildData } from './data'
 import { defer, wrap } from './profiling'
 
