@@ -4,10 +4,13 @@
 
 declare module globalThis {
   let doProfile: boolean
+  let recordTime: boolean
   let times: Record<string, number[]>
 }
 
+globalThis.recordTime = true
 globalThis.doProfile = false
+
 export const defer = () => new Promise(r => requestIdleCallback(r))
 
 const times: Record<string, number[]> = (globalThis.times = {})
@@ -17,6 +20,10 @@ export function wrap(
   fn: (...args: any[]) => any,
 ): (...args: any[]) => Promise<void> {
   return async (...args) => {
+    if (!globalThis.recordTime) {
+      return fn(...args)
+    }
+
     document.body.classList.remove('done')
 
     const { doProfile } = globalThis

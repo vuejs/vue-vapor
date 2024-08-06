@@ -214,15 +214,24 @@ async function doBench(browser, isVapor) {
 
   await forceGC()
   const t = performance.now()
+
   for (let i = 0; i < count; i++) {
-    await clickButton('run')
-    await clickButton('add')
-    await select()
-    await clickButton('update')
-    await clickButton('swaprows')
-    await clickButton('runLots')
-    await clickButton('clear')
+    await clickButton('run') // test: create rows
+    await clickButton('update') // partial update
+    await clickButton('swaprows') // swap rows
+    await select() // test: select row, remove row
+    await clickButton('clear') // clear rows
+
+    await withoutRecord(() => clickButton('run'))
+    await clickButton('add') // append rows to large table
+
+    await withoutRecord(() => clickButton('clear'))
+    await clickButton('runLots') // create many rows
+    await withoutRecord(() => clickButton('clear'))
+
+    // TODO replace all rows
   }
+
   console.info(
     'Total time:',
     colors.cyan(((performance.now() - t) / 1000).toFixed(2)),
@@ -249,6 +258,13 @@ async function doBench(browser, isVapor) {
     await page.evaluate(
       `window.gc({type:'major',execution:'sync',flavor:'last-resort'})`,
     )
+  }
+
+  /** @param {() => any} fn */
+  async function withoutRecord(fn) {
+    await page.evaluate(() => (globalThis.recordTime = false))
+    await fn()
+    await page.evaluate(() => (globalThis.recordTime = true))
   }
 
   /** @param {string} id */
