@@ -2,17 +2,56 @@
 
 // @ts-check
 import path from 'node:path'
+import { parseArgs } from 'node:util'
 import connect from 'connect'
 import Vue from '@vitejs/plugin-vue'
 import { build } from 'vite'
 import { exec } from '../scripts/utils.js'
 import sirv from 'sirv'
 import { launch } from 'puppeteer'
+import colors from 'picocolors'
 
-const PORT = 8193
+const {
+  values: { skipVapor, skipApp, port: portStr, count: countStr, headless },
+} = parseArgs({
+  allowPositionals: true,
+  options: {
+    skipVapor: {
+      type: 'boolean',
+      short: 'v',
+    },
+    skipApp: {
+      type: 'boolean',
+      short: 'a',
+    },
+    port: {
+      type: 'string',
+      short: 'p',
+      default: '8193',
+    },
+    count: {
+      type: 'string',
+      short: 'c',
+      default: '100',
+    },
+    headless: {
+      type: 'boolean',
+      short: 'h',
+      default: true,
+    },
+  },
+})
 
-await buildVapor()
-await buildApp()
+const port = +(/** @type {string}*/ (portStr))
+const count = +(/** @type {string}*/ (countStr))
+
+if (!skipVapor) {
+  await buildVapor()
+}
+if (!skipApp) {
+  await buildApp()
+}
+
 const server = startServer()
 await bench()
 server.close()
@@ -22,7 +61,8 @@ process.on('SIGTERM', () => {
 })
 
 async function buildVapor() {
-  console.info('Building Vapor...')
+  console.info(colors.blue('Building Vapor...'))
+
   const options = {
     cwd: path.resolve(import.meta.dirname, '..'),
     stdio: 'inherit',
@@ -50,7 +90,7 @@ async function buildVapor() {
 }
 
 async function buildApp() {
-  console.info('Building app...')
+  console.info(colors.blue('\nBuilding app...\n'))
 
   process.env.NODE_ENV = 'production'
   const CompilerSFC = await import(
@@ -87,8 +127,8 @@ async function buildApp() {
 }
 
 function startServer() {
-  const server = connect().use(sirv('./client/dist')).listen(PORT)
-  console.info(`Server started at http://localhost:${PORT}`)
+  const server = connect().use(sirv('./client/dist')).listen(port)
+  console.info(`\n\nServer started at`, colors.blue(`http://localhost:${port}`))
   return server
 }
 
@@ -110,18 +150,18 @@ async function bench() {
   ]
 
   const browser = await launch({
-    // headless: false,
+    headless,
     args,
   })
   const page = await browser.newPage()
-  await page.goto(`http://localhost:${PORT}/`, {
+  await page.goto(`http://localhost:${port}/`, {
     waitUntil: 'networkidle0',
   })
 
   await forceGC()
 
   const t = performance.now()
-  for (let i = 0; i < 50; i++) {
+  for (let i = 0; i < count; i++) {
     await doAction('run')
     await doAction('add')
     await doAction('update')
