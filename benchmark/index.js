@@ -11,7 +11,6 @@ import colors from 'picocolors'
 import { exec, getSha } from '../scripts/utils.js'
 
 // Thanks to https://github.com/krausest/js-framework-benchmark (Apache-2.0 license)
-
 const {
   values: {
     skipLib,
@@ -64,6 +63,7 @@ const {
 
 const port = +(/** @type {string}*/ (portStr))
 const count = +(/** @type {string}*/ (countStr))
+const sha = await getSha(true)
 
 if (!skipLib) {
   await buildLib()
@@ -229,16 +229,16 @@ async function doBench(browser, isVapor) {
     's',
   )
   const times = await getTimes()
-
   const result =
     /** @type {Record<string, typeof compute>} */
     Object.fromEntries(Object.entries(times).map(([k, v]) => [k, compute(v)]))
 
   console.table(result)
-  writeFile(
-    `results/benchmark-${await getSha(true)}-${mode}.json`,
+  await writeFile(
+    `results/benchmark-${sha}-${mode}.json`,
     JSON.stringify(result, undefined, 2),
   )
+  await page.close()
   return result
 
   function getTimes() {
