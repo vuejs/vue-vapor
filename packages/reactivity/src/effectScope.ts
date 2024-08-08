@@ -62,13 +62,13 @@ export class EffectScope {
     }
   }
 
-  prevScope: EffectScope | undefined
+  prevScope: (EffectScope | undefined)[] = []
   /**
    * This should only be called on non-detached scopes
    * @internal
    */
   on() {
-    this.prevScope = activeEffectScope
+    this.prevScope.push(activeEffectScope)
     activeEffectScope = this
   }
 
@@ -77,7 +77,7 @@ export class EffectScope {
    * @internal
    */
   off() {
-    activeEffectScope = this.prevScope
+    activeEffectScope = this.prevScope.pop()
   }
 
   stop(fromParent?: boolean) {

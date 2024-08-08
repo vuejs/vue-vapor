@@ -23,7 +23,7 @@ beforeEach(() => {
   const prev = getCurrentScope()
   instance.scope.on()
   removeComponentInstance = () => {
-    instance.scope.prevScope = prev
+    instance.scope.prevScope.push(prev)
     instance.scope.off()
     reset()
     removeComponentInstance = NOOP

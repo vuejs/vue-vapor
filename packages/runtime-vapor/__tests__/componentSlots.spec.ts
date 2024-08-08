@@ -3,6 +3,7 @@
 import {
   createComponent,
   createForSlots,
+  createIf,
   createSlot,
   createVaporApp,
   defineComponent,
@@ -671,6 +672,48 @@ describe('component: slots', () => {
       await nextTick()
 
       expect(host.innerHTML).toBe('<p>fallback<!--slot--></p>')
+    })
+
+    test('should work with createIf', async () => {
+      const show = ref(true)
+      const spyConditionFn = vi.fn(() => show.value)
+      const t0 = template('<p>show</p>')
+      const t1 = template('<p>hide</p>')
+
+      const Child = defineComponent(() => {
+        const t0 = template('<p></p>')
+        const n1 = t0()
+        const n2 = createSlot('default')
+        insert(n2, n1 as ParentNode)
+        return n2
+      })
+
+      const { render, host } = define({
+        setup() {
+          return createComponent(Child, null, [
+            {
+              default: () =>
+                createIf(
+                  spyConditionFn,
+                  () => {
+                    const n0 = t0()
+                    return n0
+                  },
+                  () => {
+                    const n1 = t1()
+                    return n1
+                  },
+                ),
+            },
+          ])
+        },
+      })
+      render()
+
+      expect(host.innerHTML).toBe('<p>show</p><!--if-->')
+      show.value = false
+      await nextTick()
+      expect(host.innerHTML).toBe('<p>hide</p><!--if-->')
     })
   })
 })
