@@ -94,11 +94,14 @@ export function initSlots(
 
   function withCtx(fn: Slot): Slot {
     return (...args: any[]) => {
-      const reset = setCurrentInstance(instance.parent!)
+      const parentInstance = instance.parent!
+      const reset = setCurrentInstance(parentInstance)
+      parentInstance.scope.on()
       try {
         return fn(...(args as any))
       } finally {
         reset()
+        parentInstance.scope.off()
       }
     }
   }
