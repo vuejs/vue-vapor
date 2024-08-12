@@ -40,6 +40,7 @@
     "build-browser-esm": "node scripts/build.js runtime reactivity shared -af esm-bundler && node scripts/build.js vue -f esm-bundler && node scripts/build.js vue -f esm-browser",
     "build-ssr-esm": "node scripts/build.js compiler-sfc server-renderer vue-vapor -f esm-browser",
     "build-sfc-playground-self": "cd packages/sfc-playground && npm run build",
+    "bench": "pnpm -C benchmark run start",
     "preinstall": "npx only-allow pnpm",
     "postinstall": "simple-git-hooks"
   },

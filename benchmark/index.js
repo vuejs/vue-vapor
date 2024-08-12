@@ -1,7 +1,7 @@
 // @ts-check
 import path from 'node:path'
 import { parseArgs } from 'node:util'
-import { mkdir, rm, writeFile } from 'node:fs/promises'
+import { mkdir, readFile, rm, writeFile } from 'node:fs/promises'
 import Vue from '@vitejs/plugin-vue'
 import { build } from 'vite'
 import connect from 'connect'
@@ -21,6 +21,8 @@ const {
     port: portStr,
     count: countStr,
     noHeadless,
+    compare,
+    compareMode,
   },
 } = parseArgs({
   allowNegative: true,
@@ -28,7 +30,7 @@ const {
   options: {
     skipLib: {
       type: 'boolean',
-      short: 'v',
+      short: 'l',
     },
     skipApp: {
       type: 'boolean',
@@ -58,6 +60,13 @@ const {
     noHeadless: {
       type: 'boolean',
     },
+    compare: {
+      type: 'string',
+      short: 'r',
+    },
+    compareMode: {
+      type: 'string',
+    },
   },
 })
 
@@ -65,10 +74,10 @@ const port = +(/** @type {string}*/ (portStr))
 const count = +(/** @type {string}*/ (countStr))
 const sha = await getSha(true)
 
-if (!skipLib) {
+if (!skipLib && !skipApp && !skipBench) {
   await buildLib()
 }
-if (!skipApp) {
+if (!skipApp && !skipBench) {
   await rm('client/dist', { recursive: true }).catch(() => {})
   vdom && (await buildApp(false))
   !noVapor && (await buildApp(true))
@@ -78,6 +87,38 @@ const server = startServer()
 if (!skipBench) {
   await benchmark()
   server.close()
+}
+
+if (compare || compareMode === 'vdom-vapor') {
+  const compareSha = compare && (await getSha(true, compare))
+
+  let from, to
+  switch (compareMode) {
+    case 'vdom-vapor':
+      from = `${sha}-vapor`
+      to = `${sha}-vdom`
+      break
+    case 'vdom':
+      from = `${sha}-vdom`
+      to = `${compareSha}-vdom`
+      break
+    default:
+      from = `${sha}-vapor`
+      to = `${compareSha}-vapor`
+      break
+  }
+
+  const fromResult = await readJSON(`results/benchmark-${from}.json`)
+  const toResult = await readJSON(`results/benchmark-${to}.json`)
+  const diff = Object.fromEntries(
+    Object.entries(fromResult).map(([k, v]) => [
+      k,
+      Object.fromEntries(
+        Object.entries(v).map(([kk, vv]) => [kk, vv - toResult[k]?.[kk]]),
+      ),
+    ]),
+  )
+  console.log(diff)
 }
 
 async function buildLib() {
@@ -199,7 +240,6 @@ async function benchmark() {
 }
 
 /**
- *
  * @param {import('puppeteer').Browser} browser
  * @param {boolean} isVapor
  */
@@ -337,4 +377,9 @@ function compute(array) {
 /** @param {number} n */
 function round(n) {
   return +n.toFixed(2)
+}
+
+/** @param {string} filePath */
+async function readJSON(filePath) {
+  return JSON.parse(await readFile(filePath, 'utf-8'))
 }
