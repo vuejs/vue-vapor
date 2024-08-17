@@ -81,14 +81,12 @@ async function bench() {
 
 // Reduce the complexity of `selected` from O(n) to O(1).
 function createSelector(source: WatchSource) {
-  const list = ref<Record<keyof any, boolean>>({})
+  const list: Record<keyof any, ShallowRef<boolean>> = {}
   watch(source, (val, old) => {
-    if (old != undefined) list.value[old] = false
-    if (val != undefined) list.value[val] = true
+    if (old != undefined) list[old]!.value = false
+    if (val != undefined) list[val]!.value = true
   })
-  return (id: keyof any) => {
-    return (list.value[id] ??= false)
-  }
+  return (id: keyof any) => (list[id] ??= shallowRef(false)).value
 }
 
 const isSelected = createSelector(selected)
