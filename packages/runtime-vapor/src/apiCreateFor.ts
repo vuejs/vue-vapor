@@ -329,6 +329,7 @@ export const createFor = (
 
   function unmount({ nodes, scope }: ForBlock) {
     removeBlock(nodes, parent!)
+    scope.stop()
   }
 }
 
