@@ -36,7 +36,7 @@ export enum IRSlotType {
   DYNAMIC,
   LOOP,
   CONDITIONAL,
-  EXPRESSION,
+  EXPRESSION, // JSX only
 }
 export type IRSlotsStatic = {
   slotType: IRSlotType.STATIC
