@@ -306,7 +306,7 @@ export const createFor = (
       }
     }
 
-    if (needsUpdate) setState(block, newItem, newKey, newIndex)
+    if (needsUpdate) updateState(block, newItem, newKey, newIndex)
   }
 
   function updateWithoutMemo(
@@ -321,9 +321,8 @@ export const createFor = (
       newKey !== key.value ||
       newIndex !== index.value ||
       // shallowRef list
-      (!isReactive(newItem) && isObject(newItem))
-
-    if (needsUpdate) setState(block, newItem, newKey, newIndex)
+      (isObject(newItem) && !isReactive(newItem))
+    if (needsUpdate) updateState(block, newItem, newKey, newIndex)
   }
 
   function unmount({ nodes, scope }: ForBlock) {
@@ -332,7 +331,7 @@ export const createFor = (
   }
 }
 
-function setState(
+function updateState(
   block: ForBlock,
   newItem: any,
   newKey: any,
