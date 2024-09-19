@@ -19,6 +19,7 @@ import { currentInstance } from './component'
 import { componentKey } from './component'
 import type { DynamicSlot } from './componentSlots'
 import { renderEffect } from './renderEffect'
+import { withMemo } from './memo'
 
 interface ForBlock extends Fragment {
   scope: EffectScope
@@ -264,7 +265,15 @@ export const createFor = (
       memo: getMemo && getMemo(item, key, index),
       [fragmentKey]: true,
     })
-    block.nodes = scope.run(() => renderItem(state))!
+    block.nodes = scope.run(() => {
+      if (getMemo) {
+        return withMemo(
+          () => block.memo!,
+          () => renderItem(state),
+        )
+      }
+      return renderItem(state)
+    })!
 
     // TODO v-memo
     // if (getMemo) block.update()
