@@ -1,6 +1,6 @@
 import { renderEffect } from './renderEffect'
 import { type Block, type Fragment, fragmentKey } from './apiRender'
-import { type EffectScope, effectScope } from '@vue/reactivity'
+import { type EffectScope, effectScope } from '@johnsoncodehk/signals'
 import { createComment, createTextNode, insert, remove } from './dom/element'
 
 type BlockFn = () => Block

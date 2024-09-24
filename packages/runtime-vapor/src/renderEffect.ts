@@ -1,4 +1,4 @@
-import { EffectFlags, ReactiveEffect, getCurrentScope } from '@vue/reactivity'
+// import { EffectFlags, ReactiveEffect, getCurrentScope } from '@vue/reactivity'
 import { invokeArrayFns } from '@vue/shared'
 import {
   type ComponentInternalInstance,
@@ -13,15 +13,16 @@ import {
 } from './scheduler'
 import { VaporErrorCodes, callWithAsyncErrorHandling } from './errorHandling'
 import { memoStack } from './memo'
+import { effect as effect2 } from '@johnsoncodehk/signals'
 
 export function renderEffect(cb: () => void): void {
   const instance = getCurrentInstance()
-  const scope = getCurrentScope()
+  // const scope = getCurrentScope()
 
-  if (scope) {
-    const baseCb = cb
-    cb = () => scope.run(baseCb)
-  }
+  // if (scope) {
+  //   const baseCb = cb
+  //   cb = () => scope.run(baseCb)
+  // }
 
   if (instance) {
     const baseCb = cb
@@ -40,25 +41,25 @@ export function renderEffect(cb: () => void): void {
     memoCaches = memos.map(memo => memo())
   }
 
-  const effect = new ReactiveEffect(() =>
+  const effect = effect2(() =>
     callWithAsyncErrorHandling(cb, instance, VaporErrorCodes.RENDER_FUNCTION),
   )
 
-  effect.scheduler = () => queueJob(job)
-  if (__DEV__ && instance) {
-    effect.onTrack = instance.rtc
-      ? e => invokeArrayFns(instance.rtc!, e)
-      : void 0
-    effect.onTrigger = instance.rtg
-      ? e => invokeArrayFns(instance.rtg!, e)
-      : void 0
-  }
-  effect.run()
+  // effect.scheduler = () => queueJob(job)
+  // if (__DEV__ && instance) {
+  //   effect.onTrack = instance.rtc
+  //     ? e => invokeArrayFns(instance.rtc!, e)
+  //     : void 0
+  //   effect.onTrigger = instance.rtg
+  //     ? e => invokeArrayFns(instance.rtg!, e)
+  //     : void 0
+  // }
+  // effect.run()
 
   function job() {
-    if (!(effect.flags & EffectFlags.ACTIVE) || !effect.dirty) {
-      return
-    }
+    // if (!(effect.flags & EffectFlags.ACTIVE) || !effect.dirty) {
+    //   return
+    // }
 
     if (memos) {
       let dirty: boolean | undefined

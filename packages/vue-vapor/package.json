@@ -58,6 +58,7 @@
   "homepage": "https://github.com/vuejs/vue-vapor/tree/main/packages/vapor#readme",
   "dependencies": {
     "@vue/runtime-vapor": "workspace:*",
-    "@vue/compiler-vapor": "workspace:*"
+    "@vue/compiler-vapor": "workspace:*",
+    "@johnsoncodehk/signals": "link:/Users/kevin/Developer/open-source/vue-signals"
   }
 }

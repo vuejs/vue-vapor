@@ -9,17 +9,13 @@ import { insert, querySelector } from './dom/element'
 import { flushPostFlushCbs, queuePostFlushCb } from './scheduler'
 import { invokeLifecycle } from './componentLifecycle'
 import { VaporLifecycleHooks } from './enums'
-import {
-  pauseTracking,
-  proxyRefs,
-  resetTracking,
-  shallowReadonly,
-} from '@vue/reactivity'
+import { pauseTracking, resetTracking } from '@johnsoncodehk/signals'
 import { isArray, isFunction, isObject } from '@vue/shared'
 import { fallThroughAttrs } from './componentAttrs'
 import { VaporErrorCodes, callWithErrorHandling } from './errorHandling'
 import { endMeasure, startMeasure } from './profiling'
 import { devtoolsComponentAdded } from './devtools'
+import { proxyRefs } from '@vue/reactivity'
 
 export const fragmentKey: unique symbol = Symbol(__DEV__ ? `fragmentKey` : ``)
 
@@ -57,7 +53,7 @@ export function setupComponent(
         setupFn,
         instance,
         VaporErrorCodes.SETUP_FUNCTION,
-        [__DEV__ ? shallowReadonly(props) : props, setupContext],
+        [__DEV__ ? props : props, setupContext],
       )
       resetTracking()
     }

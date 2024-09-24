@@ -1,4 +1,4 @@
-import { shallowRef } from '@vue/vapor'
+import { signal } from '@vue/vapor'
 
 let ID = 1
 
@@ -66,7 +66,7 @@ export function buildData(count = 1000) {
   for (let i = 0; i < count; i++)
     data.push({
       id: ID++,
-      label: shallowRef(
+      label: signal(
         adjectives[_random(adjectives.length)] +
           ' ' +
           colours[_random(colours.length)] +

@@ -5,10 +5,10 @@ import {
 } from './component'
 import { warn } from './warning'
 import {
-  type DebuggerEvent,
+  // type DebuggerEvent,
   pauseTracking,
   resetTracking,
-} from '@vue/reactivity'
+} from '@johnsoncodehk/signals'
 import { ErrorTypeStrings, callWithAsyncErrorHandling } from './errorHandling'
 import { toHandlerKey } from '@vue/shared'
 import { VaporLifecycleHooks } from './enums'
@@ -77,7 +77,7 @@ export const onBeforeUnmount: CreateHook = createHook(
 )
 export const onUnmounted: CreateHook = createHook(VaporLifecycleHooks.UNMOUNTED)
 
-export type DebuggerHook = (e: DebuggerEvent) => void
+export type DebuggerHook = (e: any) => void
 export const onRenderTriggered: CreateHook = createHook<DebuggerHook>(
   VaporLifecycleHooks.RENDER_TRIGGERED,
 )

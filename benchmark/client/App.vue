@@ -1,77 +1,72 @@
 <script setup lang="ts" vapor>
-import {
-  shallowRef,
-  triggerRef,
-  type ShallowRef,
-  createSelector,
-} from '@vue/vapor'
+import { signal, createSelector, type Signal } from '@vue/vapor'
 import { buildData } from './data'
 import { defer, wrap } from './profiling'
 
 const isVapor = !!import.meta.env.IS_VAPOR
 
-const selected = shallowRef<number>()
-const rows = shallowRef<
+const selected = signal<number>()
+const rows = signal<
   {
     id: number
-    label: ShallowRef<string>
+    label: Signal<string>
   }[]
 >([])
 
 // Bench Add: https://jsbench.me/45lzxprzmu/1
 const add = wrap('add', () => {
-  rows.value.push(...buildData(1000))
-  triggerRef(rows)
+  rows().push(...buildData(1000))
+  rows.set(rows())
 })
 
 const remove = wrap('remove', (id: number) => {
-  rows.value.splice(
-    rows.value.findIndex(d => d.id === id),
+  rows().splice(
+    rows().findIndex(d => d.id === id),
     1,
   )
-  triggerRef(rows)
+  rows.set(rows())
 })
 
 const select = wrap('select', (id: number) => {
-  selected.value = id
+  selected.set(id)
 })
 
 const run = wrap('run', () => {
-  rows.value = buildData()
-  selected.value = undefined
+  rows.set(buildData())
+  selected.set(undefined)
 })
 
 const update = wrap('update', () => {
-  const _rows = rows.value
+  const _rows = rows()
   for (let i = 0, len = _rows.length; i < len; i += 10) {
     _rows[i].label.value += ' !!!'
   }
 })
 
 const runLots = wrap('runLots', () => {
-  rows.value = buildData(10000)
-  selected.value = undefined
+  rows.set(buildData(10000))
+  selected.set(undefined)
 })
 
 const clear = wrap('clear', () => {
-  rows.value = []
-  selected.value = undefined
+  rows.set([])
+  selected.set(undefined)
 })
 
 const swapRows = wrap('swap', () => {
-  const _rows = rows.value
+  const _rows = rows()
   if (_rows.length > 998) {
     const d1 = _rows[1]
     const d998 = _rows[998]
     _rows[1] = d998
     _rows[998] = d1
-    triggerRef(rows)
+    rows.set(rows())
   }
 })
 
 async function bench() {
   for (let i = 0; i < 30; i++) {
-    rows.value = []
+    rows.set([])
     await defer()
     await runLots()
   }
@@ -120,13 +115,13 @@ const globalThis = window
   <table>
     <tbody>
       <tr
-        v-for="row of rows"
+        v-for="row of rows()"
         :key="row.id"
-        :class="{ danger: isSelected(row.id) }"
+        :class="{ danger: selected() === row.id }"
       >
         <td>{{ row.id }}</td>
         <td>
-          <a @click="select(row.id)">{{ row.label.value }}</a>
+          <a @click="select(row.id)">{{ row.label() }}</a>
         </td>
         <td>
           <button @click="remove(row.id)">x</button>

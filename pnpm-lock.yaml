@@ -442,6 +442,9 @@ importers:
 
   packages/runtime-vapor:
     dependencies:
+      '@johnsoncodehk/signals':
+        specifier: /Users/kevin/Developer/open-source/vue-signals
+        version: link:../../../../vue-signals
       '@vue/reactivity':
         specifier: workspace:*
         version: link:../reactivity
@@ -507,6 +510,9 @@ importers:
 
   packages/vue-vapor:
     dependencies:
+      '@johnsoncodehk/signals':
+        specifier: link:/Users/kevin/Developer/open-source/vue-signals
+        version: link:../../../../vue-signals
       '@vue/compiler-vapor':
         specifier: workspace:*
         version: link:../compiler-vapor
