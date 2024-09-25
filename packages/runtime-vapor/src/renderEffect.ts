@@ -1,4 +1,3 @@
-// import { EffectFlags, ReactiveEffect, getCurrentScope } from '@vue/reactivity'
 import { invokeArrayFns } from '@vue/shared'
 import {
   type ComponentInternalInstance,
@@ -13,16 +12,20 @@ import {
 } from './scheduler'
 import { VaporErrorCodes, callWithAsyncErrorHandling } from './errorHandling'
 import { memoStack } from './memo'
-import { effect as effect2 } from '@johnsoncodehk/signals'
+import {
+  ReactiveEffect,
+  effect as effect2,
+  getCurrentScope,
+} from '/Users/johnsonchu/Desktop/GitHub/refs/vue'
 
 export function renderEffect(cb: () => void): void {
   const instance = getCurrentInstance()
-  // const scope = getCurrentScope()
+  const scope = getCurrentScope()
 
-  // if (scope) {
-  //   const baseCb = cb
-  //   cb = () => scope.run(baseCb)
-  // }
+  if (scope) {
+    const baseCb = cb
+    cb = () => scope.run(baseCb)
+  }
 
   if (instance) {
     const baseCb = cb

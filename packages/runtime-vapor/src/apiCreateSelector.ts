@@ -1,4 +1,7 @@
-import { type Signal, signal } from '@johnsoncodehk/signals'
+import {
+  type ShallowRef,
+  shallowRef,
+} from '/Users/johnsonchu/Desktop/GitHub/refs/vue'
 import { watchEffect } from './apiWatch'
 
 export function createSelector<T, U extends T>(
@@ -26,8 +29,8 @@ export function createSelector<T, U extends T>(
   })
 
   return key => {
-    let l: Signal<boolean | undefined> & { _count?: number }
-    if (!(l = subs.get(key))) subs.set(key, (l = signal()))
+    let l: ShallowRef<boolean | undefined> & { _count?: number }
+    if (!(l = subs.get(key))) subs.set(key, (l = shallowRef()))
     l.value
     l._count ? l._count++ : (l._count = 1)
     // onScopeDispose(() => (l._count! > 1 ? l._count!-- : subs.delete(key)))

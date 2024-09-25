@@ -1,9 +1,9 @@
 import {
   type EffectScope,
-  type Signal,
+  type ShallowRef,
   effectScope,
-  signal,
-} from '@johnsoncodehk/signals'
+  shallowRef,
+} from '/Users/johnsonchu/Desktop/GitHub/refs/vue'
 import { isArray, isObject, isString } from '@vue/shared'
 import {
   createComment,
@@ -22,9 +22,9 @@ import { withMemo } from './memo'
 interface ForBlock extends Fragment {
   scope: EffectScope
   state: [
-    item: Signal<any>,
-    key: Signal<any>,
-    index: Signal<number | undefined>,
+    item: ShallowRef<any>,
+    key: ShallowRef<any>,
+    index: ShallowRef<number | undefined>,
   ]
   key: any
   memo: any[] | undefined
@@ -267,9 +267,9 @@ export const createFor = (
 
     const [item, key, index] = getItem(source, idx)
     const state = [
-      signal(item),
-      signal(key),
-      signal(index),
+      shallowRef(item),
+      shallowRef(key),
+      shallowRef(index),
     ] as ForBlock['state']
     const block: ForBlock = (newBlocks[idx] = {
       nodes: null!, // set later
