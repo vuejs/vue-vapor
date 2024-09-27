@@ -16,7 +16,7 @@ import {
   ReactiveEffect,
   effect as effect2,
   getCurrentScope,
-} from '/Users/johnsonchu/Desktop/GitHub/refs/vue'
+} from '@johnsoncodehk/signals/vue'
 
 export function renderEffect(cb: () => void): void {
   const instance = getCurrentInstance()

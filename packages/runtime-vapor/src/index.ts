@@ -4,7 +4,7 @@ export const version: string = __VERSION__
 export {
   // core
   type Ref,
-  type ShallowRef,
+  // type ShallowRef,
   type DebuggerEvent,
   TrackOpTypes,
   TriggerOpTypes,
@@ -26,7 +26,7 @@ export {
   // advanced
   customRef,
   triggerRef,
-  shallowRef,
+  // shallowRef,
   shallowReactive,
   shallowReadonly,
   markRaw,
@@ -163,4 +163,4 @@ export const setDevtoolsHook = (
   __DEV__ || __ESM_BUNDLER__ ? _setDevtoolsHook : NOOP
 ) as typeof _setDevtoolsHook
 
-export * from '/Users/johnsonchu/Desktop/GitHub/refs/vue'
+export * from '@johnsoncodehk/signals/vue'

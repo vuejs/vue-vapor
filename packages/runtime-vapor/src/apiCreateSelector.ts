@@ -1,19 +1,16 @@
-import {
-  type ShallowRef,
-  shallowRef,
-} from '/Users/johnsonchu/Desktop/GitHub/refs/vue'
-import { watchEffect } from './apiWatch'
+import { type ShallowRef, shallowRef } from '@johnsoncodehk/signals/vue'
+import { renderEffect } from './renderEffect'
 
 export function createSelector<T, U extends T>(
-  source: () => T,
+  source: ShallowRef<T>,
   fn: (key: U, value: T) => boolean = (key, value) => key === value,
 ): (key: U) => boolean {
   let subs = new Map()
   let val: T
   let oldVal: U
 
-  watchEffect(() => {
-    val = source()
+  renderEffect(() => {
+    val = source.value
     const keys = [...subs.keys()]
     for (let i = 0, len = keys.length; i < len; i++) {
       const key = keys[i]

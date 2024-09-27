@@ -3,7 +3,7 @@ import {
   type ShallowRef,
   effectScope,
   shallowRef,
-} from '/Users/johnsonchu/Desktop/GitHub/refs/vue'
+} from '@johnsoncodehk/signals/vue'
 import { isArray, isObject, isString } from '@vue/shared'
 import {
   createComment,
