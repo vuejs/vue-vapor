@@ -384,7 +384,7 @@ describe('createFor', () => {
     expect(host.innerHTML).toBe('<!--for-->')
   })
 
-  test.fails('shallowRef source', async () => {
+  test('shallowRef source', async () => {
     const list = shallowRef([{ name: '1' }, { name: '2' }, { name: '3' }])
     const setList = (update = list.value.slice()) => (list.value = update)
     function reverse() {
