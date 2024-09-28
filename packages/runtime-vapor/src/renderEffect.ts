@@ -12,11 +12,7 @@ import {
 } from './scheduler'
 import { VaporErrorCodes, callWithAsyncErrorHandling } from './errorHandling'
 import { memoStack } from './memo'
-import {
-  ReactiveEffect,
-  effect as effect2,
-  getCurrentScope,
-} from '@johnsoncodehk/signals/vue'
+import { ReactiveEffect, getCurrentScope } from '@johnsoncodehk/signals/vue'
 
 export function renderEffect(cb: () => void): void {
   const instance = getCurrentInstance()
@@ -44,11 +40,15 @@ export function renderEffect(cb: () => void): void {
     memoCaches = memos.map(memo => memo())
   }
 
-  const effect = effect2(() =>
-    callWithAsyncErrorHandling(cb, instance, VaporErrorCodes.RENDER_FUNCTION),
-  )
+  const effect = new ReactiveEffect(() => {
+    return callWithAsyncErrorHandling(
+      cb,
+      instance,
+      VaporErrorCodes.RENDER_FUNCTION,
+    )
+  })
 
-  // effect.scheduler = () => queueJob(job)
+  effect.scheduler = () => queueJob(job)
   // if (__DEV__ && instance) {
   //   effect.onTrack = instance.rtc
   //     ? e => invokeArrayFns(instance.rtc!, e)
@@ -57,12 +57,12 @@ export function renderEffect(cb: () => void): void {
   //     ? e => invokeArrayFns(instance.rtg!, e)
   //     : void 0
   // }
-  // effect.run()
+  effect.run()
 
   function job() {
-    // if (!(effect.flags & EffectFlags.ACTIVE) || !effect.dirty) {
-    //   return
-    // }
+    if (!effect.dirty) {
+      return
+    }
 
     if (memos) {
       let dirty: boolean | undefined
