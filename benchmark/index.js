@@ -29,7 +29,7 @@ const {
   options: {
     skipLib: {
       type: 'boolean',
-      short: 's',
+      short: 'l',
     },
     skipApp: {
       type: 'boolean',
