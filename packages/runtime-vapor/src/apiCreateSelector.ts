@@ -1,4 +1,8 @@
-import { type ShallowRef, shallowRef } from '@johnsoncodehk/signals/vue'
+import {
+  type ShallowRef,
+  onScopeDispose,
+  shallowRef,
+} from '@johnsoncodehk/signals/vue'
 import { renderEffect } from './renderEffect'
 
 export function createSelector<T, U extends T>(
@@ -30,7 +34,7 @@ export function createSelector<T, U extends T>(
     if (!(l = subs.get(key))) subs.set(key, (l = shallowRef()))
     l.value
     l._count ? l._count++ : (l._count = 1)
-    // onScopeDispose(() => (l._count! > 1 ? l._count!-- : subs.delete(key)))
+    onScopeDispose(() => (l._count! > 1 ? l._count!-- : subs.delete(key)))
     return l.value !== undefined ? l.value : fn(key, val)
   }
 }
