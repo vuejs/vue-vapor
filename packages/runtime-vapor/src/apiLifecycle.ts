@@ -8,7 +8,7 @@ import {
   // type DebuggerEvent,
   pauseTracking,
   resetTracking,
-} from '@johnsoncodehk/signals/vue'
+} from '@johnsoncodehk/signals/extras/vue'
 import { ErrorTypeStrings, callWithAsyncErrorHandling } from './errorHandling'
 import { toHandlerKey } from '@vue/shared'
 import { VaporLifecycleHooks } from './enums'
