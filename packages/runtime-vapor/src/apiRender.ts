@@ -9,7 +9,10 @@ import { insert, querySelector } from './dom/element'
 import { flushPostFlushCbs, queuePostFlushCb } from './scheduler'
 import { invokeLifecycle } from './componentLifecycle'
 import { VaporLifecycleHooks } from './enums'
-import { pauseTracking, resetTracking } from '@johnsoncodehk/signals/extras/vue'
+import {
+  pauseTracking,
+  resetTracking,
+} from '@johnsoncodehk/signals/unstable/vue'
 import { isArray, isFunction, isObject } from '@vue/shared'
 import { fallThroughAttrs } from './componentAttrs'
 import { VaporErrorCodes, callWithErrorHandling } from './errorHandling'

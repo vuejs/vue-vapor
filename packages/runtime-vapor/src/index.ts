@@ -163,4 +163,4 @@ export const setDevtoolsHook = (
   __DEV__ || __ESM_BUNDLER__ ? _setDevtoolsHook : NOOP
 ) as typeof _setDevtoolsHook
 
-export * from '@johnsoncodehk/signals/extras/vue'
+export * from '@johnsoncodehk/signals/unstable/vue'

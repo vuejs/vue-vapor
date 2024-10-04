@@ -15,7 +15,7 @@ import { memoStack } from './memo'
 import {
   ReactiveEffect,
   getCurrentScope,
-} from '@johnsoncodehk/signals/extras/vue'
+} from '@johnsoncodehk/signals/unstable/vue'
 
 export function renderEffect(cb: () => void): void {
   const instance = getCurrentInstance()
