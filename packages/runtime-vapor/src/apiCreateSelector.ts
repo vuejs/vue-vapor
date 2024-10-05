@@ -2,7 +2,7 @@ import {
   type ShallowRef,
   onScopeDispose,
   shallowRef,
-} from '@johnsoncodehk/signals/unstable/vue'
+} from 'native-signals/unstable/vue'
 import { renderEffect } from './renderEffect'
 
 export function createSelector<T, U extends T>(

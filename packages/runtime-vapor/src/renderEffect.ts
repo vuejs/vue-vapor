@@ -12,10 +12,7 @@ import {
 } from './scheduler'
 import { VaporErrorCodes, callWithAsyncErrorHandling } from './errorHandling'
 import { memoStack } from './memo'
-import {
-  ReactiveEffect,
-  getCurrentScope,
-} from '@johnsoncodehk/signals/unstable/vue'
+import { ReactiveEffect, getCurrentScope } from 'native-signals/unstable/vue'
 
 export function renderEffect(cb: () => void): void {
   const instance = getCurrentInstance()
