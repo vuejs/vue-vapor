@@ -1,5 +1,10 @@
 <script setup lang="ts" vapor>
-import { shallowRef, type ShallowRef, createSelector } from '@vue/vapor'
+import {
+  shallowRef,
+  triggerRef,
+  type ShallowRef,
+  createSelector,
+} from '@vue/vapor'
 import { buildData } from './data'
 import { defer, wrap } from './profiling'
 
@@ -15,7 +20,8 @@ const rows = shallowRef<
 
 // Bench Add: https://jsbench.me/45lzxprzmu/1
 const add = wrap('add', () => {
-  rows.value = [...rows.value, ...buildData(1000)]
+  rows.value.push(...buildData(1000))
+  triggerRef(rows)
 })
 
 const remove = wrap('remove', (id: number) => {
@@ -23,7 +29,7 @@ const remove = wrap('remove', (id: number) => {
     rows.value.findIndex(d => d.id === id),
     1,
   )
-  rows.value = [...rows.value]
+  triggerRef(rows)
 })
 
 const select = wrap('select', (id: number) => {
@@ -59,7 +65,7 @@ const swapRows = wrap('swap', () => {
     const d998 = _rows[998]
     _rows[1] = d998
     _rows[998] = d1
-    rows.value = [..._rows]
+    triggerRef(rows)
   }
 })
 
