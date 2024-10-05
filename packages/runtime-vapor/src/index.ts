@@ -11,7 +11,7 @@ export {
   reactive,
   ref,
   readonly,
-  computed,
+  // computed,
   // utilities
   unref,
   proxyRefs,
@@ -25,7 +25,7 @@ export {
   isShallow,
   // advanced
   customRef,
-  triggerRef,
+  // triggerRef,
   // shallowRef,
   shallowReactive,
   shallowReadonly,
@@ -36,10 +36,10 @@ export {
   ReactiveEffect,
   onEffectCleanup,
   // effect scope
-  effectScope,
-  EffectScope,
-  getCurrentScope,
-  onScopeDispose,
+  // effectScope,
+  // EffectScope,
+  // getCurrentScope,
+  // onScopeDispose,
   // baseWatch
   onWatcherCleanup,
   getCurrentWatcher,
