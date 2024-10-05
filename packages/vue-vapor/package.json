@@ -59,6 +59,6 @@
   "dependencies": {
     "@vue/runtime-vapor": "workspace:*",
     "@vue/compiler-vapor": "workspace:*",
-    "native-signals": "https://pkg.pr.new/johnsoncodehk/native-signals@5f3a939"
+    "native-signals": "https://pkg.pr.new/johnsoncodehk/native-signals@ba5a9b7"
   }
 }

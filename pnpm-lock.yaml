@@ -452,8 +452,8 @@ importers:
         specifier: workspace:*
         version: link:../shared
       native-signals:
-        specifier: https://pkg.pr.new/johnsoncodehk/native-signals@5f3a939
-        version: https://pkg.pr.new/johnsoncodehk/native-signals@5f3a939
+        specifier: https://pkg.pr.new/johnsoncodehk/native-signals@ba5a9b7
+        version: https://pkg.pr.new/johnsoncodehk/native-signals@ba5a9b7
 
   packages/server-renderer:
     dependencies:
@@ -517,8 +517,8 @@ importers:
         specifier: workspace:*
         version: link:../runtime-vapor
       native-signals:
-        specifier: https://pkg.pr.new/johnsoncodehk/native-signals@5f3a939
-        version: https://pkg.pr.new/johnsoncodehk/native-signals@5f3a939
+        specifier: https://pkg.pr.new/johnsoncodehk/native-signals@ba5a9b7
+        version: https://pkg.pr.new/johnsoncodehk/native-signals@ba5a9b7
 
   playground:
     dependencies:
@@ -2727,8 +2727,8 @@ packages:
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
     hasBin: true
 
-  native-signals@https://pkg.pr.new/johnsoncodehk/native-signals@5f3a939:
-    resolution: {tarball: https://pkg.pr.new/johnsoncodehk/native-signals@5f3a939}
+  native-signals@https://pkg.pr.new/johnsoncodehk/native-signals@ba5a9b7:
+    resolution: {tarball: https://pkg.pr.new/johnsoncodehk/native-signals@ba5a9b7}
     version: 0.0.0
 
   natural-compare@1.4.0:
@@ -5869,7 +5869,7 @@ snapshots:
 
   nanoid@3.3.7: {}
 
-  native-signals@https://pkg.pr.new/johnsoncodehk/native-signals@5f3a939: {}
+  native-signals@https://pkg.pr.new/johnsoncodehk/native-signals@ba5a9b7: {}
 
   natural-compare@1.4.0: {}
 
