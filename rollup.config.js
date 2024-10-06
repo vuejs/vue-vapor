@@ -130,9 +130,7 @@ function createConfig(format, output, plugins = []) {
   const isCJSBuild = format === 'cjs'
   const isGlobalBuild = /global/.test(format)
   const isCompatPackage =
-    pkg.name === '@vue/compat' ||
-    pkg.name === '@vue/compat-canary' ||
-    pkg.name === '@vue-vapor/compat'
+    pkg.name === '@vue/compat' || pkg.name === '@vue/compat-canary'
   const isCompatBuild = !!packageOptions.compat
   const isBrowserBuild =
     (isGlobalBuild || isBrowserESMBuild || isBundlerESMBuild) &&
@@ -307,14 +305,17 @@ function createConfig(format, output, plugins = []) {
     } else {
       // Node / esm-bundler builds.
       // externalize all direct deps unless it's the compat build.
-      return [
-        ...Object.keys(pkg.dependencies || {}),
-        ...Object.keys(pkg.peerDependencies || {}),
-        // for @vue/compiler-sfc / server-renderer
-        ...['path', 'url', 'stream'],
-        // somehow these throw warnings for runtime-* package builds
-        ...treeShakenDeps,
-      ]
+      return id => {
+        const deps = [
+          ...Object.keys(pkg.dependencies || {}),
+          ...Object.keys(pkg.peerDependencies || {}),
+          // for @vue/compiler-sfc / server-renderer
+          ...['path', 'url', 'stream'],
+          // somehow these throw warnings for runtime-* package builds
+          ...treeShakenDeps,
+        ]
+        return deps.some(dep => dep === id || id.startsWith(`${dep}/`))
+      }
     }
   }
 
@@ -325,8 +326,7 @@ function createConfig(format, output, plugins = []) {
     let cjsIgnores = []
     if (
       pkg.name === '@vue/compiler-sfc' ||
-      pkg.name === '@vue/compiler-sfc-canary' ||
-      pkg.name === '@vue-vapor/compiler-sfc'
+      pkg.name === '@vue/compiler-sfc-canary'
     ) {
       cjsIgnores = [
         ...Object.keys(consolidatePkg.devDependencies),

@@ -452,8 +452,8 @@ importers:
         specifier: workspace:*
         version: link:../shared
       native-signals:
-        specifier: 0.0.1
-        version: 0.0.1
+        specifier: https://pkg.pr.new/native-signals@678da8b
+        version: https://pkg.pr.new/native-signals@678da8b
 
   packages/server-renderer:
     dependencies:
@@ -516,9 +516,6 @@ importers:
       '@vue/runtime-vapor':
         specifier: workspace:*
         version: link:../runtime-vapor
-      native-signals:
-        specifier: 0.0.1
-        version: 0.0.1
 
   playground:
     dependencies:
@@ -2727,8 +2724,9 @@ packages:
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
     hasBin: true
 
-  native-signals@0.0.1:
-    resolution: {integrity: sha512-uLDUYjCRwnRNqJMUTC/OGli4uBrw8P8C0hBUXGSt7vx5ODosIilaIcbS6IYuUsxYiOS5zvfjC4KE7QR8+CkrEw==}
+  native-signals@https://pkg.pr.new/native-signals@678da8b:
+    resolution: {tarball: https://pkg.pr.new/native-signals@678da8b}
+    version: 0.0.1
 
   natural-compare@1.4.0:
     resolution: {integrity: sha512-OWND8ei3VtNC9h7V60qff3SVobHr996CTwgxubgyQYEpg290h9J0buyECNNJexkFm5sOajh5G116RYA1c8ZMSw==}
@@ -5868,7 +5866,7 @@ snapshots:
 
   nanoid@3.3.7: {}
 
-  native-signals@0.0.1: {}
+  native-signals@https://pkg.pr.new/native-signals@678da8b: {}
 
   natural-compare@1.4.0: {}
 

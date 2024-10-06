@@ -35,7 +35,7 @@
   },
   "homepage": "https://github.com/vuejs/vue-vapor/tree/dev/packages/runtime-vapor#readme",
   "dependencies": {
-    "native-signals": "0.0.1",
+    "native-signals": "https://pkg.pr.new/native-signals@678da8b",
     "@vue/reactivity": "workspace:*",
     "@vue/runtime-shared": "workspace:*",
     "@vue/shared": "workspace:*"

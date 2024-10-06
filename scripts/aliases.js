@@ -18,6 +18,10 @@ const entries = {
   'vue/compiler-sfc': resolveEntryForPkg('compiler-sfc'),
   'vue/server-renderer': resolveEntryForPkg('server-renderer'),
   '@vue/compat': resolveEntryForPkg('vue-compat'),
+  'native-signals/unstable/vue': path.resolve(
+    fileURLToPath(import.meta.url),
+    '../../packages/runtime-vapor/node_modules/native-signals/unstable/vue.js',
+  ),
 }
 
 const nonSrcPackages = ['sfc-playground', 'template-explorer', 'dts-test']
