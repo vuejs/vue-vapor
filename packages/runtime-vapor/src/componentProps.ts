@@ -163,7 +163,7 @@ function registerProp(
   }
 }
 
-export function normalizeRawProps(rawProps: RawProps) {
+export function normalizeRawProps(rawProps: RawProps): NormalizedRawProps {
   if (!rawProps) return []
   if (!isArray(rawProps)) return [rawProps]
   return rawProps
@@ -172,7 +172,7 @@ export function normalizeRawProps(rawProps: RawProps) {
 export function walkRawProps(
   rawProps: NormalizedRawProps,
   cb: (key: string, value: any, getter?: boolean) => void,
-) {
+): void {
   for (const props of Array.from(rawProps).reverse()) {
     if (isFunction(props)) {
       const resolved = props()

@@ -4,14 +4,14 @@ import {
   createComponentInstance,
   currentInstance,
 } from './component'
-import { type Block, setupComponent } from './apiRender'
+import { setupComponent } from './apiRender'
 import {
   type NormalizedRawProps,
   type RawProps,
   normalizeRawProps,
   walkRawProps,
 } from './componentProps'
-import type { RawSlots } from './componentSlots'
+import { type RawSlots, isDynamicSlotFn } from './componentSlots'
 import { withAttrs } from './componentAttrs'
 import { isString } from '@vue/shared'
 import { renderEffect } from './renderEffect'
@@ -24,9 +24,9 @@ export function createComponent(
   slots: RawSlots | null = null,
   singleRoot: boolean = false,
   once: boolean = false,
-): ComponentInternalInstance {
+): ComponentInternalInstance | HTMLElement {
   if (isString(comp)) {
-    return fallbackComponent(comp, rawProps, slots, singleRoot)
+    return fallbackComponent(comp, rawProps, slots)
   }
 
   const current = currentInstance!
@@ -48,8 +48,7 @@ function fallbackComponent(
   comp: string,
   rawProps: RawProps | null,
   slots: RawSlots | null,
-  singleRoot: boolean,
-) {
+): HTMLElement {
   // eslint-disable-next-line no-restricted-globals
   const el = document.createElement(comp)
 
@@ -62,24 +61,16 @@ function fallbackComponent(
     })
   }
 
-  if (slots && slots.length) {
-    renderEffect(() => {
-      let block: Block | undefined
-
-      if (slots && slots.default) {
-        block = slots.default()
-      } else {
-        for (const slotFn of dynamicSlots!) {
-          const slot = slotFn()
-          if (slot.name === 'default') {
-            block = slot.fn()
-            break
-          }
-        }
+  if (slots) {
+    if (!Array.isArray(slots)) slots = [slots]
+    for (let i = 0; i < slots.length; i++) {
+      const slot = slots[i]
+      if (!isDynamicSlotFn(slot) && slot.default) {
+        const block = slot.default && slot.default()
+        if (block) el.append(...normalizeBlock(block))
       }
-
-      if (block) el.append(...normalizeBlock(block))
-    })
+    }
   }
-  return { __return: el, rawProps }
+
+  return el
 }
