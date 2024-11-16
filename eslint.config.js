@@ -78,6 +78,7 @@ export default tseslint.config(
   {
     files: [
       '**/__tests__/**',
+      '**/__benchmarks__/**',
       'packages-private/dts-test/**',
       'packages-private/dts-build-test/**',
     ],
