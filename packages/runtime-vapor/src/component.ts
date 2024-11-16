@@ -192,6 +192,7 @@ export interface ComponentInternalInstance {
   isMounted: boolean
   isUnmounted: boolean
   isUpdating: boolean
+  isDeactivated?: boolean
   // TODO: registory of provides, lifecycles, ...
   /**
    * @internal
