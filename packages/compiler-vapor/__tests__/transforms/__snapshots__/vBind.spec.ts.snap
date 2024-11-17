@@ -121,6 +121,46 @@ export function render(_ctx) {
 }"
 `;
 
+exports[`compiler v-bind > attributes must be set as attribute 1`] = `
+"import { renderEffect as _renderEffect, setAttr as _setAttr, template as _template } from 'vue/vapor';
+const t0 = _template("<div></div>")
+const t1 = _template("<input>")
+const t2 = _template("<textarea></textarea>")
+const t3 = _template("<img>")
+const t4 = _template("<video></video>")
+const t5 = _template("<canvas></canvas>")
+const t6 = _template("<source>")
+
+export function render(_ctx) {
+  const n0 = t0()
+  const n1 = t1()
+  const n2 = t2()
+  const n3 = t3()
+  const n4 = t4()
+  const n5 = t5()
+  const n6 = t6()
+  _renderEffect(() => _setAttr(n0, "spellcheck", _ctx.spellcheck))
+  _renderEffect(() => _setAttr(n0, "draggable", _ctx.draggable))
+  _renderEffect(() => _setAttr(n0, "translate", _ctx.translate))
+  _renderEffect(() => _setAttr(n0, "form", _ctx.form))
+  _renderEffect(() => _setAttr(n1, "list", _ctx.list))
+  _renderEffect(() => _setAttr(n2, "type", _ctx.type))
+  _renderEffect(() => {
+    _setAttr(n3, "width", _ctx.width)
+    _setAttr(n4, "width", _ctx.width)
+    _setAttr(n5, "width", _ctx.width)
+    _setAttr(n6, "width", _ctx.width)
+  })
+  _renderEffect(() => {
+    _setAttr(n3, "height", _ctx.height)
+    _setAttr(n4, "height", _ctx.height)
+    _setAttr(n5, "height", _ctx.height)
+    _setAttr(n6, "height", _ctx.height)
+  })
+  return [n0, n1, n2, n3, n4, n5, n6]
+}"
+`;
+
 exports[`compiler v-bind > basic 1`] = `
 "import { setInheritAttrs as _setInheritAttrs, renderEffect as _renderEffect, setDynamicProp as _setDynamicProp, template as _template } from 'vue/vapor';
 const t0 = _template("<div></div>")

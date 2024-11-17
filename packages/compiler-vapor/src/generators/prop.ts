@@ -21,7 +21,7 @@ import {
   genCall,
   genMulti,
 } from './utils'
-import { toHandlerKey } from '@vue/shared'
+import { shouldSetAsAttr, toHandlerKey } from '@vue/shared'
 
 // only the static key prop will reach here
 export function genSetProp(
@@ -31,6 +31,7 @@ export function genSetProp(
   const { vaporHelper } = context
   const {
     prop: { key, values, modifier },
+    tag,
   } = oper
 
   const keyName = key.content
@@ -45,6 +46,8 @@ export function genSetProp(
     omitKey = true
   } else if (modifier) {
     helperName = modifier === '.' ? 'setDOMProp' : 'setAttr'
+  } else if (shouldSetAsAttr(tag.toUpperCase(), keyName)) {
+    helperName = 'setAttr'
   } else {
     helperName = 'setDynamicProp'
   }
