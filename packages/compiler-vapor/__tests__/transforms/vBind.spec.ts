@@ -529,14 +529,14 @@ describe('compiler v-bind', () => {
 
   test('attributes must be set as attribute', () => {
     const { code } = compileWithVBind(`
-          <div :spellcheck :draggable :translate :form />
-          <input :list="list" />
-          <textarea :type="type" />
-          <img :width="width" :height="height"/>
-          <video :width="width" :height="height"/>
-          <canvas :width="width" :height="height"/>
-          <source :width="width" :height="height"/>
-      `)
+      <div :spellcheck :draggable :translate :form />
+      <input :list="list" />
+      <textarea :type="type" />
+      <img :width="width" :height="height"/>
+      <video :width="width" :height="height"/>
+      <canvas :width="width" :height="height"/>
+      <source :width="width" :height="height"/>
+    `)
 
     expect(code).matchSnapshot()
     expect(code).contains('_setAttr(n0, "spellcheck", _ctx.spellcheck)')
@@ -554,7 +554,7 @@ describe('compiler v-bind', () => {
     expect(code).contains('_setAttr(n6, "width", _ctx.width)')
     expect(code).contains('_setAttr(n6, "height", _ctx.height)')
   })
-  
+
   test('number value', () => {
     const { code } = compileWithVBind(`<Comp :depth="0" />`)
     expect(code).matchSnapshot()
