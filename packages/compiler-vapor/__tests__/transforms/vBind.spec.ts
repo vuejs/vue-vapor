@@ -554,4 +554,10 @@ describe('compiler v-bind', () => {
     expect(code).contains('_setAttr(n6, "width", _ctx.width)')
     expect(code).contains('_setAttr(n6, "height", _ctx.height)')
   })
+  
+  test('number value', () => {
+    const { code } = compileWithVBind(`<Comp :depth="0" />`)
+    expect(code).matchSnapshot()
+    expect(code).contains('{ depth: () => (0) }')
+  })
 })
