@@ -79,6 +79,16 @@ export const isKnownHtmlAttr: (key: string) => boolean = /*@__PURE__*/ makeMap(
 )
 
 /**
+ * Generated from https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes
+ */
+export const isHTMLGlobalAttr: (key: string) => boolean = /*@__PURE__*/ makeMap(
+  `accesskey,anchor,autocapitalize,autocorrect,autofocus,class,contenteditable,` +
+    `dir,draggable,enterkeyhint,exportparts,hidden,id,inert,inputmode,is,` +
+    `itemid,itemprop,itemref,itemscope,itemtype,lang,nonce,part,popover,role,slot,` +
+    `spellcheck,style,tabindex,title,translate,virtualkeyboardpolicy,writingsuggestions`,
+)
+
+/**
  * Generated from https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute
  */
 export const isKnownSvgAttr: (key: string) => boolean = /*@__PURE__*/ makeMap(
@@ -124,6 +134,14 @@ export const isKnownSvgAttr: (key: string) => boolean = /*@__PURE__*/ makeMap(
 )
 
 /**
+ * Generated from https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute#generic_attributes
+ */
+export const isSvgGlobalAttr: (key: string) => boolean = /*@__PURE__*/ makeMap(
+  `id,class,style,lang,tabindex,xml:base,xml:lang,xml:space,requiredExtensions,` +
+    `requiredFeatures,systemLanguage`,
+)
+
+/**
  * Generated from https://developer.mozilla.org/en-US/docs/Web/MathML/Attribute
  */
 export const isKnownMathMLAttr: (key: string) => boolean =
@@ -140,6 +158,15 @@ export const isKnownMathMLAttr: (key: string) => boolean =
       `scriptsizemultiplier,selection,separator,separators,shift,side,` +
       `src,stackalign,stretchy,subscriptshift,superscriptshift,symmetric,` +
       `voffset,width,widths,xlink:href,xlink:show,xlink:type,xmlns`,
+  )
+
+/**
+ * Generated from https://developer.mozilla.org/en-US/docs/Web/MathML/Global_Attributes
+ */
+export const isMathMLGlobalAttr: (key: string) => boolean =
+  /*@__PURE__*/ makeMap(
+    `autofucus,class,dir,displaystyle,id,mathbackground,mathcolor,mathsize,nonce,scriptlevel,` +
+      `style,tabindex`,
   )
 
 /**

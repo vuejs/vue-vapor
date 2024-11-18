@@ -21,7 +21,16 @@ import {
   genCall,
   genMulti,
 } from './utils'
-import { shouldSetAsAttr, toHandlerKey } from '@vue/shared'
+import {
+  isHTMLGlobalAttr,
+  isHTMLTag,
+  isMathMLGlobalAttr,
+  isMathMLTag,
+  isSVGTag,
+  isSvgGlobalAttr,
+  shouldSetAsAttr,
+  toHandlerKey,
+} from '@vue/shared'
 
 // only the static key prop will reach here
 export function genSetProp(
@@ -48,6 +57,12 @@ export function genSetProp(
     helperName = modifier === '.' ? 'setDOMProp' : 'setAttr'
   } else if (shouldSetAsAttr(tag.toUpperCase(), keyName)) {
     helperName = 'setAttr'
+  } else if (
+    (isHTMLTag(tag) && isHTMLGlobalAttr(keyName)) ||
+    (isSVGTag(tag) && isSvgGlobalAttr(keyName)) ||
+    (isMathMLTag(tag) && isMathMLGlobalAttr(keyName))
+  ) {
+    helperName = 'setDOMProp'
   } else {
     helperName = 'setDynamicProp'
   }
