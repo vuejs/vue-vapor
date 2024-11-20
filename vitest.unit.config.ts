@@ -5,5 +5,8 @@ export default mergeConfig(config, {
   test: {
     name: 'unit',
     exclude: [...configDefaults.exclude, '**/e2e/**'],
+    benchmark: {
+      exclude: ['**'],
+    },
   },
 })
