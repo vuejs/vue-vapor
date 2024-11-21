@@ -1,3 +1,4 @@
+import type { BenchOptions } from 'vitest'
 import {
   type App,
   type Component,
@@ -8,6 +9,11 @@ import {
   defineComponent,
 } from '../src'
 import type { RawProps } from '../src/componentProps'
+
+export const basicOptions = {
+  warmupIterations: 10,
+  iterations: 30,
+} satisfies BenchOptions
 
 export interface RenderContext {
   component: Component

@@ -15,14 +15,14 @@ describe('vapor-ref', () => {
 
     await wait()
 
-    expect(html()).toMatchFileSnapshot('./__snapshots__/create-list.html')
-    expect(document.body.innerHTML).toBe(
+    await expect(html()).toMatchFileSnapshot('./__snapshots__/create-list.html')
+    expect(document.body.innerHTML.trim()).toBe(
       `<div id="host" data-v-app="">${html()}</div>`,
     )
 
     options.teardown()
 
-    expect(document.body.innerHTML).toBe('')
+    expect(document.body.innerHTML.trim()).toBe('')
   })
   it('shoud work with 1000 items', async () => {
     const { html, ctx, options, wait } = createListAppWithRef()
@@ -40,12 +40,12 @@ describe('vapor-ref', () => {
     let count = 0
     html().replaceAll('</a></td></tr>', v => (++count, v))
     expect(count).toBe(1000)
-    expect(document.body.innerHTML).toBe(
+    expect(document.body.innerHTML.trim()).toBe(
       `<div id="host" data-v-app="">${html()}</div>`,
     )
 
     options.teardown()
 
-    expect(document.body.innerHTML).toBe('')
+    expect(document.body.innerHTML.trim()).toBe('')
   })
 })

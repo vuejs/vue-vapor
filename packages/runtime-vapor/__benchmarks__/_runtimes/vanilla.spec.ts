@@ -11,12 +11,14 @@ describe('vanilla', () => {
     create(3)
     ;(rows().item(0)!.firstChild as HTMLElement)!.click()
 
-    expect(html()).toMatchFileSnapshot('./__snapshots__/create-list.html')
-    expect(document.body.innerHTML).toBe(`<div id="host">${html()}</div>`)
+    await expect(html()).toMatchFileSnapshot('./__snapshots__/create-list.html')
+    expect(document.body.innerHTML.trim()).toBe(
+      `<div id="host">${html()}</div>`,
+    )
 
     options.teardown()
 
-    expect(document.body.innerHTML).toBe('')
+    expect(document.body.innerHTML.trim()).toBe('')
   })
   it('shoud work with 1000 items', async () => {
     const { html, ctx, options } = createListAppOnVanilla()
@@ -29,10 +31,12 @@ describe('vanilla', () => {
     ;(items.item(0)!.firstChild as HTMLElement)!.click()
 
     expect(items.length).toBe(1000)
-    expect(document.body.innerHTML).toBe(`<div id="host">${html()}</div>`)
+    expect(document.body.innerHTML.trim()).toBe(
+      `<div id="host">${html()}</div>`,
+    )
 
     options.teardown()
 
-    expect(document.body.innerHTML).toBe('')
+    expect(document.body.innerHTML.trim()).toBe('')
   })
 })

@@ -15,13 +15,13 @@ describe('vapor-shallow-ref', () => {
 
     await wait()
 
-    expect(html()).toMatchFileSnapshot('./__snapshots__/create-list.html')
-    expect(document.body.innerHTML).toBe(
+    await expect(html()).toMatchFileSnapshot('./__snapshots__/create-list.html')
+    expect(document.body.innerHTML.trim()).toBe(
       `<div id="host" data-v-app="">${html()}</div>`,
     )
 
     options.teardown()
 
-    expect(document.body.innerHTML).toBe('')
+    expect(document.body.innerHTML.trim()).toBe('')
   })
 })

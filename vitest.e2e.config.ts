@@ -13,5 +13,8 @@ export default mergeConfig(config, {
       'packages/vue/__tests__/e2e/*.spec.ts',
       'packages/vue-vapor/__tests__/e2e/*.spec.ts',
     ],
+    benchmark: {
+      include: [],
+    },
   },
 })

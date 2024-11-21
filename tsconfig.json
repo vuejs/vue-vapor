@@ -19,7 +19,12 @@
     "removeComments": false,
     "jsx": "preserve",
     "lib": ["es2016", "dom"],
-    "types": ["vitest/globals", "puppeteer", "node"],
+    "types": [
+      "vitest/globals",
+      "puppeteer",
+      "node",
+      "@vitest/browser/providers/playwright"
+    ],
     "rootDir": ".",
     "paths": {
       "@vue/compat": ["packages/vue-compat/src"],

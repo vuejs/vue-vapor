@@ -18,6 +18,7 @@ import {
   shallowRef,
   template,
 } from '../../src'
+import { basicOptions } from '../_utils'
 
 export function createListAppWithShallowRef({
   initHost = (): HTMLDivElement => {
@@ -96,8 +97,7 @@ export function createListAppWithShallowRef({
   })
 
   const options = {
-    warmupIterations: 5,
-    iterations: 20,
+    ...basicOptions,
     setup: handleSetup,
     teardown: handleTeardown,
   } satisfies BenchOptions

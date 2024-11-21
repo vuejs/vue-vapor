@@ -1,4 +1,5 @@
 import type { BenchOptions } from 'vitest'
+import { basicOptions } from '../_utils'
 
 export function createListAppOnVanilla({
   initHost = (): HTMLDivElement => {
@@ -37,8 +38,7 @@ export function createListAppOnVanilla({
   }
 
   const options = {
-    warmupIterations: 5,
-    iterations: 20,
+    ...basicOptions,
     setup: handleSetup,
     teardown: handleTeardown,
   } satisfies BenchOptions

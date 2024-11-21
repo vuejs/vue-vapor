@@ -71,8 +71,9 @@
     "@types/node": "^20.16.10",
     "@types/semver": "^7.5.8",
     "@types/serve-handler": "^6.1.4",
-    "@vitest/coverage-v8": "^2.1.1",
-    "@vitest/ui": "^2.1.1",
+    "@vitest/browser": "^2.1.5",
+    "@vitest/coverage-v8": "^2.1.5",
+    "@vitest/ui": "^2.1.5",
     "@vue/consolidate": "1.0.0",
     "conventional-changelog-cli": "^5.0.0",
     "enquirer": "^2.4.1",
@@ -90,6 +91,7 @@
     "marked": "13.0.3",
     "npm-run-all2": "^6.2.3",
     "picocolors": "^1.1.0",
+    "playwright": "^1.49.0",
     "prettier": "^3.3.3",
     "pretty-bytes": "^6.1.1",
     "pug": "^3.0.3",
@@ -108,7 +110,7 @@
     "typescript": "~5.6.2",
     "typescript-eslint": "^8.5.0",
     "vite": "catalog:",
-    "vitest": "^2.1.1"
+    "vitest": "^2.1.5"
   },
   "pnpm": {
     "peerDependencyRules": {

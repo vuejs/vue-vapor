@@ -17,6 +17,7 @@ import {
   setText,
   template,
 } from '../../src'
+import { basicOptions } from '../_utils'
 
 export function createListAppWithRef({
   initHost = (): HTMLDivElement => {
@@ -95,8 +96,7 @@ export function createListAppWithRef({
   })
 
   const options = {
-    warmupIterations: 5,
-    iterations: 20,
+    ...basicOptions,
     setup: handleSetup,
     teardown: handleTeardown,
   } satisfies BenchOptions
