@@ -22,6 +22,7 @@ import {
   genMulti,
 } from './utils'
 import {
+  attributeCache,
   isHTMLGlobalAttr,
   isHTMLTag,
   isMathMLGlobalAttr,
@@ -44,6 +45,8 @@ export function genSetProp(
   } = oper
 
   const keyName = key.content
+  const tagName = tag.toUpperCase()
+  const attrCacheKey = `${tagName}_${keyName}`
 
   let helperName: VaporHelper
   let omitKey = false
@@ -55,7 +58,10 @@ export function genSetProp(
     omitKey = true
   } else if (modifier) {
     helperName = modifier === '.' ? 'setDOMProp' : 'setAttr'
-  } else if (shouldSetAsAttr(tag.toUpperCase(), keyName)) {
+  } else if (
+    attributeCache[attrCacheKey] ||
+    (attributeCache[attrCacheKey] = shouldSetAsAttr(tag.toUpperCase(), keyName))
+  ) {
     helperName = 'setAttr'
   } else if (
     (isHTMLTag(tag) && isHTMLGlobalAttr(keyName)) ||

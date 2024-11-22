@@ -1,4 +1,5 @@
 import {
+  attributeCache,
   includeBooleanAttr,
   isArray,
   isFunction,
@@ -243,7 +244,11 @@ function shouldSetAsProp(
     return false
   }
 
-  if (shouldSetAsAttr(el.tagName, key)) {
+  const attrCacheKey = `${el.tagName}_${key}`
+  if (
+    attributeCache[attrCacheKey] ||
+    (attributeCache[attrCacheKey] = shouldSetAsAttr(el.tagName, key))
+  ) {
     return false
   }
 
