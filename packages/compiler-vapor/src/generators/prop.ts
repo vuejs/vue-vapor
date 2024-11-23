@@ -59,8 +59,12 @@ export function genSetProp(
   } else if (modifier) {
     helperName = modifier === '.' ? 'setDOMProp' : 'setAttr'
   } else if (
-    attributeCache[attrCacheKey] ||
-    (attributeCache[attrCacheKey] = shouldSetAsAttr(tag.toUpperCase(), keyName))
+    attributeCache[attrCacheKey] === undefined
+      ? (attributeCache[attrCacheKey] = shouldSetAsAttr(
+          tag.toUpperCase(),
+          keyName,
+        ))
+      : attributeCache[attrCacheKey]
   ) {
     helperName = 'setAttr'
   } else if (

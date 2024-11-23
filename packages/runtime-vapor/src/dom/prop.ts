@@ -246,8 +246,9 @@ function shouldSetAsProp(
 
   const attrCacheKey = `${el.tagName}_${key}`
   if (
-    attributeCache[attrCacheKey] ||
-    (attributeCache[attrCacheKey] = shouldSetAsAttr(el.tagName, key))
+    attributeCache[attrCacheKey] === undefined
+      ? (attributeCache[attrCacheKey] = shouldSetAsAttr(el.tagName, key))
+      : attributeCache[attrCacheKey]
   ) {
     return false
   }
