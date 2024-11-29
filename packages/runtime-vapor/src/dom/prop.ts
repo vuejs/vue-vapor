@@ -106,7 +106,6 @@ export function setDOMProp(el: any, key: string, value: any): void {
     }
   }
   needRemove && el.removeAttribute(key)
-  return value
 }
 
 export function setDynamicProp(el: Element, key: string, value: any): void {
