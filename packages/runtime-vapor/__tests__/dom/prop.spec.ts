@@ -16,7 +16,6 @@ import {
 } from '../../src/component'
 import { getMetadata, recordPropMetadata } from '../../src/componentMetadata'
 import { getCurrentScope } from '@vue/reactivity'
-import { describe } from 'vitest'
 
 let removeComponentInstance = NOOP
 beforeEach(() => {
