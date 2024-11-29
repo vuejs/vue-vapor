@@ -44,52 +44,7 @@ export function genSetProp(
     tag,
   } = oper
 
-  const keyName = key.content
-  const tagName = tag.toUpperCase()
-  const attrCacheKey = `${tagName}_${keyName}`
-
-  let helperName: VaporHelper
-  let omitKey = false
-  if (keyName === 'class') {
-    helperName = 'setClass'
-    omitKey = true
-  } else if (keyName === 'style') {
-    helperName = 'setStyle'
-    omitKey = true
-  } else if (modifier) {
-    helperName = modifier === '.' ? 'setDOMProp' : 'setAttr'
-  } else if (
-    attributeCache[attrCacheKey] === undefined
-      ? (attributeCache[attrCacheKey] = shouldSetAsAttr(
-          tag.toUpperCase(),
-          keyName,
-        ))
-      : attributeCache[attrCacheKey]
-  ) {
-    helperName = 'setAttr'
-  } else if (keyName === 'innerHTML') {
-    helperName = 'setHtml'
-    omitKey = true
-  } else if (keyName === 'textContent') {
-    helperName = 'setText'
-    omitKey = true
-  } else if (
-    keyName === 'value' &&
-    tagName !== 'PROGRESS' &&
-    !tagName.includes('-')
-  ) {
-    helperName = 'setValue'
-    omitKey = true
-  } else if (
-    (isHTMLTag(tag) && isHTMLGlobalAttr(keyName)) ||
-    (isSVGTag(tag) && isSvgGlobalAttr(keyName)) ||
-    (isMathMLTag(tag) && isMathMLGlobalAttr(keyName))
-  ) {
-    helperName = 'setDOMProp'
-  } else {
-    helperName = 'setDynamicProp'
-  }
-
+  const { helperName, omitKey } = getRuntimeHelper(tag, key.content, modifier)
   return [
     NEWLINE,
     ...genCall(
@@ -208,4 +163,71 @@ export function genSetInheritAttrs(
           : null
   if (value == null) return []
   return [NEWLINE, ...genCall(vaporHelper('setInheritAttrs'), value)]
+}
+
+function getRuntimeHelper(
+  tag: string,
+  keyName: string,
+  modifier: '.' | '^' | undefined,
+) {
+  const tagName = tag.toUpperCase()
+  let helperName: VaporHelper
+  let omitKey = false
+
+  if (modifier) {
+    if (modifier === '.') {
+      const helper = getSpecialHelper(keyName, tagName)
+      if (helper) {
+        helperName = helper.name
+        omitKey = helper.omitKey
+      } else {
+        helperName = 'setDOMProp'
+        omitKey = false
+      }
+    } else {
+      helperName = 'setAttr'
+    }
+  } else {
+    const attrCacheKey = `${tagName}_${keyName}`
+    const helper = getSpecialHelper(keyName, tagName)
+    if (helper) {
+      helperName = helper.name
+      omitKey = helper.omitKey
+    } else if (
+      attributeCache[attrCacheKey] === undefined
+        ? (attributeCache[attrCacheKey] = shouldSetAsAttr(tagName, keyName))
+        : attributeCache[attrCacheKey]
+    ) {
+      helperName = 'setAttr'
+    } else if (
+      (isHTMLTag(tag) && isHTMLGlobalAttr(keyName)) ||
+      (isSVGTag(tag) && isSvgGlobalAttr(keyName)) ||
+      (isMathMLTag(tag) && isMathMLGlobalAttr(keyName))
+    ) {
+      helperName = 'setDOMProp'
+    } else {
+      helperName = 'setDynamicProp'
+    }
+  }
+  return { helperName, omitKey }
+}
+
+const specialHelpers: Record<string, { name: VaporHelper; omitKey: boolean }> =
+  {
+    class: { name: 'setClass', omitKey: true },
+    style: { name: 'setStyle', omitKey: true },
+    innerHTML: { name: 'setHtml', omitKey: true },
+    textContent: { name: 'setText', omitKey: true },
+  }
+
+const getSpecialHelper = (
+  keyName: string,
+  tagName: string,
+): { name: VaporHelper; omitKey: boolean } | null => {
+  // special case for 'value' property
+  if (keyName === 'value' && tagName !== 'PROGRESS' && !tagName.includes('-')) {
+    return { name: 'setValue', omitKey: true }
+  }
+
+  return specialHelpers[keyName] || null
 }
