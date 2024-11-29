@@ -1,13 +1,12 @@
-import { capitalize, hyphenate, isArray, isString } from '@vue/shared'
-import { camelize, warn } from '@vue/runtime-core'
+import { isString } from '@vue/shared'
+import { warn } from '@vue/runtime-core'
+import { type Style, setStyle } from '@vue/runtime-shared'
 import {
   type VShowElement,
   vShowHidden,
   vShowOriginalDisplay,
 } from '../directives/vShow'
 import { CSS_VAR_TEXT } from '../helpers/useCssVars'
-
-type Style = string | Record<string, string | string[]> | null
 
 const displayRE = /(^|;)\s*display\s*:/
 
@@ -20,14 +19,14 @@ export function patchStyle(el: Element, prev: Style, next: Style): void {
       if (!isString(prev)) {
         for (const key in prev) {
           if (next[key] == null) {
-            setStyle(style, key, '')
+            setStyle(style, key, '', warn)
           }
         }
       } else {
         for (const prevStyle of prev.split(';')) {
           const key = prevStyle.slice(0, prevStyle.indexOf(':')).trim()
           if (next[key] == null) {
-            setStyle(style, key, '')
+            setStyle(style, key, '', warn)
           }
         }
       }
@@ -36,7 +35,7 @@ export function patchStyle(el: Element, prev: Style, next: Style): void {
       if (key === 'display') {
         hasControlledDisplay = true
       }
-      setStyle(style, key, next[key])
+      setStyle(style, key, next[key], warn)
     }
   } else {
     if (isCssString) {
@@ -62,64 +61,4 @@ export function patchStyle(el: Element, prev: Style, next: Style): void {
       style.display = 'none'
     }
   }
-}
-
-const semicolonRE = /[^\\];\s*$/
-const importantRE = /\s*!important$/
-
-function setStyle(
-  style: CSSStyleDeclaration,
-  name: string,
-  val: string | string[],
-) {
-  if (isArray(val)) {
-    val.forEach(v => setStyle(style, name, v))
-  } else {
-    if (val == null) val = ''
-    if (__DEV__) {
-      if (semicolonRE.test(val)) {
-        warn(
-          `Unexpected semicolon at the end of '${name}' style value: '${val}'`,
-        )
-      }
-    }
-    if (name.startsWith('--')) {
-      // custom property definition
-      style.setProperty(name, val)
-    } else {
-      const prefixed = autoPrefix(style, name)
-      if (importantRE.test(val)) {
-        // !important
-        style.setProperty(
-          hyphenate(prefixed),
-          val.replace(importantRE, ''),
-          'important',
-        )
-      } else {
-        style[prefixed as any] = val
-      }
-    }
-  }
-}
-
-const prefixes = ['Webkit', 'Moz', 'ms']
-const prefixCache: Record<string, string> = {}
-
-function autoPrefix(style: CSSStyleDeclaration, rawName: string): string {
-  const cached = prefixCache[rawName]
-  if (cached) {
-    return cached
-  }
-  let name = camelize(rawName)
-  if (name !== 'filter' && name in style) {
-    return (prefixCache[rawName] = name)
-  }
-  name = capitalize(name)
-  for (let i = 0; i < prefixes.length; i++) {
-    const prefixed = prefixes[i] + name
-    if (prefixed in style) {
-      return (prefixCache[rawName] = prefixed)
-    }
-  }
-  return rawName
 }
