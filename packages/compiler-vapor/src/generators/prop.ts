@@ -67,12 +67,25 @@ export function genSetProp(
       : attributeCache[attrCacheKey]
   ) {
     helperName = 'setAttr'
+  } else if (keyName === 'innerHTML') {
+    helperName = 'setHtml'
+    omitKey = true
+  } else if (keyName === 'textContent') {
+    helperName = 'setText'
+    omitKey = true
+  } else if (
+    keyName === 'value' &&
+    tagName !== 'PROGRESS' &&
+    !tagName.includes('-')
+  ) {
+    helperName = 'setValue'
+    omitKey = true
   } else if (
     (isHTMLTag(tag) && isHTMLGlobalAttr(keyName)) ||
     (isSVGTag(tag) && isSvgGlobalAttr(keyName)) ||
     (isMathMLTag(tag) && isMathMLGlobalAttr(keyName))
   ) {
-    helperName = 'setDOMProp'
+    helperName = 'setAsDOMProp'
   } else {
     helperName = 'setDynamicProp'
   }

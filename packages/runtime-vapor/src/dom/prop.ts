@@ -50,42 +50,28 @@ export function setAttr(el: Element, key: string, value: any): void {
   }
 }
 
-export function setDOMProp(el: any, key: string, value: any): void {
-  const oldVal = recordPropMetadata(el, key, value)
+export function setValue(el: any, value: any): void {
+  const oldVal = recordPropMetadata(el, 'value', value)
   if (value === oldVal) return
 
-  if (key === 'innerHTML' || key === 'textContent') {
-    // TODO special checks
-    // if (prevChildren) {
-    //   unmountChildren(prevChildren, parentComponent, parentSuspense)
-    // }
-    el[key] = value == null ? '' : value
-    return
+  // store value as _value as well since
+  // non-string values will be stringified.
+  el._value = value
+  // #4956: <option> value will fallback to its text content so we need to
+  // compare against its attribute value instead.
+  const oldValue = el.tagName === 'OPTION' ? el.getAttribute('value') : el.value
+  const newValue = value == null ? '' : value
+  if (oldValue !== newValue) {
+    el.value = newValue
   }
-
-  const tag = el.tagName
-
-  if (
-    key === 'value' &&
-    tag !== 'PROGRESS' &&
-    // custom elements may use _value internally
-    !tag.includes('-')
-  ) {
-    // store value as _value as well since
-    // non-string values will be stringified.
-    el._value = value
-    // #4956: <option> value will fallback to its text content so we need to
-    // compare against its attribute value instead.
-    const oldValue = tag === 'OPTION' ? el.getAttribute('value') : el.value
-    const newValue = value == null ? '' : value
-    if (oldValue !== newValue) {
-      el.value = newValue
-    }
-    if (value == null) {
-      el.removeAttribute(key)
-    }
-    return
+  if (value == null) {
+    el.removeAttribute('value')
   }
+}
+
+export function setAsDOMProp(el: any, key: string, value: any): void {
+  const oldVal = recordPropMetadata(el, key, value)
+  if (value === oldVal) return
 
   let needRemove = false
   if (value === '' || value == null) {
@@ -113,13 +99,39 @@ export function setDOMProp(el: any, key: string, value: any): void {
     // do not warn if value is auto-coerced from nullish values
     if (__DEV__ && !needRemove) {
       warn(
-        `Failed setting prop "${key}" on <${tag.toLowerCase()}>: ` +
+        `Failed setting prop "${key}" on <${el.tagName.toLowerCase()}>: ` +
           `value ${value} is invalid.`,
         e,
       )
     }
   }
   needRemove && el.removeAttribute(key)
+  return value
+}
+
+export function setDOMProp(el: any, key: string, value: any): void {
+  if (key === 'innerHTML') {
+    setHtml(el, value)
+    return
+  }
+
+  if (key === 'textContent') {
+    setText(el, value)
+    return
+  }
+
+  const tag = el.tagName
+  if (
+    key === 'value' &&
+    tag !== 'PROGRESS' &&
+    // custom elements may use _value internally
+    !tag.includes('-')
+  ) {
+    setValue(el, value)
+    return
+  }
+
+  setAsDOMProp(el, key, value)
 }
 
 export function setDynamicProp(el: Element, key: string, value: any): void {
@@ -220,7 +232,7 @@ export function setText(el: Node, ...values: any[]): void {
 export function setHtml(el: Element, value: any): void {
   const oldVal = recordPropMetadata(el, 'innerHTML', value)
   if (value !== oldVal) {
-    el.innerHTML = value
+    el.innerHTML = value == null ? '' : value
   }
 }
 

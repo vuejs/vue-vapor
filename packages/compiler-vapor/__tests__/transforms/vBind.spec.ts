@@ -74,7 +74,7 @@ describe('compiler v-bind', () => {
     })
 
     expect(code).matchSnapshot()
-    expect(code).contains('_setDOMProp(n0, "id", _ctx.id, true)')
+    expect(code).contains('_setAsProp(n0, "id", _ctx.id, true)')
   })
 
   test('no expression', () => {
@@ -104,7 +104,7 @@ describe('compiler v-bind', () => {
         ],
       },
     })
-    expect(code).contains('_setDOMProp(n0, "id", _ctx.id, true)')
+    expect(code).contains('_setAsProp(n0, "id", _ctx.id, true)')
   })
 
   test('no expression (shorthand)', () => {
@@ -561,11 +561,11 @@ describe('compiler v-bind', () => {
     `)
 
     expect(code).matchSnapshot()
-    expect(code).contains('_setDOMProp(n0, "id", _ctx.id, true)')
-    expect(code).contains('_setDOMProp(n0, "title", _ctx.title, true)')
-    expect(code).contains('_setDOMProp(n0, "lang", _ctx.lang, true)')
-    expect(code).contains('_setDOMProp(n0, "dir", _ctx.dir, true)')
-    expect(code).contains('_setDOMProp(n0, "tabindex", _ctx.tabindex, true)')
+    expect(code).contains('_setAsProp(n0, "id", _ctx.id, true)')
+    expect(code).contains('_setAsProp(n0, "title", _ctx.title, true)')
+    expect(code).contains('_setAsProp(n0, "lang", _ctx.lang, true)')
+    expect(code).contains('_setAsProp(n0, "dir", _ctx.dir, true)')
+    expect(code).contains('_setAsProp(n0, "tabindex", _ctx.tabindex, true)')
   })
 
   test('SVG global attributes should set as dom prop', () => {
@@ -574,9 +574,9 @@ describe('compiler v-bind', () => {
     `)
 
     expect(code).matchSnapshot()
-    expect(code).contains('_setDOMProp(n0, "id", _ctx.id, true)')
-    expect(code).contains('_setDOMProp(n0, "lang", _ctx.lang, true)')
-    expect(code).contains('_setDOMProp(n0, "tabindex", _ctx.tabindex, true)')
+    expect(code).contains('_setAsProp(n0, "id", _ctx.id, true)')
+    expect(code).contains('_setAsProp(n0, "lang", _ctx.lang, true)')
+    expect(code).contains('_setAsProp(n0, "tabindex", _ctx.tabindex, true)')
   })
 
   test('MathML global attributes should set as dom prop', () => {
@@ -585,13 +585,45 @@ describe('compiler v-bind', () => {
     `)
 
     expect(code).matchSnapshot()
-    expect(code).contains('_setDOMProp(n0, "autofucus", _ctx.autofucus, true)')
-    expect(code).contains('_setDOMProp(n0, "dir", _ctx.dir, true)')
+    expect(code).contains('_setAsProp(n0, "autofucus", _ctx.autofucus, true)')
+    expect(code).contains('_setAsProp(n0, "dir", _ctx.dir, true)')
     expect(code).contains(
-      '_setDOMProp(n0, "displaystyle", _ctx.displaystyle, true)',
+      '_setAsProp(n0, "displaystyle", _ctx.displaystyle, true)',
     )
-    expect(code).contains('_setDOMProp(n0, "mathcolor", _ctx.mathcolor, true)')
-    expect(code).contains('_setDOMProp(n0, "tabindex", _ctx.tabindex, true)')
+    expect(code).contains('_setAsProp(n0, "mathcolor", _ctx.mathcolor, true)')
+    expect(code).contains('_setAsProp(n0, "tabindex", _ctx.tabindex, true)')
+  })
+
+  test(':innerHTML', () => {
+    const { code } = compileWithVBind(`
+      <div :innerHTML="foo"/>
+    `)
+    expect(code).matchSnapshot()
+    expect(code).contains('_setHtml(n0, _ctx.foo, true)')
+  })
+
+  test(':textContext', () => {
+    const { code } = compileWithVBind(`
+      <div :textContent="foo"/>
+    `)
+    expect(code).matchSnapshot()
+    expect(code).contains('_setText(n0, _ctx.foo, true)')
+  })
+
+  test(':value', () => {
+    const { code } = compileWithVBind(`
+      <input :value="foo"/>
+    `)
+    expect(code).matchSnapshot()
+    expect(code).contains('_setValue(n0, _ctx.foo, true)')
+  })
+
+  test(':value w/ progress', () => {
+    const { code } = compileWithVBind(`
+      <progress :value="foo"/>
+    `)
+    expect(code).matchSnapshot()
+    expect(code).contains('_setDynamicProp(n0, "value", _ctx.foo, true)')
   })
 
   test('number value', () => {
