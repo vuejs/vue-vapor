@@ -115,7 +115,6 @@ export {
   setAttr,
   setValue,
   setDOMProp,
-  setAsDOMProp,
   setDynamicProp,
   setDynamicProps,
 } from './dom/prop'

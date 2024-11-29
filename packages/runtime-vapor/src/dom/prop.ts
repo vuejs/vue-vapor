@@ -69,7 +69,7 @@ export function setValue(el: any, value: any): void {
   }
 }
 
-export function setAsDOMProp(el: any, key: string, value: any): void {
+export function setDOMProp(el: any, key: string, value: any): void {
   const oldVal = recordPropMetadata(el, key, value)
   if (value === oldVal) return
 
@@ -109,31 +109,6 @@ export function setAsDOMProp(el: any, key: string, value: any): void {
   return value
 }
 
-export function setDOMProp(el: any, key: string, value: any): void {
-  if (key === 'innerHTML') {
-    setHtml(el, value)
-    return
-  }
-
-  if (key === 'textContent') {
-    setText(el, value)
-    return
-  }
-
-  const tag = el.tagName
-  if (
-    key === 'value' &&
-    tag !== 'PROGRESS' &&
-    // custom elements may use _value internally
-    !tag.includes('-')
-  ) {
-    setValue(el, value)
-    return
-  }
-
-  setAsDOMProp(el, key, value)
-}
-
 export function setDynamicProp(el: Element, key: string, value: any): void {
   // TODO
   const isSVG = false
@@ -150,6 +125,27 @@ export function setDynamicProp(el: Element, key: string, value: any): void {
         ? ((key = key.slice(1)), false)
         : shouldSetAsProp(el, key, value, isSVG)
   ) {
+    if (key === 'innerHTML') {
+      setHtml(el, value)
+      return
+    }
+
+    if (key === 'textContent') {
+      setText(el, value)
+      return
+    }
+
+    const tag = el.tagName
+    if (
+      key === 'value' &&
+      tag !== 'PROGRESS' &&
+      // custom elements may use _value internally
+      !tag.includes('-')
+    ) {
+      setValue(el, value)
+      return
+    }
+
     setDOMProp(el, key, value)
   } else {
     // TODO special case for <input v-model type="checkbox">

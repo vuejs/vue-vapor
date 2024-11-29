@@ -85,7 +85,7 @@ export function genSetProp(
     (isSVGTag(tag) && isSvgGlobalAttr(keyName)) ||
     (isMathMLTag(tag) && isMathMLGlobalAttr(keyName))
   ) {
-    helperName = 'setAsDOMProp'
+    helperName = 'setDOMProp'
   } else {
     helperName = 'setDynamicProp'
   }
