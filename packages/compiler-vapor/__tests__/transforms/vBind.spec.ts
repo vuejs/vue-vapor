@@ -581,47 +581,23 @@ describe('compiler v-bind', () => {
     expect(code).contains('_setAttr(n0, "innerHTML", _ctx.foo, true)')
   })
 
-  // test('.attr modifier (shorthand) w/ innerHTML', () => {
-  //   const { code } = compileWithVBind(`<div ^innerHTML="foo" />`)
-  //   expect(code).matchSnapshot()
-  //   expect(code).contains('_setAttr(n0, "innerHTML", _ctx.foo, true)')
-  // })
-
   test('.attr modifier w/ textContent', () => {
     const { code } = compileWithVBind(`<div :textContent.attr="foo" />`)
     expect(code).matchSnapshot()
     expect(code).contains('_setAttr(n0, "textContent", _ctx.foo, true)')
   })
-  //
-  // test('.attr modifier (shorthand) w/ textContent', () => {
-  //   const { code } = compileWithVBind(`<div ^textContent="foo" />`)
-  //   expect(code).matchSnapshot()
-  //   expect(code).contains('_setAttr(n0, "textContent", _ctx.foo, true)')
-  // })
 
   test('.attr modifier w/ value', () => {
     const { code } = compileWithVBind(`<div :value.attr="foo" />`)
     expect(code).matchSnapshot()
     expect(code).contains('_setAttr(n0, "value", _ctx.foo, true)')
   })
-  //
-  // test('.attr modifier (shorthand) w/ value', () => {
-  //   const { code } = compileWithVBind(`<div ^value="foo" />`)
-  //   expect(code).matchSnapshot()
-  //   expect(code).contains('_setAttr(n0, "value", _ctx.foo, true)')
-  // })
 
   test('.attr modifier w/ progress value', () => {
     const { code } = compileWithVBind(`<progress :value.attr="foo" />`)
     expect(code).matchSnapshot()
     expect(code).contains('_setAttr(n0, "value", _ctx.foo, true)')
   })
-  //
-  // test('.attr modifier (shorthand) w/ progress value', () => {
-  //   const { code } = compileWithVBind(`<progress ^value="foo" />`)
-  //   expect(code).matchSnapshot()
-  //   expect(code).contains('_setAttr(n0, "value", _ctx.foo, true)')
-  // })
 
   test('attributes must be set as attribute', () => {
     const { code } = compileWithVBind(`
