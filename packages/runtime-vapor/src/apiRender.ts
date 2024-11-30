@@ -77,10 +77,10 @@ export function setupComponent(instance: ComponentInternalInstance): void {
           VaporErrorCodes.RENDER_FUNCTION,
           [
             instance.setupState, // _ctx
-            __DEV__ ? shallowReadonly(props) : props, // $props
+            shallowReadonly(props), // $props
             instance.emit, // $emit
-            __DEV__ ? getAttrsProxy(instance) : instance.attrs, // $attrs
-            __DEV__ ? getSlotsProxy(instance) : instance.slots, // $slots
+            getAttrsProxy(instance), // $attrs
+            getSlotsProxy(instance), // $slots
           ],
         )
         resetTracking()
