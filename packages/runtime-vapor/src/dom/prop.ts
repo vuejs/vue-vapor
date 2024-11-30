@@ -1,5 +1,6 @@
 import {
   attributeCache,
+  canSetValueDirectly,
   includeBooleanAttr,
   isArray,
   isFunction,
@@ -135,12 +136,7 @@ export function setDynamicProp(el: Element, key: string, value: any): void {
     }
 
     const tag = el.tagName
-    if (
-      key === 'value' &&
-      tag !== 'PROGRESS' &&
-      // custom elements may use _value internally
-      !tag.includes('-')
-    ) {
+    if (key === 'value' && canSetValueDirectly(tag)) {
       setValue(el, value)
       return
     }

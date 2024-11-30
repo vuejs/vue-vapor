@@ -23,6 +23,7 @@ import {
 } from './utils'
 import {
   attributeCache,
+  canSetValueDirectly,
   isHTMLGlobalAttr,
   isHTMLTag,
   isMathMLGlobalAttr,
@@ -225,7 +226,7 @@ const getSpecialHelper = (
   tagName: string,
 ): { name: VaporHelper; omitKey: boolean } | null => {
   // special case for 'value' property
-  if (keyName === 'value' && tagName !== 'PROGRESS' && !tagName.includes('-')) {
+  if (keyName === 'value' && canSetValueDirectly(tagName)) {
     return { name: 'setValue', omitKey: true }
   }
 
