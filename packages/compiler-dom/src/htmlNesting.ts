@@ -58,7 +58,18 @@ const onlyValidChildren: Record<string, Set<string>> = {
     'template',
   ]),
   optgroup: new Set(['option']),
+  /**
+   * Though validate-html-nesting declared hr is not a valid child of select
+   * Keep hr as valid select children, Referring https://html.spec.whatwg.org/multipage/grouping-content.html#the-hr-element
+   */
   select: new Set(['optgroup', 'option', 'hr']),
+  /**
+   * Though validate-html-nesting declared math should only have mrow as it's children
+   * Referring mathml-core spec, it's not fact
+   * https://w3c.github.io/mathml-core/#dfn-mrow
+   */
+  // math: new Set(['mrow']),
+  script: new Set(),
   // table
   table: new Set(['caption', 'colgroup', 'tbody', 'tfoot', 'thead']),
   tr: new Set(['td', 'th']),
@@ -67,7 +78,6 @@ const onlyValidChildren: Record<string, Set<string>> = {
   thead: new Set(['tr']),
   tfoot: new Set(['tr']),
   // these elements can not have any children elements
-  script: emptySet,
   iframe: emptySet,
   option: emptySet,
   textarea: emptySet,
