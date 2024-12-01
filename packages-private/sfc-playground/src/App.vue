@@ -57,7 +57,7 @@ const importMap = computed(() => {
       'vue/vapor': vapor,
     },
   }
-  if (useVaporMode.value) vaporImportMap.imports!.vue = vapor
+  // if (useVaporMode.value) vaporImportMap.imports!.vue = vapor
 
   return mergeImportMap(vueImportMap.value, vaporImportMap)
 })
