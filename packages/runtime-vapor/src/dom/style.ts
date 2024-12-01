@@ -1,5 +1,5 @@
 import { isString, normalizeStyle } from '@vue/shared'
-import { type Style, setStyle as setStyleValue } from '@vue/runtime-shared'
+import { type Style, setStyle as setStyleValue } from '@vue/runtime-dom'
 import { warn } from '../warning'
 import { recordPropMetadata } from '../componentMetadata'
 import { mergeInheritAttr } from './prop'
