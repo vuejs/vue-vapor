@@ -22,9 +22,7 @@ export function genSetEvent(
   const { element, key, keyOverride, value, modifiers, delegate, effect } = oper
 
   const name = genName()
-  let handler = genEventHandler(context, value)
-  handler = genWithModifiers(context, handler, modifiers.nonKeys)
-  handler = genWithKeys(context, handler, modifiers.keys)
+  const handler = genEventHandler(context, value, modifiers)
   const eventOptions = genEventOptions()
 
   if (delegate) {
@@ -38,7 +36,7 @@ export function genSetEvent(
       vaporHelper(delegate ? 'delegate' : 'on'),
       `n${element}`,
       name,
-      ['() => ', ...handler],
+      handler,
       eventOptions,
     ),
   ]
@@ -86,7 +84,12 @@ export function genSetDynamicEvents(
 export function genEventHandler(
   context: CodegenContext,
   value: SimpleExpressionNode | undefined,
+  modifiers: {
+    nonKeys: string[]
+    keys: string[]
+  } = { nonKeys: [], keys: [] },
 ): CodeFragment[] {
+  let handlerExp: CodeFragment[] = [`{}`]
   if (value && value.content.trim()) {
     const isMemberExp = isMemberExpression(value, context.options)
     const isInlineStatement = !(
@@ -98,18 +101,23 @@ export function genEventHandler(
         $event: null,
       })
       const hasMultipleStatements = value.content.includes(`;`)
-      return [
+      handlerExp = [
         '$event => ',
         hasMultipleStatements ? '{' : '(',
         ...expr,
         hasMultipleStatements ? '}' : ')',
       ]
     } else {
-      return [...genExpression(value, context)]
+      handlerExp = [...genExpression(value, context)]
     }
   }
 
-  return ['() => {}']
+  const { keys, nonKeys } = modifiers
+  if (nonKeys.length)
+    handlerExp = genWithModifiers(context, handlerExp, nonKeys)
+  if (keys.length) handlerExp = genWithKeys(context, handlerExp, keys)
+
+  return [`() => `, ...handlerExp]
 }
 
 function genWithModifiers(
@@ -117,8 +125,6 @@ function genWithModifiers(
   handler: CodeFragment[],
   nonKeys: string[],
 ): CodeFragment[] {
-  if (!nonKeys.length) return handler
-
   return genCall(
     context.helper('withModifiers'),
     handler,
@@ -131,7 +137,5 @@ function genWithKeys(
   handler: CodeFragment[],
   keys: string[],
 ): CodeFragment[] {
-  if (!keys.length) return handler
-
   return genCall(context.helper('withKeys'), handler, JSON.stringify(keys))
 }

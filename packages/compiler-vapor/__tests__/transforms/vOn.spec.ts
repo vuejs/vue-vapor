@@ -481,8 +481,7 @@ describe('v-on', () => {
       },
     ])
     expect(code).contains(
-      `_on(n0, "click", () => _ctx.test, {
-    modifiers: ["stop", "prevent"], 
+      `_on(n0, "click", () => _withModifiers(_ctx.test, ["stop","prevent"]), {
     capture: true, 
     once: true
   })`,
@@ -541,14 +540,12 @@ describe('v-on', () => {
 
     expect(code).matchSnapshot()
     expect(code).contains(
-      `_delegate(n0, "click", () => _ctx.test, {
-    modifiers: ["stop"]
-  })`,
+      `_delegate(n0, "click", () => _withModifiers(_ctx.test, ["stop"])`,
     )
 
-    expect(code).contains(`_delegate(n0, "keyup", () => _ctx.test, {
-    keys: ["enter"]
-  })`)
+    expect(code).contains(
+      `_delegate(n0, "keyup", () => _withKeys(_ctx.test, ["enter"])`,
+    )
   })
 
   test('should wrap keys guard for keyboard events or dynamic events', () => {
