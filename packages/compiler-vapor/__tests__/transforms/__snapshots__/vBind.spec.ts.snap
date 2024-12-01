@@ -7,7 +7,7 @@ const t0 = _template("<div></div>")
 export function render(_ctx) {
   const n0 = t0()
   _setInheritAttrs(["foo-bar"])
-  _renderEffect(() => _setAttr(n0, "foo-bar", _ctx.id, true))
+  _renderEffect(() => _setAttr(n0, "foo-bar", _ctx.id))
   return n0
 }"
 `;
@@ -19,7 +19,7 @@ const t0 = _template("<div></div>")
 export function render(_ctx) {
   const n0 = t0()
   _setInheritAttrs(["innerHTML"])
-  _renderEffect(() => _setAttr(n0, "innerHTML", _ctx.foo, true))
+  _renderEffect(() => _setAttr(n0, "innerHTML", _ctx.foo))
   return n0
 }"
 `;
@@ -31,7 +31,7 @@ const t0 = _template("<div></div>")
 export function render(_ctx) {
   const n0 = t0()
   _setInheritAttrs(["foo-bar"])
-  _renderEffect(() => _setAttr(n0, "foo-bar", _ctx.fooBar, true))
+  _renderEffect(() => _setAttr(n0, "foo-bar", _ctx.fooBar))
   return n0
 }"
 `;
@@ -43,7 +43,7 @@ const t0 = _template("<progress></progress>")
 export function render(_ctx) {
   const n0 = t0()
   _setInheritAttrs(["value"])
-  _renderEffect(() => _setAttr(n0, "value", _ctx.foo, true))
+  _renderEffect(() => _setAttr(n0, "value", _ctx.foo))
   return n0
 }"
 `;
@@ -55,7 +55,7 @@ const t0 = _template("<div></div>")
 export function render(_ctx) {
   const n0 = t0()
   _setInheritAttrs(["textContent"])
-  _renderEffect(() => _setAttr(n0, "textContent", _ctx.foo, true))
+  _renderEffect(() => _setAttr(n0, "textContent", _ctx.foo))
   return n0
 }"
 `;
@@ -67,7 +67,7 @@ const t0 = _template("<div></div>")
 export function render(_ctx) {
   const n0 = t0()
   _setInheritAttrs(["value"])
-  _renderEffect(() => _setAttr(n0, "value", _ctx.foo, true))
+  _renderEffect(() => _setAttr(n0, "value", _ctx.foo))
   return n0
 }"
 `;
@@ -79,7 +79,7 @@ const t0 = _template("<div></div>")
 export function render(_ctx) {
   const n0 = t0()
   _setInheritAttrs(["fooBar"])
-  _renderEffect(() => _setDynamicProp(n0, "fooBar", _ctx.id, true))
+  _renderEffect(() => _setDynamicProp(n0, "fooBar", _ctx.id))
   return n0
 }"
 `;
@@ -104,19 +104,7 @@ const t0 = _template("<div></div>")
 export function render(_ctx) {
   const n0 = t0()
   _setInheritAttrs(["fooBar"])
-  _renderEffect(() => _setDynamicProp(n0, "fooBar", _ctx.fooBar, true))
-  return n0
-}"
-`;
-
-exports[`compiler v-bind > .prop modifier (shortband) w/ no expression 1`] = `
-"import { setInheritAttrs as _setInheritAttrs, renderEffect as _renderEffect, setDOMProp as _setDOMProp, template as _template } from 'vue/vapor';
-const t0 = _template("<div></div>")
-
-export function render(_ctx) {
-  const n0 = t0()
-  _setInheritAttrs(["fooBar"])
-  _renderEffect(() => _setDOMProp(n0, "fooBar", _ctx.fooBar, true))
+  _renderEffect(() => _setDynamicProp(n0, "fooBar", _ctx.fooBar))
   return n0
 }"
 `;
@@ -128,7 +116,7 @@ const t0 = _template("<div></div>")
 export function render(_ctx) {
   const n0 = t0()
   _setInheritAttrs(["fooBar"])
-  _renderEffect(() => _setDOMProp(n0, "fooBar", _ctx.id, true))
+  _renderEffect(() => _setDOMProp(n0, "fooBar", _ctx.id))
   return n0
 }"
 `;
@@ -140,7 +128,7 @@ const t0 = _template("<div></div>")
 export function render(_ctx) {
   const n0 = t0()
   _setInheritAttrs(["innerHTML"])
-  _renderEffect(() => _setHtml(n0, _ctx.foo, true))
+  _renderEffect(() => _setHtml(n0, _ctx.foo))
   return n0
 }"
 `;
@@ -152,7 +140,7 @@ const t0 = _template("<div></div>")
 export function render(_ctx) {
   const n0 = t0()
   _setInheritAttrs(["fooBar"])
-  _renderEffect(() => _setDOMProp(n0, "fooBar", _ctx.fooBar, true))
+  _renderEffect(() => _setDOMProp(n0, "fooBar", _ctx.fooBar))
   return n0
 }"
 `;
@@ -164,7 +152,7 @@ const t0 = _template("<progress></progress>")
 export function render(_ctx) {
   const n0 = t0()
   _setInheritAttrs(["value"])
-  _renderEffect(() => _setDOMProp(n0, "value", _ctx.foo, true))
+  _renderEffect(() => _setDOMProp(n0, "value", _ctx.foo))
   return n0
 }"
 `;
@@ -176,7 +164,7 @@ const t0 = _template("<div></div>")
 export function render(_ctx) {
   const n0 = t0()
   _setInheritAttrs(["textContent"])
-  _renderEffect(() => _setText(n0, _ctx.foo, true))
+  _renderEffect(() => _setText(n0, _ctx.foo))
   return n0
 }"
 `;
@@ -188,7 +176,7 @@ const t0 = _template("<div></div>")
 export function render(_ctx) {
   const n0 = t0()
   _setInheritAttrs(["value"])
-  _renderEffect(() => _setValue(n0, _ctx.foo, true))
+  _renderEffect(() => _setValue(n0, _ctx.foo))
   return n0
 }"
 `;
@@ -200,7 +188,7 @@ const t0 = _template("<div></div>")
 export function render(_ctx) {
   const n0 = t0()
   _setInheritAttrs(["fooBar"])
-  _renderEffect(() => _setDOMProp(n0, "fooBar", _ctx.id, true))
+  _renderEffect(() => _setDOMProp(n0, "fooBar", _ctx.id))
   return n0
 }"
 `;
@@ -224,7 +212,7 @@ const t0 = _template("<div></div>")
 export function render(_ctx) {
   const n0 = t0()
   _setInheritAttrs(["innerHTML"])
-  _renderEffect(() => _setHtml(n0, _ctx.foo, true))
+  _renderEffect(() => _setHtml(n0, _ctx.foo))
   return n0
 }"
 `;
@@ -236,7 +224,7 @@ const t0 = _template("<div></div>")
 export function render(_ctx) {
   const n0 = t0()
   _setInheritAttrs(["fooBar"])
-  _renderEffect(() => _setDOMProp(n0, "fooBar", _ctx.fooBar, true))
+  _renderEffect(() => _setDOMProp(n0, "fooBar", _ctx.fooBar))
   return n0
 }"
 `;
@@ -248,7 +236,7 @@ const t0 = _template("<progress></progress>")
 export function render(_ctx) {
   const n0 = t0()
   _setInheritAttrs(["value"])
-  _renderEffect(() => _setDOMProp(n0, "value", _ctx.foo, true))
+  _renderEffect(() => _setDOMProp(n0, "value", _ctx.foo))
   return n0
 }"
 `;
@@ -260,7 +248,7 @@ const t0 = _template("<div></div>")
 export function render(_ctx) {
   const n0 = t0()
   _setInheritAttrs(["textContent"])
-  _renderEffect(() => _setText(n0, _ctx.foo, true))
+  _renderEffect(() => _setText(n0, _ctx.foo))
   return n0
 }"
 `;
@@ -272,7 +260,7 @@ const t0 = _template("<div></div>")
 export function render(_ctx) {
   const n0 = t0()
   _setInheritAttrs(["value"])
-  _renderEffect(() => _setValue(n0, _ctx.foo, true))
+  _renderEffect(() => _setValue(n0, _ctx.foo))
   return n0
 }"
 `;
@@ -284,7 +272,7 @@ const t0 = _template("<div></div>")
 export function render(_ctx) {
   const n0 = t0()
   _setInheritAttrs(["innerHTML"])
-  _renderEffect(() => _setHtml(n0, _ctx.foo, true))
+  _renderEffect(() => _setHtml(n0, _ctx.foo))
   return n0
 }"
 `;
@@ -296,7 +284,7 @@ const t0 = _template("<div></div>")
 export function render(_ctx) {
   const n0 = t0()
   _setInheritAttrs(["textContent"])
-  _renderEffect(() => _setText(n0, _ctx.foo, true))
+  _renderEffect(() => _setText(n0, _ctx.foo))
   return n0
 }"
 `;
@@ -308,7 +296,7 @@ const t0 = _template("<input>")
 export function render(_ctx) {
   const n0 = t0()
   _setInheritAttrs(["value"])
-  _renderEffect(() => _setValue(n0, _ctx.foo, true))
+  _renderEffect(() => _setValue(n0, _ctx.foo))
   return n0
 }"
 `;
@@ -320,7 +308,7 @@ const t0 = _template("<progress></progress>")
 export function render(_ctx) {
   const n0 = t0()
   _setInheritAttrs(["value"])
-  _renderEffect(() => _setDynamicProp(n0, "value", _ctx.foo, true))
+  _renderEffect(() => _setDynamicProp(n0, "value", _ctx.foo))
   return n0
 }"
 `;
@@ -332,11 +320,11 @@ const t0 = _template("<div></div>")
 export function render(_ctx) {
   const n0 = t0()
   _setInheritAttrs(["id", "title", "lang", "dir", "tabindex"])
-  _renderEffect(() => _setDOMProp(n0, "id", _ctx.id, true))
-  _renderEffect(() => _setDOMProp(n0, "title", _ctx.title, true))
-  _renderEffect(() => _setDOMProp(n0, "lang", _ctx.lang, true))
-  _renderEffect(() => _setDOMProp(n0, "dir", _ctx.dir, true))
-  _renderEffect(() => _setDOMProp(n0, "tabindex", _ctx.tabindex, true))
+  _renderEffect(() => _setDOMProp(n0, "id", _ctx.id))
+  _renderEffect(() => _setDOMProp(n0, "title", _ctx.title))
+  _renderEffect(() => _setDOMProp(n0, "lang", _ctx.lang))
+  _renderEffect(() => _setDOMProp(n0, "dir", _ctx.dir))
+  _renderEffect(() => _setDOMProp(n0, "tabindex", _ctx.tabindex))
   return n0
 }"
 `;
@@ -348,11 +336,11 @@ const t0 = _template("<math></math>")
 export function render(_ctx) {
   const n0 = t0()
   _setInheritAttrs(["autofucus", "dir", "displaystyle", "mathcolor", "tabindex"])
-  _renderEffect(() => _setDOMProp(n0, "autofucus", _ctx.autofucus, true))
-  _renderEffect(() => _setDOMProp(n0, "dir", _ctx.dir, true))
-  _renderEffect(() => _setDOMProp(n0, "displaystyle", _ctx.displaystyle, true))
-  _renderEffect(() => _setDOMProp(n0, "mathcolor", _ctx.mathcolor, true))
-  _renderEffect(() => _setDOMProp(n0, "tabindex", _ctx.tabindex, true))
+  _renderEffect(() => _setDOMProp(n0, "autofucus", _ctx.autofucus))
+  _renderEffect(() => _setDOMProp(n0, "dir", _ctx.dir))
+  _renderEffect(() => _setDOMProp(n0, "displaystyle", _ctx.displaystyle))
+  _renderEffect(() => _setDOMProp(n0, "mathcolor", _ctx.mathcolor))
+  _renderEffect(() => _setDOMProp(n0, "tabindex", _ctx.tabindex))
   return n0
 }"
 `;
@@ -364,9 +352,9 @@ const t0 = _template("<svg></svg>")
 export function render(_ctx) {
   const n0 = t0()
   _setInheritAttrs(["id", "lang", "tabindex"])
-  _renderEffect(() => _setDOMProp(n0, "id", _ctx.id, true))
-  _renderEffect(() => _setDOMProp(n0, "lang", _ctx.lang, true))
-  _renderEffect(() => _setDOMProp(n0, "tabindex", _ctx.tabindex, true))
+  _renderEffect(() => _setDOMProp(n0, "id", _ctx.id))
+  _renderEffect(() => _setDOMProp(n0, "lang", _ctx.lang))
+  _renderEffect(() => _setDOMProp(n0, "tabindex", _ctx.tabindex))
   return n0
 }"
 `;
@@ -418,7 +406,7 @@ const t0 = _template("<div></div>")
 export function render(_ctx) {
   const n0 = t0()
   _setInheritAttrs(["id"])
-  _renderEffect(() => _setDOMProp(n0, "id", _ctx.id, true))
+  _renderEffect(() => _setDOMProp(n0, "id", _ctx.id))
   return n0
 }"
 `;
@@ -454,7 +442,7 @@ const t0 = _template("<div></div>")
 export function render(_ctx) {
   const n0 = t0()
   _setInheritAttrs(["camel-case"])
-  _renderEffect(() => _setDynamicProp(n0, "camel-case", _ctx.camelCase, true))
+  _renderEffect(() => _setDynamicProp(n0, "camel-case", _ctx.camelCase))
   return n0
 }"
 `;
@@ -466,7 +454,7 @@ const t0 = _template("<div></div>")
 export function render(_ctx) {
   const n0 = t0()
   _setInheritAttrs(["id"])
-  _renderEffect(() => _setDOMProp(n0, "id", _ctx.id, true))
+  _renderEffect(() => _setDOMProp(n0, "id", _ctx.id))
   return n0
 }"
 `;

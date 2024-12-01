@@ -53,7 +53,10 @@ export function genSetProp(
       `n${oper.element}`,
       omitKey ? false : genExpression(key, context),
       genPropValue(values, context),
-      oper.root && 'true',
+      // only `setClass` and `setStyle` need merge inherit attr
+      oper.root && (helperName === 'setClass' || helperName === 'setStyle')
+        ? 'true'
+        : undefined,
     ),
   ]
 }
