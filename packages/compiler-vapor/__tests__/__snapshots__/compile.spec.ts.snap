@@ -6,8 +6,7 @@ const t0 = _template("<div></div>")
 
 export function render(_ctx, $props, $emit, $attrs, $slots) {
   const n0 = t0()
-  let _count;
-  _renderEffect(() => _count !== _ctx.count && _setText(n0, "count is ", _count = _ctx.count, "."))
+  _renderEffect(() => _setText(n0, "count is ", _ctx.count, "."))
   return n0
 }"
 `;
@@ -187,8 +186,7 @@ export function render(_ctx) {
   const n0 = t0()
   _delegate(n0, "click", () => _ctx.handleClick)
   _setInheritAttrs(["id"])
-  let _count;
-  _renderEffect(() => _count !== _ctx.count && _setText(n0, _count = _ctx.count, "foo", _count = _ctx.count, "foo", _count = _ctx.count))
+  _renderEffect(() => _setText(n0, _ctx.count, "foo", _ctx.count, "foo", _ctx.count))
   let _count;
   _renderEffect(() => _count !== _ctx.count && _setDOMProp(n0, "id", _count = _ctx.count))
   return n0

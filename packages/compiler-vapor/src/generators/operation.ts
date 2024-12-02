@@ -22,10 +22,11 @@ import { genSlotOutlet } from './slotOutlet'
 export function genOperations(
   opers: OperationNode[],
   context: CodegenContext,
+  onIdRewrite?: (newName: string, name: string) => string,
 ): CodeFragment[] {
   const [frag, push] = buildCodeFragment()
   for (const operation of opers) {
-    push(...genOperation(operation, context))
+    push(...genOperation(operation, context, onIdRewrite))
   }
   return frag
 }
@@ -33,20 +34,21 @@ export function genOperations(
 export function genOperation(
   oper: OperationNode,
   context: CodegenContext,
+  onIdRewrite?: (newName: string, name: string) => string,
 ): CodeFragment[] {
   switch (oper.type) {
     case IRNodeTypes.SET_PROP:
-      return genSetProp(oper, context)
+      return genSetProp(oper, context, onIdRewrite)
     case IRNodeTypes.SET_DYNAMIC_PROPS:
       return genDynamicProps(oper, context)
     case IRNodeTypes.SET_TEXT:
-      return genSetText(oper, context)
+      return genSetText(oper, context, onIdRewrite)
     case IRNodeTypes.SET_EVENT:
       return genSetEvent(oper, context)
     case IRNodeTypes.SET_DYNAMIC_EVENTS:
       return genSetDynamicEvents(oper, context)
     case IRNodeTypes.SET_HTML:
-      return genSetHtml(oper, context)
+      return genSetHtml(oper, context, onIdRewrite)
     case IRNodeTypes.SET_TEMPLATE_REF:
       return genSetTemplateRef(oper, context)
     case IRNodeTypes.SET_MODEL_VALUE:
@@ -87,29 +89,59 @@ export function genEffects(
   return frag
 }
 
+// TODO multiple effect with same deps name
+const seenNames: Record<string, number> = {}
+
 export function genEffect(
   { operations }: IREffect,
   context: CodegenContext,
 ): CodeFragment[] {
-  const { vaporHelper, renderEffectDeps } = context
+  const { vaporHelper } = context
   const [frag, push] = buildCodeFragment(
     NEWLINE,
     `${vaporHelper('renderEffect')}(() => `,
   )
-  const [operationsExps, pushOps] = buildCodeFragment()
-  operations.forEach(op => pushOps(...genOperation(op, context)))
 
-  if (renderEffectDeps.size) {
-    const vars = [...renderEffectDeps].map(v => `_${v}`)
+  let renderEffectDeps: string[] = []
+  let newIdName, idName
+  function onIdRewrite(newName: string, name: string) {
+    if (!seenNames[name]) {
+      seenNames[name] = 0
+    }
+    seenNames[name]++
+    renderEffectDeps.push(name)
+    return renderEffectDeps.length === 1
+      ? `_${(idName = name)} = ${(newIdName = newName)}`
+      : newName
+  }
+  const operationsExps = genOperations(operations, context, onIdRewrite)
+
+  if (renderEffectDeps.length) {
+    const vars = [...new Set(renderEffectDeps)].map(v => `_${v}`)
     frag.splice(1, 0, `let ${vars.join(', ')};`, NEWLINE)
-    renderEffectDeps.clear()
+    renderEffectDeps = []
   }
 
   const newlineCount = operationsExps.filter(frag => frag === NEWLINE).length
   if (newlineCount > 1) {
-    push('{', INDENT_START, ...operationsExps, INDENT_END, NEWLINE, '})')
+    const condition: CodeFragment[] = newIdName
+      ? [NEWLINE, `if(_${idName} === ${newIdName}) return`]
+      : [undefined]
+    push(
+      '{',
+      INDENT_START,
+      ...condition,
+      ...operationsExps,
+      INDENT_END,
+      NEWLINE,
+      '})',
+    )
   } else {
-    push(...operationsExps.filter(frag => frag !== NEWLINE), ')')
+    push(
+      newIdName ? `_${idName} !== ${newIdName} && ` : undefined,
+      ...operationsExps.filter(frag => frag !== NEWLINE),
+      ')',
+    )
   }
 
   return frag

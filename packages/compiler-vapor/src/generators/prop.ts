@@ -38,29 +38,22 @@ import {
 export function genSetProp(
   oper: SetPropIRNode,
   context: CodegenContext,
+  onIdRewrite?: (newName: string, name: string) => string,
 ): CodeFragment[] {
-  const { vaporHelper, renderEffectDeps, block } = context
+  const { vaporHelper } = context
   const {
     prop: { key, values, modifier },
     tag,
   } = oper
 
-  const inEffect = block.effect.length
   const { helperName, omitKey } = getRuntimeHelper(tag, key.content, modifier)
-  let newPropName, propName
-  function onIdRewrite(newName: string, name: string) {
-    // if(renderEffectIndex!==0) name = `${name}${renderEffectIndex}`
-    renderEffectDeps.add(name)
-    return `_${(propName = name)} = ${(newPropName = newName)}`
-  }
   const propValue = genPropValue(
     values,
     context,
-    inEffect && helperName !== 'setDynamicProp' ? onIdRewrite : undefined,
+    helperName !== 'setDynamicProp' ? onIdRewrite : undefined,
   )
   return [
     NEWLINE,
-    newPropName ? `_${propName} !== ${newPropName} && ` : undefined,
     ...genCall(
       [vaporHelper(helperName), null],
       `n${oper.element}`,

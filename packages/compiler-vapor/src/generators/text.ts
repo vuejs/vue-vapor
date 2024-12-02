@@ -12,28 +12,20 @@ import {
 export function genSetText(
   oper: SetTextIRNode,
   context: CodegenContext,
+  onIdRewrite?: (newName: string, name: string) => string,
 ): CodeFragment[] {
-  const { vaporHelper, renderEffectDeps, block } = context
+  const { vaporHelper } = context
   const { element, values } = oper
-  const inEffect = block.effect.length
-  let newPropName, propName
-  function onIdRewrite(newName: string, name: string) {
-    renderEffectDeps.add(name)
-    return `_${(propName = name)} = ${(newPropName = newName)}`
-  }
   const texts = values.map(value =>
     genExpression(
       value,
       context,
       undefined,
-      inEffect ? onIdRewrite : undefined,
+      // TODO values.length > 1
+      values.length === 1 ? onIdRewrite : undefined,
     ),
   )
-  return [
-    NEWLINE,
-    newPropName ? `_${propName} !== ${newPropName} && ` : undefined,
-    ...genCall(vaporHelper('setText'), `n${element}`, ...texts),
-  ]
+  return [NEWLINE, ...genCall(vaporHelper('setText'), `n${element}`, ...texts)]
 }
 
 export function genCreateTextNode(

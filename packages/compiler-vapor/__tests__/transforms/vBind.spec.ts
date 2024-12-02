@@ -655,27 +655,13 @@ describe('compiler v-bind', () => {
     expect(code).contains(
       '_type !== _ctx.type && _setAttr(n2, "type", _type = _ctx.type)',
     )
-    expect(code).contains(
-      '_width !== _ctx.width && _setAttr(n3, "width", _width = _ctx.width)',
-    )
-    expect(code).contains(
-      '_height !== _ctx.height && _setAttr(n3, "height", _height = _ctx.height)',
-    )
-    expect(code).contains(
-      '_width !== _ctx.width && _setAttr(n4, "width", _width = _ctx.width)',
-    )
-    expect(code).contains(
-      '_height !== _ctx.height && _setAttr(n4, "height", _height = _ctx.height)',
-    )
-    expect(code).contains(
-      '_width !== _ctx.width && _setAttr(n5, "width", _width = _ctx.width)',
-    )
-    expect(code).contains(
-      '_height !== _ctx.height && _setAttr(n5, "height", _height = _ctx.height)',
-    )
-    expect(code).contains(
-      '_width !== _ctx.width && _setAttr(n6, "width", _width = _ctx.width)',
-    )
+    expect(code).contains('_setAttr(n3, "width", _width = _ctx.width)')
+    expect(code).contains('_setAttr(n3, "height", _height = _ctx.height)')
+    expect(code).contains('_setAttr(n4, "width", _ctx.width)')
+    expect(code).contains('_setAttr(n4, "height", _ctx.height)')
+    expect(code).contains('_setAttr(n5, "width", _ctx.width)')
+    expect(code).contains('_setAttr(n5, "height", _ctx.height)')
+    expect(code).contains(' _setAttr(n6, "width", _ctx.width)')
   })
 
   test('HTML global attributes should set as dom prop', () => {
