@@ -83,7 +83,6 @@ export function genEffects(
   const [frag, push] = buildCodeFragment()
   for (let i = 0; i < effects.length; i++) {
     const effect = effects[i]
-    context.renderEffectIndex = i
     push(...genEffect(effect, context))
   }
   return frag
