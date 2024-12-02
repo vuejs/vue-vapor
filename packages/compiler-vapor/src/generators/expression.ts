@@ -47,16 +47,7 @@ export function genExpression(
 
   // the expression is a simple identifier
   if (ast === null) {
-    return genIdentifier(
-      content,
-      context,
-      loc,
-      assignment,
-      undefined,
-      undefined,
-      undefined,
-      postGenExpression,
-    )
+    return genIdentifier(content, context, loc, assignment, postGenExpression)
   }
 
   const ids: Identifier[] = []
@@ -105,6 +96,7 @@ export function genExpression(
               source,
             },
             hasMemberExpression ? undefined : assignment,
+            undefined,
             id,
             parent,
             parentStack,
@@ -130,10 +122,10 @@ export function genIdentifier(
   { options, vaporHelper, identifiers }: CodegenContext,
   loc?: SourceLocation,
   assignment?: string,
+  postGenExpression?: (newName: string, name: string) => string,
   id?: Identifier,
   parent?: Node,
   parentStack?: Node[],
-  postGenExpression?: (newName: string, name: string) => string,
 ): CodeFragment[] {
   const { inline, bindingMetadata } = options
   let name: string | undefined = raw
