@@ -110,7 +110,7 @@ export function genExpression(
   }
 }
 
-export function genIdentifier(
+function genIdentifier(
   raw: string,
   { options, vaporHelper, identifiers }: CodegenContext,
   loc?: SourceLocation,
@@ -125,8 +125,7 @@ export function genIdentifier(
 
   const idMap = identifiers[raw]
   if (idMap && idMap.length) {
-    name = idMap[0]
-    return [[name, NewlineType.None, loc]]
+    return [[idMap[0], NewlineType.None, loc]]
   }
 
   let prefix: string | undefined
