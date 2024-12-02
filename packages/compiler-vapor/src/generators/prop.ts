@@ -39,7 +39,7 @@ export function genSetProp(
   oper: SetPropIRNode,
   context: CodegenContext,
 ): CodeFragment[] {
-  const { vaporHelper, effectVars, block } = context
+  const { vaporHelper, renderEffectDeps, block } = context
   const {
     prop: { key, values, modifier },
     tag,
@@ -48,11 +48,16 @@ export function genSetProp(
   const inEffect = block.effect.length
   const { helperName, omitKey } = getRuntimeHelper(tag, key.content, modifier)
   let newPropName, propName
-  const propValue = genPropValue(values, context, (newName, name) => {
-    if (helperName === 'setDynamicProp' || !inEffect) return newName
-    effectVars.add(name)
+  function onIdRewrite(newName: string, name: string) {
+    // if(renderEffectIndex!==0) name = `${name}${renderEffectIndex}`
+    renderEffectDeps.add(name)
     return `_${(propName = name)} = ${(newPropName = newName)}`
-  })
+  }
+  const propValue = genPropValue(
+    values,
+    context,
+    inEffect && helperName !== 'setDynamicProp' ? onIdRewrite : undefined,
+  )
   return [
     NEWLINE,
     newPropName ? `_${propName} !== ${newPropName} && ` : undefined,
@@ -142,10 +147,10 @@ export function genPropKey(
 export function genPropValue(
   values: SimpleExpressionNode[],
   context: CodegenContext,
-  postGenPropValue?: (newName: string, name: string) => string,
+  onIdentifierRewrite?: (newName: string, name: string) => string,
 ): CodeFragment[] {
   if (values.length === 1) {
-    return genExpression(values[0], context, undefined, postGenPropValue)
+    return genExpression(values[0], context, undefined, onIdentifierRewrite)
   }
   return genMulti(
     DELIMITERS_ARRAY,

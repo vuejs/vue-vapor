@@ -13,15 +13,26 @@ export function genSetText(
   oper: SetTextIRNode,
   context: CodegenContext,
 ): CodeFragment[] {
-  const { vaporHelper } = context
+  const { vaporHelper, renderEffectDeps, block } = context
   const { element, values } = oper
+  const inEffect = block.effect.length
+  let newPropName, propName
+  function onIdRewrite(newName: string, name: string) {
+    renderEffectDeps.add(name)
+    return `_${(propName = name)} = ${(newPropName = newName)}`
+  }
+  const texts = values.map(value =>
+    genExpression(
+      value,
+      context,
+      undefined,
+      inEffect ? onIdRewrite : undefined,
+    ),
+  )
   return [
     NEWLINE,
-    ...genCall(
-      vaporHelper('setText'),
-      `n${element}`,
-      ...values.map(value => genExpression(value, context)),
-    ),
+    newPropName ? `_${propName} !== ${newPropName} && ` : undefined,
+    ...genCall(vaporHelper('setText'), `n${element}`, ...texts),
   ]
 }
 

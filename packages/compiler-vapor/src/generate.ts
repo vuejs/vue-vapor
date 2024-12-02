@@ -35,7 +35,8 @@ export class CodegenContext {
 
   delegates: Set<string> = new Set<string>()
 
-  effectVars: Set<string> = new Set<string>()
+  renderEffectIndex: number = 0
+  renderEffectDeps: Set<string> = new Set<string>()
 
   identifiers: Record<string, string[]> = Object.create(null)
 

@@ -79,7 +79,9 @@ export function genEffects(
   context: CodegenContext,
 ): CodeFragment[] {
   const [frag, push] = buildCodeFragment()
-  for (const effect of effects) {
+  for (let i = 0; i < effects.length; i++) {
+    const effect = effects[i]
+    context.renderEffectIndex = i
     push(...genEffect(effect, context))
   }
   return frag
@@ -89,7 +91,7 @@ export function genEffect(
   { operations }: IREffect,
   context: CodegenContext,
 ): CodeFragment[] {
-  const { vaporHelper, effectVars } = context
+  const { vaporHelper, renderEffectDeps } = context
   const [frag, push] = buildCodeFragment(
     NEWLINE,
     `${vaporHelper('renderEffect')}(() => `,
@@ -97,10 +99,10 @@ export function genEffect(
   const [operationsExps, pushOps] = buildCodeFragment()
   operations.forEach(op => pushOps(...genOperation(op, context)))
 
-  if (effectVars.size) {
-    const vars = [...effectVars].map(v => `_${v}`)
+  if (renderEffectDeps.size) {
+    const vars = [...renderEffectDeps].map(v => `_${v}`)
     frag.splice(1, 0, `let ${vars.join(', ')};`, NEWLINE)
-    effectVars.clear()
+    renderEffectDeps.clear()
   }
 
   const newlineCount = operationsExps.filter(frag => frag === NEWLINE).length
