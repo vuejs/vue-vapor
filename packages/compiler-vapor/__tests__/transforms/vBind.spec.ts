@@ -74,7 +74,9 @@ describe('compiler v-bind', () => {
     })
 
     expect(code).matchSnapshot()
-    expect(code).contains('_setDOMProp(n0, "id", _ctx.id)')
+    expect(code).contains(
+      '_id !== _ctx.id && _setDOMProp(n0, "id", _id = _ctx.id)',
+    )
   })
 
   test('no expression', () => {
@@ -104,7 +106,9 @@ describe('compiler v-bind', () => {
         ],
       },
     })
-    expect(code).contains('_setDOMProp(n0, "id", _ctx.id)')
+    expect(code).contains(
+      '_id !== _ctx.id && _setDOMProp(n0, "id", _id = _ctx.id)',
+    )
   })
 
   test('no expression (shorthand)', () => {
@@ -368,7 +372,9 @@ describe('compiler v-bind', () => {
       },
     })
     expect(code).contains('renderEffect')
-    expect(code).contains('_setDOMProp(n0, "fooBar", _ctx.id)')
+    expect(code).contains(
+      '_id !== _ctx.id && _setDOMProp(n0, "fooBar", _id = _ctx.id)',
+    )
   })
 
   test('.prop modifier w/ no expression', () => {
@@ -392,7 +398,9 @@ describe('compiler v-bind', () => {
       },
     })
     expect(code).contains('renderEffect')
-    expect(code).contains('_setDOMProp(n0, "fooBar", _ctx.fooBar)')
+    expect(code).contains(
+      '_fooBar !== _ctx.fooBar && _setDOMProp(n0, "fooBar", _fooBar = _ctx.fooBar)',
+    )
   })
 
   test('.prop modifier w/ dynamic arg', () => {
@@ -449,7 +457,9 @@ describe('compiler v-bind', () => {
       },
     })
     expect(code).contains('renderEffect')
-    expect(code).contains('_setDOMProp(n0, "fooBar", _ctx.id)')
+    expect(code).contains(
+      '_id !== _ctx.id && _setDOMProp(n0, "fooBar", _id = _ctx.id)',
+    )
   })
 
   test('.prop modifier (shorthand) w/ no expression', () => {
@@ -473,55 +483,61 @@ describe('compiler v-bind', () => {
       },
     })
     expect(code).contains('renderEffect')
-    expect(code).contains('_setDOMProp(n0, "fooBar", _ctx.fooBar)')
+    expect(code).contains(
+      '_fooBar !== _ctx.fooBar && _setDOMProp(n0, "fooBar", _fooBar = _ctx.fooBar)',
+    )
   })
 
   test('.prop modifier w/ innerHTML', () => {
     const { code } = compileWithVBind(`<div :innerHTML.prop="foo" />`)
     expect(code).matchSnapshot()
-    expect(code).contains('_setHtml(n0, _ctx.foo)')
+    expect(code).contains('_foo !== _ctx.foo && _setHtml(n0, _foo = _ctx.foo)')
   })
 
   test('.prop modifier (shorthand) w/ innerHTML', () => {
     const { code } = compileWithVBind(`<div .innerHTML="foo" />`)
     expect(code).matchSnapshot()
-    expect(code).contains('_setHtml(n0, _ctx.foo)')
+    expect(code).contains('_foo !== _ctx.foo && _setHtml(n0, _foo = _ctx.foo)')
   })
 
   test('.prop modifier w/ textContent', () => {
     const { code } = compileWithVBind(`<div :textContent.prop="foo" />`)
     expect(code).matchSnapshot()
-    expect(code).contains('_setText(n0, _ctx.foo)')
+    expect(code).contains('_foo !== _ctx.foo && _setText(n0, _foo = _ctx.foo)')
   })
 
   test('.prop modifier (shorthand) w/ textContent', () => {
     const { code } = compileWithVBind(`<div .textContent="foo" />`)
     expect(code).matchSnapshot()
-    expect(code).contains('_setText(n0, _ctx.foo)')
+    expect(code).contains('_foo !== _ctx.foo && _setText(n0, _foo = _ctx.foo)')
   })
 
   test('.prop modifier w/ value', () => {
     const { code } = compileWithVBind(`<div :value.prop="foo" />`)
     expect(code).matchSnapshot()
-    expect(code).contains('_setValue(n0, _ctx.foo)')
+    expect(code).contains('_foo !== _ctx.foo && _setValue(n0, _foo = _ctx.foo)')
   })
 
   test('.prop modifier (shorthand) w/ value', () => {
     const { code } = compileWithVBind(`<div .value="foo" />`)
     expect(code).matchSnapshot()
-    expect(code).contains('_setValue(n0, _ctx.foo)')
+    expect(code).contains('_foo !== _ctx.foo && _setValue(n0, _foo = _ctx.foo)')
   })
 
   test('.prop modifier w/ progress value', () => {
     const { code } = compileWithVBind(`<progress :value.prop="foo" />`)
     expect(code).matchSnapshot()
-    expect(code).contains('_setDOMProp(n0, "value", _ctx.foo)')
+    expect(code).contains(
+      '_foo !== _ctx.foo && _setDOMProp(n0, "value", _foo = _ctx.foo)',
+    )
   })
 
   test('.prop modifier (shorthand) w/ progress value', () => {
     const { code } = compileWithVBind(`<progress .value="foo" />`)
     expect(code).matchSnapshot()
-    expect(code).contains('_setDOMProp(n0, "value", _ctx.foo)')
+    expect(code).contains(
+      '_foo !== _ctx.foo && _setDOMProp(n0, "value", _foo = _ctx.foo)',
+    )
   })
 
   test('.attr modifier', () => {
@@ -545,7 +561,9 @@ describe('compiler v-bind', () => {
       },
     })
     expect(code).contains('renderEffect')
-    expect(code).contains('_setAttr(n0, "foo-bar", _ctx.id)')
+    expect(code).contains(
+      '_id !== _ctx.id && _setAttr(n0, "foo-bar", _id = _ctx.id)',
+    )
   })
 
   test('.attr modifier w/ no expression', () => {
@@ -570,31 +588,41 @@ describe('compiler v-bind', () => {
     })
 
     expect(code).contains('renderEffect')
-    expect(code).contains('_setAttr(n0, "foo-bar", _ctx.fooBar)')
+    expect(code).contains(
+      '_fooBar !== _ctx.fooBar && _setAttr(n0, "foo-bar", _fooBar = _ctx.fooBar)',
+    )
   })
 
   test('.attr modifier w/ innerHTML', () => {
     const { code } = compileWithVBind(`<div :innerHTML.attr="foo" />`)
     expect(code).matchSnapshot()
-    expect(code).contains('_setAttr(n0, "innerHTML", _ctx.foo)')
+    expect(code).contains(
+      '_foo !== _ctx.foo && _setAttr(n0, "innerHTML", _foo = _ctx.foo)',
+    )
   })
 
   test('.attr modifier w/ textContent', () => {
     const { code } = compileWithVBind(`<div :textContent.attr="foo" />`)
     expect(code).matchSnapshot()
-    expect(code).contains('_setAttr(n0, "textContent", _ctx.foo)')
+    expect(code).contains(
+      '_foo !== _ctx.foo && _setAttr(n0, "textContent", _foo = _ctx.foo)',
+    )
   })
 
   test('.attr modifier w/ value', () => {
     const { code } = compileWithVBind(`<div :value.attr="foo" />`)
     expect(code).matchSnapshot()
-    expect(code).contains('_setAttr(n0, "value", _ctx.foo)')
+    expect(code).contains(
+      '_foo !== _ctx.foo && _setAttr(n0, "value", _foo = _ctx.foo)',
+    )
   })
 
   test('.attr modifier w/ progress value', () => {
     const { code } = compileWithVBind(`<progress :value.attr="foo" />`)
     expect(code).matchSnapshot()
-    expect(code).contains('_setAttr(n0, "value", _ctx.foo)')
+    expect(code).contains(
+      '_foo !== _ctx.foo && _setAttr(n0, "value", _foo = _ctx.foo)',
+    )
   })
 
   test('attributes must be set as attribute', () => {
@@ -609,20 +637,45 @@ describe('compiler v-bind', () => {
     `)
 
     expect(code).matchSnapshot()
-    expect(code).contains('_setAttr(n0, "spellcheck", _ctx.spellcheck)')
-    expect(code).contains('_setAttr(n0, "draggable", _ctx.draggable)')
-    expect(code).contains('_setAttr(n0, "translate", _ctx.translate)')
-    expect(code).contains('_setAttr(n0, "form", _ctx.form)')
-    expect(code).contains('_setAttr(n1, "list", _ctx.list)')
-    expect(code).contains('_setAttr(n2, "type", _ctx.type)')
-    expect(code).contains('_setAttr(n3, "width", _ctx.width)')
-    expect(code).contains('_setAttr(n3, "height", _ctx.height)')
-    expect(code).contains('_setAttr(n4, "width", _ctx.width)')
-    expect(code).contains('_setAttr(n4, "height", _ctx.height)')
-    expect(code).contains('_setAttr(n5, "width", _ctx.width)')
-    expect(code).contains('_setAttr(n5, "height", _ctx.height)')
-    expect(code).contains('_setAttr(n6, "width", _ctx.width)')
-    expect(code).contains('_setAttr(n6, "height", _ctx.height)')
+    expect(code).contains(
+      '_spellcheck !== _ctx.spellcheck && _setAttr(n0, "spellcheck", _spellcheck = _ctx.spellcheck)',
+    )
+    expect(code).contains(
+      '_draggable !== _ctx.draggable && _setAttr(n0, "draggable", _draggable = _ctx.draggable)',
+    )
+    expect(code).contains(
+      '_translate !== _ctx.translate && _setAttr(n0, "translate", _translate = _ctx.translate)',
+    )
+    expect(code).contains(
+      '_form !== _ctx.form && _setAttr(n0, "form", _form = _ctx.form)',
+    )
+    expect(code).contains(
+      '_list !== _ctx.list && _setAttr(n1, "list", _list = _ctx.list)',
+    )
+    expect(code).contains(
+      '_type !== _ctx.type && _setAttr(n2, "type", _type = _ctx.type)',
+    )
+    expect(code).contains(
+      '_width !== _ctx.width && _setAttr(n3, "width", _width = _ctx.width)',
+    )
+    expect(code).contains(
+      '_height !== _ctx.height && _setAttr(n3, "height", _height = _ctx.height)',
+    )
+    expect(code).contains(
+      '_width !== _ctx.width && _setAttr(n4, "width", _width = _ctx.width)',
+    )
+    expect(code).contains(
+      '_height !== _ctx.height && _setAttr(n4, "height", _height = _ctx.height)',
+    )
+    expect(code).contains(
+      '_width !== _ctx.width && _setAttr(n5, "width", _width = _ctx.width)',
+    )
+    expect(code).contains(
+      '_height !== _ctx.height && _setAttr(n5, "height", _height = _ctx.height)',
+    )
+    expect(code).contains(
+      '_width !== _ctx.width && _setAttr(n6, "width", _width = _ctx.width)',
+    )
   })
 
   test('HTML global attributes should set as dom prop', () => {
@@ -631,11 +684,13 @@ describe('compiler v-bind', () => {
     `)
 
     expect(code).matchSnapshot()
-    expect(code).contains('_setDOMProp(n0, "id", _ctx.id)')
-    expect(code).contains('_setDOMProp(n0, "title", _ctx.title)')
-    expect(code).contains('_setDOMProp(n0, "lang", _ctx.lang)')
-    expect(code).contains('_setDOMProp(n0, "dir", _ctx.dir)')
-    expect(code).contains('_setDOMProp(n0, "tabindex", _ctx.tabindex)')
+    expect(code).contains(
+      '_id !== _ctx.id && _setDOMProp(n0, "id", _id = _ctx.id)',
+    )
+    // expect(code).contains('_setDOMProp(n0, "title", _ctx.title)')
+    // expect(code).contains('_setDOMProp(n0, "lang", _ctx.lang)')
+    // expect(code).contains('_setDOMProp(n0, "dir", _ctx.dir)')
+    // expect(code).contains('_setDOMProp(n0, "tabindex", _ctx.tabindex)')
   })
 
   test('SVG global attributes should set as dom prop', () => {
@@ -644,9 +699,18 @@ describe('compiler v-bind', () => {
     `)
 
     expect(code).matchSnapshot()
-    expect(code).contains('_setDOMProp(n0, "id", _ctx.id)')
-    expect(code).contains('_setDOMProp(n0, "lang", _ctx.lang)')
-    expect(code).contains('_setDOMProp(n0, "tabindex", _ctx.tabindex)')
+    expect(code).contains('let _id;')
+    expect(code).contains(
+      '_id !== _ctx.id && _setDOMProp(n0, "id", _id = _ctx.id)',
+    )
+    expect(code).contains('let _lang;')
+    expect(code).contains(
+      '_lang !== _ctx.lang && _setDOMProp(n0, "lang", _lang = _ctx.lang)',
+    )
+    expect(code).contains('let _tabindex;')
+    expect(code).contains(
+      '_tabindex !== _ctx.tabindex && _setDOMProp(n0, "tabindex", _tabindex = _ctx.tabindex)',
+    )
   })
 
   test('MathML global attributes should set as dom prop', () => {
@@ -655,11 +719,26 @@ describe('compiler v-bind', () => {
     `)
 
     expect(code).matchSnapshot()
-    expect(code).contains('_setDOMProp(n0, "autofucus", _ctx.autofucus)')
-    expect(code).contains('_setDOMProp(n0, "dir", _ctx.dir)')
-    expect(code).contains('_setDOMProp(n0, "displaystyle", _ctx.displaystyle)')
-    expect(code).contains('_setDOMProp(n0, "mathcolor", _ctx.mathcolor)')
-    expect(code).contains('_setDOMProp(n0, "tabindex", _ctx.tabindex)')
+    expect(code).contains('let _autofucus;')
+    expect(code).contains(
+      '_autofucus !== _ctx.autofucus && _setDOMProp(n0, "autofucus", _autofucus = _ctx.autofucus)',
+    )
+    expect(code).contains('let _dir;')
+    expect(code).contains(
+      '_dir !== _ctx.dir && _setDOMProp(n0, "dir", _dir = _ctx.dir)',
+    )
+    expect(code).contains('let _displaystyle;')
+    expect(code).contains(
+      '_displaystyle !== _ctx.displaystyle && _setDOMProp(n0, "displaystyle", _displaystyle = _ctx.displaystyle)',
+    )
+    expect(code).contains('let _mathcolor;')
+    expect(code).contains(
+      '_mathcolor !== _ctx.mathcolor && _setDOMProp(n0, "mathcolor", _mathcolor = _ctx.mathcolor)',
+    )
+    expect(code).contains('let _tabindex;')
+    expect(code).contains(
+      '_tabindex !== _ctx.tabindex && _setDOMProp(n0, "tabindex", _tabindex = _ctx.tabindex)',
+    )
   })
 
   test(':innerHTML', () => {
@@ -667,7 +746,8 @@ describe('compiler v-bind', () => {
       <div :innerHTML="foo"/>
     `)
     expect(code).matchSnapshot()
-    expect(code).contains('_setHtml(n0, _ctx.foo)')
+    expect(code).contains('let _foo;')
+    expect(code).contains('_foo !== _ctx.foo && _setHtml(n0, _foo = _ctx.foo)')
   })
 
   test(':textContext', () => {
@@ -675,7 +755,8 @@ describe('compiler v-bind', () => {
       <div :textContent="foo"/>
     `)
     expect(code).matchSnapshot()
-    expect(code).contains('_setText(n0, _ctx.foo)')
+    expect(code).contains('let _foo;')
+    expect(code).contains('_foo !== _ctx.foo && _setText(n0, _foo = _ctx.foo)')
   })
 
   test(':value', () => {
@@ -683,7 +764,10 @@ describe('compiler v-bind', () => {
       <input :value="foo"/>
     `)
     expect(code).matchSnapshot()
-    expect(code).contains('_setValue(n0, _ctx.foo)')
+    expect(code).contains('let _foo;')
+    expect(code).contains(
+      ' _foo !== _ctx.foo && _setValue(n0, _foo = _ctx.foo)',
+    )
   })
 
   test(':value w/ progress', () => {

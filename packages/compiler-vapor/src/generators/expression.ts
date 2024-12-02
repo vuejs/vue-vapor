@@ -19,6 +19,7 @@ export function genExpression(
   node: SimpleExpressionNode,
   context: CodegenContext,
   assignment?: string,
+  postGenExpression?: (newName: string, name: string) => string,
 ): CodeFragment[] {
   const { prefixIdentifiers } = context.options
   const { content, ast, isStatic, loc } = node
@@ -34,12 +35,28 @@ export function genExpression(
     ast === false ||
     isConstantExpression(node)
   ) {
-    return [[content, NewlineType.None, loc], assignment && ` = ${assignment}`]
+    return [
+      [
+        postGenExpression ? postGenExpression(content, content) : content,
+        NewlineType.None,
+        loc,
+      ],
+      assignment && ` = ${assignment}`,
+    ]
   }
 
   // the expression is a simple identifier
   if (ast === null) {
-    return genIdentifier(content, context, loc, assignment)
+    return genIdentifier(
+      content,
+      context,
+      loc,
+      assignment,
+      undefined,
+      undefined,
+      undefined,
+      postGenExpression,
+    )
   }
 
   const ids: Identifier[] = []
@@ -108,7 +125,7 @@ export function genExpression(
   }
 }
 
-function genIdentifier(
+export function genIdentifier(
   raw: string,
   { options, vaporHelper, identifiers }: CodegenContext,
   loc?: SourceLocation,
@@ -116,13 +133,21 @@ function genIdentifier(
   id?: Identifier,
   parent?: Node,
   parentStack?: Node[],
+  postGenExpression?: (newName: string, name: string) => string,
 ): CodeFragment[] {
   const { inline, bindingMetadata } = options
   let name: string | undefined = raw
 
   const idMap = identifiers[raw]
   if (idMap && idMap.length) {
-    return [[idMap[0], NewlineType.None, loc]]
+    name = idMap[0]
+    return [
+      [
+        postGenExpression ? postGenExpression(name, name) : name,
+        NewlineType.None,
+        loc,
+      ],
+    ]
   }
 
   let prefix: string | undefined
@@ -177,7 +202,15 @@ function genIdentifier(
     }
     raw = withAssignment(raw)
   }
-  return [prefix, [raw, NewlineType.None, loc, name]]
+  return [
+    prefix,
+    [
+      postGenExpression ? postGenExpression(raw, name) : raw,
+      NewlineType.None,
+      loc,
+      name,
+    ],
+  ]
 
   function withAssignment(s: string) {
     return assignment ? `${s} = ${assignment}` : s

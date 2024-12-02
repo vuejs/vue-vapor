@@ -162,7 +162,8 @@ export function render(_ctx, $props, $emit, $attrs, $slots) {
   const n1 = _createComponent(_component_Comp)
   const n2 = _createTextNode(() => [_ctx.bar])
   _insert([n1, n2], n3)
-  _renderEffect(() => _setDOMProp(n3, "id", _ctx.foo))
+  let _foo;
+  _renderEffect(() => _foo !== _ctx.foo && _setDOMProp(n3, "id", _foo = _ctx.foo))
   return [n0, n3]
 }"
 `;
@@ -186,7 +187,8 @@ export function render(_ctx) {
   _delegate(n0, "click", () => _ctx.handleClick)
   _setInheritAttrs(["id"])
   _renderEffect(() => _setText(n0, _ctx.count, "foo", _ctx.count, "foo", _ctx.count))
-  _renderEffect(() => _setDOMProp(n0, "id", _ctx.count))
+  let _count;
+  _renderEffect(() => _count !== _ctx.count && _setDOMProp(n0, "id", _count = _ctx.count))
   return n0
 }"
 `;

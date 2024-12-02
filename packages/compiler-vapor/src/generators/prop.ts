@@ -39,20 +39,28 @@ export function genSetProp(
   oper: SetPropIRNode,
   context: CodegenContext,
 ): CodeFragment[] {
-  const { vaporHelper } = context
+  const { vaporHelper, effectVars, block } = context
   const {
     prop: { key, values, modifier },
     tag,
   } = oper
 
+  const inEffect = block.effect.length
   const { helperName, omitKey } = getRuntimeHelper(tag, key.content, modifier)
+  let newPropName, propName
+  const propValue = genPropValue(values, context, (newName, name) => {
+    if (helperName === 'setDynamicProp' || !inEffect) return newName
+    effectVars.add(name)
+    return `_${(propName = name)} = ${(newPropName = newName)}`
+  })
   return [
     NEWLINE,
+    newPropName ? `_${propName} !== ${newPropName} && ` : undefined,
     ...genCall(
       [vaporHelper(helperName), null],
       `n${oper.element}`,
       omitKey ? false : genExpression(key, context),
-      genPropValue(values, context),
+      propValue,
       // only `setClass` and `setStyle` need merge inherit attr
       oper.root && (helperName === 'setClass' || helperName === 'setStyle')
         ? 'true'
@@ -134,9 +142,10 @@ export function genPropKey(
 export function genPropValue(
   values: SimpleExpressionNode[],
   context: CodegenContext,
+  postGenPropValue?: (newName: string, name: string) => string,
 ): CodeFragment[] {
   if (values.length === 1) {
-    return genExpression(values[0], context)
+    return genExpression(values[0], context, undefined, postGenPropValue)
   }
   return genMulti(
     DELIMITERS_ARRAY,

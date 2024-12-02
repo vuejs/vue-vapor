@@ -89,14 +89,19 @@ export function genEffect(
   { operations }: IREffect,
   context: CodegenContext,
 ): CodeFragment[] {
-  const { vaporHelper } = context
+  const { vaporHelper, effectVars } = context
   const [frag, push] = buildCodeFragment(
     NEWLINE,
     `${vaporHelper('renderEffect')}(() => `,
   )
-
   const [operationsExps, pushOps] = buildCodeFragment()
   operations.forEach(op => pushOps(...genOperation(op, context)))
+
+  if (effectVars.size) {
+    const vars = [...effectVars].map(v => `_${v}`)
+    frag.splice(1, 0, `let ${vars.join(', ')};`, NEWLINE)
+    effectVars.clear()
+  }
 
   const newlineCount = operationsExps.filter(frag => frag === NEWLINE).length
   if (newlineCount > 1) {
