@@ -152,7 +152,7 @@ export class TransformContext<T extends AllNode = AllNode> {
         expressions,
         operations,
         conditions: [],
-        overrides: [],
+        overwrites: [],
         deps: [],
         inVFor: this.inVFor > 0,
         inVOnce: this.inVOnce,

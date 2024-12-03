@@ -82,7 +82,7 @@ export function genEffects(
   for (let i = 0; i < effects.length; i++) {
     const effect = (context.currentRenderEffect = effects[i])
     effect.conditions = []
-    effect.overrides = []
+    effect.overwrites = []
     push(...genEffect(effect, context))
   }
   return frag
@@ -110,7 +110,7 @@ export function genEffect(
     const condition: CodeFragment[] =
       conditions.length > 0
         ? [NEWLINE, `if(`, ...conditions.join(' && '), `) return`]
-        : [undefined]
+        : []
     push(
       '{',
       INDENT_START,
@@ -121,7 +121,9 @@ export function genEffect(
       '})',
     )
   } else {
-    push(...operationsExps.filter(frag => frag !== NEWLINE), ')')
+    const condition: CodeFragment[] =
+      conditions.length > 0 ? [...conditions, ' && '] : []
+    push(...condition, ...operationsExps.filter(frag => frag !== NEWLINE), ')')
   }
 
   return frag

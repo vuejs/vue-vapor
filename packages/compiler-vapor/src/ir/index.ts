@@ -269,7 +269,7 @@ export interface IREffect {
   operations: OperationNode[]
   deps: string[]
   conditions: string[]
-  overrides: string[]
+  overwrites: string[]
   inVFor: boolean
   inVOnce: boolean
 }

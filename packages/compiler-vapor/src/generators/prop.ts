@@ -43,28 +43,24 @@ export function genSetProp(
   oper: SetPropIRNode,
   context: CodegenContext,
 ): CodeFragment[] {
-  const { vaporHelper, currentRenderEffect } = context
+  const { vaporHelper, currentRenderEffect, shouldTrackEffectDeps } = context
   const {
     prop: { key, values, modifier },
     tag,
   } = oper
-  const { inVFor, inVOnce, operations } = currentRenderEffect!
-
   const { helperName, omitKey } = getRuntimeHelper(tag, key.content, modifier)
   let propValue = genPropValue(values, context)
 
-  let condition: CodeFragment[] = []
-  if (!inVFor && !inVOnce) {
-    if (operations.length === 1) {
-      condition = processValues(context, [propValue])
-    } else {
-      processValues(context, [propValue], '===')
-    }
+  if (shouldTrackEffectDeps()) {
+    processValues(
+      context,
+      [propValue],
+      currentRenderEffect!.operations.length === 1 ? '!==' : '===',
+    )
   }
 
   return [
     NEWLINE,
-    ...condition,
     ...genCall(
       [vaporHelper(helperName), null],
       `n${oper.element}`,
@@ -257,7 +253,7 @@ export function processValues(
   context: CodegenContext,
   values: CodeFragment[][],
   oper: '===' | '!==' = '!==',
-): (string | undefined)[] {
+): string[] {
   const conditions: string[] = []
   values.forEach(value => {
     const condition = processValue(context, value, oper)
@@ -266,7 +262,7 @@ export function processValues(
 
   return conditions.length > 0
     ? (context.currentRenderEffect!.conditions = [...new Set(conditions)])
-    : [undefined]
+    : []
 }
 
 function processValue(
@@ -275,7 +271,7 @@ function processValue(
   oper: '===' | '!==' = '!==',
 ): string[] | undefined {
   const { currentRenderEffect } = context
-  const { deps, overrides, conditions } = currentRenderEffect!
+  const { deps, overwrites, conditions } = currentRenderEffect!
   for (let frag of values) {
     if (
       !frag ||
@@ -290,13 +286,13 @@ function processValue(
     if (isString(frag)) frag = [frag]
     let [newName, , , idName] = frag
     if (idName) {
-      const rewriteStr = `_${idName} = ${newName}`
-      if (overrides.includes(rewriteStr)) continue
+      const overwrite = `_${idName} = ${newName}`
+      if (overwrites.includes(overwrite)) continue
 
-      overrides.push(rewriteStr)
+      overwrites.push(overwrite)
       deps.push(idName)
       conditions.push(`_${idName} ${oper} ${newName}`)
-      frag[0] = rewriteStr
+      frag[0] = overwrite
     }
   }
 

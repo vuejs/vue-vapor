@@ -37,6 +37,14 @@ export class CodegenContext {
 
   currentRenderEffect: IREffect | undefined = undefined
 
+  shouldTrackEffectDeps = (): boolean => {
+    return !!(
+      this.currentRenderEffect &&
+      !this.currentRenderEffect.inVOnce &&
+      !this.currentRenderEffect.inVFor
+    )
+  }
+
   identifiers: Record<string, string[]> = Object.create(null)
 
   block: BlockIRNode

@@ -8,17 +8,11 @@ export function genSetHtml(
   oper: SetHtmlIRNode,
   context: CodegenContext,
 ): CodeFragment[] {
-  const { vaporHelper, currentRenderEffect } = context
-  const { inVOnce, inVFor } = currentRenderEffect!
+  const { vaporHelper, shouldTrackEffectDeps } = context
   const { value, element } = oper
-  let html = genExpression(value, context, undefined)
-  let condition: CodeFragment[] = []
-  if (!inVOnce && !inVFor) {
-    condition = processValues(context, [html])
+  let html = genExpression(value, context)
+  if (shouldTrackEffectDeps()) {
+    processValues(context, [html])
   }
-  return [
-    NEWLINE,
-    ...condition,
-    ...genCall(vaporHelper('setHtml'), `n${element}`, html),
-  ]
+  return [NEWLINE, ...genCall(vaporHelper('setHtml'), `n${element}`, html)]
 }
