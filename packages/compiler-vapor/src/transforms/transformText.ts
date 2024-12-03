@@ -73,8 +73,6 @@ function processTextLikeContainer(
       type: IRNodeTypes.SET_TEXT,
       element: context.reference(),
       values,
-      inVFor: context.inVFor > 0,
-      inVOnce: context.inVOnce,
     })
   }
 }

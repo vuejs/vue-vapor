@@ -22,7 +22,5 @@ export const transformVHtml: DirectiveTransform = (dir, node, context) => {
     type: IRNodeTypes.SET_HTML,
     element: context.reference(),
     value: exp,
-    inVFor: context.inVFor > 0,
-    inVOnce: context.inVOnce,
   })
 }

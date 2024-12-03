@@ -153,7 +153,7 @@ export function genPropValue(
   context: CodegenContext,
 ): CodeFragment[] {
   if (values.length === 1) {
-    return genExpression(values[0], context, undefined)
+    return genExpression(values[0], context)
   }
   return genMulti(
     DELIMITERS_ARRAY,
