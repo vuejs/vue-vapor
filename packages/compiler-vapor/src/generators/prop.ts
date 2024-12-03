@@ -272,7 +272,7 @@ function processValue(
   values: CodeFragment[],
   oper: '===' | '!==' = '!==',
 ): string[] | undefined {
-  const { currentRenderEffect } = context
+  const { currentRenderEffect, seenRenderEffectDeps } = context
   const { deps, overwrites, conditions } = currentRenderEffect!
   for (let frag of values) {
     if (
@@ -293,7 +293,10 @@ function processValue(
       if (overwrites.includes(overwrite)) continue
 
       overwrites.push(overwrite)
-      deps.push(idName)
+      if (!seenRenderEffectDeps.has(idName)) {
+        deps.push(idName)
+        seenRenderEffectDeps.add(idName)
+      }
       conditions.push(`_${idName} ${oper} ${newName}`)
       frag[0] = overwrite
     }
