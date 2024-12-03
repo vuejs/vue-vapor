@@ -212,13 +212,12 @@ export function mergeProps(...args: Data[]): Data {
   return ret
 }
 
-export function setText(el: Node, ...values: any[]): string {
+export function setText(el: Node, ...values: any[]): void {
   const text = values.map(v => toDisplayString(v)).join('')
   const oldVal = recordPropMetadata(el, 'textContent', text)
   if (text !== oldVal) {
     el.textContent = text
   }
-  return text
 }
 
 export function setHtml(el: Element, value: any): void {

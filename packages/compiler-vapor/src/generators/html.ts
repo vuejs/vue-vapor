@@ -2,7 +2,7 @@ import type { CodegenContext } from '../generate'
 import type { SetHtmlIRNode } from '../ir'
 import { genExpression } from './expression'
 import { type CodeFragment, NEWLINE, genCall } from './utils'
-import { processValue } from './prop'
+import { processValues } from './prop'
 
 export function genSetHtml(
   oper: SetHtmlIRNode,
@@ -11,8 +11,7 @@ export function genSetHtml(
   const { vaporHelper } = context
 
   let html = genExpression(oper.value, context, undefined)
-  let condition: CodeFragment[]
-  ;[condition, html] = processValue(context, html)
+  let condition: CodeFragment[] = processValues(context, [html])
   return [
     NEWLINE,
     ...condition,

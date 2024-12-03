@@ -303,7 +303,8 @@ const t0 = _template("<div></div>")
 export function render(_ctx) {
   const n0 = t0()
   _setInheritAttrs(["class"])
-  _renderEffect(() => _setClass(n0, ["foo", { bar: _ctx.isBar }], true))
+  let _isBar;
+  _renderEffect(() => _isBar !== _ctx.isBar && _setClass(n0, ["foo", { bar: _isBar = _ctx.isBar }], true))
   return n0
 }"
 `;

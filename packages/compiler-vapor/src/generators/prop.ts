@@ -55,8 +55,8 @@ export function genSetProp(
   let propValue = genPropValue(values, context)
 
   let condition: CodeFragment[] = []
-  if (helperName !== 'setDynamicProp' && !inVFor && !inVOnce) {
-    ;[condition, propValue] = processValue(context, propValue)
+  if (!inVFor && !inVOnce) {
+    condition = processValues(context, [propValue])
   }
 
   return [
@@ -250,13 +250,26 @@ const getSpecialHelper = (
   return specialHelpers[keyName] || null
 }
 
-export function processValue(
+export function processValues(
+  context: CodegenContext,
+  values: CodeFragment[][],
+): CodeFragment[] {
+  const conditions: CodeFragment[] = []
+  const rewrittens: string[] = []
+  values.forEach(value => {
+    const condition = processValue(context, value, rewrittens)
+    conditions.push(...condition)
+  })
+  return conditions.length > 0 ? [...new Set(conditions)] : [undefined]
+}
+
+function processValue(
   context: CodegenContext,
   values: CodeFragment[],
-): [CodeFragment[], CodeFragment[]] {
+  rewrittens: string[],
+): CodeFragment[] {
   const { renderEffectDeps } = context
-
-  const idNames = []
+  const conditions: string[] = []
   for (let frag of values) {
     if (
       !frag ||
@@ -269,18 +282,18 @@ export function processValue(
     }
 
     if (isString(frag)) frag = [frag]
-    let [, , , idName] = frag
+    let [newName, , , idName] = frag
     if (idName) {
-      idNames.push(idName)
+      const rewriteStr = `_${idName} = ${newName}`
+      if (rewrittens.includes(rewriteStr)) continue
+
+      rewrittens.push(rewriteStr)
+      renderEffectDeps.push(idName)
+      conditions.push(`_${idName} !== ${newName}`)
+      frag[0] = rewriteStr
     }
   }
-  if (idNames.length > 0) {
-    const name = idNames.join('_')
-    renderEffectDeps.push(name)
-    return [
-      [`_${name} !== `, ...values, ` && `],
-      [`_${name} = `, ...values],
-    ]
-  }
-  return [[undefined], values]
+  return conditions.length > 0
+    ? [[...new Set(conditions)].join(' && '), ' && ']
+    : [undefined]
 }
