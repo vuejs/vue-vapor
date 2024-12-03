@@ -8,24 +8,31 @@ import {
   genCall,
   genMulti,
 } from './utils'
+import { processValue } from './prop'
 
 export function genSetText(
   oper: SetTextIRNode,
   context: CodegenContext,
-  onIdRewrite?: (newName: string, name: string) => string,
 ): CodeFragment[] {
   const { vaporHelper } = context
-  const { element, values } = oper
-  const texts = values.map(value =>
-    genExpression(
-      value,
-      context,
-      undefined,
-      // TODO values.length > 1
-      values.length === 1 ? onIdRewrite : undefined,
-    ),
-  )
-  return [NEWLINE, ...genCall(vaporHelper('setText'), `n${element}`, ...texts)]
+  const { element, values, inVOnce, inVFor } = oper
+  const texts = values.map(value => genExpression(value, context, undefined))
+  let condition: CodeFragment[] = []
+  let newValues
+  if (!inVOnce && !inVFor && texts.length === 1) {
+    ;[condition, newValues] = processValue(context, texts[0])
+    return [
+      NEWLINE,
+      ...condition,
+      ...genCall(vaporHelper('setText'), `n${element}`, newValues),
+    ]
+  } else {
+    // TODO: handle multiple values
+    return [
+      NEWLINE,
+      ...genCall(vaporHelper('setText'), `n${element}`, ...values),
+    ]
+  }
 }
 
 export function genCreateTextNode(

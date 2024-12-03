@@ -211,6 +211,8 @@ function transformNativeElement(
           prop,
           root: singleRoot,
           tag,
+          inVFor: context.inVFor > 0,
+          inVOnce: context.inVOnce,
         })
       }
     }

@@ -35,6 +35,8 @@ export class CodegenContext {
 
   delegates: Set<string> = new Set<string>()
 
+  renderEffectDeps: string[] = []
+
   identifiers: Record<string, string[]> = Object.create(null)
 
   block: BlockIRNode

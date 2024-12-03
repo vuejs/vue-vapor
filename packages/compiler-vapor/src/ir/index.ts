@@ -41,6 +41,8 @@ export enum IRNodeTypes {
 
 export interface BaseIRNode {
   type: IRNodeTypes
+  inVFor?: boolean
+  inVOnce?: boolean
 }
 
 export type VaporHelper = keyof typeof import('@vue/runtime-vapor')

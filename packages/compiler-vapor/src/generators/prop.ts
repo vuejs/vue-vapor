@@ -17,6 +17,9 @@ import {
   type CodeFragment,
   DELIMITERS_ARRAY,
   DELIMITERS_OBJECT,
+  INDENT_END,
+  INDENT_START,
+  LF,
   NEWLINE,
   genCall,
   genMulti,
@@ -29,6 +32,7 @@ import {
   isMathMLGlobalAttr,
   isMathMLTag,
   isSVGTag,
+  isString,
   isSvgGlobalAttr,
   shouldSetAsAttr,
   toHandlerKey,
@@ -38,22 +42,26 @@ import {
 export function genSetProp(
   oper: SetPropIRNode,
   context: CodegenContext,
-  onIdRewrite?: (newName: string, name: string) => string,
 ): CodeFragment[] {
   const { vaporHelper } = context
   const {
     prop: { key, values, modifier },
     tag,
+    inVFor,
+    inVOnce,
   } = oper
 
   const { helperName, omitKey } = getRuntimeHelper(tag, key.content, modifier)
-  const propValue = genPropValue(
-    values,
-    context,
-    helperName !== 'setDynamicProp' ? onIdRewrite : undefined,
-  )
+  let propValue = genPropValue(values, context)
+
+  let condition: CodeFragment[] = []
+  if (helperName !== 'setDynamicProp' && !inVFor && !inVOnce) {
+    ;[condition, propValue] = processValue(context, propValue)
+  }
+
   return [
     NEWLINE,
+    ...condition,
     ...genCall(
       [vaporHelper(helperName), null],
       `n${oper.element}`,
@@ -140,10 +148,9 @@ export function genPropKey(
 export function genPropValue(
   values: SimpleExpressionNode[],
   context: CodegenContext,
-  onIdentifierRewrite?: (newName: string, name: string) => string,
 ): CodeFragment[] {
   if (values.length === 1) {
-    return genExpression(values[0], context, undefined, onIdentifierRewrite)
+    return genExpression(values[0], context, undefined)
   }
   return genMulti(
     DELIMITERS_ARRAY,
@@ -241,4 +248,39 @@ const getSpecialHelper = (
   }
 
   return specialHelpers[keyName] || null
+}
+
+export function processValue(
+  context: CodegenContext,
+  values: CodeFragment[],
+): [CodeFragment[], CodeFragment[]] {
+  const { renderEffectDeps } = context
+
+  const idNames = []
+  for (let frag of values) {
+    if (
+      !frag ||
+      frag === NEWLINE ||
+      frag === INDENT_START ||
+      frag === INDENT_END ||
+      frag === LF
+    ) {
+      continue
+    }
+
+    if (isString(frag)) frag = [frag]
+    let [, , , idName] = frag
+    if (idName) {
+      idNames.push(idName)
+    }
+  }
+  if (idNames.length > 0) {
+    const name = idNames.join('_')
+    renderEffectDeps.push(name)
+    return [
+      [`_${name} !== `, ...values, ` && `],
+      [`_${name} = `, ...values],
+    ]
+  }
+  return [[undefined], values]
 }

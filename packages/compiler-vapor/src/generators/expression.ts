@@ -19,7 +19,6 @@ export function genExpression(
   node: SimpleExpressionNode,
   context: CodegenContext,
   assignment?: string,
-  onIdentifierRewrite?: (newName: string, name: string) => string,
 ): CodeFragment[] {
   const { prefixIdentifiers } = context.options
   const { content, ast, isStatic, loc } = node
@@ -40,7 +39,7 @@ export function genExpression(
 
   // the expression is a simple identifier
   if (ast === null) {
-    return genIdentifier(content, context, loc, assignment, onIdentifierRewrite)
+    return genIdentifier(content, context, loc, assignment)
   }
 
   const ids: Identifier[] = []
@@ -89,7 +88,6 @@ export function genExpression(
               source,
             },
             hasMemberExpression ? undefined : assignment,
-            undefined,
             id,
             parent,
             parentStack,
@@ -115,7 +113,6 @@ function genIdentifier(
   { options, vaporHelper, identifiers }: CodegenContext,
   loc?: SourceLocation,
   assignment?: string,
-  onIdentifierRewrite?: (newName: string, name: string) => string,
   id?: Identifier,
   parent?: Node,
   parentStack?: Node[],
@@ -176,9 +173,6 @@ function genIdentifier(
         raw = `$props['${bindingMetadata.__propsAliases![raw]}']`
       } else {
         raw = `${type === BindingTypes.PROPS ? '$props' : '_ctx'}.${raw}`
-      }
-      if (onIdentifierRewrite) {
-        raw = onIdentifierRewrite(raw, name)
       }
     }
     raw = withAssignment(raw)
