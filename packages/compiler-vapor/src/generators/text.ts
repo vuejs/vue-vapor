@@ -14,10 +14,10 @@ export function genSetText(
   oper: SetTextIRNode,
   context: CodegenContext,
 ): CodeFragment[] {
-  const { vaporHelper, shouldTrackEffectDeps } = context
+  const { vaporHelper, shouldGenEffectDeps } = context
   const { element, values } = oper
   const texts = values.map(value => genExpression(value, context))
-  if (shouldTrackEffectDeps()) {
+  if (shouldGenEffectDeps()) {
     processValues(context, texts)
   }
   return [NEWLINE, ...genCall(vaporHelper('setText'), `n${element}`, ...texts)]

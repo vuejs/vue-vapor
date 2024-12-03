@@ -37,7 +37,7 @@ export class CodegenContext {
 
   currentRenderEffect: IREffect | undefined = undefined
 
-  shouldTrackEffectDeps = (): boolean => {
+  shouldGenEffectDeps = (): boolean => {
     return !!(
       this.currentRenderEffect &&
       !this.currentRenderEffect.inVOnce &&

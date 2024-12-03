@@ -304,7 +304,7 @@ export function render(_ctx) {
   const n0 = t0()
   _setInheritAttrs(["class"])
   let _isBar;
-  _renderEffect(() => _isBar !== _ctx.isBar && _setClass(n0, ["foo", { bar: _isBar = _ctx.isBar }], true))
+  _renderEffect(() => _isBar !== _ctx.isBar && _setClass(n0, ["foo", { bar: (_isBar = _ctx.isBar) }], true))
   return n0
 }"
 `;
@@ -356,7 +356,8 @@ const t0 = _template("<div></div>")
 export function render(_ctx) {
   const n0 = t0()
   _setInheritAttrs(true)
-  _renderEffect(() => _setDynamicProps(n0, [_ctx.obj], true))
+  let _obj;
+  _renderEffect(() => _obj !== _ctx.obj && _setDynamicProps(n0, [(_obj = _ctx.obj)], true))
   return n0
 }"
 `;
@@ -368,7 +369,8 @@ const t0 = _template("<div></div>")
 export function render(_ctx) {
   const n0 = t0()
   _setInheritAttrs(true)
-  _renderEffect(() => _setDynamicProps(n0, [{ id: "foo" }, _ctx.obj], true))
+  let _obj;
+  _renderEffect(() => _obj !== _ctx.obj && _setDynamicProps(n0, [{ id: "foo" }, (_obj = _ctx.obj)], true))
   return n0
 }"
 `;
@@ -380,7 +382,8 @@ const t0 = _template("<div></div>")
 export function render(_ctx) {
   const n0 = t0()
   _setInheritAttrs(true)
-  _renderEffect(() => _setDynamicProps(n0, [_ctx.obj, { id: "foo" }], true))
+  let _obj;
+  _renderEffect(() => _obj !== _ctx.obj && _setDynamicProps(n0, [(_obj = _ctx.obj), { id: "foo" }], true))
   return n0
 }"
 `;
@@ -392,7 +395,8 @@ const t0 = _template("<div></div>")
 export function render(_ctx) {
   const n0 = t0()
   _setInheritAttrs(true)
-  _renderEffect(() => _setDynamicProps(n0, [{ id: "foo" }, _ctx.obj, { class: "bar" }], true))
+  let _obj;
+  _renderEffect(() => _obj !== _ctx.obj && _setDynamicProps(n0, [{ id: "foo" }, (_obj = _ctx.obj), { class: "bar" }], true))
   return n0
 }"
 `;

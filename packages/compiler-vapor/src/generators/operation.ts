@@ -122,7 +122,7 @@ export function genEffect(
     )
   } else {
     const condition: CodeFragment[] =
-      conditions.length > 0 ? [...conditions, ' && '] : []
+      conditions.length > 0 ? [...conditions.join(' && '), ' && '] : []
     push(...condition, ...operationsExps.filter(frag => frag !== NEWLINE), ')')
   }
 

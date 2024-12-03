@@ -43,7 +43,7 @@ export function genSetProp(
   oper: SetPropIRNode,
   context: CodegenContext,
 ): CodeFragment[] {
-  const { vaporHelper, currentRenderEffect, shouldTrackEffectDeps } = context
+  const { vaporHelper, currentRenderEffect, shouldGenEffectDeps } = context
   const {
     prop: { key, values, modifier },
     tag,
@@ -51,7 +51,7 @@ export function genSetProp(
   const { helperName, omitKey } = getRuntimeHelper(tag, key.content, modifier)
   let propValue = genPropValue(values, context)
 
-  if (shouldTrackEffectDeps()) {
+  if (shouldGenEffectDeps()) {
     processValues(
       context,
       [propValue],
@@ -79,23 +79,25 @@ export function genDynamicProps(
   oper: SetDynamicPropsIRNode,
   context: CodegenContext,
 ): CodeFragment[] {
-  const { vaporHelper } = context
+  const { vaporHelper, shouldGenEffectDeps } = context
+  const values = oper.props.map(props =>
+    Array.isArray(props)
+      ? genLiteralObjectProps(props, context) // static and dynamic arg props
+      : props.kind === IRDynamicPropsKind.ATTRIBUTE
+        ? genLiteralObjectProps([props], context) // dynamic arg props
+        : genExpression(props.value, context),
+  ) // v-bind=""
+
+  if (shouldGenEffectDeps()) {
+    processValues(context, values)
+  }
+
   return [
     NEWLINE,
     ...genCall(
       vaporHelper('setDynamicProps'),
       `n${oper.element}`,
-      genMulti(
-        DELIMITERS_ARRAY,
-        ...oper.props.map(
-          props =>
-            Array.isArray(props)
-              ? genLiteralObjectProps(props, context) // static and dynamic arg props
-              : props.kind === IRDynamicPropsKind.ATTRIBUTE
-                ? genLiteralObjectProps([props], context) // dynamic arg props
-                : genExpression(props.value, context), // v-bind=""
-        ),
-      ),
+      genMulti(DELIMITERS_ARRAY, ...values),
       oper.root && 'true',
     ),
   ]
@@ -286,7 +288,8 @@ function processValue(
     if (isString(frag)) frag = [frag]
     let [newName, , , idName] = frag
     if (idName) {
-      const overwrite = `_${idName} = ${newName}`
+      idName = idName.replace(/\./g, '_')
+      const overwrite = `(_${idName} = ${newName})`
       if (overwrites.includes(overwrite)) continue
 
       overwrites.push(overwrite)
