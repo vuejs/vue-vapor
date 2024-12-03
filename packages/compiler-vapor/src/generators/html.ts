@@ -9,12 +9,15 @@ export function genSetHtml(
   context: CodegenContext,
 ): CodeFragment[] {
   const { vaporHelper } = context
-
-  let html = genExpression(oper.value, context, undefined)
-  let condition: CodeFragment[] = processValues(context, [html])
+  const { value, element, inVOnce, inVFor } = oper
+  let html = genExpression(value, context, undefined)
+  let condition: CodeFragment[] = []
+  if (!inVOnce && !inVFor) {
+    condition = processValues(context, [html])
+  }
   return [
     NEWLINE,
     ...condition,
-    ...genCall(vaporHelper('setHtml'), `n${oper.element}`, html),
+    ...genCall(vaporHelper('setHtml'), `n${element}`, html),
   ]
 }
