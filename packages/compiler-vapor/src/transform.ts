@@ -151,6 +151,9 @@ export class TransformContext<T extends AllNode = AllNode> {
       this.block.effect.push({
         expressions,
         operations,
+        conditions: [],
+        overrides: [],
+        deps: [],
       })
     }
 

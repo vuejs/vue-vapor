@@ -266,7 +266,7 @@ export function processValues(
   })
 
   return conditions.length > 0
-    ? (context.renderEffectCondition = [...new Set(conditions)])
+    ? (context.currentRenderEffect!.conditions = [...new Set(conditions)])
     : [undefined]
 }
 
@@ -275,8 +275,8 @@ function processValue(
   values: CodeFragment[],
   oper: '===' | '!==' = '!==',
 ): string[] | undefined {
-  const { renderEffectDeps, renderEffectRewriten: rewrittens } = context
-  const conditions: string[] = []
+  const { currentRenderEffect } = context
+  const { deps, overrides, conditions } = currentRenderEffect!
   for (let frag of values) {
     if (
       !frag ||
@@ -292,10 +292,10 @@ function processValue(
     let [newName, , , idName] = frag
     if (idName) {
       const rewriteStr = `_${idName} = ${newName}`
-      if (rewrittens.includes(rewriteStr)) continue
+      if (overrides.includes(rewriteStr)) continue
 
-      rewrittens.push(rewriteStr)
-      renderEffectDeps.push(idName)
+      overrides.push(rewriteStr)
+      deps.push(idName)
       conditions.push(`_${idName} ${oper} ${newName}`)
       frag[0] = rewriteStr
     }

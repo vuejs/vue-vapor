@@ -269,6 +269,7 @@ export interface IRDynamicInfo {
 export interface IREffect {
   expressions: SimpleExpressionNode[]
   operations: OperationNode[]
+  deps: string[]
   conditions: string[]
   overrides: string[]
 }

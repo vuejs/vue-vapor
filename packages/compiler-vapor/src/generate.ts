@@ -36,9 +36,6 @@ export class CodegenContext {
   delegates: Set<string> = new Set<string>()
 
   currentRenderEffect: IREffect | undefined = undefined
-  renderEffectCondition: string[] = []
-  renderEffectRewriten: string[] = []
-  renderEffectDeps: string[] = []
 
   identifiers: Record<string, string[]> = Object.create(null)
 

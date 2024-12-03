@@ -80,9 +80,9 @@ export function genEffects(
 ): CodeFragment[] {
   const [frag, push] = buildCodeFragment()
   for (let i = 0; i < effects.length; i++) {
-    context.renderEffectRewriten = []
-    context.renderEffectCondition = []
     const effect = (context.currentRenderEffect = effects[i])
+    effect.conditions = []
+    effect.overrides = []
     push(...genEffect(effect, context))
   }
   return frag
@@ -92,38 +92,24 @@ export function genEffect(
   { operations }: IREffect,
   context: CodegenContext,
 ): CodeFragment[] {
-  let {
-    vaporHelper,
-    renderEffectDeps,
-    renderEffectCondition,
-    renderEffectRewriten,
-  } = context
+  let { vaporHelper, currentRenderEffect } = context
   const [frag, push] = buildCodeFragment(
     NEWLINE,
     `${vaporHelper('renderEffect')}(() => `,
   )
-
+  const { deps, conditions } = currentRenderEffect!
   const operationsExps = genOperations(operations, context)
 
-  if (renderEffectDeps.length) {
-    const vars = [...new Set(renderEffectDeps)].map(v => `_${v}`)
+  if (deps.length) {
+    const vars = [...new Set(deps)].map(v => `_${v}`)
     frag.splice(1, 0, `let ${vars.join(', ')};`, NEWLINE)
-    context.renderEffectDeps = []
   }
 
   const newlineCount = operationsExps.filter(frag => frag === NEWLINE).length
   if (newlineCount > 1) {
-    // renderEffectCondition.pop()
     const condition: CodeFragment[] =
-      renderEffectCondition.length > 0
-        ? [
-            NEWLINE,
-            `if(`,
-            ...renderEffectCondition.join(' && '),
-            `) return`,
-            NEWLINE,
-            ...renderEffectRewriten.join(';'),
-          ]
+      conditions.length > 0
+        ? [NEWLINE, `if(`, ...conditions.join(' && '), `) return`]
         : [undefined]
     push(
       '{',
