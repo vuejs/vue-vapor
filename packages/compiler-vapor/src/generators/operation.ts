@@ -80,7 +80,9 @@ export function genEffects(
 ): CodeFragment[] {
   const [frag, push] = buildCodeFragment()
   for (let i = 0; i < effects.length; i++) {
-    const effect = effects[i]
+    context.renderEffectRewriten = []
+    context.renderEffectCondition = []
+    const effect = (context.currentRenderEffect = effects[i])
     push(...genEffect(effect, context))
   }
   return frag
@@ -90,7 +92,12 @@ export function genEffect(
   { operations }: IREffect,
   context: CodegenContext,
 ): CodeFragment[] {
-  let { vaporHelper, renderEffectDeps } = context
+  let {
+    vaporHelper,
+    renderEffectDeps,
+    renderEffectCondition,
+    renderEffectRewriten,
+  } = context
   const [frag, push] = buildCodeFragment(
     NEWLINE,
     `${vaporHelper('renderEffect')}(() => `,
@@ -106,13 +113,22 @@ export function genEffect(
 
   const newlineCount = operationsExps.filter(frag => frag === NEWLINE).length
   if (newlineCount > 1) {
-    // const condition: CodeFragment[] = newIdName
-    //   ? [NEWLINE, `if(_${idName} === ${newIdName}) return`]
-    //   : [undefined]
+    // renderEffectCondition.pop()
+    const condition: CodeFragment[] =
+      renderEffectCondition.length > 0
+        ? [
+            NEWLINE,
+            `if(`,
+            ...renderEffectCondition.join(' && '),
+            `) return`,
+            NEWLINE,
+            ...renderEffectRewriten.join(';'),
+          ]
+        : [undefined]
     push(
       '{',
       INDENT_START,
-      // ...condition,
+      ...condition,
       ...operationsExps,
       INDENT_END,
       NEWLINE,

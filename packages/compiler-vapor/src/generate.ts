@@ -2,7 +2,7 @@ import type {
   CodegenOptions as BaseCodegenOptions,
   BaseCodegenResult,
 } from '@vue/compiler-dom'
-import type { BlockIRNode, RootIRNode, VaporHelper } from './ir'
+import type { BlockIRNode, IREffect, RootIRNode, VaporHelper } from './ir'
 import { extend, remove } from '@vue/shared'
 import { genBlockContent } from './generators/block'
 import { genTemplates } from './generators/template'
@@ -35,6 +35,9 @@ export class CodegenContext {
 
   delegates: Set<string> = new Set<string>()
 
+  currentRenderEffect: IREffect | undefined = undefined
+  renderEffectCondition: string[] = []
+  renderEffectRewriten: string[] = []
   renderEffectDeps: string[] = []
 
   identifiers: Record<string, string[]> = Object.create(null)

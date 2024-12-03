@@ -43,7 +43,7 @@ export function genSetProp(
   oper: SetPropIRNode,
   context: CodegenContext,
 ): CodeFragment[] {
-  const { vaporHelper } = context
+  const { vaporHelper, currentRenderEffect } = context
   const {
     prop: { key, values, modifier },
     tag,
@@ -56,7 +56,11 @@ export function genSetProp(
 
   let condition: CodeFragment[] = []
   if (!inVFor && !inVOnce) {
-    condition = processValues(context, [propValue])
+    if (currentRenderEffect!.operations.length === 1) {
+      condition = processValues(context, [propValue])
+    } else {
+      processValues(context, [propValue], '===')
+    }
   }
 
   return [
@@ -253,22 +257,25 @@ const getSpecialHelper = (
 export function processValues(
   context: CodegenContext,
   values: CodeFragment[][],
-): CodeFragment[] {
-  const conditions: CodeFragment[] = []
-  const rewrittens: string[] = []
+  oper: '===' | '!==' = '!==',
+): (string | undefined)[] {
+  const conditions: string[] = []
   values.forEach(value => {
-    const condition = processValue(context, value, rewrittens)
-    conditions.push(...condition)
+    const condition = processValue(context, value, oper)
+    if (condition) conditions.push(...condition, ' && ')
   })
-  return conditions.length > 0 ? [...new Set(conditions)] : [undefined]
+
+  return conditions.length > 0
+    ? (context.renderEffectCondition = [...new Set(conditions)])
+    : [undefined]
 }
 
 function processValue(
   context: CodegenContext,
   values: CodeFragment[],
-  rewrittens: string[],
-): CodeFragment[] {
-  const { renderEffectDeps } = context
+  oper: '===' | '!==' = '!==',
+): string[] | undefined {
+  const { renderEffectDeps, renderEffectRewriten: rewrittens } = context
   const conditions: string[] = []
   for (let frag of values) {
     if (
@@ -289,11 +296,12 @@ function processValue(
 
       rewrittens.push(rewriteStr)
       renderEffectDeps.push(idName)
-      conditions.push(`_${idName} !== ${newName}`)
+      conditions.push(`_${idName} ${oper} ${newName}`)
       frag[0] = rewriteStr
     }
   }
-  return conditions.length > 0
-    ? [[...new Set(conditions)].join(' && '), ' && ']
-    : [undefined]
+
+  if (conditions.length > 0) {
+    return [[...new Set(conditions)].join(' && ')]
+  }
 }
