@@ -47,16 +47,15 @@ export function genSetProp(
   const {
     prop: { key, values, modifier },
     tag,
-    inVFor,
-    inVOnce,
   } = oper
+  const { inVFor, inVOnce, operations } = currentRenderEffect!
 
   const { helperName, omitKey } = getRuntimeHelper(tag, key.content, modifier)
   let propValue = genPropValue(values, context)
 
   let condition: CodeFragment[] = []
   if (!inVFor && !inVOnce) {
-    if (currentRenderEffect!.operations.length === 1) {
+    if (operations.length === 1) {
       condition = processValues(context, [propValue])
     } else {
       processValues(context, [propValue], '===')

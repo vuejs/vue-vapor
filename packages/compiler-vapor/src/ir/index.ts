@@ -41,8 +41,6 @@ export enum IRNodeTypes {
 
 export interface BaseIRNode {
   type: IRNodeTypes
-  inVFor?: boolean
-  inVOnce?: boolean
 }
 
 export type VaporHelper = keyof typeof import('@vue/runtime-vapor')
@@ -272,6 +270,8 @@ export interface IREffect {
   deps: string[]
   conditions: string[]
   overrides: string[]
+  inVFor: boolean
+  inVOnce: boolean
 }
 
 type Overwrite<T, U> = Pick<T, Exclude<keyof T, keyof U>> &

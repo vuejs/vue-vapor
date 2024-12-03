@@ -14,8 +14,9 @@ export function genSetText(
   oper: SetTextIRNode,
   context: CodegenContext,
 ): CodeFragment[] {
-  const { vaporHelper } = context
-  const { element, values, inVOnce, inVFor } = oper
+  const { vaporHelper, currentRenderEffect } = context
+  const { element, values } = oper
+  const { inVFor, inVOnce } = currentRenderEffect!
   const texts = values.map(value => genExpression(value, context, undefined))
   let conditions: CodeFragment[] = []
   if (!inVOnce && !inVFor) {
