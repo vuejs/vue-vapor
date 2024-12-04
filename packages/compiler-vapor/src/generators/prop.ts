@@ -267,7 +267,7 @@ function processValue(
   const { varNamesToDeclare, varNamesOverwritten, conditions, operations } =
     currentRenderEffect!
 
-  // for multiple values the early return condition should be `if (_foo === _ctx.foo) return`
+  // for multiline the early return condition should be `if (_foo === _ctx.foo) return`
   const oper = operations.length === 1 ? '!==' : '==='
   for (const frag of values) {
     if (!isArray(frag)) continue
