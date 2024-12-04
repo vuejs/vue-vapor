@@ -35,6 +35,8 @@ import {
   toHandlerKey,
 } from '@vue/shared'
 
+const helperNeedPrevValue = ['setStyle', 'setDynamicProp']
+
 // only the static key prop will reach here
 export function genSetProp(
   oper: SetPropIRNode,
@@ -49,7 +51,11 @@ export function genSetProp(
   let propValue = genPropValue(values, context)
 
   if (shouldGenEffectDeps()) {
-    processValues(context, [propValue])
+    processValues(
+      context,
+      [propValue],
+      helperNeedPrevValue.includes(helperName),
+    )
   }
 
   return [
@@ -247,10 +253,11 @@ const getSpecialHelper = (
 export function processValues(
   context: CodegenContext,
   values: CodeFragment[][],
+  needPrevValue = false,
 ): string[] {
   const conditions: string[] = []
   values.forEach(value => {
-    const condition = processValue(context, value)
+    const condition = processValue(context, value, needPrevValue)
     if (condition) conditions.push(...condition, ' && ')
   })
 
@@ -262,6 +269,7 @@ export function processValues(
 function processValue(
   context: CodegenContext,
   values: CodeFragment[],
+  needPrevValue = false,
 ): string[] | undefined {
   const { currentRenderEffect, renderEffectSeemNames } = context
   const { varNamesToDeclare, varNamesOverwritten, conditions, operations } =
@@ -269,6 +277,7 @@ function processValue(
 
   // for multiline the early return condition should be `if (_foo === _ctx.foo) return`
   const oper = operations.length === 1 ? '!==' : '==='
+  let oldValueName = ''
   for (const frag of values) {
     if (!isArray(frag)) continue
 
@@ -290,7 +299,15 @@ function processValue(
       conditions.push(`${name} ${oper} ${newName}`)
       // replace the original code fragment with the assignment expression
       frag[0] = `(${name} = ${newName})`
+      oldValueName += `${name}`
     }
+  }
+
+  if (oldValueName && needPrevValue) {
+    oldValueName = `_prev${oldValueName}`
+    varNamesToDeclare.add(oldValueName)
+    values.unshift(`${oldValueName}, (${oldValueName} = `)
+    values.push(')')
   }
 
   if (conditions.length > 0) {

@@ -131,7 +131,7 @@ describe('compiler v-bind', () => {
       },
     })
     expect(code).contains(
-      '_camelCase !== _ctx.camelCase && _setDynamicProp(n0, "camel-case", (_camelCase = _ctx.camelCase))',
+      '_camelCase !== _ctx.camelCase && _setDynamicProp(n0, "camel-case", _prev_camelCase, (_prev_camelCase = (_camelCase = _ctx.camelCase)))',
     )
   })
 
@@ -293,7 +293,7 @@ describe('compiler v-bind', () => {
 
     expect(code).matchSnapshot()
     expect(code).contains(
-      '_id !== _ctx.id && _setDynamicProp(n0, "fooBar", (_id = _ctx.id))',
+      '_id !== _ctx.id && _setDynamicProp(n0, "fooBar", _prev_id, (_prev_id = (_id = _ctx.id)))',
     )
   })
 
@@ -319,7 +319,7 @@ describe('compiler v-bind', () => {
     })
     expect(code).contains('renderEffect')
     expect(code).contains(
-      '_fooBar !== _ctx.fooBar && _setDynamicProp(n0, "fooBar", (_fooBar = _ctx.fooBar))',
+      '_fooBar !== _ctx.fooBar && _setDynamicProp(n0, "fooBar", _prev_fooBar, (_prev_fooBar = (_fooBar = _ctx.fooBar)))',
     )
   })
 
@@ -794,7 +794,7 @@ describe('compiler v-bind', () => {
     `)
     expect(code).matchSnapshot()
     expect(code).contains(
-      ' _foo !== _ctx.foo && _setDynamicProp(n0, "value", (_foo = _ctx.foo))',
+      '_foo !== _ctx.foo && _setDynamicProp(n0, "value", _prev_foo, (_prev_foo = (_foo = _ctx.foo)))',
     )
   })
 

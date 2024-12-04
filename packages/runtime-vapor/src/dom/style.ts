@@ -7,15 +7,15 @@ import {
   normalizeStyle,
 } from '@vue/shared'
 import { warn } from '../warning'
-import { recordPropMetadata } from '../componentMetadata'
 import { mergeInheritAttr } from './prop'
 
-export function setStyle(el: HTMLElement, value: any, root?: boolean): void {
-  const prev = recordPropMetadata(
-    el,
-    'style',
-    (value = normalizeStyle(root ? mergeInheritAttr('style', value) : value)),
-  )
+export function setStyle(
+  el: HTMLElement,
+  prev: any,
+  value: any,
+  root?: boolean,
+): void {
+  value = normalizeStyle(root ? mergeInheritAttr('style', value) : value)
   patchStyle(el, prev, value)
 }
 

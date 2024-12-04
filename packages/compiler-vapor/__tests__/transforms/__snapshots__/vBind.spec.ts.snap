@@ -85,8 +85,8 @@ const t0 = _template("<div></div>")
 export function render(_ctx) {
   const n0 = t0()
   _setInheritAttrs(["fooBar"])
-  let _id;
-  _renderEffect(() => _id !== _ctx.id && _setDynamicProp(n0, "fooBar", (_id = _ctx.id)))
+  let _id, _prev_id;
+  _renderEffect(() => _id !== _ctx.id && _setDynamicProp(n0, "fooBar", _prev_id, (_prev_id = (_id = _ctx.id))))
   return n0
 }"
 `;
@@ -112,8 +112,8 @@ const t0 = _template("<div></div>")
 export function render(_ctx) {
   const n0 = t0()
   _setInheritAttrs(["fooBar"])
-  let _fooBar;
-  _renderEffect(() => _fooBar !== _ctx.fooBar && _setDynamicProp(n0, "fooBar", (_fooBar = _ctx.fooBar)))
+  let _fooBar, _prev_fooBar;
+  _renderEffect(() => _fooBar !== _ctx.fooBar && _setDynamicProp(n0, "fooBar", _prev_fooBar, (_prev_fooBar = (_fooBar = _ctx.fooBar))))
   return n0
 }"
 `;
@@ -333,8 +333,8 @@ const t0 = _template("<progress></progress>")
 export function render(_ctx) {
   const n0 = t0()
   _setInheritAttrs(["value"])
-  let _foo;
-  _renderEffect(() => _foo !== _ctx.foo && _setDynamicProp(n0, "value", (_foo = _ctx.foo)))
+  let _foo, _prev_foo;
+  _renderEffect(() => _foo !== _ctx.foo && _setDynamicProp(n0, "value", _prev_foo, (_prev_foo = (_foo = _ctx.foo))))
   return n0
 }"
 `;
@@ -494,8 +494,8 @@ const t0 = _template("<div></div>")
 export function render(_ctx) {
   const n0 = t0()
   _setInheritAttrs(["camel-case"])
-  let _camelCase;
-  _renderEffect(() => _camelCase !== _ctx.camelCase && _setDynamicProp(n0, "camel-case", (_camelCase = _ctx.camelCase)))
+  let _camelCase, _prev_camelCase;
+  _renderEffect(() => _camelCase !== _ctx.camelCase && _setDynamicProp(n0, "camel-case", _prev_camelCase, (_prev_camelCase = (_camelCase = _ctx.camelCase))))
   return n0
 }"
 `;

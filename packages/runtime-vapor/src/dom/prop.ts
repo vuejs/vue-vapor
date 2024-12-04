@@ -14,11 +14,7 @@ import {
 } from '@vue/shared'
 import { warn } from '../warning'
 import { setStyle } from './style'
-import {
-  MetadataKind,
-  getMetadata,
-  recordPropMetadata,
-} from '../componentMetadata'
+import { MetadataKind, getMetadata } from '../componentMetadata'
 import { on } from './event'
 import type { Data } from '@vue/runtime-shared'
 import { currentInstance } from '../component'
@@ -29,32 +25,18 @@ export function mergeInheritAttr(key: string, value: any): unknown {
 }
 
 export function setClass(el: Element, value: any, root?: boolean): void {
-  const prev = recordPropMetadata(
-    el,
-    'class',
-    (value = normalizeClass(root ? mergeInheritAttr('class', value) : value)),
-  )
-
-  if (value !== prev && (value || prev)) {
-    el.className = value
-  }
+  el.className = normalizeClass(root ? mergeInheritAttr('class', value) : value)
 }
 
 export function setAttr(el: Element, key: string, value: any): void {
-  const oldVal = recordPropMetadata(el, key, value)
-  if (value !== oldVal) {
-    if (value != null) {
-      el.setAttribute(key, value)
-    } else {
-      el.removeAttribute(key)
-    }
+  if (value != null) {
+    el.setAttribute(key, value)
+  } else {
+    el.removeAttribute(key)
   }
 }
 
 export function setValue(el: any, value: any): void {
-  const oldVal = recordPropMetadata(el, 'value', value)
-  if (value === oldVal) return
-
   // store value as _value as well since
   // non-string values will be stringified.
   el._value = value
@@ -71,9 +53,6 @@ export function setValue(el: any, value: any): void {
 }
 
 export function setDOMProp(el: any, key: string, value: any): void {
-  const oldVal = recordPropMetadata(el, key, value)
-  if (value === oldVal) return
-
   let needRemove = false
   if (value === '' || value == null) {
     const type = typeof el[key]
@@ -109,13 +88,18 @@ export function setDOMProp(el: any, key: string, value: any): void {
   needRemove && el.removeAttribute(key)
 }
 
-export function setDynamicProp(el: Element, key: string, value: any): void {
+export function setDynamicProp(
+  el: Element,
+  key: string,
+  prev: any,
+  value: any,
+): void {
   // TODO
   const isSVG = false
   if (key === 'class') {
     setClass(el, value)
   } else if (key === 'style') {
-    setStyle(el as HTMLElement, value)
+    setStyle(el as HTMLElement, prev, value)
   } else if (isOn(key)) {
     on(el, key[2].toLowerCase() + key.slice(3), () => value, { effect: true })
   } else if (
@@ -167,12 +151,12 @@ export function setDynamicProps(
 
     const hasNewValue = props[key] || props['.' + key] || props['^' + key]
     if (oldProps[key] && !hasNewValue) {
-      setDynamicProp(el, key, null)
+      setDynamicProp(el, key, undefined, null)
     }
   }
 
   for (const key in props) {
-    setDynamicProp(el, key, props[key])
+    setDynamicProp(el, key, undefined, props[key])
   }
 }
 
@@ -213,18 +197,11 @@ export function mergeProps(...args: Data[]): Data {
 }
 
 export function setText(el: Node, ...values: any[]): void {
-  const text = values.map(v => toDisplayString(v)).join('')
-  const oldVal = recordPropMetadata(el, 'textContent', text)
-  if (text !== oldVal) {
-    el.textContent = text
-  }
+  el.textContent = values.map(v => toDisplayString(v)).join('')
 }
 
 export function setHtml(el: Element, value: any): void {
-  const oldVal = recordPropMetadata(el, 'innerHTML', value)
-  if (value !== oldVal) {
-    el.innerHTML = value == null ? '' : value
-  }
+  el.innerHTML = value == null ? '' : value
 }
 
 // TODO copied from runtime-dom
