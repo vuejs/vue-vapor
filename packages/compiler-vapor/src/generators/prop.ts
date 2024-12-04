@@ -42,7 +42,7 @@ export function genSetProp(
   oper: SetPropIRNode,
   context: CodegenContext,
 ): CodeFragment[] {
-  const { vaporHelper, shouldGenEffectDeps } = context
+  const { vaporHelper, shouldGenEffectDeps, currentRenderEffect } = context
   const {
     prop: { key, values, modifier },
     tag,
@@ -51,11 +51,25 @@ export function genSetProp(
   let propValue = genPropValue(values, context)
 
   if (shouldGenEffectDeps()) {
-    processValues(
-      context,
-      [propValue],
-      helperNeedPrevValue.includes(helperName),
-    )
+    processValues(context, [propValue])
+
+    const { varNamesToDeclare } = currentRenderEffect!
+    // need prevValue parameter
+    if (
+      varNamesToDeclare.size > 0 &&
+      helperNeedPrevValue.includes(helperName)
+    ) {
+      const prevValueName = [...varNamesToDeclare].join('')
+      varNamesToDeclare.add(prevValueName)
+      const needReCacheValue = varNamesToDeclare.size > 1
+      propValue.unshift(
+        ...[
+          `${prevValueName}, `, // prevValue parameter
+          needReCacheValue ? `(${prevValueName} = ` : undefined, // cache value to prevValue
+        ],
+      )
+      needReCacheValue && propValue.push(')')
+    }
   }
 
   return [
@@ -253,11 +267,10 @@ const getSpecialHelper = (
 export function processValues(
   context: CodegenContext,
   values: CodeFragment[][],
-  needPrevValue = false,
 ): string[] {
   const conditions: string[] = []
   values.forEach(value => {
-    const condition = processValue(context, value, needPrevValue)
+    const condition = processValue(context, value)
     if (condition) conditions.push(...condition, ' && ')
   })
 
@@ -269,14 +282,12 @@ export function processValues(
 function processValue(
   context: CodegenContext,
   values: CodeFragment[],
-  needPrevValue = false,
 ): string[] | undefined {
   const { currentRenderEffect, renderEffectSeemNames } = context
   const { varNamesToDeclare, varNamesOverwritten, conditions, operations } =
     currentRenderEffect!
 
   const isMultiLine = operations.length > 1
-  let prevValueName = ''
   for (const frag of values) {
     if (!isArray(frag)) continue
     // [code, newlineIndex, loc, name] -> [(_name = code), newlineIndex, loc, name]
@@ -301,23 +312,7 @@ function processValue(
         // replace the original code fragment with the assignment expression
         frag[0] = `(${name} = ${newName})`
       }
-      prevValueName += `${name}`
     }
-  }
-
-  if (needPrevValue && prevValueName) {
-    const needNewPrevName = varNamesToDeclare.size > 1
-    prevValueName = needNewPrevName
-      ? `_prev${prevValueName}`
-      : [...varNamesToDeclare][0]
-    varNamesToDeclare.add(prevValueName)
-    values.unshift(
-      ...[
-        `${prevValueName}, `,
-        needNewPrevName ? `(${prevValueName} = ` : undefined,
-      ],
-    )
-    needNewPrevName && values.push(')')
   }
 
   if (conditions.length > 0) {
