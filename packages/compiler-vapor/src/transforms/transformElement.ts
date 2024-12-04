@@ -1,4 +1,3 @@
-import { isValidHTMLNesting } from '../html-nesting'
 import {
   type AttributeNode,
   type ComponentNode,
@@ -37,6 +36,7 @@ import {
 } from '../ir'
 import { EMPTY_EXPRESSION } from './utils'
 import { findProp } from '../utils'
+import { isValidHTMLNesting } from '@vue/compiler-dom'
 
 export const isReservedProp: (key: string) => boolean = /*#__PURE__*/ makeMap(
   // the leading comma is intentional so empty string "" is also included
