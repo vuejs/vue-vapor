@@ -90,7 +90,7 @@ export function genEffect(
   { operations }: IREffect,
   context: CodegenContext,
 ): CodeFragment[] {
-  let { vaporHelper, currentRenderEffect } = context
+  const { vaporHelper, currentRenderEffect } = context
   const [frag, push] = buildCodeFragment(
     NEWLINE,
     `${vaporHelper('renderEffect')}(() => `,

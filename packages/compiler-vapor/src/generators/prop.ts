@@ -17,9 +17,6 @@ import {
   type CodeFragment,
   DELIMITERS_ARRAY,
   DELIMITERS_OBJECT,
-  INDENT_END,
-  INDENT_START,
-  LF,
   NEWLINE,
   genCall,
   genMulti,
@@ -27,12 +24,12 @@ import {
 import {
   attributeCache,
   canSetValueDirectly,
+  isArray,
   isHTMLGlobalAttr,
   isHTMLTag,
   isMathMLGlobalAttr,
   isMathMLTag,
   isSVGTag,
-  isString,
   isSvgGlobalAttr,
   shouldSetAsAttr,
   toHandlerKey,
@@ -276,34 +273,25 @@ function processValue(
   const { varNamesToDeclare, varNamesOverwritten, conditions } =
     currentRenderEffect!
   for (let frag of values) {
-    if (
-      !frag ||
-      frag === NEWLINE ||
-      frag === INDENT_START ||
-      frag === INDENT_END ||
-      frag === LF
-    ) {
-      continue
-    }
+    if (!isArray(frag)) continue
 
-    if (isString(frag)) frag = [frag]
-    let [newName, , , idName] = frag
-    if (idName) {
-      idName = idName.replace(/[^\w]/g, '_')
-      if (varNamesOverwritten.has(idName)) continue
-      varNamesOverwritten.add(idName)
+    let [newName, , , rawName] = frag
+    if (rawName) {
+      let name = rawName.replace(/[^\w]/g, '_')
+      if (varNamesOverwritten.has(name)) continue
+      varNamesOverwritten.add(name)
 
-      idName = `_${idName}`
-      if (varNamesToDeclare.has(idName)) continue
-      if (renderEffectSeemNames[idName] === undefined) {
-        renderEffectSeemNames[idName] = 0
-      } else {
-        idName += ++renderEffectSeemNames[idName]
-      }
-      let overwrite = `(${idName} = ${newName})`
-      varNamesToDeclare.add(idName)
-      conditions.push(`${idName} ${oper} ${newName}`)
-      frag[0] = overwrite
+      name = `_${name}`
+      if (varNamesToDeclare.has(name)) continue
+
+      if (renderEffectSeemNames[name] === undefined)
+        renderEffectSeemNames[name] = 0
+      else name += ++renderEffectSeemNames[name]
+
+      varNamesToDeclare.add(name)
+      conditions.push(`${name} ${oper} ${newName}`)
+      // replace the original code fragment with the assignment expression
+      frag[0] = `(${name} = ${newName})`
     }
   }
 
