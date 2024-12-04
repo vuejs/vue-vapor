@@ -194,7 +194,9 @@ describe('compile', () => {
       })
       expect(code).matchSnapshot()
       expect(code).contains('key.value+1')
-      expect(code).contains('_unref(foo)[key.value+1]()')
+      expect(code).contains(
+        '_key_value !== key.value && _foo !== _unref(foo) && _setDynamicProps(n0, [{ [(_key_value = key.value)+1]: (_foo = _unref(foo))[key.value+1]() }], true)',
+      )
     })
 
     // TODO: add more test for expression parsing (v-on, v-slot, v-for)
