@@ -131,7 +131,7 @@ describe('compiler v-bind', () => {
       },
     })
     expect(code).contains(
-      '_camelCase !== _ctx.camelCase && _setDynamicProp(n0, "camel-case", _prev_camelCase, (_prev_camelCase = (_camelCase = _ctx.camelCase)))',
+      '_camelCase !== _ctx.camelCase && _setDynamicProp(n0, "camel-case", _camelCase, (_camelCase = _ctx.camelCase))',
     )
   })
 
@@ -293,7 +293,7 @@ describe('compiler v-bind', () => {
 
     expect(code).matchSnapshot()
     expect(code).contains(
-      '_id !== _ctx.id && _setDynamicProp(n0, "fooBar", _prev_id, (_prev_id = (_id = _ctx.id)))',
+      '_id !== _ctx.id && _setDynamicProp(n0, "fooBar", _id, (_id = _ctx.id))',
     )
   })
 
@@ -319,7 +319,7 @@ describe('compiler v-bind', () => {
     })
     expect(code).contains('renderEffect')
     expect(code).contains(
-      '_fooBar !== _ctx.fooBar && _setDynamicProp(n0, "fooBar", _prev_fooBar, (_prev_fooBar = (_fooBar = _ctx.fooBar)))',
+      '_fooBar !== _ctx.fooBar && _setDynamicProp(n0, "fooBar", _fooBar, (_fooBar = _ctx.fooBar))',
     )
   })
 
@@ -675,8 +675,10 @@ describe('compiler v-bind', () => {
     )
     expect(code).contains('if(_width === _ctx.width) return')
     expect(code).contains('if(_height === _ctx.height) return')
-    expect(code).contains('_setAttr(n3, "width", (_width = _ctx.width))')
-    expect(code).contains('_setAttr(n3, "height", (_height = _ctx.height))')
+    expect(code).contains('_height = _ctx.height')
+    expect(code).contains('_height = _ctx.height')
+    expect(code).contains('_setAttr(n3, "width", _ctx.width)')
+    expect(code).contains('_setAttr(n3, "height", _ctx.height)')
     expect(code).contains('_setAttr(n4, "width", _ctx.width)')
     expect(code).contains('_setAttr(n4, "height", _ctx.height)')
     expect(code).contains('_setAttr(n5, "width", _ctx.width)')
@@ -794,7 +796,7 @@ describe('compiler v-bind', () => {
     `)
     expect(code).matchSnapshot()
     expect(code).contains(
-      '_foo !== _ctx.foo && _setDynamicProp(n0, "value", _prev_foo, (_prev_foo = (_foo = _ctx.foo)))',
+      '_foo !== _ctx.foo && _setDynamicProp(n0, "value", _foo, (_foo = _ctx.foo))',
     )
   })
 

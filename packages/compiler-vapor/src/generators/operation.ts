@@ -110,11 +110,16 @@ export function genEffect(
       conditions.length > 0
         ? [NEWLINE, `if(`, ...conditions.join(' && '), `) return`]
         : []
+    const assignment: CodeFragment[] =
+      conditions.length > 0
+        ? [NEWLINE, ...conditions.map(c => c.replace('===', '=')).join(';')]
+        : []
     push(
       '{',
       INDENT_START,
       ...condition,
       ...operationsExps,
+      ...assignment,
       INDENT_END,
       NEWLINE,
       '})',

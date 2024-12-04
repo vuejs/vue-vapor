@@ -275,12 +275,10 @@ function processValue(
   const { varNamesToDeclare, varNamesOverwritten, conditions, operations } =
     currentRenderEffect!
 
-  // for multiline the early return condition should be `if (_foo === _ctx.foo) return`
-  const oper = operations.length === 1 ? '!==' : '==='
-  let oldValueName = ''
+  const isMultiLine = operations.length > 1
+  let prevValueName = ''
   for (const frag of values) {
     if (!isArray(frag)) continue
-
     // [code, newlineIndex, loc, name] -> [(_name = code), newlineIndex, loc, name]
     const [newName, , , rawName] = frag
     if (rawName) {
@@ -296,18 +294,30 @@ function processValue(
       else name += ++renderEffectSeemNames[name]
 
       varNamesToDeclare.add(name)
-      conditions.push(`${name} ${oper} ${newName}`)
-      // replace the original code fragment with the assignment expression
-      frag[0] = `(${name} = ${newName})`
-      oldValueName += `${name}`
+      // for multiline renderEffect the early return condition should be `if (_foo === _ctx.foo) return`
+      conditions.push(`${name} ${isMultiLine ? '===' : '!=='} ${newName}`)
+
+      if (!isMultiLine) {
+        // replace the original code fragment with the assignment expression
+        frag[0] = `(${name} = ${newName})`
+      }
+      prevValueName += `${name}`
     }
   }
 
-  if (oldValueName && needPrevValue) {
-    oldValueName = `_prev${oldValueName}`
-    varNamesToDeclare.add(oldValueName)
-    values.unshift(`${oldValueName}, (${oldValueName} = `)
-    values.push(')')
+  if (needPrevValue && prevValueName) {
+    const needNewPrevName = varNamesToDeclare.size > 1
+    prevValueName = needNewPrevName
+      ? `_prev${prevValueName}`
+      : [...varNamesToDeclare][0]
+    varNamesToDeclare.add(prevValueName)
+    values.unshift(
+      ...[
+        `${prevValueName}, `,
+        needNewPrevName ? `(${prevValueName} = ` : undefined,
+      ],
+    )
+    needNewPrevName && values.push(')')
   }
 
   if (conditions.length > 0) {
