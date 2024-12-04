@@ -10,7 +10,6 @@ import {
   noopDirectiveTransform,
 } from '@vue/compiler-core'
 import { parserOptions } from './parserOptions'
-import { isValidHTMLNesting } from './htmlNesting'
 import { transformStyle } from './transforms/transformStyle'
 import { transformVHtml } from './transforms/vHtml'
 import { transformVText } from './transforms/vText'
@@ -24,7 +23,6 @@ import { validateHtmlNesting } from './transforms/validateHtmlNesting'
 import { extend } from '@vue/shared'
 
 export { parserOptions }
-export { isValidHTMLNesting }
 
 export const DOMNodeTransforms: NodeTransform[] = [
   transformStyle,
@@ -77,4 +75,5 @@ export {
   DOMErrorMessages,
 } from './errors'
 export { resolveModifiers } from './transforms/vOn'
+export { isValidHTMLNesting } from './htmlNesting'
 export * from '@vue/compiler-core'
