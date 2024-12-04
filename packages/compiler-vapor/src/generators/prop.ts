@@ -266,11 +266,14 @@ function processValue(
   const { currentRenderEffect, renderEffectSeemNames } = context
   const { varNamesToDeclare, varNamesOverwritten, conditions, operations } =
     currentRenderEffect!
+
+  // for multiple values the early return condition should be `if (_foo === _ctx.foo) return`
   const oper = operations.length === 1 ? '!==' : '==='
-  for (let frag of values) {
+  for (const frag of values) {
     if (!isArray(frag)) continue
 
-    let [newName, , , rawName] = frag
+    // [code, newlineIndex, loc, name] -> [(_name = code), newlineIndex, loc, name]
+    const [newName, , , rawName] = frag
     if (rawName) {
       let name = rawName.replace(/[^\w]/g, '_')
       if (varNamesOverwritten.has(name)) continue

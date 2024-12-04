@@ -38,6 +38,7 @@ export class CodegenContext {
   currentRenderEffect: IREffect | undefined = undefined
   renderEffectSeemNames: Record<string, number> = Object.create(null)
   shouldGenEffectDeps = (): boolean => {
+    // only need to generate effect deps when it's not nested in v-once or v-for
     return !!(
       this.currentRenderEffect &&
       !this.currentRenderEffect.inVOnce &&

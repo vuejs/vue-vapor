@@ -98,12 +98,14 @@ export function genEffect(
   const { varNamesToDeclare, conditions } = currentRenderEffect!
   const operationsExps = genOperations(operations, context)
 
+  // declare variables: let _foo, _bar
   if (varNamesToDeclare.size) {
     frag.splice(1, 0, `let ${[...varNamesToDeclare].join(', ')};`, NEWLINE)
   }
 
   const newlineCount = operationsExps.filter(frag => frag === NEWLINE).length
   if (newlineCount > 1) {
+    // multiline early return condition: if (_foo === _ctx.foo && _bar === _ctx.bar) return
     const condition: CodeFragment[] =
       conditions.length > 0
         ? [NEWLINE, `if(`, ...conditions.join(' && '), `) return`]
@@ -118,6 +120,7 @@ export function genEffect(
       '})',
     )
   } else {
+    // single line early return condition: _foo !== _ctx.foo && _bar !== _ctx.bar &&
     const condition: CodeFragment[] =
       conditions.length > 0 ? [...conditions.join(' && '), ' && '] : []
     push(...condition, ...operationsExps.filter(frag => frag !== NEWLINE), ')')
