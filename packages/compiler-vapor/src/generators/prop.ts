@@ -40,7 +40,7 @@ export function genSetProp(
   oper: SetPropIRNode,
   context: CodegenContext,
 ): CodeFragment[] {
-  const { vaporHelper, currentRenderEffect, shouldGenEffectDeps } = context
+  const { vaporHelper, shouldGenEffectDeps } = context
   const {
     prop: { key, values, modifier },
     tag,
@@ -49,11 +49,7 @@ export function genSetProp(
   let propValue = genPropValue(values, context)
 
   if (shouldGenEffectDeps()) {
-    processValues(
-      context,
-      [propValue],
-      currentRenderEffect!.operations.length === 1 ? '!==' : '===',
-    )
+    processValues(context, [propValue])
   }
 
   return [
@@ -251,11 +247,10 @@ const getSpecialHelper = (
 export function processValues(
   context: CodegenContext,
   values: CodeFragment[][],
-  oper: '===' | '!==' = '!==',
 ): string[] {
   const conditions: string[] = []
   values.forEach(value => {
-    const condition = processValue(context, value, oper)
+    const condition = processValue(context, value)
     if (condition) conditions.push(...condition, ' && ')
   })
 
@@ -267,11 +262,11 @@ export function processValues(
 function processValue(
   context: CodegenContext,
   values: CodeFragment[],
-  oper: '===' | '!==' = '!==',
 ): string[] | undefined {
   const { currentRenderEffect, renderEffectSeemNames } = context
-  const { varNamesToDeclare, varNamesOverwritten, conditions } =
+  const { varNamesToDeclare, varNamesOverwritten, conditions, operations } =
     currentRenderEffect!
+  const oper = operations.length === 1 ? '!==' : '==='
   for (let frag of values) {
     if (!isArray(frag)) continue
 
