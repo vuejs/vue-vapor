@@ -120,9 +120,17 @@ export function genEffect(
       '})',
     )
   } else {
-    // single line early return condition: _foo !== _ctx.foo && _bar !== _ctx.bar &&
+    // single line early return condition: _foo !== _ctx.foo || _bar !== _ctx.bar &&
+    const multiple = conditions.length > 1
     const condition: CodeFragment[] =
-      conditions.length > 0 ? [...conditions.join(' && '), ' && '] : []
+      conditions.length > 0
+        ? [
+            multiple ? `(` : undefined,
+            ...conditions.join(' || '),
+            multiple ? `)` : undefined,
+            ' && ',
+          ]
+        : []
     push(...condition, ...operationsExps.filter(frag => frag !== NEWLINE), ')')
   }
 

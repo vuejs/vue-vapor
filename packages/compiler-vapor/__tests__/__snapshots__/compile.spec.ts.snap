@@ -207,7 +207,7 @@ exports[`compile > expression parsing > v-bind 1`] = `
   const n0 = t0()
   _setInheritAttrs(true)
   let _key_value, _foo;
-  _renderEffect(() => _key_value !== key.value && _foo !== _unref(foo) && _setDynamicProps(n0, [{ [(_key_value = key.value)+1]: (_foo = _unref(foo))[key.value+1]() }], true))
+  _renderEffect(() => (_key_value !== key.value || _foo !== _unref(foo)) && _setDynamicProps(n0, [{ [(_key_value = key.value)+1]: (_foo = _unref(foo))[key.value+1]() }], true))
   return n0
 })()"
 `;
