@@ -101,8 +101,7 @@ export function genEffect(
   const operationsExps = genOperations(operations, context)
 
   if (deps.length) {
-    const vars = [...new Set(deps)].map(v => `_${v}`)
-    frag.splice(1, 0, `let ${vars.join(', ')};`, NEWLINE)
+    frag.splice(1, 0, `let ${[...new Set(deps)].join(', ')};`, NEWLINE)
   }
 
   const newlineCount = operationsExps.filter(frag => frag === NEWLINE).length

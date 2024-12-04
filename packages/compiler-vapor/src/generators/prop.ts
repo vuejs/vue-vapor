@@ -272,7 +272,7 @@ function processValue(
   values: CodeFragment[],
   oper: '===' | '!==' = '!==',
 ): string[] | undefined {
-  const { currentRenderEffect, seenRenderEffectDeps } = context
+  const { currentRenderEffect, renderEffectSeemNames } = context
   const { deps, overwrites, conditions } = currentRenderEffect!
   for (let frag of values) {
     if (
@@ -288,16 +288,20 @@ function processValue(
     if (isString(frag)) frag = [frag]
     let [newName, , , idName] = frag
     if (idName) {
-      idName = idName.replace(/\./g, '_')
-      const overwrite = `(_${idName} = ${newName})`
-      if (overwrites.includes(overwrite)) continue
+      idName = idName.replace(/[^\w]/g, '_')
+      if (overwrites.includes(idName)) continue
+      overwrites.push(idName)
 
-      overwrites.push(overwrite)
-      if (!seenRenderEffectDeps.has(idName)) {
-        deps.push(idName)
-        seenRenderEffectDeps.add(idName)
+      idName = `_${idName}`
+      if (deps.includes(idName)) continue
+      if (renderEffectSeemNames[idName] === undefined) {
+        renderEffectSeemNames[idName] = 0
+      } else {
+        idName += ++renderEffectSeemNames[idName]
       }
-      conditions.push(`_${idName} ${oper} ${newName}`)
+      let overwrite = `(${idName} = ${newName})`
+      deps.push(idName)
+      conditions.push(`${idName} ${oper} ${newName}`)
       frag[0] = overwrite
     }
   }

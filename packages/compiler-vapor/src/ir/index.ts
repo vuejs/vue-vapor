@@ -268,8 +268,8 @@ export interface IREffect {
   expressions: SimpleExpressionNode[]
   operations: OperationNode[]
   deps: string[]
-  conditions: string[]
   overwrites: string[]
+  conditions: string[]
   inVFor: boolean
   inVOnce: boolean
 }

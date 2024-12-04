@@ -189,8 +189,8 @@ export function render(_ctx) {
   _setInheritAttrs(["id"])
   let _count;
   _renderEffect(() => _count !== _ctx.count && _setText(n0, (_count = _ctx.count), "foo", _ctx.count, "foo", _ctx.count))
-  let _count;
-  _renderEffect(() => _count !== _ctx.count && _setDOMProp(n0, "id", (_count = _ctx.count)))
+  let _count1;
+  _renderEffect(() => _count1 !== _ctx.count && _setDOMProp(n0, "id", (_count1 = _ctx.count)))
   return n0
 }"
 `;

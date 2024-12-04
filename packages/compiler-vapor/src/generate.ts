@@ -36,8 +36,7 @@ export class CodegenContext {
   delegates: Set<string> = new Set<string>()
 
   currentRenderEffect: IREffect | undefined = undefined
-  seenRenderEffectDeps: Set<string> = new Set<string>()
-
+  renderEffectSeemNames: Record<string, number> = Object.create(null)
   shouldGenEffectDeps = (): boolean => {
     return !!(
       this.currentRenderEffect &&
