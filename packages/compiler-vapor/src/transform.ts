@@ -155,7 +155,6 @@ export class TransformContext<T extends AllNode = AllNode> {
         varNamesToDeclare: new Set<string>(),
         varNamesOverwritten: new Set<string>(),
         inVFor: this.inVFor > 0,
-        inVOnce: this.inVOnce,
       })
     }
 

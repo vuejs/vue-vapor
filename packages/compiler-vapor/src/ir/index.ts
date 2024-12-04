@@ -271,7 +271,6 @@ export interface IREffect {
   varNamesOverwritten: Set<string>
   conditions: string[]
   inVFor: boolean
-  inVOnce: boolean
 }
 
 type Overwrite<T, U> = Pick<T, Exclude<keyof T, keyof U>> &
