@@ -81,8 +81,6 @@ export function genEffects(
   const [frag, push] = buildCodeFragment()
   for (let i = 0; i < effects.length; i++) {
     const effect = (context.currentRenderEffect = effects[i])
-    effect.conditions = []
-    effect.overwrites = []
     push(...genEffect(effect, context))
   }
   return frag
@@ -97,11 +95,11 @@ export function genEffect(
     NEWLINE,
     `${vaporHelper('renderEffect')}(() => `,
   )
-  const { deps, conditions } = currentRenderEffect!
+  const { varNamesToDeclare, conditions } = currentRenderEffect!
   const operationsExps = genOperations(operations, context)
 
-  if (deps.length) {
-    frag.splice(1, 0, `let ${[...new Set(deps)].join(', ')};`, NEWLINE)
+  if (varNamesToDeclare.size) {
+    frag.splice(1, 0, `let ${[...varNamesToDeclare].join(', ')};`, NEWLINE)
   }
 
   const newlineCount = operationsExps.filter(frag => frag === NEWLINE).length

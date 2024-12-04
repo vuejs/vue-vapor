@@ -273,7 +273,8 @@ function processValue(
   oper: '===' | '!==' = '!==',
 ): string[] | undefined {
   const { currentRenderEffect, renderEffectSeemNames } = context
-  const { deps, overwrites, conditions } = currentRenderEffect!
+  const { varNamesToDeclare, varNamesOverwritten, conditions } =
+    currentRenderEffect!
   for (let frag of values) {
     if (
       !frag ||
@@ -289,18 +290,18 @@ function processValue(
     let [newName, , , idName] = frag
     if (idName) {
       idName = idName.replace(/[^\w]/g, '_')
-      if (overwrites.includes(idName)) continue
-      overwrites.push(idName)
+      if (varNamesOverwritten.has(idName)) continue
+      varNamesOverwritten.add(idName)
 
       idName = `_${idName}`
-      if (deps.includes(idName)) continue
+      if (varNamesToDeclare.has(idName)) continue
       if (renderEffectSeemNames[idName] === undefined) {
         renderEffectSeemNames[idName] = 0
       } else {
         idName += ++renderEffectSeemNames[idName]
       }
       let overwrite = `(${idName} = ${newName})`
-      deps.push(idName)
+      varNamesToDeclare.add(idName)
       conditions.push(`${idName} ${oper} ${newName}`)
       frag[0] = overwrite
     }
