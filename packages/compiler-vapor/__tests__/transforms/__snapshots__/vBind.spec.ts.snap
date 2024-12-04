@@ -7,7 +7,7 @@ const t0 = _template("<div></div>")
 export function render(_ctx) {
   const n0 = t0()
   _setInheritAttrs(["foo-bar"])
-  let _id;
+  let _id
   _renderEffect(() => _id !== _ctx.id && _setAttr(n0, "foo-bar", (_id = _ctx.id)))
   return n0
 }"
@@ -20,7 +20,7 @@ const t0 = _template("<div></div>")
 export function render(_ctx) {
   const n0 = t0()
   _setInheritAttrs(["innerHTML"])
-  let _foo;
+  let _foo
   _renderEffect(() => _foo !== _ctx.foo && _setAttr(n0, "innerHTML", (_foo = _ctx.foo)))
   return n0
 }"
@@ -33,7 +33,7 @@ const t0 = _template("<div></div>")
 export function render(_ctx) {
   const n0 = t0()
   _setInheritAttrs(["foo-bar"])
-  let _fooBar;
+  let _fooBar
   _renderEffect(() => _fooBar !== _ctx.fooBar && _setAttr(n0, "foo-bar", (_fooBar = _ctx.fooBar)))
   return n0
 }"
@@ -46,7 +46,7 @@ const t0 = _template("<progress></progress>")
 export function render(_ctx) {
   const n0 = t0()
   _setInheritAttrs(["value"])
-  let _foo;
+  let _foo
   _renderEffect(() => _foo !== _ctx.foo && _setAttr(n0, "value", (_foo = _ctx.foo)))
   return n0
 }"
@@ -59,7 +59,7 @@ const t0 = _template("<div></div>")
 export function render(_ctx) {
   const n0 = t0()
   _setInheritAttrs(["textContent"])
-  let _foo;
+  let _foo
   _renderEffect(() => _foo !== _ctx.foo && _setAttr(n0, "textContent", (_foo = _ctx.foo)))
   return n0
 }"
@@ -72,7 +72,7 @@ const t0 = _template("<div></div>")
 export function render(_ctx) {
   const n0 = t0()
   _setInheritAttrs(["value"])
-  let _foo;
+  let _foo
   _renderEffect(() => _foo !== _ctx.foo && _setAttr(n0, "value", (_foo = _ctx.foo)))
   return n0
 }"
@@ -85,7 +85,7 @@ const t0 = _template("<div></div>")
 export function render(_ctx) {
   const n0 = t0()
   _setInheritAttrs(["fooBar"])
-  let _id;
+  let _id
   _renderEffect(() => _id !== _ctx.id && _setDynamicProp(n0, "fooBar", _id, (_id = _ctx.id)))
   return n0
 }"
@@ -99,7 +99,7 @@ const t0 = _template("<div></div>")
 export function render(_ctx) {
   const n0 = t0()
   _setInheritAttrs(true)
-  let _foo, _id;
+  let _foo, _id
   _renderEffect(() => (_foo !== _ctx.foo || _id !== _ctx.id) && _setDynamicProps(n0, [{ [_camelize((_foo = _ctx.foo))]: (_id = _ctx.id) }], true))
   return n0
 }"
@@ -112,7 +112,7 @@ const t0 = _template("<div></div>")
 export function render(_ctx) {
   const n0 = t0()
   _setInheritAttrs(["fooBar"])
-  let _fooBar;
+  let _fooBar
   _renderEffect(() => _fooBar !== _ctx.fooBar && _setDynamicProp(n0, "fooBar", _fooBar, (_fooBar = _ctx.fooBar)))
   return n0
 }"
@@ -125,7 +125,7 @@ const t0 = _template("<div></div>")
 export function render(_ctx) {
   const n0 = t0()
   _setInheritAttrs(["fooBar"])
-  let _id;
+  let _id
   _renderEffect(() => _id !== _ctx.id && _setDOMProp(n0, "fooBar", (_id = _ctx.id)))
   return n0
 }"
@@ -138,7 +138,7 @@ const t0 = _template("<div></div>")
 export function render(_ctx) {
   const n0 = t0()
   _setInheritAttrs(["innerHTML"])
-  let _foo;
+  let _foo
   _renderEffect(() => _foo !== _ctx.foo && _setHtml(n0, (_foo = _ctx.foo)))
   return n0
 }"
@@ -151,7 +151,7 @@ const t0 = _template("<div></div>")
 export function render(_ctx) {
   const n0 = t0()
   _setInheritAttrs(["fooBar"])
-  let _fooBar;
+  let _fooBar
   _renderEffect(() => _fooBar !== _ctx.fooBar && _setDOMProp(n0, "fooBar", (_fooBar = _ctx.fooBar)))
   return n0
 }"
@@ -164,7 +164,7 @@ const t0 = _template("<progress></progress>")
 export function render(_ctx) {
   const n0 = t0()
   _setInheritAttrs(["value"])
-  let _foo;
+  let _foo
   _renderEffect(() => _foo !== _ctx.foo && _setDOMProp(n0, "value", (_foo = _ctx.foo)))
   return n0
 }"
@@ -177,7 +177,7 @@ const t0 = _template("<div></div>")
 export function render(_ctx) {
   const n0 = t0()
   _setInheritAttrs(["textContent"])
-  let _foo;
+  let _foo
   _renderEffect(() => _foo !== _ctx.foo && _setText(n0, (_foo = _ctx.foo)))
   return n0
 }"
@@ -190,7 +190,7 @@ const t0 = _template("<div></div>")
 export function render(_ctx) {
   const n0 = t0()
   _setInheritAttrs(["value"])
-  let _foo;
+  let _foo
   _renderEffect(() => _foo !== _ctx.foo && _setValue(n0, (_foo = _ctx.foo)))
   return n0
 }"
@@ -203,7 +203,7 @@ const t0 = _template("<div></div>")
 export function render(_ctx) {
   const n0 = t0()
   _setInheritAttrs(["fooBar"])
-  let _id;
+  let _id
   _renderEffect(() => _id !== _ctx.id && _setDOMProp(n0, "fooBar", (_id = _ctx.id)))
   return n0
 }"
@@ -216,7 +216,7 @@ const t0 = _template("<div></div>")
 export function render(_ctx) {
   const n0 = t0()
   _setInheritAttrs(true)
-  let _fooBar, _id;
+  let _fooBar, _id
   _renderEffect(() => (_fooBar !== _ctx.fooBar || _id !== _ctx.id) && _setDynamicProps(n0, [{ ["." + (_fooBar = _ctx.fooBar)]: (_id = _ctx.id) }], true))
   return n0
 }"
@@ -229,7 +229,7 @@ const t0 = _template("<div></div>")
 export function render(_ctx) {
   const n0 = t0()
   _setInheritAttrs(["innerHTML"])
-  let _foo;
+  let _foo
   _renderEffect(() => _foo !== _ctx.foo && _setHtml(n0, (_foo = _ctx.foo)))
   return n0
 }"
@@ -242,7 +242,7 @@ const t0 = _template("<div></div>")
 export function render(_ctx) {
   const n0 = t0()
   _setInheritAttrs(["fooBar"])
-  let _fooBar;
+  let _fooBar
   _renderEffect(() => _fooBar !== _ctx.fooBar && _setDOMProp(n0, "fooBar", (_fooBar = _ctx.fooBar)))
   return n0
 }"
@@ -255,7 +255,7 @@ const t0 = _template("<progress></progress>")
 export function render(_ctx) {
   const n0 = t0()
   _setInheritAttrs(["value"])
-  let _foo;
+  let _foo
   _renderEffect(() => _foo !== _ctx.foo && _setDOMProp(n0, "value", (_foo = _ctx.foo)))
   return n0
 }"
@@ -268,7 +268,7 @@ const t0 = _template("<div></div>")
 export function render(_ctx) {
   const n0 = t0()
   _setInheritAttrs(["textContent"])
-  let _foo;
+  let _foo
   _renderEffect(() => _foo !== _ctx.foo && _setText(n0, (_foo = _ctx.foo)))
   return n0
 }"
@@ -281,7 +281,7 @@ const t0 = _template("<div></div>")
 export function render(_ctx) {
   const n0 = t0()
   _setInheritAttrs(["value"])
-  let _foo;
+  let _foo
   _renderEffect(() => _foo !== _ctx.foo && _setValue(n0, (_foo = _ctx.foo)))
   return n0
 }"
@@ -294,7 +294,7 @@ const t0 = _template("<div></div>")
 export function render(_ctx) {
   const n0 = t0()
   _setInheritAttrs(["innerHTML"])
-  let _foo;
+  let _foo
   _renderEffect(() => _foo !== _ctx.foo && _setHtml(n0, (_foo = _ctx.foo)))
   return n0
 }"
@@ -307,7 +307,7 @@ const t0 = _template("<div></div>")
 export function render(_ctx) {
   const n0 = t0()
   _setInheritAttrs(["textContent"])
-  let _foo;
+  let _foo
   _renderEffect(() => _foo !== _ctx.foo && _setText(n0, (_foo = _ctx.foo)))
   return n0
 }"
@@ -320,7 +320,7 @@ const t0 = _template("<input>")
 export function render(_ctx) {
   const n0 = t0()
   _setInheritAttrs(["value"])
-  let _foo;
+  let _foo
   _renderEffect(() => _foo !== _ctx.foo && _setValue(n0, (_foo = _ctx.foo)))
   return n0
 }"
@@ -333,7 +333,7 @@ const t0 = _template("<progress></progress>")
 export function render(_ctx) {
   const n0 = t0()
   _setInheritAttrs(["value"])
-  let _foo;
+  let _foo
   _renderEffect(() => _foo !== _ctx.foo && _setDynamicProp(n0, "value", _foo, (_foo = _ctx.foo)))
   return n0
 }"
@@ -346,15 +346,15 @@ const t0 = _template("<div></div>")
 export function render(_ctx) {
   const n0 = t0()
   _setInheritAttrs(["id", "title", "lang", "dir", "tabindex"])
-  let _id;
+  let _id
   _renderEffect(() => _id !== _ctx.id && _setDOMProp(n0, "id", (_id = _ctx.id)))
-  let _title;
+  let _title
   _renderEffect(() => _title !== _ctx.title && _setDOMProp(n0, "title", (_title = _ctx.title)))
-  let _lang;
+  let _lang
   _renderEffect(() => _lang !== _ctx.lang && _setDOMProp(n0, "lang", (_lang = _ctx.lang)))
-  let _dir;
+  let _dir
   _renderEffect(() => _dir !== _ctx.dir && _setDOMProp(n0, "dir", (_dir = _ctx.dir)))
-  let _tabindex;
+  let _tabindex
   _renderEffect(() => _tabindex !== _ctx.tabindex && _setDOMProp(n0, "tabindex", (_tabindex = _ctx.tabindex)))
   return n0
 }"
@@ -367,15 +367,15 @@ const t0 = _template("<math></math>")
 export function render(_ctx) {
   const n0 = t0()
   _setInheritAttrs(["autofucus", "dir", "displaystyle", "mathcolor", "tabindex"])
-  let _autofucus;
+  let _autofucus
   _renderEffect(() => _autofucus !== _ctx.autofucus && _setDOMProp(n0, "autofucus", (_autofucus = _ctx.autofucus)))
-  let _dir;
+  let _dir
   _renderEffect(() => _dir !== _ctx.dir && _setDOMProp(n0, "dir", (_dir = _ctx.dir)))
-  let _displaystyle;
+  let _displaystyle
   _renderEffect(() => _displaystyle !== _ctx.displaystyle && _setDOMProp(n0, "displaystyle", (_displaystyle = _ctx.displaystyle)))
-  let _mathcolor;
+  let _mathcolor
   _renderEffect(() => _mathcolor !== _ctx.mathcolor && _setDOMProp(n0, "mathcolor", (_mathcolor = _ctx.mathcolor)))
-  let _tabindex;
+  let _tabindex
   _renderEffect(() => _tabindex !== _ctx.tabindex && _setDOMProp(n0, "tabindex", (_tabindex = _ctx.tabindex)))
   return n0
 }"
@@ -388,11 +388,11 @@ const t0 = _template("<svg></svg>")
 export function render(_ctx) {
   const n0 = t0()
   _setInheritAttrs(["id", "lang", "tabindex"])
-  let _id;
+  let _id
   _renderEffect(() => _id !== _ctx.id && _setDOMProp(n0, "id", (_id = _ctx.id)))
-  let _lang;
+  let _lang
   _renderEffect(() => _lang !== _ctx.lang && _setDOMProp(n0, "lang", (_lang = _ctx.lang)))
-  let _tabindex;
+  let _tabindex
   _renderEffect(() => _tabindex !== _ctx.tabindex && _setDOMProp(n0, "tabindex", (_tabindex = _ctx.tabindex)))
   return n0
 }"
@@ -416,19 +416,19 @@ export function render(_ctx) {
   const n4 = t4()
   const n5 = t5()
   const n6 = t6()
-  let _spellcheck;
+  let _spellcheck
   _renderEffect(() => _spellcheck !== _ctx.spellcheck && _setAttr(n0, "spellcheck", (_spellcheck = _ctx.spellcheck)))
-  let _draggable;
+  let _draggable
   _renderEffect(() => _draggable !== _ctx.draggable && _setAttr(n0, "draggable", (_draggable = _ctx.draggable)))
-  let _translate;
+  let _translate
   _renderEffect(() => _translate !== _ctx.translate && _setAttr(n0, "translate", (_translate = _ctx.translate)))
-  let _form;
+  let _form
   _renderEffect(() => _form !== _ctx.form && _setAttr(n0, "form", (_form = _ctx.form)))
-  let _list;
+  let _list
   _renderEffect(() => _list !== _ctx.list && _setAttr(n1, "list", (_list = _ctx.list)))
-  let _type;
+  let _type
   _renderEffect(() => _type !== _ctx.type && _setAttr(n2, "type", (_type = _ctx.type)))
-  let _width;
+  let _width
   _renderEffect(() => {
     if(_width === _ctx.width) return
     _setAttr(n3, "width", _ctx.width)
@@ -437,7 +437,7 @@ export function render(_ctx) {
     _setAttr(n6, "width", _ctx.width)
     _width = _ctx.width
   })
-  let _height;
+  let _height
   _renderEffect(() => {
     if(_height === _ctx.height) return
     _setAttr(n3, "height", _ctx.height)
@@ -457,7 +457,7 @@ const t0 = _template("<div></div>")
 export function render(_ctx) {
   const n0 = t0()
   _setInheritAttrs(["id"])
-  let _id;
+  let _id
   _renderEffect(() => _id !== _ctx.id && _setDOMProp(n0, "id", (_id = _ctx.id)))
   return n0
 }"
@@ -470,7 +470,7 @@ const t0 = _template("<div></div>")
 export function render(_ctx) {
   const n0 = t0()
   _setInheritAttrs(true)
-  let _id, _title;
+  let _id, _title
   _renderEffect(() => (_id !== _ctx.id || _title !== _ctx.title) && _setDynamicProps(n0, [{ [(_id = _ctx.id)]: _ctx.id, [(_title = _ctx.title)]: _ctx.title }], true))
   return n0
 }"
@@ -483,7 +483,7 @@ const t0 = _template("<div></div>")
 export function render(_ctx) {
   const n0 = t0()
   _setInheritAttrs(true)
-  let _id;
+  let _id
   _renderEffect(() => _id !== _ctx.id && _setDynamicProps(n0, [{ [(_id = _ctx.id)]: _ctx.id, foo: "bar", checked: "" }], true))
   return n0
 }"
@@ -496,7 +496,7 @@ const t0 = _template("<div></div>")
 export function render(_ctx) {
   const n0 = t0()
   _setInheritAttrs(["camel-case"])
-  let _camelCase;
+  let _camelCase
   _renderEffect(() => _camelCase !== _ctx.camelCase && _setDynamicProp(n0, "camel-case", _camelCase, (_camelCase = _ctx.camelCase)))
   return n0
 }"
@@ -509,7 +509,7 @@ const t0 = _template("<div></div>")
 export function render(_ctx) {
   const n0 = t0()
   _setInheritAttrs(["id"])
-  let _id;
+  let _id
   _renderEffect(() => _id !== _ctx.id && _setDOMProp(n0, "id", (_id = _ctx.id)))
   return n0
 }"

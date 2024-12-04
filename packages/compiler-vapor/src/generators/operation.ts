@@ -100,7 +100,7 @@ export function genEffect(
 
   // declare variables: let _foo, _bar
   if (varNamesToDeclare.size) {
-    frag.splice(1, 0, `let ${[...varNamesToDeclare].join(', ')};`, NEWLINE)
+    frag.splice(1, 0, `let ${[...varNamesToDeclare].join(', ')}`, NEWLINE)
   }
 
   const newlineCount = operationsExps.filter(frag => frag === NEWLINE).length
@@ -110,6 +110,7 @@ export function genEffect(
       conditions.length > 0
         ? [NEWLINE, `if(`, ...conditions.join(' && '), `) return`]
         : []
+    // assignment: _foo = _ctx.foo; _bar = _ctx.bar
     const assignment: CodeFragment[] =
       conditions.length > 0
         ? [NEWLINE, ...conditions.map(c => c.replace('===', '=')).join(';')]

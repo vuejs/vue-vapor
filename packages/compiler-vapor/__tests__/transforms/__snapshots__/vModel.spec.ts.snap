@@ -254,7 +254,7 @@ export function render(_ctx) {
   _withDirectives(n0, [[_vModelDynamic, () => _ctx.model]])
   _delegate(n0, "update:modelValue", () => $event => (_ctx.model = $event))
   _setInheritAttrs(true)
-  let _obj;
+  let _obj
   _renderEffect(() => _obj !== _ctx.obj && _setDynamicProps(n0, [(_obj = _ctx.obj)], true))
   return n0
 }"

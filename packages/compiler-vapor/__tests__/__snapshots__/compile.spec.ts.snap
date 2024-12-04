@@ -6,7 +6,7 @@ const t0 = _template("<div></div>")
 
 export function render(_ctx, $props, $emit, $attrs, $slots) {
   const n0 = t0()
-  let _count;
+  let _count
   _renderEffect(() => _count !== _ctx.count && _setText(n0, "count is ", (_count = _ctx.count), "."))
   return n0
 }"
@@ -163,7 +163,7 @@ export function render(_ctx, $props, $emit, $attrs, $slots) {
   const n1 = _createComponent(_component_Comp)
   const n2 = _createTextNode(() => [_ctx.bar])
   _insert([n1, n2], n3)
-  let _foo;
+  let _foo
   _renderEffect(() => _foo !== _ctx.foo && _setDOMProp(n3, "id", (_foo = _ctx.foo)))
   return [n0, n3]
 }"
@@ -187,9 +187,9 @@ export function render(_ctx) {
   const n0 = t0()
   _delegate(n0, "click", () => _ctx.handleClick)
   _setInheritAttrs(["id"])
-  let _count;
+  let _count
   _renderEffect(() => _count !== _ctx.count && _setText(n0, (_count = _ctx.count), "foo", _ctx.count, "foo", _ctx.count))
-  let _count1;
+  let _count1
   _renderEffect(() => _count1 !== _ctx.count && _setDOMProp(n0, "id", (_count1 = _ctx.count)))
   return n0
 }"
@@ -206,7 +206,7 @@ exports[`compile > expression parsing > v-bind 1`] = `
 "((_ctx) => {
   const n0 = t0()
   _setInheritAttrs(true)
-  let _key_value, _foo;
+  let _key_value, _foo
   _renderEffect(() => (_key_value !== key.value || _foo !== _unref(foo)) && _setDynamicProps(n0, [{ [(_key_value = key.value)+1]: (_foo = _unref(foo))[key.value+1]() }], true))
   return n0
 })()"
