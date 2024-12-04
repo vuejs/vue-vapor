@@ -80,7 +80,7 @@ export function genEffects(
 ): CodeFragment[] {
   const [frag, push] = buildCodeFragment()
   for (let i = 0; i < effects.length; i++) {
-    const effect = (context.currentRenderEffect = effects[i])
+    const effect = (context.processingRenderEffect = effects[i])
     push(...genEffect(effect, context))
   }
   return frag
@@ -90,54 +90,54 @@ export function genEffect(
   { operations }: IREffect,
   context: CodegenContext,
 ): CodeFragment[] {
-  const { vaporHelper, currentRenderEffect } = context
+  const { vaporHelper, processingRenderEffect } = context
   const [frag, push] = buildCodeFragment(
     NEWLINE,
     `${vaporHelper('renderEffect')}(() => `,
   )
-  const { varNamesToDeclare, conditions } = currentRenderEffect!
+  const { declareNames, earlyCheckExps } = processingRenderEffect!
   const operationsExps = genOperations(operations, context)
 
   // declare variables: let _foo, _bar
-  if (varNamesToDeclare.size) {
-    frag.splice(1, 0, `let ${[...varNamesToDeclare].join(', ')}`, NEWLINE)
+  if (declareNames.size) {
+    frag.splice(1, 0, `let ${[...declareNames].join(', ')}`, NEWLINE)
   }
 
   const newlineCount = operationsExps.filter(frag => frag === NEWLINE).length
   if (newlineCount > 1) {
     // multiline early return condition: if (_foo === _ctx.foo && _bar === _ctx.bar) return
-    const condition: CodeFragment[] =
-      conditions.length > 0
-        ? [NEWLINE, `if(`, ...conditions.join(' && '), `) return`]
+    const checkExps: CodeFragment[] =
+      earlyCheckExps.length > 0
+        ? [NEWLINE, `if(`, ...earlyCheckExps.join(' && '), `) return`]
         : []
     // assignment: _foo = _ctx.foo; _bar = _ctx.bar
-    const assignment: CodeFragment[] =
-      conditions.length > 0
-        ? [NEWLINE, ...conditions.map(c => c.replace('===', '=')).join(';')]
+    const assignmentExps: CodeFragment[] =
+      earlyCheckExps.length > 0
+        ? [NEWLINE, ...earlyCheckExps.map(c => c.replace('===', '=')).join(';')]
         : []
     push(
       '{',
       INDENT_START,
-      ...condition,
+      ...checkExps,
       ...operationsExps,
-      ...assignment,
+      ...assignmentExps,
       INDENT_END,
       NEWLINE,
       '})',
     )
   } else {
     // single line early return condition: (_foo !== _ctx.foo || _bar !== _ctx.bar) &&
-    const multiple = conditions.length > 1
-    const condition: CodeFragment[] =
-      conditions.length > 0
+    const multiple = earlyCheckExps.length > 1
+    const checkExps: CodeFragment[] =
+      earlyCheckExps.length > 0
         ? [
             multiple ? `(` : undefined,
-            ...conditions.join(' || '),
+            ...earlyCheckExps.join(' || '),
             multiple ? `)` : undefined,
             ' && ',
           ]
         : []
-    push(...condition, ...operationsExps.filter(frag => frag !== NEWLINE), ')')
+    push(...checkExps, ...operationsExps.filter(frag => frag !== NEWLINE), ')')
   }
 
   return frag

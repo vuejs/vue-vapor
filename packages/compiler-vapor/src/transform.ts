@@ -151,9 +151,9 @@ export class TransformContext<T extends AllNode = AllNode> {
       this.block.effect.push({
         expressions,
         operations,
-        conditions: [],
-        varNamesToDeclare: new Set<string>(),
-        varNamesOverwritten: new Set<string>(),
+        earlyCheckExps: [],
+        declareNames: new Set<string>(),
+        rewrittenNames: new Set<string>(),
         inVFor: this.inVFor > 0,
       })
     }

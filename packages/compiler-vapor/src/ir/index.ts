@@ -267,9 +267,9 @@ export interface IRDynamicInfo {
 export interface IREffect {
   expressions: SimpleExpressionNode[]
   operations: OperationNode[]
-  varNamesToDeclare: Set<string>
-  varNamesOverwritten: Set<string>
-  conditions: string[]
+  declareNames: Set<string>
+  rewrittenNames: Set<string>
+  earlyCheckExps: string[]
   inVFor: boolean
 }
 

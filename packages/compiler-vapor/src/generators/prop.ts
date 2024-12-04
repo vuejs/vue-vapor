@@ -42,7 +42,8 @@ export function genSetProp(
   oper: SetPropIRNode,
   context: CodegenContext,
 ): CodeFragment[] {
-  const { vaporHelper, shouldGenEffectDeps, currentRenderEffect } = context
+  const { vaporHelper, shouldCacheRenderEffectDeps, processingRenderEffect } =
+    context
   const {
     prop: { key, values, modifier },
     tag,
@@ -50,18 +51,15 @@ export function genSetProp(
   const { helperName, omitKey } = getRuntimeHelper(tag, key.content, modifier)
   let propValue = genPropValue(values, context)
 
-  if (shouldGenEffectDeps()) {
+  if (shouldCacheRenderEffectDeps()) {
     processValues(context, [propValue])
 
-    const { varNamesToDeclare } = currentRenderEffect!
+    const { declareNames } = processingRenderEffect!
     // need prevValue parameter
-    if (
-      varNamesToDeclare.size > 0 &&
-      helperNeedPrevValue.includes(helperName)
-    ) {
-      const prevValueName = [...varNamesToDeclare].join('')
-      varNamesToDeclare.add(prevValueName)
-      const needReCacheValue = varNamesToDeclare.size > 1
+    if (declareNames.size > 0 && helperNeedPrevValue.includes(helperName)) {
+      const prevValueName = [...declareNames].join('')
+      declareNames.add(prevValueName)
+      const needReCacheValue = declareNames.size > 1
       propValue.unshift(
         ...[
           `${prevValueName}, `, // prevValue parameter
@@ -92,7 +90,7 @@ export function genDynamicProps(
   oper: SetDynamicPropsIRNode,
   context: CodegenContext,
 ): CodeFragment[] {
-  const { vaporHelper, shouldGenEffectDeps } = context
+  const { vaporHelper, shouldCacheRenderEffectDeps } = context
   const values = oper.props.map(props =>
     Array.isArray(props)
       ? genLiteralObjectProps(props, context) // static and dynamic arg props
@@ -101,7 +99,7 @@ export function genDynamicProps(
         : genExpression(props.value, context),
   ) // v-bind=""
 
-  if (shouldGenEffectDeps()) {
+  if (shouldCacheRenderEffectDeps()) {
     processValues(context, values)
   }
 
@@ -268,14 +266,16 @@ export function processValues(
   context: CodegenContext,
   values: CodeFragment[][],
 ): string[] {
-  const conditions: string[] = []
+  const allCheckExps: string[] = []
   values.forEach(value => {
-    const condition = processValue(context, value)
-    if (condition) conditions.push(...condition, ' && ')
+    const checkExps = processValue(context, value)
+    if (checkExps) allCheckExps.push(...checkExps, ' && ')
   })
 
-  return conditions.length > 0
-    ? (context.currentRenderEffect!.conditions = [...new Set(conditions)])
+  return allCheckExps.length > 0
+    ? (context.processingRenderEffect!.earlyCheckExps = [
+        ...new Set(allCheckExps),
+      ])
     : []
 }
 
@@ -283,9 +283,9 @@ function processValue(
   context: CodegenContext,
   values: CodeFragment[],
 ): string[] | undefined {
-  const { currentRenderEffect, renderEffectSeemNames } = context
-  const { varNamesToDeclare, varNamesOverwritten, conditions, operations } =
-    currentRenderEffect!
+  const { processingRenderEffect, allRenderEffectSeenNames } = context
+  const { declareNames, rewrittenNames, earlyCheckExps, operations } =
+    processingRenderEffect!
 
   const isMultiLine = operations.length > 1
   for (const frag of values) {
@@ -294,19 +294,19 @@ function processValue(
     const [newName, , , rawName] = frag
     if (rawName) {
       let name = rawName.replace(/[^\w]/g, '_')
-      if (varNamesOverwritten.has(name)) continue
-      varNamesOverwritten.add(name)
+      if (rewrittenNames.has(name)) continue
+      rewrittenNames.add(name)
 
       name = `_${name}`
-      if (varNamesToDeclare.has(name)) continue
+      if (declareNames.has(name)) continue
 
-      if (renderEffectSeemNames[name] === undefined)
-        renderEffectSeemNames[name] = 0
-      else name += ++renderEffectSeemNames[name]
+      if (allRenderEffectSeenNames[name] === undefined)
+        allRenderEffectSeenNames[name] = 0
+      else name += ++allRenderEffectSeenNames[name]
 
-      varNamesToDeclare.add(name)
+      declareNames.add(name)
       // for multiline renderEffect the early return condition should be `if (_foo === _ctx.foo) return`
-      conditions.push(`${name} ${isMultiLine ? '===' : '!=='} ${newName}`)
+      earlyCheckExps.push(`${name} ${isMultiLine ? '===' : '!=='} ${newName}`)
 
       if (!isMultiLine) {
         // replace the original code fragment with the assignment expression
@@ -315,7 +315,7 @@ function processValue(
     }
   }
 
-  if (conditions.length > 0) {
-    return [[...new Set(conditions)].join(' && ')]
+  if (earlyCheckExps.length > 0) {
+    return [[...new Set(earlyCheckExps)].join(' && ')]
   }
 }
