@@ -81,14 +81,16 @@ export function genEffects(
   const { vaporHelper } = context
   const [frag, push, unshift] = buildCodeFragment()
   const declareNames = new Set<string>()
+  let operationsCount = 0
   for (let i = 0; i < effects.length; i++) {
     const effect = (context.processingRenderEffect = effects[i])
+    operationsCount += effect.operations.length
     i > 0 && push(NEWLINE)
     push(...genEffect(effect, context, declareNames))
   }
 
   const newLineCount = frag.filter(frag => frag === NEWLINE).length
-  if (newLineCount > 1) {
+  if (newLineCount > 1 || operationsCount > 1) {
     unshift(`{`, INDENT_START, NEWLINE)
     push(INDENT_END, NEWLINE, '}')
   }
