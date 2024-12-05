@@ -79,28 +79,44 @@ export function genEffects(
   context: CodegenContext,
 ): CodeFragment[] {
   const { vaporHelper } = context
-  const [frag, push] = buildCodeFragment()
-  push(NEWLINE, `${vaporHelper('renderEffect')}(() => {`, INDENT_START)
+  const [frag, push, unshift] = buildCodeFragment()
+  const declareNames = new Set<string>()
   for (let i = 0; i < effects.length; i++) {
     const effect = (context.processingRenderEffect = effects[i])
-    push(...genEffect(effect, context))
+    i > 0 && push(NEWLINE)
+    push(...genEffect(effect, context, declareNames))
   }
-  push(INDENT_END, NEWLINE, '})')
+
+  const newLineCount = frag.filter(frag => frag === NEWLINE).length
+  if (newLineCount > 1) {
+    unshift(`{`, INDENT_START, NEWLINE)
+    push(INDENT_END, NEWLINE, '}')
+  }
+
+  if (effects.length) {
+    unshift(NEWLINE, `${vaporHelper('renderEffect')}(() => `)
+    push(`)`)
+  }
+
+  // declare variables: let _foo, _bar
+  if (declareNames.size) {
+    frag.splice(1, 0, `let ${[...declareNames].join(', ')}`, NEWLINE)
+  }
   return frag
 }
 
 export function genEffect(
   { operations }: IREffect,
   context: CodegenContext,
+  allDeclareNames: Set<string>,
 ): CodeFragment[] {
   const { processingRenderEffect } = context
-  const [frag, push] = buildCodeFragment(NEWLINE)
+  const [frag, push] = buildCodeFragment()
   const { declareNames, earlyCheckExps } = processingRenderEffect!
   const operationsExps = genOperations(operations, context)
 
-  // declare variables: let _foo, _bar
   if (declareNames.size) {
-    frag.splice(1, 0, `let ${[...declareNames].join(', ')}`, NEWLINE)
+    allDeclareNames.add([...declareNames].join(', '))
   }
 
   const newlineCount = operationsExps.filter(frag => frag === NEWLINE).length

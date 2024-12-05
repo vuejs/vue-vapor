@@ -246,7 +246,7 @@ export function render(_ctx) {
 `;
 
 exports[`compiler: vModel transform > should support w/ dynamic v-bind 1`] = `
-"import { vModelDynamic as _vModelDynamic, withDirectives as _withDirectives, delegate as _delegate, setInheritAttrs as _setInheritAttrs, renderEffect as _renderEffect, setDynamicProps as _setDynamicProps, template as _template } from 'vue/vapor';
+"import { vModelDynamic as _vModelDynamic, withDirectives as _withDirectives, delegate as _delegate, setInheritAttrs as _setInheritAttrs, setDynamicProps as _setDynamicProps, renderEffect as _renderEffect, template as _template } from 'vue/vapor';
 const t0 = _template("<input>")
 
 export function render(_ctx) {

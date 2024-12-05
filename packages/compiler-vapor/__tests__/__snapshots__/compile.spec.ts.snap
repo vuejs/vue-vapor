@@ -1,7 +1,7 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`compile > bindings 1`] = `
-"import { renderEffect as _renderEffect, setText as _setText, template as _template } from 'vue/vapor';
+"import { setText as _setText, renderEffect as _renderEffect, template as _template } from 'vue/vapor';
 const t0 = _template("<div></div>")
 
 export function render(_ctx, $props, $emit, $attrs, $slots) {
@@ -152,7 +152,7 @@ export function render(_ctx, $props, $emit, $attrs, $slots) {
 `;
 
 exports[`compile > directives > v-pre > should not affect siblings after it 1`] = `
-"import { resolveComponent as _resolveComponent, createComponent as _createComponent, createTextNode as _createTextNode, insert as _insert, renderEffect as _renderEffect, setDOMProp as _setDOMProp, template as _template } from 'vue/vapor';
+"import { resolveComponent as _resolveComponent, createComponent as _createComponent, createTextNode as _createTextNode, insert as _insert, setDOMProp as _setDOMProp, renderEffect as _renderEffect, template as _template } from 'vue/vapor';
 const t0 = _template("<div :id=\\"foo\\"><Comp></Comp>{{ bar }}</div>")
 const t1 = _template("<div></div>")
 
@@ -179,7 +179,7 @@ export function render(_ctx) {
 `;
 
 exports[`compile > dynamic root nodes and interpolation 1`] = `
-"import { delegate as _delegate, setInheritAttrs as _setInheritAttrs, renderEffect as _renderEffect, setText as _setText, setDOMProp as _setDOMProp, delegateEvents as _delegateEvents, template as _template } from 'vue/vapor';
+"import { delegate as _delegate, setInheritAttrs as _setInheritAttrs, setText as _setText, setDOMProp as _setDOMProp, renderEffect as _renderEffect, delegateEvents as _delegateEvents, template as _template } from 'vue/vapor';
 const t0 = _template("<button></button>")
 _delegateEvents("click")
 
@@ -187,10 +187,9 @@ export function render(_ctx) {
   const n0 = t0()
   _delegate(n0, "click", () => _ctx.handleClick)
   _setInheritAttrs(["id"])
-  let _count
-  _renderEffect(() => _count !== _ctx.count && _setText(n0, (_count = _ctx.count), "foo", _ctx.count, "foo", _ctx.count))
-  let _count1
-  _renderEffect(() => _count1 !== _ctx.count && _setDOMProp(n0, "id", (_count1 = _ctx.count)))
+  let _count, _count1
+  _renderEffect(() => _count !== _ctx.count && _setText(n0, (_count = _ctx.count), "foo", _ctx.count, "foo", _ctx.count)
+  _count1 !== _ctx.count && _setDOMProp(n0, "id", (_count1 = _ctx.count)))
   return n0
 }"
 `;

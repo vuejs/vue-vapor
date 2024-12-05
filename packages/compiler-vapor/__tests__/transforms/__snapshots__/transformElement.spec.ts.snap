@@ -297,7 +297,7 @@ export function render(_ctx) {
 `;
 
 exports[`compiler: element transform > props merging: class 1`] = `
-"import { setInheritAttrs as _setInheritAttrs, renderEffect as _renderEffect, setClass as _setClass, template as _template } from 'vue/vapor';
+"import { setInheritAttrs as _setInheritAttrs, setClass as _setClass, renderEffect as _renderEffect, template as _template } from 'vue/vapor';
 const t0 = _template("<div></div>")
 
 export function render(_ctx) {
@@ -327,7 +327,7 @@ export function render(_ctx) {
 `;
 
 exports[`compiler: element transform > props merging: style 1`] = `
-"import { setInheritAttrs as _setInheritAttrs, renderEffect as _renderEffect, setStyle as _setStyle, template as _template } from 'vue/vapor';
+"import { setInheritAttrs as _setInheritAttrs, setStyle as _setStyle, renderEffect as _renderEffect, template as _template } from 'vue/vapor';
 const t0 = _template("<div></div>")
 
 export function render(_ctx) {
@@ -350,7 +350,7 @@ export function render(_ctx) {
 `;
 
 exports[`compiler: element transform > v-bind="obj" 1`] = `
-"import { setInheritAttrs as _setInheritAttrs, renderEffect as _renderEffect, setDynamicProps as _setDynamicProps, template as _template } from 'vue/vapor';
+"import { setInheritAttrs as _setInheritAttrs, setDynamicProps as _setDynamicProps, renderEffect as _renderEffect, template as _template } from 'vue/vapor';
 const t0 = _template("<div></div>")
 
 export function render(_ctx) {
@@ -363,7 +363,7 @@ export function render(_ctx) {
 `;
 
 exports[`compiler: element transform > v-bind="obj" after static prop 1`] = `
-"import { setInheritAttrs as _setInheritAttrs, renderEffect as _renderEffect, setDynamicProps as _setDynamicProps, template as _template } from 'vue/vapor';
+"import { setInheritAttrs as _setInheritAttrs, setDynamicProps as _setDynamicProps, renderEffect as _renderEffect, template as _template } from 'vue/vapor';
 const t0 = _template("<div></div>")
 
 export function render(_ctx) {
@@ -376,7 +376,7 @@ export function render(_ctx) {
 `;
 
 exports[`compiler: element transform > v-bind="obj" before static prop 1`] = `
-"import { setInheritAttrs as _setInheritAttrs, renderEffect as _renderEffect, setDynamicProps as _setDynamicProps, template as _template } from 'vue/vapor';
+"import { setInheritAttrs as _setInheritAttrs, setDynamicProps as _setDynamicProps, renderEffect as _renderEffect, template as _template } from 'vue/vapor';
 const t0 = _template("<div></div>")
 
 export function render(_ctx) {
@@ -389,7 +389,7 @@ export function render(_ctx) {
 `;
 
 exports[`compiler: element transform > v-bind="obj" between static props 1`] = `
-"import { setInheritAttrs as _setInheritAttrs, renderEffect as _renderEffect, setDynamicProps as _setDynamicProps, template as _template } from 'vue/vapor';
+"import { setInheritAttrs as _setInheritAttrs, setDynamicProps as _setDynamicProps, renderEffect as _renderEffect, template as _template } from 'vue/vapor';
 const t0 = _template("<div></div>")
 
 export function render(_ctx) {
@@ -402,7 +402,7 @@ export function render(_ctx) {
 `;
 
 exports[`compiler: element transform > v-on="obj" 1`] = `
-"import { renderEffect as _renderEffect, setDynamicEvents as _setDynamicEvents, template as _template } from 'vue/vapor';
+"import { setDynamicEvents as _setDynamicEvents, renderEffect as _renderEffect, template as _template } from 'vue/vapor';
 const t0 = _template("<div></div>")
 
 export function render(_ctx) {

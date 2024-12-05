@@ -673,8 +673,8 @@ describe('compiler v-bind', () => {
     expect(code).contains(
       '_type !== _ctx.type && _setAttr(n2, "type", (_type = _ctx.type))',
     )
-    expect(code).contains('if(_width === _ctx.width) return')
-    expect(code).contains('if(_height === _ctx.height) return')
+    expect(code).contains('if(_width !== _ctx.width) {')
+    expect(code).contains('if(_height !== _ctx.height) {')
     expect(code).contains('_height = _ctx.height')
     expect(code).contains('_height = _ctx.height')
     expect(code).contains('_setAttr(n3, "width", _ctx.width)')
@@ -715,15 +715,12 @@ describe('compiler v-bind', () => {
     `)
 
     expect(code).matchSnapshot()
-    expect(code).contains('let _id')
     expect(code).contains(
       '_id !== _ctx.id && _setDOMProp(n0, "id", (_id = _ctx.id))',
     )
-    expect(code).contains('let _lang')
     expect(code).contains(
       '_lang !== _ctx.lang && _setDOMProp(n0, "lang", (_lang = _ctx.lang))',
     )
-    expect(code).contains('let _tabindex')
     expect(code).contains(
       '_tabindex !== _ctx.tabindex && _setDOMProp(n0, "tabindex", (_tabindex = _ctx.tabindex))',
     )
@@ -735,23 +732,18 @@ describe('compiler v-bind', () => {
     `)
 
     expect(code).matchSnapshot()
-    expect(code).contains('let _autofucus')
     expect(code).contains(
       '_autofucus !== _ctx.autofucus && _setDOMProp(n0, "autofucus", (_autofucus = _ctx.autofucus))',
     )
-    expect(code).contains('let _dir')
     expect(code).contains(
       '_dir !== _ctx.dir && _setDOMProp(n0, "dir", (_dir = _ctx.dir))',
     )
-    expect(code).contains('let _displaystyle')
     expect(code).contains(
       '_displaystyle !== _ctx.displaystyle && _setDOMProp(n0, "displaystyle", (_displaystyle = _ctx.displaystyle))',
     )
-    expect(code).contains('let _mathcolor')
     expect(code).contains(
       '_mathcolor !== _ctx.mathcolor && _setDOMProp(n0, "mathcolor", (_mathcolor = _ctx.mathcolor))',
     )
-    expect(code).contains('let _tabindex')
     expect(code).contains(
       '_tabindex !== _ctx.tabindex && _setDOMProp(n0, "tabindex", (_tabindex = _ctx.tabindex))',
     )

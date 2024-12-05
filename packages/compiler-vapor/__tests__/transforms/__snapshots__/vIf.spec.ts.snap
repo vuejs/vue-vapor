@@ -1,7 +1,7 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`compiler: v-if > basic v-if 1`] = `
-"import { renderEffect as _renderEffect, setText as _setText, createIf as _createIf, template as _template } from 'vue/vapor';
+"import { setText as _setText, renderEffect as _renderEffect, createIf as _createIf, template as _template } from 'vue/vapor';
 const t0 = _template("<div></div>")
 
 export function render(_ctx) {
@@ -16,7 +16,7 @@ export function render(_ctx) {
 `;
 
 exports[`compiler: v-if > comment between branches 1`] = `
-"import { createIf as _createIf, renderEffect as _renderEffect, setText as _setText, template as _template } from 'vue/vapor';
+"import { createIf as _createIf, setText as _setText, renderEffect as _renderEffect, template as _template } from 'vue/vapor';
 const t0 = _template("<div></div>")
 const t1 = _template("<!--foo-->")
 const t2 = _template("<p></p>")
@@ -62,7 +62,7 @@ export function render(_ctx) {
 `;
 
 exports[`compiler: v-if > template v-if 1`] = `
-"import { renderEffect as _renderEffect, setText as _setText, createIf as _createIf, template as _template } from 'vue/vapor';
+"import { setText as _setText, renderEffect as _renderEffect, createIf as _createIf, template as _template } from 'vue/vapor';
 const t0 = _template("<div></div>")
 const t1 = _template("hello")
 const t2 = _template("<p></p>")
