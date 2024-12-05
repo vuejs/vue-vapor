@@ -105,22 +105,25 @@ export function genEffect(
 
   const newlineCount = operationsExps.filter(frag => frag === NEWLINE).length
   if (newlineCount > 1) {
-    // multiline early return condition: if (_foo === _ctx.foo && _bar === _ctx.bar) return
-    const checkExps: CodeFragment[] =
+    // multiline early return condition: if (_foo !== _ctx.foo || _bar !== _ctx.bar) {
+    const checkExpsStart: CodeFragment[] =
       earlyCheckExps.length > 0
-        ? [NEWLINE, `if(`, ...earlyCheckExps.join(' && '), `) return`]
+        ? [NEWLINE, `if(`, ...earlyCheckExps.join(' || '), `) {`, INDENT_START]
         : []
+    const checkExpsEnd: CodeFragment[] =
+      earlyCheckExps.length > 0 ? [INDENT_END, NEWLINE, '}'] : []
     // assignment: _foo = _ctx.foo; _bar = _ctx.bar
     const assignmentExps: CodeFragment[] =
       earlyCheckExps.length > 0
-        ? [NEWLINE, ...earlyCheckExps.map(c => c.replace('===', '=')).join(';')]
+        ? [NEWLINE, ...earlyCheckExps.map(c => c.replace('!==', '=')).join(';')]
         : []
     push(
       '{',
       INDENT_START,
-      ...checkExps,
+      ...checkExpsStart,
       ...operationsExps,
       ...assignmentExps,
+      ...checkExpsEnd,
       INDENT_END,
       NEWLINE,
       '})',

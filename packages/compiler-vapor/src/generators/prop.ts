@@ -305,8 +305,7 @@ function processValue(
       else name += ++allRenderEffectSeenNames[name]
 
       declareNames.add(name)
-      // for multiline renderEffect the early return condition should be `if (_foo === _ctx.foo) return`
-      earlyCheckExps.push(`${name} ${isMultiLine ? '===' : '!=='} ${newName}`)
+      earlyCheckExps.push(`${name} !== ${newName}`)
 
       if (!isMultiLine) {
         // replace the original code fragment with the assignment expression
