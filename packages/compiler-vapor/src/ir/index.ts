@@ -266,6 +266,7 @@ export interface IRDynamicInfo {
 
 export interface IREffect {
   expressions: SimpleExpressionNode[]
+  identifiers: string[]
   operations: OperationNode[]
   declareNames: Set<string>
   rewrittenNames: Set<string>

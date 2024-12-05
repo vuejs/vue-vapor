@@ -187,10 +187,13 @@ export function render(_ctx) {
   const n0 = t0()
   _delegate(n0, "click", () => _ctx.handleClick)
   _setInheritAttrs(["id"])
-  let _count, _count1
+  let _count
   _renderEffect(() => {
-    _count !== _ctx.count && _setText(n0, (_count = _ctx.count), "foo", _ctx.count, "foo", _ctx.count)
-    _count1 !== _ctx.count && _setDOMProp(n0, "id", (_count1 = _ctx.count))
+    if(_count !== _ctx.count) {
+      _setText(n0, _ctx.count, "foo", _ctx.count, "foo", _ctx.count)
+      _setDOMProp(n0, "id", _ctx.count)
+      _count = _ctx.count
+    }
   })
   return n0
 }"
