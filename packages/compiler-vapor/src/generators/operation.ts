@@ -78,11 +78,14 @@ export function genEffects(
   effects: IREffect[],
   context: CodegenContext,
 ): CodeFragment[] {
+  const { vaporHelper } = context
   const [frag, push] = buildCodeFragment()
+  push(NEWLINE, `${vaporHelper('renderEffect')}(() => {`, INDENT_START)
   for (let i = 0; i < effects.length; i++) {
     const effect = (context.processingRenderEffect = effects[i])
     push(...genEffect(effect, context))
   }
+  push(INDENT_END, NEWLINE, '})')
   return frag
 }
 
@@ -90,11 +93,8 @@ export function genEffect(
   { operations }: IREffect,
   context: CodegenContext,
 ): CodeFragment[] {
-  const { vaporHelper, processingRenderEffect } = context
-  const [frag, push] = buildCodeFragment(
-    NEWLINE,
-    `${vaporHelper('renderEffect')}(() => `,
-  )
+  const { processingRenderEffect } = context
+  const [frag, push] = buildCodeFragment(NEWLINE)
   const { declareNames, earlyCheckExps } = processingRenderEffect!
   const operationsExps = genOperations(operations, context)
 
@@ -108,7 +108,7 @@ export function genEffect(
     // multiline check expression: if (_foo !== _ctx.foo || _bar !== _ctx.bar) {
     const checkExpsStart: CodeFragment[] =
       earlyCheckExps.length > 0
-        ? [NEWLINE, `if(`, ...earlyCheckExps.join(' || '), `) {`, INDENT_START]
+        ? [`if(`, ...earlyCheckExps.join(' || '), `) {`, INDENT_START]
         : []
     const checkExpsEnd: CodeFragment[] =
       earlyCheckExps.length > 0 ? [INDENT_END, NEWLINE, '}'] : []
@@ -118,15 +118,10 @@ export function genEffect(
         ? [NEWLINE, ...earlyCheckExps.map(c => c.replace('!==', '=')).join(';')]
         : []
     push(
-      '{',
-      INDENT_START,
       ...checkExpsStart,
       ...operationsExps,
       ...assignmentExps,
       ...checkExpsEnd,
-      INDENT_END,
-      NEWLINE,
-      '})',
     )
   } else {
     // single line check expression: (_foo !== _ctx.foo || _bar !== _ctx.bar) &&
@@ -140,7 +135,7 @@ export function genEffect(
             ' && ',
           ]
         : []
-    push(...checkExps, ...operationsExps.filter(frag => frag !== NEWLINE), ')')
+    push(...checkExps, ...operationsExps.filter(frag => frag !== NEWLINE))
   }
 
   return frag
