@@ -35,7 +35,8 @@ import {
   toHandlerKey,
 } from '@vue/shared'
 
-const helperNeedPrevValue = ['setStyle', 'setDynamicProp']
+// those runtime helpers will return the prevValue
+const helperNeedPrevValue = ['setStyle', 'setDynamicProp', 'setDynamicProps']
 
 // only the static key prop will reach here
 export function genSetProp(
@@ -51,37 +52,32 @@ export function genSetProp(
   const { helperName, omitKey } = getRuntimeHelper(tag, key.content, modifier)
   let propValue = genPropValue(values, context)
 
+  let prevValueName
   if (shouldCacheRenderEffectDeps()) {
-    processValues(context, [propValue])
-
+    const needReturnValue = helperNeedPrevValue.includes(helperName)
+    processValues(context, [propValue], !needReturnValue)
     const { declareNames } = processingRenderEffect!
-    // need prevValue parameter
-    if (declareNames.size > 0 && helperNeedPrevValue.includes(helperName)) {
-      const prevValueName = [...declareNames].join('')
+    if (declareNames.size > 0 && needReturnValue) {
+      prevValueName = [...declareNames].join('')
       declareNames.add(prevValueName)
-      const needReCacheValue = declareNames.size > 1
-      propValue.unshift(
-        ...[
-          `${prevValueName}, `, // prevValue parameter
-          needReCacheValue ? `(${prevValueName} = ` : undefined, // cache value to prevValue
-        ],
-      )
-      needReCacheValue && propValue.push(')')
     }
   }
 
   return [
     NEWLINE,
+    ...(prevValueName ? [`(`, `${prevValueName} = `] : []),
     ...genCall(
       [vaporHelper(helperName), null],
       `n${oper.element}`,
       omitKey ? false : genExpression(key, context),
+      ...(prevValueName ? [`${prevValueName}`] : []),
       propValue,
       // only `setClass` and `setStyle` need merge inherit attr
       oper.root && (helperName === 'setClass' || helperName === 'setStyle')
         ? 'true'
         : undefined,
     ),
+    ...(prevValueName ? [`)`] : []),
   ]
 }
 
@@ -90,7 +86,8 @@ export function genDynamicProps(
   oper: SetDynamicPropsIRNode,
   context: CodegenContext,
 ): CodeFragment[] {
-  const { vaporHelper, shouldCacheRenderEffectDeps } = context
+  const { vaporHelper, shouldCacheRenderEffectDeps, processingRenderEffect } =
+    context
   const values = oper.props.map(props =>
     Array.isArray(props)
       ? genLiteralObjectProps(props, context) // static and dynamic arg props
@@ -99,18 +96,27 @@ export function genDynamicProps(
         : genExpression(props.value, context),
   ) // v-bind=""
 
+  let prevValueName
   if (shouldCacheRenderEffectDeps()) {
-    processValues(context, values)
+    processValues(context, values, false)
+    const { declareNames } = processingRenderEffect!
+    if (declareNames.size > 0) {
+      prevValueName = [...declareNames].join('')
+      declareNames.add(prevValueName)
+    }
   }
 
   return [
     NEWLINE,
+    ...(prevValueName ? [`(`, `${prevValueName} = `] : []),
     ...genCall(
       vaporHelper('setDynamicProps'),
       `n${oper.element}`,
+      ...(prevValueName ? [`${prevValueName}`] : []),
       genMulti(DELIMITERS_ARRAY, ...values),
       oper.root && 'true',
     ),
+    ...(prevValueName ? [`)`] : []),
   ]
 }
 
@@ -265,10 +271,11 @@ const getSpecialHelper = (
 export function processValues(
   context: CodegenContext,
   values: CodeFragment[][],
+  needRewrite: boolean = true,
 ): string[] {
   const allCheckExps: string[] = []
   values.forEach(value => {
-    const checkExps = processValue(context, value)
+    const checkExps = processValue(context, value, needRewrite)
     if (checkExps) allCheckExps.push(...checkExps, ' && ')
   })
 
@@ -282,12 +289,13 @@ export function processValues(
 function processValue(
   context: CodegenContext,
   values: CodeFragment[],
+  needRewrite: boolean = true,
 ): string[] | undefined {
   const { processingRenderEffect, allRenderEffectSeenNames } = context
   const { declareNames, rewrittenNames, earlyCheckExps, operations } =
     processingRenderEffect!
 
-  const isMultiLine = operations.length > 1
+  const isSingleLine = operations.length === 1
   for (const frag of values) {
     if (!isArray(frag)) continue
     // [code, newlineIndex, loc, name] -> [(_name = code), newlineIndex, loc, name]
@@ -307,7 +315,7 @@ function processValue(
       declareNames.add(name)
       earlyCheckExps.push(`${name} !== ${newName}`)
 
-      if (!isMultiLine) {
+      if (needRewrite && isSingleLine) {
         // replace the original code fragment with the assignment expression
         frag[0] = `(${name} = ${newName})`
       }

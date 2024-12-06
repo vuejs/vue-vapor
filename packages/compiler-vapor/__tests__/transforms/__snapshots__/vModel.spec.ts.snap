@@ -255,7 +255,7 @@ export function render(_ctx) {
   _delegate(n0, "update:modelValue", () => $event => (_ctx.model = $event))
   _setInheritAttrs(true)
   let _obj
-  _renderEffect(() => _obj !== _ctx.obj && _setDynamicProps(n0, [(_obj = _ctx.obj)], true))
+  _renderEffect(() => _obj !== _ctx.obj && (_obj = _setDynamicProps(n0, _obj, [_ctx.obj], true)))
   return n0
 }"
 `;

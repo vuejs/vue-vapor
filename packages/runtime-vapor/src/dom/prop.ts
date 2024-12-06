@@ -14,7 +14,6 @@ import {
 } from '@vue/shared'
 import { warn } from '../warning'
 import { setStyle } from './style'
-import { MetadataKind, getMetadata } from '../componentMetadata'
 import { on } from './event'
 import type { Data } from '@vue/runtime-shared'
 import { currentInstance } from '../component'
@@ -134,30 +133,37 @@ export function setDynamicProp(
 
 export function setDynamicProps(
   el: Element,
+  oldProps: any,
   args: any[],
   root?: boolean,
 ): void {
-  const oldProps = getMetadata(el)[MetadataKind.prop]
+  // const oldProps = getMetadata(el)[MetadataKind.prop]
   if (root) {
     args.unshift(currentInstance!.attrs)
   }
   const props = args.length > 1 ? mergeProps(...args) : args[0]
 
-  for (const key in oldProps) {
-    // TODO should these keys be allowed as dynamic keys? The current logic of the runtime-core will throw an error
-    if (key === 'textContent' || key === 'innerHTML') {
-      continue
-    }
+  if (oldProps) {
+    for (const key in oldProps) {
+      // TODO should these keys be allowed as dynamic keys? The current logic of the runtime-core will throw an error
+      if (key === 'textContent' || key === 'innerHTML') {
+        continue
+      }
 
-    const hasNewValue = props[key] || props['.' + key] || props['^' + key]
-    if (oldProps[key] && !hasNewValue) {
-      setDynamicProp(el, key, undefined, null)
+      const oldValue = oldProps[key]
+      const hasNewValue = props[key] || props['.' + key] || props['^' + key]
+      if (oldValue && !hasNewValue) {
+        setDynamicProp(el, key, oldValue, null)
+      }
     }
   }
 
+  const prev = Object.create(null)
   for (const key in props) {
-    setDynamicProp(el, key, undefined, props[key])
+    setDynamicProp(el, key, undefined, (prev[key] = props[key]))
   }
+
+  return prev
 }
 
 export function mergeProp(
