@@ -14,9 +14,10 @@ export function setStyle(
   prev: any,
   value: any,
   root?: boolean,
-): void {
+): any {
   value = normalizeStyle(root ? mergeInheritAttr('style', value) : value)
   patchStyle(el, prev, value)
+  return value
 }
 
 // TODO copied from packages/runtime-dom/src/modules/style.ts

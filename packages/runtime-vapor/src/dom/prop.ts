@@ -92,13 +92,13 @@ export function setDynamicProp(
   key: string,
   prev: any,
   value: any,
-): void {
+): any {
   // TODO
   const isSVG = false
   if (key === 'class') {
     setClass(el, value)
   } else if (key === 'style') {
-    setStyle(el as HTMLElement, prev, value)
+    return setStyle(el as HTMLElement, prev, value)
   } else if (isOn(key)) {
     on(el, key[2].toLowerCase() + key.slice(3), () => value, { effect: true })
   } else if (
