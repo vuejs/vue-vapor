@@ -43,8 +43,12 @@ export function genSetProp(
   oper: SetPropIRNode,
   context: CodegenContext,
 ): CodeFragment[] {
-  const { vaporHelper, shouldCacheRenderEffectDeps, processingRenderEffect } =
-    context
+  const {
+    vaporHelper,
+    shouldCacheRenderEffectDeps,
+    processingRenderEffect,
+    block,
+  } = context
   const {
     prop: { key, values, modifier },
     tag,
@@ -63,9 +67,14 @@ export function genSetProp(
     }
   }
 
+  // single-line render effect that needs to return a value, the expression needs to be wrapped
+  // in parentheses. e.g. _foo === _ctx.foo && (_foo = _setStyle(...))
+  const needWrap = block.operation.length === 1
   return [
     NEWLINE,
-    ...(prevValueName ? [`(`, `${prevValueName} = `] : []),
+    ...(prevValueName
+      ? [needWrap ? `(` : undefined, `${prevValueName} = `]
+      : []),
     ...genCall(
       [vaporHelper(helperName), null],
       `n${oper.element}`,
@@ -77,7 +86,7 @@ export function genSetProp(
         ? 'true'
         : undefined,
     ),
-    ...(prevValueName ? [`)`] : []),
+    ...(prevValueName && needWrap ? [`)`] : []),
   ]
 }
 
