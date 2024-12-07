@@ -35,45 +35,27 @@ import {
   toHandlerKey,
 } from '@vue/shared'
 
-// those runtime helpers will return the prevValue
-const helperNeedPrevValue = ['setStyle', 'setDynamicProp', 'setDynamicProps']
-
 // only the static key prop will reach here
 export function genSetProp(
   oper: SetPropIRNode,
   context: CodegenContext,
 ): CodeFragment[] {
-  const {
-    vaporHelper,
-    shouldCacheRenderEffectDeps,
-    processingRenderEffect,
-    block,
-  } = context
+  const { vaporHelper } = context
   const {
     prop: { key, values, modifier },
     tag,
   } = oper
   const { helperName, omitKey } = getRuntimeHelper(tag, key.content, modifier)
-  let propValue = genPropValue(values, context)
-
-  let prevValueName
-  if (shouldCacheRenderEffectDeps()) {
-    const needReturnValue = helperNeedPrevValue.includes(helperName)
-    processValues(context, [propValue], !needReturnValue)
-    const { declareNames } = processingRenderEffect!
-    if (declareNames.size > 0 && needReturnValue) {
-      prevValueName = [...declareNames].join('')
-      declareNames.add(prevValueName)
-    }
-  }
-
-  // single-line render effect that needs to return a value, the expression needs to be wrapped
-  // in parentheses. e.g. _foo === _ctx.foo && (_foo = _setStyle(...))
-  const needWrap = block.operation.length === 1
+  const propValue = genPropValue(values, context)
+  const { prevValueName, shouldWrapInParentheses } = processPropValues(
+    context,
+    helperName,
+    [propValue],
+  )
   return [
     NEWLINE,
     ...(prevValueName
-      ? [needWrap ? `(` : undefined, `${prevValueName} = `]
+      ? [shouldWrapInParentheses ? `(` : undefined, `${prevValueName} = `]
       : []),
     ...genCall(
       [vaporHelper(helperName), null],
@@ -86,7 +68,7 @@ export function genSetProp(
         ? 'true'
         : undefined,
     ),
-    ...(prevValueName && needWrap ? [`)`] : []),
+    ...(prevValueName && shouldWrapInParentheses ? [`)`] : []),
   ]
 }
 
@@ -95,8 +77,7 @@ export function genDynamicProps(
   oper: SetDynamicPropsIRNode,
   context: CodegenContext,
 ): CodeFragment[] {
-  const { vaporHelper, shouldCacheRenderEffectDeps, processingRenderEffect } =
-    context
+  const { vaporHelper } = context
   const values = oper.props.map(props =>
     Array.isArray(props)
       ? genLiteralObjectProps(props, context) // static and dynamic arg props
@@ -104,20 +85,16 @@ export function genDynamicProps(
         ? genLiteralObjectProps([props], context) // dynamic arg props
         : genExpression(props.value, context),
   ) // v-bind=""
-
-  let prevValueName
-  if (shouldCacheRenderEffectDeps()) {
-    processValues(context, values, false)
-    const { declareNames } = processingRenderEffect!
-    if (declareNames.size > 0) {
-      prevValueName = [...declareNames].join('')
-      declareNames.add(prevValueName)
-    }
-  }
-
+  const { prevValueName, shouldWrapInParentheses } = processPropValues(
+    context,
+    'setDynamicProps',
+    values,
+  )
   return [
     NEWLINE,
-    ...(prevValueName ? [`(`, `${prevValueName} = `] : []),
+    ...(prevValueName
+      ? [shouldWrapInParentheses ? `(` : undefined, `${prevValueName} = `]
+      : []),
     ...genCall(
       vaporHelper('setDynamicProps'),
       `n${oper.element}`,
@@ -125,7 +102,7 @@ export function genDynamicProps(
       genMulti(DELIMITERS_ARRAY, ...values),
       oper.root && 'true',
     ),
-    ...(prevValueName ? [`)`] : []),
+    ...(prevValueName && shouldWrapInParentheses ? [`)`] : []),
   ]
 }
 
@@ -275,6 +252,39 @@ const getSpecialHelper = (
   }
 
   return specialHelpers[keyName] || null
+}
+
+// those runtime helpers will return the prevValue
+const helpersNeedCachedReturnValue = [
+  'setStyle',
+  'setDynamicProp',
+  'setDynamicProps',
+]
+
+function processPropValues(
+  context: CodegenContext,
+  helperName: string,
+  values: CodeFragment[][],
+): { prevValueName: string | undefined; shouldWrapInParentheses: boolean } {
+  const { shouldCacheRenderEffectDeps, processingRenderEffect } = context
+  // single-line render effect and the operation needs cache return a value,
+  // the expression needs to be wrapped in parentheses.
+  // e.g. _foo === _ctx.foo && (_foo = _setStyle(...))
+  let shouldWrapInParentheses: boolean = false
+  let prevValueName
+  if (shouldCacheRenderEffectDeps()) {
+    const needReturnValue = helpersNeedCachedReturnValue.includes(helperName)
+    processValues(context, values, !needReturnValue)
+    const { declareNames } = processingRenderEffect!
+    // if the operation needs to cache the return value and has multiple declareNames,
+    // combine them into a single name as the return value name.
+    if (declareNames.size > 0 && needReturnValue) {
+      prevValueName = [...declareNames].join('')
+      declareNames.add(prevValueName)
+    }
+    shouldWrapInParentheses = processingRenderEffect!.operations.length === 1
+  }
+  return { prevValueName, shouldWrapInParentheses }
 }
 
 export function processValues(
