@@ -96,9 +96,9 @@ export function genExpression(
 
         if (i === ids.length - 1 && end < content.length) {
           const rest = content.slice(end)
-          // merge member expression into the last identifier's fragment
           const last = frag[frag.length - 1]
-          if (hasMemberExpression && isArray(last) && last[3]) {
+          if (hasMemberExpression && isArray(last)) {
+            // merge rest content into the last identifier's generated name
             last[0] += rest
           } else {
             push([rest, NewlineType.Unknown])
