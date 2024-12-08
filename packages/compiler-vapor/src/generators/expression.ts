@@ -1,4 +1,4 @@
-import { isGloballyAllowed } from '@vue/shared'
+import { isArray, isGloballyAllowed } from '@vue/shared'
 import {
   BindingTypes,
   NewlineType,
@@ -95,7 +95,14 @@ export function genExpression(
         )
 
         if (i === ids.length - 1 && end < content.length) {
-          push([content.slice(end), NewlineType.Unknown])
+          const rest = content.slice(end)
+          // merge member expression into the last identifier's fragment
+          const last = frag[frag.length - 1]
+          if (hasMemberExpression && isArray(last) && last[3]) {
+            last[0] += rest
+          } else {
+            push([rest, NewlineType.Unknown])
+          }
         }
       })
 
