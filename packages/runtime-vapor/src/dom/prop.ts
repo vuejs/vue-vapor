@@ -160,7 +160,12 @@ export function setDynamicProps(
 
   const prev = Object.create(null)
   for (const key in props) {
-    setDynamicProp(el, key, undefined, (prev[key] = props[key]))
+    setDynamicProp(
+      el,
+      key,
+      oldProps ? oldProps[key] : undefined,
+      (prev[key] = props[key]),
+    )
   }
 
   return prev
