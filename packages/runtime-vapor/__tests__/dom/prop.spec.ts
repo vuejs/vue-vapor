@@ -14,7 +14,6 @@ import {
   ComponentInternalInstance,
   setCurrentInstance,
 } from '../../src/component'
-import { getMetadata, recordPropMetadata } from '../../src/componentMetadata'
 import { getCurrentScope } from '@vue/reactivity'
 
 let removeComponentInstance = NOOP
@@ -35,34 +34,6 @@ afterEach(() => {
 })
 
 describe('patchProp', () => {
-  describe('recordPropMetadata', () => {
-    test('should record prop metadata', () => {
-      const node = {} as Node // the node is just a key
-      let prev = recordPropMetadata(node, 'class', 'foo')
-      expect(prev).toBeUndefined()
-      prev = recordPropMetadata(node, 'class', 'bar')
-      expect(prev).toBe('foo')
-      prev = recordPropMetadata(node, 'style', 'color: red')
-      expect(prev).toBeUndefined()
-      prev = recordPropMetadata(node, 'style', 'color: blue')
-      expect(prev).toBe('color: red')
-
-      expect(getMetadata(node)).toEqual([
-        { class: 'bar', style: 'color: blue' },
-        {},
-      ])
-    })
-
-    test('should have different metadata for different nodes', () => {
-      const node1 = {} as Node
-      const node2 = {} as Node
-      recordPropMetadata(node1, 'class', 'foo')
-      recordPropMetadata(node2, 'class', 'bar')
-      expect(getMetadata(node1)).toEqual([{ class: 'foo' }, {}])
-      expect(getMetadata(node2)).toEqual([{ class: 'bar' }, {}])
-    })
-  })
-
   describe('setClass', () => {
     test('should set class', () => {
       const el = document.createElement('div')
