@@ -307,7 +307,7 @@ export function createStructuralDirectiveTransform(
 
 function extractIdentifiers(ids: Set<string>, node: ExpressionNode) {
   if (node.ast) {
-    walkIdentifiers(node.ast, n => ids.add(n.name))
+    walkIdentifiers(node.ast, n => ids.add(n.name), true)
   } else if (node.ast === null) {
     ids.add((node as SimpleExpressionNode).content)
   }
