@@ -792,6 +792,16 @@ describe('compiler v-bind', () => {
     )
   })
 
+  test('bind member expression', () => {
+    const { code } = compileWithVBind(`
+      <div :id="obj.count.bar"></div>/>
+    `)
+    expect(code).matchSnapshot()
+    expect(code).contains(
+      '_obj !== _ctx.obj.count.bar && _setDOMProp(n0, "id", (_obj = _ctx.obj.count.bar))',
+    )
+  })
+
   test('number value', () => {
     const { code } = compileWithVBind(`<Comp :depth="0" />`)
     expect(code).matchSnapshot()
