@@ -85,8 +85,10 @@ export function genEffects(
   for (let i = 0; i < effects.length; i++) {
     const effect = (context.processingRenderEffect = effects[i])
     operationsCount += effect.operations.length
+    const frags = genEffect(effect, context, declareNames)
+    const needSemi = frag[frag.length - 1] === ')' && frags[0] === '('
     i > 0 && push(NEWLINE)
-    push(...genEffect(effect, context, declareNames))
+    push(needSemi ? ';' : undefined, ...frags)
   }
 
   const newLineCount = frag.filter(frag => frag === NEWLINE).length
