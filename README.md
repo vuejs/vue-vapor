@@ -1,5 +1,9 @@
 # Vue Vapor
 
+> [!IMPORTANT]
+> We're currently building Vapor on [core's vapor branch](https://github.com/vuejs/core/tree/vapor), this repo wasn't maintained now.
+
+
 This repository is a fork of [vuejs/core](https://github.com/vuejs/core) and is used for research and development of no virtual dom mode.
 
 - [Vapor Playground](https://vapor-repl.netlify.app/)
