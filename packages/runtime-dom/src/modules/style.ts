@@ -1,5 +1,5 @@
-import { capitalize, hyphenate, isArray, isString } from '@vue/shared'
-import { camelize, warn } from '@vue/runtime-core'
+import { camelize, capitalize, hyphenate, isArray, isString } from '@vue/shared'
+import { warn } from '@vue/runtime-core'
 import {
   type VShowElement,
   vShowHidden,
@@ -7,7 +7,7 @@ import {
 } from '../directives/vShow'
 import { CSS_VAR_TEXT } from '../helpers/useCssVars'
 
-type Style = string | Record<string, string | string[]> | null
+export type Style = string | Record<string, string | string[]> | null
 
 const displayRE = /(^|;)\s*display\s*:/
 
@@ -20,14 +20,14 @@ export function patchStyle(el: Element, prev: Style, next: Style): void {
       if (!isString(prev)) {
         for (const key in prev) {
           if (next[key] == null) {
-            setStyle(style, key, '')
+            setStyle(style, key, '', warn)
           }
         }
       } else {
         for (const prevStyle of prev.split(';')) {
           const key = prevStyle.slice(0, prevStyle.indexOf(':')).trim()
           if (next[key] == null) {
-            setStyle(style, key, '')
+            setStyle(style, key, '', warn)
           }
         }
       }
@@ -36,7 +36,7 @@ export function patchStyle(el: Element, prev: Style, next: Style): void {
       if (key === 'display') {
         hasControlledDisplay = true
       }
-      setStyle(style, key, next[key])
+      setStyle(style, key, next[key], warn)
     }
   } else {
     if (isCssString) {
@@ -67,13 +67,14 @@ export function patchStyle(el: Element, prev: Style, next: Style): void {
 const semicolonRE = /[^\\];\s*$/
 const importantRE = /\s*!important$/
 
-function setStyle(
+export function setStyle(
   style: CSSStyleDeclaration,
   name: string,
   val: string | string[],
-) {
+  warn: (msg: string, ...args: any[]) => void,
+): void {
   if (isArray(val)) {
-    val.forEach(v => setStyle(style, name, v))
+    val.forEach(v => setStyle(style, name, v, warn))
   } else {
     if (val == null) val = ''
     if (__DEV__) {
