@@ -75,6 +75,7 @@ export const transformElement: NodeTransform = (node, context) => {
     }
     const singleRoot =
       context.root === parent &&
+      !parent.ir.source.includes('v-for') &&
       parent.node.children.filter(child => child.type !== NodeTypes.COMMENT)
         .length === 1
 

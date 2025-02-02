@@ -6,6 +6,7 @@ import {
   transformElement,
   transformText,
   transformVBind,
+  transformVFor,
   transformVOn,
 } from '../../src'
 import {
@@ -15,7 +16,12 @@ import {
 } from '@vue/compiler-core'
 
 const compileWithElementTransform = makeCompile({
-  nodeTransforms: [transformElement, transformChildren, transformText],
+  nodeTransforms: [
+    transformVFor,
+    transformElement,
+    transformChildren,
+    transformText,
+  ],
   directiveTransforms: {
     bind: transformVBind,
     on: transformVOn,
@@ -183,6 +189,16 @@ describe('compiler: element transform', () => {
       })
       expect(code).toMatchSnapshot()
       expect(code).contains('_createComponent(_ctx.Comp, null, null, true)')
+    })
+
+    test('generate root component with v-for', () => {
+      const { code } = compileWithElementTransform(
+        `<Comp v-for="i in 1000"/>`,
+        {
+          bindingMetadata: { Comp: BindingTypes.SETUP_CONST },
+        },
+      )
+      expect(code).contains('_createComponent(_ctx.Comp)')
     })
 
     test('generate multi root component', () => {
