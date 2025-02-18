@@ -5,6 +5,8 @@
  * To avoid runtime dependency on validate-html-nesting
  * This file should not change very often in the original repo
  * but we may need to keep it up-to-date from time to time.
+ * the validate-html-nexting's new code may not work in vue
+ * double check before updating this file.
  */
 
 /**
@@ -58,7 +60,18 @@ const onlyValidChildren: Record<string, Set<string>> = {
     'template',
   ]),
   optgroup: new Set(['option']),
+  /**
+   * Though validate-html-nesting declared hr is not a valid child of select
+   * Keep hr as valid select children, Referring https://html.spec.whatwg.org/multipage/grouping-content.html#the-hr-element
+   */
   select: new Set(['optgroup', 'option', 'hr']),
+  /**
+   * Though validate-html-nesting declared math should only have mrow as it's children
+   * Referring mathml-core spec, it's not fact
+   * https://w3c.github.io/mathml-core/#dfn-mrow
+   */
+  // math: new Set(['mrow']),
+
   // table
   table: new Set(['caption', 'colgroup', 'tbody', 'tfoot', 'thead']),
   tr: new Set(['td', 'th']),
@@ -66,6 +79,7 @@ const onlyValidChildren: Record<string, Set<string>> = {
   tbody: new Set(['tr']),
   thead: new Set(['tr']),
   tfoot: new Set(['tr']),
+
   // these elements can not have any children elements
   script: emptySet,
   iframe: emptySet,
