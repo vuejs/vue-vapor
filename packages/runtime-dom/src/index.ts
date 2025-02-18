@@ -306,3 +306,8 @@ export const initDirectivesForSSR: () => void = __SSR__
 export * from '@vue/runtime-core'
 
 export * from './jsx'
+
+/**
+ * @internal
+ */
+export { type Style, setStyle } from './modules/style'
